@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var broadcast = make(chan socketMessage)
 var clients = make(map[*websocket.Conn]bool) // connected clients
 var upgrader = websocket.Upgrader{}
 

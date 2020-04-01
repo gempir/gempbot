@@ -1,5 +1,6 @@
+github.com/VividCortex/ewma v1.1.1 h1:MnEK4VOv6n0RSY4vtRe3h11qjxL3+t0B8yOL8iMXdcM=
+github.com/VividCortex/ewma v1.1.1/go.mod h1:2Tkkvm3sRDVXaiyucHiACn4cqf7DpdyLvmxzcbUokwA=
 github.com/gempir/go-twitch-irc v1.1.0 h1:Q9gQGI/3yJzYwlYDlFsGJzWfpaqubMExfmBXNpOC6W0=
-github.com/gempir/go-twitch-irc v1.1.0/go.mod h1:Pc661rsUSmkQXvI9W2bNyLt4ZrMAgHZPnVwMQEJ0fdo=
 github.com/gempir/go-twitch-irc/v2 v2.2.2 h1:uzinel2qApXL1UVfr3QcZ3dJsf+YU+PaUp0qJk03qNo=
 github.com/gempir/go-twitch-irc/v2 v2.2.2/go.mod h1:0HXoEr9l7gNjwajosptV0w0xGpHeU6gsD7JDlfvjTYI=
 github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvKCM=
