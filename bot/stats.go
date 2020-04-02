@@ -1,8 +1,9 @@
 package main
 
 import (
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -22,7 +23,7 @@ func newStat(channelName string) stat {
 }
 
 func startStatsCollector() {
-	log.Println("starting stats collector")
+	log.Info("[collector] starting stats collector")
 
 	go startTicker()
 

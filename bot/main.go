@@ -1,7 +1,12 @@
 package main
 
 import (
-	twitch "github.com/gempir/go-twitch-irc/v2"
+	"flag"
+
+	"github.com/gempir/go-twitch-irc/v2"
+	"github.com/gempir/spamchamp/bot/collector"
+	"github.com/gempir/spamchamp/bot/config"
+	"github.com/gempir/spamchamp/bot/helix"
 )
 
 var messageQueue = make(chan twitch.PrivateMessage)
@@ -16,22 +21,16 @@ type frontendStats struct {
 }
 
 func main() {
-	client := twitch.NewClient("justinfan123123", "oauth:123123123")
+	configFile := flag.String("config", "config.json", "json config file")
+	flag.Parse()
 
-	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		messageQueue <- message
-	})
+	cfg := config.NewConfig(*configFile)
 
-	client.Join("tmiloadtesting2")
-	client.Join("xqcow")
-	client.Join("lirik")
-	client.Join("drdisrepect")
-	client.Join("esl_csgo")
-	client.Join("loltyler1")
-	client.Join("forsen")
+	helixClient := helix.NewClient(cfg.ClientID)
+	bot := collector.NewBot(cfg, &helixClient, messageQueue)
 
-	go client.Connect()
-
+	go startStatsCollector()
 	go startWebsocketServer()
-	startStatsCollector()
+
+	bot.Connect()
 }
