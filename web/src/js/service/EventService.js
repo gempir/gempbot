@@ -2,14 +2,13 @@ export default class EventService {
     constructor(callback) {
         this.onEvent = callback;
 
-        const socket = new WebSocket("ws://localhost:8000/ws");
+        const socket = new WebSocket("ws://localhost:8000/api/ws");
 
         socket.onopen = (e) => {
             console.log("[open] Connection established");
         };
 
         socket.onmessage = (event) => {
-            console.log(`[message] Data received from server: ${event.data}`);
             this.onEvent(JSON.parse(event.data));
         };
 

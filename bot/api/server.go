@@ -1,6 +1,8 @@
-package main
+package api
 
 import (
+	"github.com/gempir/spamchamp/bot/config"
+	"github.com/gempir/spamchamp/bot/helix"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -8,16 +10,42 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var broadcast = make(chan socketMessage)
+// Server api server
+type Server struct {
+	cfg            *config.Config
+	broadcastQueue chan BroadcastMessage
+	helixClient    *helix.Client
+}
+
+type BroadcastMessage struct {
+	Channels map[string]FrontendStats `json:"channels"`
+}
+
+type FrontendStats struct {
+	ChannelName       string `json:"channelName"`
+	MessagesPerSecond int    `json:"messagesPerSecond"`
+}
+
+// NewServer create api Server
+func NewServer(cfg *config.Config, helixClient *helix.Client, broadcastQueue chan BroadcastMessage) Server {
+	return Server{
+		cfg:            cfg,
+		broadcastQueue: broadcastQueue,
+		helixClient:    helixClient,
+	}
+}
+
 var clients = make(map[*websocket.Conn]bool) // connected clients
 var upgrader = websocket.Upgrader{}
 
-func startWebsocketServer() {
+func (s *Server) Start() {
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
 	}
-	http.HandleFunc("/ws", handleConnections)
-	go handleMessages()
+
+	go s.handleMessages()
+	http.HandleFunc("/api/ws", s.handleConnections)
+	http.HandleFunc("/api/channels", s.handleChannels)
 
 	err := http.ListenAndServe(":8000", nil)
 	if err != nil {
@@ -25,7 +53,11 @@ func startWebsocketServer() {
 	}
 }
 
-func handleConnections(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleChannels(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (s *Server) handleConnections(w http.ResponseWriter, r *http.Request) {
 	// Upgrade initial GET request to a websocket
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -36,7 +68,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	for {
-		var msg socketMessage
+		var msg BroadcastMessage
 		// Read in a new message as JSON and map it to a Message object
 		err := ws.ReadJSON(&msg)
 		if err != nil {
@@ -45,14 +77,14 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// Send the newly received message to the broadcast channel
-		broadcast <- msg
+		s.broadcastQueue <- msg
 	}
 }
 
-func handleMessages() {
+func (s *Server) handleMessages() {
 	for {
 		// Grab the next message from the broadcast channel
-		msg := <-broadcast
+		msg := <- s.broadcastQueue
 		// Send it out to every client that is currently connected
 		for client := range clients {
 			err := client.WriteJSON(msg)

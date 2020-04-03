@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"github.com/gempir/spamchamp/bot/api"
+	"github.com/gempir/spamchamp/bot/stats"
 
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/bot/collector"
@@ -10,15 +12,7 @@ import (
 )
 
 var messageQueue = make(chan twitch.PrivateMessage)
-
-type socketMessage struct {
-	Channels map[string]frontendStats `json:"channels"`
-}
-
-type frontendStats struct {
-	ChannelName       string `json:"channelName"`
-	MessagesPerSecond int    `json:"messagesPerSecond"`
-}
+var broadcastQueue = make(chan api.BroadcastMessage)
 
 func main() {
 	configFile := flag.String("config", "config.json", "json config file")
@@ -28,9 +22,11 @@ func main() {
 
 	helixClient := helix.NewClient(cfg.ClientID)
 	bot := collector.NewBot(cfg, &helixClient, messageQueue)
+	server := api.NewServer(cfg, &helixClient, broadcastQueue)
+	broadcaster := stats.NewBroadcaster(messageQueue, broadcastQueue)
 
-	go startStatsCollector()
-	go startWebsocketServer()
+	go server.Start()
+	go broadcaster.Start()
 
 	bot.Connect()
 }

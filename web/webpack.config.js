@@ -23,6 +23,18 @@ module.exports = {
 			},
 		]
 	},
+	stats: {
+		// Config for minimal console.log mess.
+		assets: false,
+		colors: true,
+		version: false,
+		hash: false,
+		modules: false,
+		timings: false,
+		entrypoints: false,
+		chunks: false,
+		chunkModules: false
+	},
 	plugins: [
 		new WorkboxPlugin.GenerateSW({
 			// these options encourage the ServiceWorkers to get in there fast
