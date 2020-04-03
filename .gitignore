@@ -1,1 +1,22 @@
 .idea
+
+bot/bot
+bot/config.json
+
+web/node_modules/
+
+# misc
+web/.DS_Store
+web/.env.local
+web/.env.development.local
+web/.env.test.local
+web/.env.production.local
+
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*dist/
+
+web/dist/
+web/public/bundle.js
+web/public/service-worker.js
+web/public/precache-manifest.*.js
