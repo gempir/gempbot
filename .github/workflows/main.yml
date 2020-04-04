@@ -4,12 +4,11 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v1
-    - name: Run a multi-line script
+    - name: Build web
       working-directory: ./web
       run: |
         yarn install
@@ -17,13 +16,13 @@ jobs:
 
     - name: Install Go
       uses: actions/setup-go@v1
-    - name: Test
-      working-directory: ./bot
-      run: go test ./...
       
-    - name: Build
+    - name: Build Bot
       working-directory: ./bot
-      run: go build
+      run: |
+        go get
+        go test ./...
+        go build
 
     - name: Deploy Backend
       uses: appleboy/scp-action@master
