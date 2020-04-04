@@ -18,11 +18,12 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v1
     - name: Test
-        working-directory: ./bot
-        run: go test ./...
+      working-directory: ./bot
+      run: go test ./...
+      
     - name: Build
-        working-directory: ./bot
-        run: go build
+      working-directory: ./bot
+      run: go build
 
     - name: Deploy Backend
       uses: appleboy/scp-action@master
@@ -31,7 +32,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
-        source: "bot"
+        source: "bot/bot"
         target: "/home/spamchampbot/"
         
     - name: Deploy Frontend
