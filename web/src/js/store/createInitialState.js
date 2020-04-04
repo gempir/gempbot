@@ -6,6 +6,8 @@ export default () => {
 
     return {
         loading: false,
+        channels: {},
+        apiBaseUrl: "http://localhost:8000",
         ...persistedState,
     }
 }

@@ -43,7 +43,7 @@ func (b *Broadcaster) startTicker() {
 
 	for range ticker.C {
 		message := api.BroadcastMessage{
-			Channels: make(map[string]api.FrontendStats),
+			ChannelStats: []api.ChannelStat{},
 		}
 
 		for channelID, stat := range stats {
@@ -56,10 +56,10 @@ func (b *Broadcaster) startTicker() {
 			total += ratebucket[0]
 			ratebucket[0] = 0
 
-			message.Channels[channelID] = api.FrontendStats{
-				ChannelName:       stat.channelName,
-				MessagesPerSecond: total / 10,
-			}
+			message.ChannelStats = append(message.ChannelStats, api.ChannelStat{
+				ID:    channelID,
+				Msgps: total / 10,
+			})
 		}
 
 		b.broadcastQueue <- message

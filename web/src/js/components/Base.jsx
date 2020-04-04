@@ -2,25 +2,29 @@ import React from "react";
 import EventService from "../service/EventService";
 import MessageRecords from "./MessageRecords";
 import Statistics from "./Statistics";
+import {connect} from "react-redux";
+import fetchChannels from "../actions/fetchChannels";
 
-export default class Base extends React.Component {
+class Base extends React.Component {
 
     state = {
-        channels: [],
-    }
+        channelStats: [],
+    };
 
     componentDidMount() {
        new EventService(data => {
             this.setState({
-                channels: data.channels
-            })
+                channelStats: data.channelStats
+            });
+            this.props.dispatch(fetchChannels(data.channelStats.map(stat => stat.id)));
         });
     }
 
     render() {
         return <div>
-            <Statistics channels={this.state.channels} />
-            <MessageRecords records={[]}/>
+            <Statistics channelStats={this.state.channelStats} />
         </div>;
     }
 }
+
+export default connect(state => ({}))(Base);

@@ -3,4 +3,19 @@
     font-size: 2rem;
     font-weight: bold;
     list-style-type: none;
+    width: 500px;
+
+    li {
+        display: flex;
+        align-items: center;
+
+        img {
+            margin-right: 10px;
+        }
+
+        .value {
+            text-align: right;
+            flex: 1 1 auto;
+        }
+    }
 }

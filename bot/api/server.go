@@ -1,9 +1,11 @@
 package api
 
 import (
+	"encoding/json"
 	"github.com/gempir/spamchamp/bot/config"
 	"github.com/gempir/spamchamp/bot/helix"
 	"net/http"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -18,12 +20,12 @@ type Server struct {
 }
 
 type BroadcastMessage struct {
-	Channels map[string]FrontendStats `json:"channels"`
+	ChannelStats []ChannelStat `json:"channelStats"`
 }
 
-type FrontendStats struct {
-	ChannelName       string `json:"channelName"`
-	MessagesPerSecond int    `json:"messagesPerSecond"`
+type ChannelStat struct {
+	ID    string `json:"id"`
+	Msgps int    `json:"msgps"`
 }
 
 // NewServer create api Server
@@ -45,7 +47,8 @@ func (s *Server) Start() {
 
 	go s.handleMessages()
 	http.HandleFunc("/api/ws", s.handleConnections)
-	http.HandleFunc("/api/channels", s.handleChannels)
+	http.Handle("/api/channel", corsHandler(http.HandlerFunc(s.handleChannel)))
+
 
 	err := http.ListenAndServe(":8000", nil)
 	if err != nil {
@@ -53,8 +56,16 @@ func (s *Server) Start() {
 	}
 }
 
-func (s *Server) handleChannels(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleChannel(w http.ResponseWriter, r *http.Request) {
+	channelIDs := strings.Split(r.URL.Query().Get("channelids"), ",")
 
+	users, err := s.helixClient.GetUsersByUserIds(channelIDs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(users, http.StatusOK, w, r)
 }
 
 func (s *Server) handleConnections(w http.ResponseWriter, r *http.Request) {
@@ -95,4 +106,29 @@ func (s *Server) handleMessages() {
 			}
 		}
 	}
+}
+
+func writeJSON(data interface{}, code int, w http.ResponseWriter, r *http.Request) {
+	js, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(js)
+}
+
+func corsHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET")
+			w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			h.ServeHTTP(w, r)
+		}
+	})
 }

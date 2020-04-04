@@ -1,22 +1,28 @@
 import React from "react";
+import {connect} from "react-redux";
+import ProfilePicture from "./ProfilePicture";
 
-export default class Statistics extends React.Component {
+class Statistics extends React.Component {
     render() {
         const statistics = [];
 
-        const stats = Object.values(this.props.channels);
+        const stats = this.props.channelStats;
         stats.sort((a, b) => {
-            if (a.messagesPerSecond < b.messagesPerSecond) {
+            if (a.msgps < b.msgps) {
                 return 1;
             }
-            if (a.messagesPerSecond > b.messagesPerSecond) {
+            if (a.msgps > b.msgps) {
                 return -1;
             }
             return 0;
         });
 
-        for (const stat of stats) {
-            statistics.push(<li key={stat.channelName}>{stat.channelName}: {stat.messagesPerSecond}</li>)
+        for (const stat of this.props.channelStats) {
+            statistics.push(<li key={stat.id}>
+                <ProfilePicture src={this.props.channels[stat.id]?.profile_image_url}/>
+                <span>{this.props.channels[stat.id]?.display_name ?? ""}</span>
+                <span className={"value"}>{stat.msgps}</span>
+            </li>);
         }
 
         return <ul className="Statistics">
@@ -24,3 +30,7 @@ export default class Statistics extends React.Component {
         </ul>
     }
 }
+
+export default connect(state => ({
+    channels: state.channels,
+}))(Statistics);
