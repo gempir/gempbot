@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Restart=always
 RestartSec=5
-ExecStart=/home/spamchampbot/bot
+ExecStart=/home/spamchampbot/bot/bot --config /etc/spamchamp/bot_config.json
 
 [Install]
 WantedBy=multi-user.target
