@@ -59,10 +59,13 @@ func (b *Broadcaster) startTicker() {
 			message.ChannelStats = append(message.ChannelStats, api.ChannelStat{
 				ID:    channelID,
 				Msgps: total / 10,
+				Msgpm: total * 6,
 			})
 		}
 
-		b.broadcastQueue <- message
+		if len(stats) > 0 {
+			b.broadcastQueue <- message
+		}
 	}
 }
 

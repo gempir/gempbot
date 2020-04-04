@@ -61,3 +61,4 @@ func (b *Bot) initialJoins() {
 		b.twitchClient.Join(channel.Login)
 	}
 }
+

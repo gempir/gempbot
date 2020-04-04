@@ -26,6 +26,7 @@ type BroadcastMessage struct {
 type ChannelStat struct {
 	ID    string `json:"id"`
 	Msgps int    `json:"msgps"`
+	Msgpm int    `json:"msgpm"`
 }
 
 // NewServer create api Server

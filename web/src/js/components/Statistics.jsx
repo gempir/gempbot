@@ -8,10 +8,10 @@ class Statistics extends React.Component {
 
         const stats = this.props.channelStats;
         stats.sort((a, b) => {
-            if (a.msgps < b.msgps) {
+            if (a.value < b.value) {
                 return 1;
             }
-            if (a.msgps > b.msgps) {
+            if (a.value > b.value) {
                 return -1;
             }
             return 0;
@@ -21,7 +21,7 @@ class Statistics extends React.Component {
             statistics.push(<li key={stat.id}>
                 <ProfilePicture src={this.props.channels[stat.id]?.profile_image_url}/>
                 <span>{this.props.channels[stat.id]?.display_name ?? ""}</span>
-                <span className={"value"}>{stat.msgps}</span>
+                <span className={"value"}>{stat.value}</span>
             </li>);
         }
 

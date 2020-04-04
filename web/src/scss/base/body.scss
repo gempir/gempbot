@@ -1,13 +1,23 @@
 body {
     position: relative;
     margin: 0;
-    padding: 0;
+    padding: 10px;
     background: var(--background);
     font-family: Helvetica, Arial, sans-serif;
     height: 100vh;
-    overflow: hidden;
-    position: absolute;
     width: 100%;
 }
 
 
+.Base {
+    display: flex;
+
+    h2 {
+        color: var(--text);
+        margin: 0 0 5px;
+    }
+
+    .MessagesPerSecond {
+        margin-right: 20px;
+    }
+}

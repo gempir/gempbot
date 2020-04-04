@@ -4,6 +4,10 @@
     font-weight: bold;
     list-style-type: none;
     width: 500px;
+    padding: 10px;
+    margin: 0;
+    background: var(--lightBackground);
+    border: 1px solid black;
 
     li {
         display: flex;

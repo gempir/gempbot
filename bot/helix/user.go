@@ -1,7 +1,7 @@
 package helix
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -70,33 +70,47 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 		}
 	}
 
+
 	if len(filteredUserIDs) > 0 {
-		resp, err := c.client.GetUsers(&helixClient.UsersParams{
-			IDs: filteredUserIDs,
-		})
-		if err != nil {
-			return make(map[string]UserData), err
-		}
-		log.Infof("%d GetUsersByUserIds %v", resp.StatusCode, filteredUserIDs)
-		if resp.StatusCode > http.StatusMultipleChoices {
-			return make(map[string]UserData), errors.New("bad helix response")
+		var chunks [][]string
+		for i := 0; i < len(filteredUserIDs); i += 99 {
+			end := i + 99
+
+			if end > len(filteredUserIDs) {
+				end = len(filteredUserIDs)
+			}
+
+			chunks = append(chunks, filteredUserIDs[i:end])
 		}
 
-		for _, user := range resp.Data.Users {
-			data := &UserData{
-				ID:              user.ID,
-				Login:           user.Login,
-				DisplayName:     user.Login,
-				Type:            user.Type,
-				BroadcasterType: user.BroadcasterType,
-				Description:     user.Description,
-				ProfileImageURL: user.ProfileImageURL,
-				OfflineImageURL: user.OfflineImageURL,
-				ViewCount:       user.ViewCount,
-				Email:           user.Email,
+		for _, chunk := range chunks {
+			resp, err := c.client.GetUsers(&helixClient.UsersParams{
+				IDs: chunk,
+			})
+			if err != nil {
+				return make(map[string]UserData), err
 			}
-			userCacheByID[user.ID] = data
-			userCacheByUsername[user.Login] = data
+			log.Infof("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
+			if resp.StatusCode > http.StatusMultipleChoices {
+				return make(map[string]UserData), fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
+			}
+
+			for _, user := range resp.Data.Users {
+				data := &UserData{
+					ID:              user.ID,
+					Login:           user.Login,
+					DisplayName:     user.Login,
+					Type:            user.Type,
+					BroadcasterType: user.BroadcasterType,
+					Description:     user.Description,
+					ProfileImageURL: user.ProfileImageURL,
+					OfflineImageURL: user.OfflineImageURL,
+					ViewCount:       user.ViewCount,
+					Email:           user.Email,
+				}
+				userCacheByID[user.ID] = data
+				userCacheByUsername[user.Login] = data
+			}
 		}
 	}
 
