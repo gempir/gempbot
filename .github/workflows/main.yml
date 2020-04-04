@@ -13,15 +13,11 @@ jobs:
       run: |
         yarn install
         yarn build
-
-    - name: Install Go
-      uses: actions/setup-go@v1
       
     - name: Build Bot
       working-directory: ./bot
       run: |
-        go get ./...
-        go test ./...
+        go get
         go build
 
     - name: Deploy Backend
