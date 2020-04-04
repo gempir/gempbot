@@ -14,10 +14,30 @@ jobs:
       run: |
         yarn install
         yarn build
+
+    - name: Install Go
+      uses: actions/setup-go@v1
+    - name: Test
+        working-directory: ./bot
+        run: go test ./...
+    - name: Build
+        working-directory: ./bot
+        run: go build
+
+    - name: Deploy Backend
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        source: "bot"
+        target: "/home/spamchampbot/"
         
-    - name: Deploy
+    - name: Deploy Frontend
       uses: peaceiris/actions-gh-pages@v2.3.1
       env:
         ACTIONS_DEPLOY_KEY: ${{ secrets.ACCESS_TOKEN }}
         PUBLISH_BRANCH: gh-pages
         PUBLISH_DIR: ./web/public
+

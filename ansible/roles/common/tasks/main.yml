@@ -1,0 +1,48 @@
+---
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400 #One day
+
+- name: Install ufw
+  apt: name=ufw state=present
+
+- name: Allow ssh in UFW
+  ufw: rule=allow port=22 proto=tcp
+
+- name: Allow http in UFW
+  ufw: rule=allow port=80 proto=tcp
+
+- name: Allow https in UFW
+  ufw: rule=allow port=443 proto=tcp
+
+- name: Set firewall default policy
+  ufw: state=enabled policy=reject
+
+- name: Install htop
+  apt: name=htop state=present
+
+- name: Install apt-transport-https
+  apt: name=apt-transport-https state=present
+
+- name: Ensure group "spamchamp" exists
+  group:
+    name: spamchamp
+    state: present
+
+- name: Create spamchampbot user
+  user:
+    name: spamchampbot
+    shell: /bin/bash
+    groups: spamchamp
+    append: yes
+
+- name: Creates directory
+  file:
+    path: /etc/spamchamp
+    state: directory
+    owner: root
+    group: spamchamp
+    mode: 0750

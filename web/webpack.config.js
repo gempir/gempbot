@@ -38,7 +38,7 @@ module.exports = (env, options) => ({
 	plugins: [
 		new webpack.DefinePlugin({
 			'process.env': {
-				'apiBaseUrl': options.mode === 'development' ? '"http://localhost:8035"' : '"https://spampchamp-api.gempir.com"',
+				'apiBaseUrl': options.mode === 'development' ? '"http://localhost:8035"' : '"https://spamchamp-bot.gempir.com"',
 			}
 		}),
 	],

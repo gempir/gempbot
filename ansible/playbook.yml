@@ -1,0 +1,10 @@
+---
+- name: Provision hosts for spamchamp
+  hosts: all
+  remote_user: root
+  
+  roles:
+    - {role: 'common', tags: 'common'}
+    - {role: 'bot', tags: 'bot'}
+    - {role: 'samdoran.caddy', tags: 'caddy'}
+    - {role: 'reverse_proxy_config', tags: 'caddy'}

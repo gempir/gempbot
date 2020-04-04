@@ -1,0 +1,8 @@
+{
+    "username": "justinfan123123",
+    "oauth": "oauthtokenforchat",
+    "admin": "gempir",
+    "channels": ["77829817"],
+    "clientID": "{{ clientId }}",
+    "logLevel": "info"
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=spamchampbot
+After=network.target
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStart=/home/spamchampbot/bot
+
+[Install]
+WantedBy=multi-user.target
