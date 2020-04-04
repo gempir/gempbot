@@ -20,7 +20,7 @@ jobs:
     - name: Build Bot
       working-directory: ./bot
       run: |
-        go get
+        go get ./...
         go test ./...
         go build
 
