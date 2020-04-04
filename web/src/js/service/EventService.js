@@ -1,8 +1,8 @@
 export default class EventService {
-    constructor(callback) {
+    constructor(apiBaseUrl, callback) {
         this.onEvent = callback;
 
-        const socket = new WebSocket("ws://localhost:8000/api/ws");
+        const socket = new WebSocket(`${apiBaseUrl.replace("https://", "wss://").replace("http://", "ws://")}/api/ws`);
 
         socket.onopen = (e) => {
             console.log("[open] Connection established");

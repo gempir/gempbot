@@ -12,7 +12,7 @@ class Base extends React.Component {
     };
 
     componentDidMount() {
-       new EventService(data => {
+       new EventService(this.props.apiBaseUrl, data => {
             this.setState({
                 channelStats: data.channelStats
             });
@@ -34,4 +34,4 @@ class Base extends React.Component {
     }
 }
 
-export default connect(state => ({}))(Base);
+export default connect(state => ({apiBaseUrl: state.apiBaseUrl}))(Base);

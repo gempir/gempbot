@@ -51,7 +51,7 @@ func (s *Server) Start() {
 	http.Handle("/api/channel", corsHandler(http.HandlerFunc(s.handleChannel)))
 
 
-	err := http.ListenAndServe(":8000", nil)
+	err := http.ListenAndServe(":8035", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
