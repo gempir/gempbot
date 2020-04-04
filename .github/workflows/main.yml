@@ -28,16 +28,7 @@ jobs:
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
         source: "bot/bot"
-        target: "/home/spamchampbot/bot"
-
-    - name: Deploy Backend making executable
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
-        script: chmod +x /home/spamchampbot/bot/bot
+        target: "/home/spamchampbot"
 
     - name: Deploy Frontend
       uses: peaceiris/actions-gh-pages@v2.3.1
