@@ -48,9 +48,14 @@ func (b *Broadcaster) startTicker() {
 		}
 
 		for channelID, stat := range stats {
+			rate := stat.messages.Rate()
+			if rate == 0 {
+				continue
+			}
+
 			message.ChannelStats = append(message.ChannelStats, api.ChannelStat{
 				ID:    channelID,
-				Msgps: stat.messages.Rate(),
+				Msgps: rate,
 			})
 		}
 
