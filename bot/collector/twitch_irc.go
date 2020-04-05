@@ -7,6 +7,7 @@ import (
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/bot/config"
 	"github.com/gempir/spamchamp/bot/helix"
+	"github.com/gempir/spamchamp/bot/store"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,11 +18,12 @@ type Bot struct {
 	cfg          *config.Config
 	helixClient  *helix.Client
 	twitchClient *twitch.Client
+	store        *store.Store
 	channels     map[string]helix.UserData
 }
 
 // NewBot create new bot instance
-func NewBot(cfg *config.Config, helixClient *helix.Client, messageQueue chan twitch.PrivateMessage) *Bot {
+func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store, messageQueue chan twitch.PrivateMessage) *Bot {
 	channels, err := helixClient.GetUsersByUserIds(cfg.Channels)
 	if err != nil {
 		log.Fatalf("[collector] failed to load configured channels %s", err.Error())
@@ -31,6 +33,7 @@ func NewBot(cfg *config.Config, helixClient *helix.Client, messageQueue chan twi
 		messageQueue: messageQueue,
 		cfg:          cfg,
 		helixClient:  helixClient,
+		store:        store,
 		channels:     channels,
 	}
 }
@@ -52,6 +55,14 @@ func (b *Bot) Connect() {
 		b.handlePrivateMessage(message)
 	})
 
+	go func() {
+		ticker := time.NewTicker(15 * time.Minute)
+
+		for range ticker.C {
+			b.LoadTopChannelsAndJoin()
+		}
+	}()
+
 	log.Fatal(b.twitchClient.Connect())
 }
 
@@ -60,4 +71,27 @@ func (b *Bot) initialJoins() {
 		log.Info("[collector] joining " + channel.Login)
 		b.twitchClient.Join(channel.Login)
 	}
+}
+
+func (b *Bot) slowlyJoinStoreChannels() {
+	go func() {
+		channels, err := b.helixClient.GetUsersByUserIds(b.store.GetAllChannels())
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		for _, userData := range channels {
+			b.twitchClient.Join(userData.ID)
+			log.Debugf("[collector] slowly joined %s", userData.DisplayName)
+			time.Sleep(time.Second)
+		}
+	}()
+}
+
+func (b *Bot) LoadTopChannelsAndJoin() {
+	log.Info("[collector] fetching top channels and joining")
+	b.store.AddChannels(b.helixClient.GetTopChannels()...)
+
+	b.slowlyJoinStoreChannels()
 }

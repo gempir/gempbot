@@ -74,6 +74,6 @@ type stat struct {
 func newStat(channelName string) stat {
 	return stat{
 		channelName: channelName,
-		messages:    ratecounter.NewRateCounter(1 * time.Second),
+		messages:    ratecounter.NewRateCounter(time.Second),
 	}
 }

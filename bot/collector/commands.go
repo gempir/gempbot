@@ -18,6 +18,9 @@ func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
 		if strings.HasPrefix(message.Message, "!spamchamp join ") {
 			b.handleJoin(message)
 		}
+		if strings.HasPrefix(message.Message, "!spamchamp top") {
+			b.LoadTopChannelsAndJoin()
+		}
 	}
 }
 
@@ -37,5 +40,6 @@ func (b *Bot) handleJoin(message twitch.PrivateMessage) {
 		b.twitchClient.Join(user.Login)
 	}
 	b.cfg.AddChannels(ids...)
+	b.store.AddChannels(ids...)
 	b.twitchClient.Say(message.Channel, fmt.Sprintf("%s, added channels: %v", message.User.DisplayName, ids))
 }

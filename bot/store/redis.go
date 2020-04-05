@@ -9,7 +9,7 @@ type Store struct {
 	redis *redis.Client
 }
 
-func NewStore() Store {
+func NewStore() *Store {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
@@ -22,7 +22,28 @@ func NewStore() Store {
 	}
 	log.Info("[store] connection to redis established")
 
-	return Store{
+	return &Store{
 		redis: client,
 	}
+}
+
+func (s *Store) AddChannels(channelIDs ...string) {
+	for _, id := range channelIDs {
+		_, err := s.redis.HSet("channels", id, "1").Result()
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+	}
+	log.Infof("[store] added %v", channelIDs)
+}
+
+func (s *Store) GetAllChannels() []string {
+	channels, err := s.redis.HKeys("channels").Result()
+	if err != nil {
+		log.Error(err)
+		return []string{}
+	}
+
+	return channels
 }

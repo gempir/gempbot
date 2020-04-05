@@ -20,13 +20,11 @@ func main() {
 	flag.Parse()
 
 	cfg := config.NewConfig(*configFile)
-	_ = store.NewStore()
+	rStore := store.NewStore()
 	helixClient := helix.NewClient(cfg.ClientID)
-	// for _, id := range helixClient.GetTopChannels() {
-	// 	cfg.AddChannels(id)
-	// }
 
-	bot := collector.NewBot(cfg, &helixClient, messageQueue)
+	bot := collector.NewBot(cfg, &helixClient, rStore, messageQueue)
+	bot.LoadTopChannelsAndJoin()
 	server := api.NewServer(cfg, &helixClient, broadcastQueue)
 	broadcaster := stats.NewBroadcaster(messageQueue, broadcastQueue)
 
