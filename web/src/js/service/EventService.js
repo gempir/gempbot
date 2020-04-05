@@ -1,27 +1,25 @@
 export default class EventService {
     constructor(apiBaseUrl, callback) {
-        this.onEvent = callback;
 
-        const socket = new WebSocket(`${apiBaseUrl.replace("https://", "wss://").replace("http://", "ws://")}/api/ws`);
+        function connect() {
+            var ws = new WebSocket(`${apiBaseUrl.replace("https://", "wss://").replace("http://", "ws://")}/api/ws`);
+            
+            ws.onmessage = (event) => {
+                callback(JSON.parse(event.data));
+            };
 
-        socket.onopen = (e) => {
-            console.log("[open] Connection established");
-        };
+            ws.onclose = e => {
+                console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+                setTimeout(connect, 1000);
+            };
 
-        socket.onmessage = (event) => {
-            this.onEvent(JSON.parse(event.data));
-        };
+            ws.onerror = err => {
+                console.error('Socket encountered error: ', err, 'Closing socket');
+                ws.close();
+            };
+        }
 
-        socket.onclose = (event) => {
-            if (event.wasClean) {
-                console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-            } else {
-                console.log('[close] Connection died');
-            }
-        };
-
-        socket.onerror = (error) => {
-            console.error(error);
-        };
+        connect();
     }
 }
+
