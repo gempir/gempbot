@@ -2,10 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/gempir/spamchamp/bot/config"
-	"github.com/gempir/spamchamp/bot/helix"
 	"net/http"
 	"strings"
+
+	"github.com/gempir/spamchamp/bot/config"
+	"github.com/gempir/spamchamp/bot/helix"
 
 	log "github.com/sirupsen/logrus"
 
@@ -25,8 +26,7 @@ type BroadcastMessage struct {
 
 type ChannelStat struct {
 	ID    string `json:"id"`
-	Msgps int    `json:"msgps"`
-	Msgpm int    `json:"msgpm"`
+	Msgps int64  `json:"msgps"`
 }
 
 // NewServer create api Server
@@ -49,7 +49,6 @@ func (s *Server) Start() {
 	go s.handleMessages()
 	http.HandleFunc("/api/ws", s.handleConnections)
 	http.Handle("/api/channel", corsHandler(http.HandlerFunc(s.handleChannel)))
-
 
 	err := http.ListenAndServe(":8035", nil)
 	if err != nil {
@@ -96,7 +95,7 @@ func (s *Server) handleConnections(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleMessages() {
 	for {
 		// Grab the next message from the broadcast channel
-		msg := <- s.broadcastQueue
+		msg := <-s.broadcastQueue
 		// Send it out to every client that is currently connected
 		for client := range clients {
 			err := client.WriteJSON(msg)

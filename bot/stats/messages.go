@@ -1,25 +1,26 @@
 package stats
 
 import (
+	"time"
+
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/bot/api"
+	"github.com/paulbellamy/ratecounter"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 var (
 	stats = map[string]stat{}
 )
 
-
 type Broadcaster struct {
-	messageQueue chan twitch.PrivateMessage
+	messageQueue   chan twitch.PrivateMessage
 	broadcastQueue chan api.BroadcastMessage
 }
 
 func NewBroadcaster(messageQueue chan twitch.PrivateMessage, broadcastQueue chan api.BroadcastMessage) Broadcaster {
 	return Broadcaster{
-		messageQueue: messageQueue,
+		messageQueue:   messageQueue,
 		broadcastQueue: broadcastQueue,
 	}
 }
@@ -34,7 +35,7 @@ func (b *Broadcaster) Start() {
 			stats[message.RoomID] = newStat(message.Channel)
 		}
 
-		stats[message.RoomID].messages[0]++
+		stats[message.RoomID].messages.Incr(1)
 	}
 }
 
@@ -47,19 +48,9 @@ func (b *Broadcaster) startTicker() {
 		}
 
 		for channelID, stat := range stats {
-			ratebucket := stat.messages
-			total := 0
-			for i := len(ratebucket) - 1; i >= 1; i-- {
-				total += ratebucket[i]
-				ratebucket[i] = ratebucket[i-1]
-			}
-			total += ratebucket[0]
-			ratebucket[0] = 0
-
 			message.ChannelStats = append(message.ChannelStats, api.ChannelStat{
 				ID:    channelID,
-				Msgps: total / 10,
-				Msgpm: total * 6,
+				Msgps: stat.messages.Rate(),
 			})
 		}
 
@@ -70,13 +61,14 @@ func (b *Broadcaster) startTicker() {
 }
 
 type stat struct {
-	channelName string
-	messages    []int
+	channelName  string
+	messages     *ratecounter.RateCounter
+	messageCount int
 }
 
 func newStat(channelName string) stat {
 	return stat{
 		channelName: channelName,
-		messages:    []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		messages:    ratecounter.NewRateCounter(1 * time.Second),
 	}
 }

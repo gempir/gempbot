@@ -1,3 +1,6 @@
 spamchamp-bot.gempir.com {
-    proxy / localhost:8035
+    proxy / localhost:8035 {
+        websocket
+        header_upstream -Origin
+    }
 }

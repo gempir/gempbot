@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/bot/api"
 	"github.com/gempir/spamchamp/bot/collector"
@@ -19,15 +20,13 @@ func main() {
 
 	cfg := config.NewConfig(*configFile)
 	helixClient := helix.NewClient(cfg.ClientID)
-	for _, id := range helixClient.GetTopChannels() {
-		cfg.AddChannels(id)
-	}
+	// for _, id := range helixClient.GetTopChannels() {
+	// 	cfg.AddChannels(id)
+	// }
 
 	bot := collector.NewBot(cfg, &helixClient, messageQueue)
 	server := api.NewServer(cfg, &helixClient, broadcastQueue)
 	broadcaster := stats.NewBroadcaster(messageQueue, broadcastQueue)
-
-
 
 	go server.Start()
 	go broadcaster.Start()

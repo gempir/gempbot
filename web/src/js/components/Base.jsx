@@ -26,10 +26,6 @@ class Base extends React.Component {
                 <h2>Messages per Second</h2>
                 <Statistics channelStats={this.state.channelStats.map(stat => ({value: stat.msgps, id: stat.id}))} />
             </div>
-            <div className="MessagesPerMinute">
-                <h2>Messages per Minute</h2>
-                <Statistics channelStats={this.state.channelStats.map(stat => ({value: stat.msgpm, id: stat.id}))} />
-            </div>
         </div>;
     }
 }
