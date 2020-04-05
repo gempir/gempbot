@@ -21,7 +21,8 @@ type Server struct {
 }
 
 type BroadcastMessage struct {
-	ChannelStats []ChannelStat `json:"channelStats"`
+	ChannelStats   []ChannelStat `json:"channelStats"`
+	ActiveChannels int           `json:"activeChannels"`
 }
 
 type ChannelStat struct {

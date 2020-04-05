@@ -21,4 +21,21 @@ body {
     .MessagesPerSecond {
         margin-right: 20px;
     }
+
+    .ActiveChannels {
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-family: monospace;
+        color: var(--text);
+        font-size: 12px;
+        padding: 2px 4px;
+        background: var(--lightBackground);
+        border-right: 1px solid black;
+        border-bottom: 1px solid black;
+
+        &:empty {
+            display: none;
+        }
+    }
 }

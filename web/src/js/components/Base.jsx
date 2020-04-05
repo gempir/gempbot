@@ -9,12 +9,14 @@ class Base extends React.Component {
 
     state = {
         channelStats: [],
+        activeChannels: null,
     };
 
     componentDidMount() {
        new EventService(this.props.apiBaseUrl, data => {
             this.setState({
-                channelStats: data.channelStats
+                activeChannels: data.activeChannels,
+                channelStats: data.channelStats,
             });
             this.props.dispatch(fetchChannels(data.channelStats.map(stat => stat.id)));
         });
@@ -22,6 +24,7 @@ class Base extends React.Component {
 
     render() {
         return <div className={"Base"}>
+            <span className="ActiveChannels">{this.state.activeChannels} channels</span>
             <div className="MessagesPerSecond">
                 <h2>Messages per Second</h2>
                 <Statistics channelStats={this.state.channelStats.map(stat => ({value: stat.msgps, id: stat.id}))} />

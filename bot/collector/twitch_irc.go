@@ -82,7 +82,7 @@ func (b *Bot) slowlyJoinStoreChannels() {
 		}
 
 		for _, userData := range channels {
-			b.twitchClient.Join(userData.ID)
+			b.twitchClient.Join(userData.Login)
 			log.Debugf("[collector] slowly joined %s", userData.DisplayName)
 			time.Sleep(time.Second)
 		}

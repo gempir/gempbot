@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	stats = map[string]stat{}
+	stats          = map[string]stat{}
+	activeChannels = map[string]bool{}
 )
 
 type Broadcaster struct {
@@ -52,12 +53,15 @@ func (b *Broadcaster) startTicker() {
 			if rate == 0 {
 				continue
 			}
+			activeChannels[channelID] = true
 
 			message.ChannelStats = append(message.ChannelStats, api.ChannelStat{
 				ID:    channelID,
 				Msgps: rate,
 			})
 		}
+
+		message.ActiveChannels = len(activeChannels)
 
 		if len(stats) > 0 {
 			b.broadcastQueue <- message
