@@ -9,6 +9,7 @@ import (
 	"github.com/gempir/spamchamp/bot/config"
 	"github.com/gempir/spamchamp/bot/helix"
 	"github.com/gempir/spamchamp/bot/stats"
+	"github.com/gempir/spamchamp/bot/store"
 )
 
 var messageQueue = make(chan twitch.PrivateMessage)
@@ -19,6 +20,7 @@ func main() {
 	flag.Parse()
 
 	cfg := config.NewConfig(*configFile)
+	_ = store.NewStore()
 	helixClient := helix.NewClient(cfg.ClientID)
 	// for _, id := range helixClient.GetTopChannels() {
 	// 	cfg.AddChannels(id)

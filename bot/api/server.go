@@ -51,8 +51,9 @@ func (s *Server) Start() {
 	http.Handle("/api/channel", corsHandler(http.HandlerFunc(s.handleChannel)))
 
 	err := http.ListenAndServe(":8035", nil)
+	log.Info("[api] listening on port :8035")
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		log.Fatal("[api] listenAndServe: ", err)
 	}
 }
 
@@ -83,7 +84,7 @@ func (s *Server) handleConnections(w http.ResponseWriter, r *http.Request) {
 		// Read in a new message as JSON and map it to a Message object
 		err := ws.ReadJSON(&msg)
 		if err != nil {
-			log.Infof("error: %v", err)
+			log.Infof("[api] error: %v", err)
 			delete(clients, ws)
 			break
 		}
@@ -100,7 +101,7 @@ func (s *Server) handleMessages() {
 		for client := range clients {
 			err := client.WriteJSON(msg)
 			if err != nil {
-				log.Errorf("error: %v", err)
+				log.Errorf("[api] error: %v", err)
 				client.Close()
 				delete(clients, client)
 			}

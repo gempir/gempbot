@@ -24,7 +24,7 @@ type Bot struct {
 func NewBot(cfg *config.Config, helixClient *helix.Client, messageQueue chan twitch.PrivateMessage) *Bot {
 	channels, err := helixClient.GetUsersByUserIds(cfg.Channels)
 	if err != nil {
-		log.Fatalf("[bot] failed to load configured channels %s", err.Error())
+		log.Fatalf("[collector] failed to load configured channels %s", err.Error())
 	}
 
 	return &Bot{
@@ -41,9 +41,9 @@ func (b *Bot) Connect() {
 	b.twitchClient = twitch.NewClient(b.cfg.Username, "oauth:"+b.cfg.OAuth)
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
-		log.Info("[bot] joining as anonymous")
+		log.Info("[collector] joining as anonymous")
 	} else {
-		log.Info("[bot] joining as user " + b.cfg.Username)
+		log.Info("[collector] joining as user " + b.cfg.Username)
 	}
 	b.initialJoins()
 
@@ -57,8 +57,7 @@ func (b *Bot) Connect() {
 
 func (b *Bot) initialJoins() {
 	for _, channel := range b.channels {
-		log.Info("[bot] joining " + channel.Login)
+		log.Info("[collector] joining " + channel.Login)
 		b.twitchClient.Join(channel.Login)
 	}
 }
-

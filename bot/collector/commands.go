@@ -33,7 +33,7 @@ func (b *Bot) handleJoin(message twitch.PrivateMessage) {
 	ids := []string{}
 	for _, user := range users {
 		ids = append(ids, user.ID)
-		log.Infof("[bot] joining %s", user.Login)
+		log.Infof("[collector] joining %s", user.Login)
 		b.twitchClient.Join(user.Login)
 	}
 	b.cfg.AddChannels(ids...)

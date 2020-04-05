@@ -70,7 +70,6 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 		}
 	}
 
-
 	if len(filteredUserIDs) > 0 {
 		var chunks [][]string
 		for i := 0; i < len(filteredUserIDs); i += 99 {
@@ -90,7 +89,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 			if err != nil {
 				return make(map[string]UserData), err
 			}
-			log.Infof("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
+			log.Infof("[helix] %d GetUsersByUserIds %v", resp.StatusCode, chunk)
 			if resp.StatusCode > http.StatusMultipleChoices {
 				return make(map[string]UserData), fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
 			}
@@ -141,7 +140,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 			return map[string]UserData{}, err
 		}
 
-		log.Infof("%d GetUsersByUsernames %v", resp.StatusCode, filteredUsernames)
+		log.Infof("[helix] %d GetUsersByUsernames %v", resp.StatusCode, filteredUsernames)
 
 		for _, user := range resp.Data.Users {
 			data := &UserData{
