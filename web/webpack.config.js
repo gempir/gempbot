@@ -1,11 +1,12 @@
 const path = require("path");
 const webpack = require("webpack");
+const fs = require("fs");
 
 module.exports = (env, options) => ({
 	entry: './src/index.jsx',
 	output: {
-		path: path.resolve(__dirname, 'public'),
-		filename: 'bundle.js',
+		path: path.resolve(__dirname, 'public/bundle'),
+		filename: 'bundle.[hash].js',
 		publicPath: "/",
 	},
 	module: {
@@ -41,8 +42,23 @@ module.exports = (env, options) => ({
 				'apiBaseUrl': options.mode === 'development' ? '"http://localhost:8035"' : '"https://spamchamp-bot.gempir.com"',
 			}
 		}),
+		new HashApplier(),
 	],
 	resolve: {
 		extensions: ['.js', '.jsx'],
 	}
 });
+
+class HashApplier {
+	apply(compiler) {
+		compiler.hooks.done.tap('hash-applier', data => {
+			const fileContents = fs.readFileSync(__dirname + "/public/index.html", "utf8");
+			const newFileContents = fileContents.replace(
+				/<!-- webpack-bundle-start -->(.*)?<!-- webpack-bundle-end -->/,
+				`<!-- webpack-bundle-start --><script src="/bundle/bundle.${data.hash}.js"></script><!-- webpack-bundle-end -->`
+			);
+
+			fs.writeFileSync(__dirname + "/public/index.html", newFileContents);
+		});
+	}
+}

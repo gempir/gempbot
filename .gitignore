@@ -20,3 +20,5 @@ web/dist/
 web/public/bundle.js
 web/public/service-worker.js
 web/public/precache-manifest.*.js
+web/public/bundle/*
+!web/public/bundle/.gitkeep
