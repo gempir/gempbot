@@ -2,5 +2,5 @@
   - name: Install Bot Service
     template: src=templates/service.j2 dest=/etc/systemd/system/spamchampbot.service
 
-  - name: Install Bot Service
+  - name: Install Bot Config
     template: src=templates/config.json.j2 dest=/etc/spamchamp/bot_config.json

@@ -1,35 +1,34 @@
-name: Deploy
+name: Provision
 
-on: [push]
+on:
+  issues:
+    types: [opened,edited]
 
 jobs:
-  build:
+  Provision:
+    name: Provision
     runs-on: ubuntu-latest
-    
+    if: startsWith(github.event.issue.title, 'relaybroker')
     steps:
     - uses: actions/checkout@v1
-    - name: Build web
-      working-directory: ./web
-      run: |
-        yarn install
-        yarn build
-      
-    - name: Build Bot
-      working-directory: ./bot
+      with:
+        repository: gempir/relaybroker
+        ref: master
+    - name: Build relaybroker
       run: |
         go get
         go build
 
-    - name: Stop Backend
+    - name: Stop Relaybroker
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
-        script: systemctl stop spamchampbot
+        script: systemctl stop relaybroker
 
-    - name: Deploy Backend
+    - name: Deploy Relaybroker
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.HOST }}
@@ -37,21 +36,14 @@ jobs:
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
         rm: true
-        source: "bot/bot"
-        target: "/home/spamchampbot"
+        source: "relaybroker"
+        target: "/home/relaybroker/"
 
-    - name: Start Backend
+    - name: Start Relaybroker
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
-        script: systemctl start spamchampbot
-
-    - name: Deploy Frontend
-      uses: peaceiris/actions-gh-pages@v2.3.1
-      env:
-        ACTIONS_DEPLOY_KEY: ${{ secrets.ACCESS_TOKEN }}
-        PUBLISH_BRANCH: gh-pages
-        PUBLISH_DIR: ./web/public
+        script: systemctl start relaybroker

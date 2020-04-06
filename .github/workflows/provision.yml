@@ -12,12 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       
+      - name: Set env
+      run: echo ::set-env name=ANSIBLE_PASS::${{secrets.ANSIBLE_PASS}}
+
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v1
-        env:
-          ANSIBLE_PASS: ${{secrets.ANSIBLE_PASS}}
-          middle_name: The
-          Last_Name: Octocat
         with:
           playbook: playbook.yml
           directory: ./ansible
