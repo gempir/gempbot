@@ -6,6 +6,7 @@
   roles:
     - {role: 'common', tags: 'common'}
     - {role: 'geerlingguy.redis', tags: 'redis'}
+    - {role: 'relaybroker', tags: 'relaybroker'}
     - {role: 'bot', tags: 'bot'}
     - {role: 'samdoran.caddy', tags: 'caddy'}
     - {role: 'reverse_proxy_config', tags: 'caddy'}
