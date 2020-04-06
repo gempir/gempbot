@@ -44,7 +44,7 @@ func (b *Bot) Connect() {
 	b.twitchClient = twitch.NewClient(b.cfg.Username, "oauth:"+b.cfg.OAuth)
 	b.twitchClient.IrcAddress = "127.0.0.1:3333"
 	b.twitchClient.TLS = false
-	b.twitchClient.SetIRCToken("LOGIN spamchampbot")
+	// b.twitchClient.SetIRCToken("LOGIN spamchampbot")
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
 		log.Info("[collector] joining as anonymous")
