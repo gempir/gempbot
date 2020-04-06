@@ -49,7 +49,7 @@ func (b *Broadcaster) startTicker() {
 		}
 
 		for channelID, stat := range stats {
-			rate := stat.messages.Rate()
+			rate := stat.messages.Rate() / 60
 			if rate == 0 {
 				continue
 			}
@@ -78,6 +78,6 @@ type stat struct {
 func newStat(channelName string) stat {
 	return stat{
 		channelName: channelName,
-		messages:    ratecounter.NewRateCounter(time.Second),
+		messages:    ratecounter.NewRateCounter(time.Second * 60),
 	}
 }
