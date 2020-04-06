@@ -23,8 +23,11 @@ jobs:
       - name: set ansible config secrets
         env:
           ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_PASS }}
+          SSH_KEY: ${{ secrets.KEY }}
         run: |
           echo "$ANSIBLE_VAULT_PASSWORD" > .ansible-vault-password
+          echo "$SSH_KEY" > .ssh/id
+          chmod 600 .ssh/id
       - name: run playbook
         run: |
           ansible-playbook -i ansible/hosts ansible/playbook.yml --vault-password-file .ansible-vault-password
