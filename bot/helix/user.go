@@ -72,8 +72,8 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 
 	if len(filteredUserIDs) > 0 {
 		var chunks [][]string
-		for i := 0; i < len(filteredUserIDs); i += 99 {
-			end := i + 99
+		for i := 0; i < len(filteredUserIDs); i += 100 {
+			end := i + 100
 
 			if end > len(filteredUserIDs) {
 				end = len(filteredUserIDs)
@@ -116,6 +116,10 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 	result := make(map[string]UserData)
 
 	for _, id := range userIDs {
+		if _, ok := userCacheByID[id]; !ok {
+			log.Errorf("Could not find userId, channel might be banned: %s", id)
+			continue
+		}
 		result[id] = *userCacheByID[id]
 	}
 
