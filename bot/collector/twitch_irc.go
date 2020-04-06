@@ -44,6 +44,7 @@ func (b *Bot) Connect() {
 	b.twitchClient = twitch.NewClient(b.cfg.Username, "oauth:"+b.cfg.OAuth)
 	b.twitchClient.IrcAddress = "127.0.0.1:3333"
 	b.twitchClient.TLS = false
+	b.twitchClient.SetIRCToken("LOGIN spamchampbot")
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
 		log.Info("[collector] joining as anonymous")
@@ -86,7 +87,7 @@ func (b *Bot) slowlyJoinStoreChannels() {
 		for _, userData := range channels {
 			b.twitchClient.Join(userData.Login)
 			log.Debugf("[collector] slowly joined %s", userData.DisplayName)
-			time.Sleep(time.Second)
+			// time.Sleep(time.Second)
 		}
 	}()
 }
