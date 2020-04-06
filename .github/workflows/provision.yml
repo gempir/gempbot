@@ -2,7 +2,7 @@ name: Provision
 
 on:
   issues:
-    types: [opened]
+    types: [opened,edited]
 
 jobs:
   Provision:
@@ -15,7 +15,7 @@ jobs:
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v1
         env:
-          ANSIBLE_PASS: ${{secrests.ANSIBLE_PASS}}
+          ANSIBLE_PASS: ${{secrets.ANSIBLE_PASS}}
           middle_name: The
           Last_Name: Octocat
         with:
