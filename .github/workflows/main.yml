@@ -34,7 +34,7 @@ jobs:
     #     port: ${{ secrets.PORT }}
     #     rm: true
     #     source: "relaybroker"
-    #     target: "/home/spamchampbot/relaybroker"
+    #     target: "/home/relaybroker/"
 
     # - name: Start Relaybroker
     #   uses: appleboy/ssh-action@master

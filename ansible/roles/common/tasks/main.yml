@@ -39,6 +39,13 @@
     groups: spamchamp
     append: yes
 
+- name: Create relaybroker user
+  user:
+    name: relaybroker
+    shell: /bin/bash
+    groups: spamchamp
+    append: yes
+
 - name: Creates directory
   file:
     path: /etc/spamchamp
