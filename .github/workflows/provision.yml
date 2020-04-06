@@ -27,4 +27,4 @@ jobs:
           echo "$ANSIBLE_VAULT_PASSWORD" > .ansible-vault-password
       - name: run playbook
         run: |
-          ansible-playbook -i ansible/hosts ansible/playbook.yml --vault-pass-file .ansible-vault-password
+          ansible-playbook -i ansible/hosts ansible/playbook.yml --vault-password-file .ansible-vault-password
