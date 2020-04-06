@@ -2,7 +2,7 @@ name: Provision
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened,edited]
 
 jobs:
   Provision:
@@ -21,14 +21,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible==2.9.2 requests
 
-      - name: Setup ssh
-        uses: webfactory/ssh-agent@v0.2.0
-        with:
-            ssh-private-key: ${{ secrets.KEY }}
+      - name: Setup SSH Keys and known_hosts
+        env:
+            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            ssh-keygen -R ${{ secrets.HOST }}
+            ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+            ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
 
       - name: set ansible config secrets
         env:
           ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_PASS }}
+          SSH_KEY: ${{ secrets.KEY }}
         run: |
           echo "$ANSIBLE_VAULT_PASSWORD" > .ansible-vault-password
       - name: run playbook
