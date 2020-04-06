@@ -1,22 +1,27 @@
 name: Provision
 
 on:
-  issue_comment:
-    types: [created, edited]
+  issues:
+    types: [opened]
 
 jobs:
   Provision:
     name: Provision
     runs-on: ubuntu-latest
-    if: github.event.comment.body == 'provision'
+    if: startsWith(github.event.issue.title, 'provision')
     steps:
       - uses: actions/checkout@v1
+      
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v1
+        env:
+          ANSIBLE_PASS: ${{secrests.ANSIBLE_PASS}}
+          middle_name: The
+          Last_Name: Octocat
         with:
           playbook: provision.yml
           directory: ./ansible
           key: ${{secrets.KEY}}
           options: |
             --verbose
-            --vault-password-file <(echo ${{secrets.ANSIBLE_PASS}})
+            --vault-password-file ansible/vault_pass.sh
