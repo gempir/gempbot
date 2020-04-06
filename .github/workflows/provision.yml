@@ -19,7 +19,7 @@ jobs:
           middle_name: The
           Last_Name: Octocat
         with:
-          playbook: provision.yml
+          playbook: playbook.yml
           directory: ./ansible
           key: ${{secrets.KEY}}
           options: |
