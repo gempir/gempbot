@@ -23,5 +23,6 @@ jobs:
           directory: ./ansible
           key: ${{secrets.KEY}}
           options: |
+            --inventory hosts
             --verbose
             --vault-password-file vault_pass.sh
