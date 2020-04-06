@@ -24,4 +24,4 @@ jobs:
           key: ${{secrets.KEY}}
           options: |
             --verbose
-            --vault-password-file ansible/vault_pass.sh
+            --vault-password-file vault_pass.sh
