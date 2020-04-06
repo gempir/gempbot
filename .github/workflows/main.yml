@@ -8,9 +8,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: Build relaybroker
       with:
         repository: gempir/relaybroker
+    - name: Build relaybroker
       run: |
         go get
         go build
