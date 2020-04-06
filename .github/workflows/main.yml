@@ -8,6 +8,45 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: Build relaybroker
+      with:
+        repository: gempir/relaybroker
+      run: |
+        go get
+        go build
+
+    - name: Stop Relaybroker
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: systemctl stop relaybroker
+
+    - name: Deploy Relaybroker
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        rm: true
+        source: "relaybroker"
+        target: "/home/spamchampbot/relaybroker"
+
+    - name: Start Relaybroker
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: systemctl start relaybroker
+
+    # spamchamp
+
+    - uses: actions/checkout@v1
     - name: Build web
       working-directory: ./web
       run: |
@@ -55,12 +94,3 @@ jobs:
         ACTIONS_DEPLOY_KEY: ${{ secrets.ACCESS_TOKEN }}
         PUBLISH_BRANCH: gh-pages
         PUBLISH_DIR: ./web/public
-
-    - name: Restart Backend
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
-        script: systemctl restart spamchampbot

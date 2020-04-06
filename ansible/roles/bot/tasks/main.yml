@@ -4,6 +4,3 @@
 
   - name: Install Bot Service
     template: src=templates/config.json.j2 dest=/etc/spamchamp/bot_config.json
-
-  - name: Start Bot Service
-    systemd: state=started name=spamchampbot daemon_reload=yes

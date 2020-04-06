@@ -1,0 +1,3 @@
+---
+  - name: Install Service
+    template: src=templates/service.j2 dest=/etc/systemd/system/relaybroker.service

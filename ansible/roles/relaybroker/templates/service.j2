@@ -1,12 +1,12 @@
 [Unit]
-Description=spamchampbot
+Description=relaybroker
 After=network.target
 StartLimitBurst=10
 
 [Service]
 Restart=always
 RestartSec=5
-ExecStart=/home/spamchampbot/bot/bot --config /etc/spamchamp/bot_config.json
+ExecStart=/home/spamchampbot/relaybroker/relaybroker
 
 [Install]
 WantedBy=multi-user.target

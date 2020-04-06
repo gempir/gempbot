@@ -42,6 +42,8 @@ func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store, m
 func (b *Bot) Connect() {
 	b.startTime = time.Now()
 	b.twitchClient = twitch.NewClient(b.cfg.Username, "oauth:"+b.cfg.OAuth)
+	b.twitchClient.IrcAddress = "127.0.0.1:3333"
+	b.twitchClient.TLS = false
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
 		log.Info("[collector] joining as anonymous")
