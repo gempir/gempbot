@@ -5,8 +5,8 @@ on:
     types: [opened,edited]
 
 jobs:
-  Provision:
-    name: Provision
+  Relaybroker:
+    name: Relaybroker
     runs-on: ubuntu-latest
     if: startsWith(github.event.issue.title, 'relaybroker')
     steps:
