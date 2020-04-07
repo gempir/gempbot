@@ -19,7 +19,8 @@ jobs:
       run: |
         go get
         go build
-        tree ./../
+        ls -lsa ./../
+        ls -lsa .
 
     - name: Stop Relaybroker
       uses: appleboy/ssh-action@master
