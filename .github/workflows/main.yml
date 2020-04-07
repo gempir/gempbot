@@ -46,7 +46,7 @@ jobs:
     - name: Deploy Backend
       working-directory: ./bot
       run: |
-        scp bot ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampbot/
+        scp bot ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampbot
 
     - name: Start Backend
       uses: appleboy/ssh-action@master
