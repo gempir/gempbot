@@ -38,6 +38,14 @@ func (s *Store) AddChannels(channelIDs ...string) {
 	log.Infof("[store] added %v", channelIDs)
 }
 
+func (s *Store) RemoveChannel(channelID string) {
+	_, err := s.redis.HDel("channels", channelID).Result()
+	if err != nil {
+		log.Error(err)
+	}
+	log.Infof("[store] removed %s", channelID)
+}
+
 func (s *Store) GetAllChannels() []string {
 	channels, err := s.redis.HKeys("channels").Result()
 	if err != nil {

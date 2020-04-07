@@ -80,11 +80,20 @@ func (b *Bot) initialJoins() {
 
 func (b *Bot) joinStoreChannels() {
 	go func() {
-		channels, err := b.helixClient.GetUsersByUserIds(b.store.GetAllChannels())
+		allChannelIds := b.store.GetAllChannels()
+		channels, err := b.helixClient.GetUsersByUserIds(allChannelIds)
 		if err != nil {
 			log.Error(err)
 			return
 		}
+
+		go func() {
+			for _, channelID := range allChannelIds {
+				if _, ok := channels[channelID]; !ok {
+					b.store.RemoveChannel(channelID)
+				}
+			}
+		}()
 
 		for _, userData := range channels {
 			if _, ok := b.joined[userData.Login]; !ok {
