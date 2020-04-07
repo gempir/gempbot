@@ -37,7 +37,7 @@ jobs:
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
         rm: true
-        source: "./../relaybroker"
+        source: "relaybroker/relaybroker"
         target: "/home/relaybroker/"
 
     - name: Start Relaybroker
