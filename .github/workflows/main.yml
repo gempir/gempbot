@@ -8,6 +8,20 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+
+    - name: Setup SSH
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        SSH_KEY: ${{ secrets.KEY }}
+      run: |
+        mkdir ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
+        touch ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/id_rsa
+        ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+        ssh-add ~/.ssh/id_rsa
+        ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
     - name: Build web
       working-directory: ./web
       run: |
@@ -30,15 +44,9 @@ jobs:
         script: systemctl stop spamchampbot
 
     - name: Deploy Backend
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
-        rm: true
-        source: "bot/bot"
-        target: "/home/spamchampbot"
+      working-directory: ./bot
+      run: |
+        scp bot ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampbot/
 
     - name: Start Backend
       uses: appleboy/ssh-action@master

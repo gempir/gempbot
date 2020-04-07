@@ -12,6 +12,19 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Setup SSH
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+          SSH_KEY: ${{ secrets.KEY }}
+        run: |
+          mkdir ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          touch ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_rsa
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
@@ -23,22 +36,7 @@ jobs:
 
       - name: set ansible config secrets
         env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
           ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_PASS }}
-          SSH_KEY: ${{ secrets.KEY }}
-        run: |
-          mkdir ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
-          touch ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/id_rsa
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-add ~/.ssh/id_rsa
-          ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-
-      - name: set ansible config secrets
-        env:
-          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_PASS }}
-          SSH_KEY: ${{ secrets.KEY }}
         run: |
           echo "$ANSIBLE_VAULT_PASSWORD" > .ansible-vault-password
       - name: run playbook
