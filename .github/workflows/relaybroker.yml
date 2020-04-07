@@ -19,8 +19,6 @@ jobs:
       run: |
         go get
         go build
-        ls -lsa ./../
-        ls -lsa .
 
     - name: Stop Relaybroker
       uses: appleboy/ssh-action@master
@@ -39,7 +37,7 @@ jobs:
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
         rm: true
-        source: "relaybroker"
+        source: "relaybroker/relaybroker"
         target: "/home/relaybroker/"
 
     - name: Start Relaybroker
