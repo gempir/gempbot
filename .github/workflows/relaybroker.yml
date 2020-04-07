@@ -15,7 +15,7 @@ jobs:
         repository: gempir/relaybroker
         ref: master
     - name: Build relaybroker
-      working-directory: ./relaybroker
+      working-directory: ./../relaybroker
       run: |
         go get
         go build
@@ -37,7 +37,7 @@ jobs:
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
         rm: true
-        source: "./relaybroker/relaybroker"
+        source: "./../relaybroker/relaybroker"
         target: "/home/relaybroker/"
 
     - name: Start Relaybroker
