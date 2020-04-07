@@ -33,6 +33,15 @@ jobs:
           go get
           go build
 
+      - name: Stop Bot
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: systemctl stop spamchampbot
+
       - name: Stop Relaybroker
         uses: appleboy/ssh-action@master
         with:
@@ -55,3 +64,12 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: systemctl start relaybroker
+
+      - name: Start Relaybroker
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: systemctl start spamchampbot
