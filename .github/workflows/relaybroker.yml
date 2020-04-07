@@ -40,15 +40,21 @@ jobs:
       #     source: "../"
       #     target: "/home/relaybroker/"
 
-      - name: Copy folder content recursively to remote
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: relaybroker
-          remote: /home/relaybroker/
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
+      - name: Deploy Relaybroker
+        working-directory: ./../relaybroker
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+          SSH_KEY: ${{ secrets.KEY }}
+        run: |
+          mkdir ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          touch ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_rsa
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+          ls -lsa
+          scp relaybroker ${{ secrets.HOST }}@${{ secrets.HOST }}:/home/relaybroker/
 
       - name: Start Relaybroker
         uses: appleboy/ssh-action@master
