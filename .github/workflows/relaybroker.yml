@@ -54,7 +54,7 @@ jobs:
           ssh-add ~/.ssh/id_rsa
           ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
           ls -lsa
-          scp relaybroker ${{ secrets.HOST }}@${{ secrets.HOST }}:/home/relaybroker/
+          scp relaybroker ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/relaybroker/
 
       - name: Start Relaybroker
         uses: appleboy/ssh-action@master
