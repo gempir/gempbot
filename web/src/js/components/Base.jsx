@@ -1,9 +1,9 @@
 import React from "react";
 import EventService from "../service/EventService";
-import MessageRecords from "./MessageRecords";
 import Statistics from "./Statistics";
-import {connect} from "react-redux";
+import { connect } from "react-redux";
 import fetchChannels from "../actions/fetchChannels";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 
 class Base extends React.Component {
 
@@ -13,7 +13,7 @@ class Base extends React.Component {
     };
 
     componentDidMount() {
-       new EventService(this.props.apiBaseUrl, data => {
+        new EventService(this.props.apiBaseUrl, data => {
             this.setState({
                 activeChannels: data.activeChannels,
                 channelStats: data.channelStats,
@@ -23,14 +23,25 @@ class Base extends React.Component {
     }
 
     render() {
-        return <div className={"Base"}>
-            <span className="ActiveChannels">{this.state.activeChannels} channels</span>
-            <div className="MessagesPerSecond">
-                <h2>Messages per Second</h2>
-                <Statistics channelStats={this.state.channelStats.map(stat => ({value: stat.msgps, id: stat.id}))} />
-            </div>
-        </div>;
+        return (
+            <BrowserRouter>
+                <div className={"Base"}>
+                    <span className="ActiveChannels">{this.state.activeChannels} channels</span>
+                    <Switch>
+                        <Route path="/aiden">
+                            hello Aiden
+                        </Route>
+                        <Route path="/">
+                            <div className="MessagesPerSecond">
+                                <h2>Messages per Second</h2>
+                                <Statistics channelStats={this.state.channelStats.map(stat => ({ value: stat.msgps, id: stat.id }))} />
+                            </div>
+                        </Route>
+                    </Switch>
+                </div>
+            </BrowserRouter>
+        );
     }
 }
 
-export default connect(state => ({apiBaseUrl: state.apiBaseUrl}))(Base);
+export default connect(state => ({ apiBaseUrl: state.apiBaseUrl }))(Base);
