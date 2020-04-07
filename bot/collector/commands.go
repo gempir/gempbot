@@ -39,7 +39,7 @@ func (b *Bot) handleJoin(message twitch.PrivateMessage) {
 		log.Infof("[collector] joining %s", user.Login)
 		b.twitchClient.Join(user.Login)
 	}
-	b.cfg.AddChannels(ids...)
 	b.store.AddChannels(ids...)
+	b.joinStoreChannels()
 	b.twitchClient.Say(message.Channel, fmt.Sprintf("%s, added channels: %v", message.User.DisplayName, ids))
 }

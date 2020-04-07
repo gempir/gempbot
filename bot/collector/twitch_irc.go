@@ -20,6 +20,7 @@ type Bot struct {
 	twitchClient *twitch.Client
 	store        *store.Store
 	channels     map[string]helix.UserData
+	joined       map[string]bool
 }
 
 // NewBot create new bot instance
@@ -35,6 +36,7 @@ func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store, m
 		helixClient:  helixClient,
 		store:        store,
 		channels:     channels,
+		joined:       map[string]bool{},
 	}
 }
 
@@ -76,7 +78,7 @@ func (b *Bot) initialJoins() {
 	}
 }
 
-func (b *Bot) slowlyJoinStoreChannels() {
+func (b *Bot) joinStoreChannels() {
 	go func() {
 		channels, err := b.helixClient.GetUsersByUserIds(b.store.GetAllChannels())
 		if err != nil {
@@ -85,8 +87,11 @@ func (b *Bot) slowlyJoinStoreChannels() {
 		}
 
 		for _, userData := range channels {
-			b.twitchClient.Join(userData.Login)
-			log.Debugf("[collector] joined %s", userData.DisplayName)
+			if _, ok := b.joined[userData.Login]; !ok {
+				b.joined[userData.Login] = true
+				b.twitchClient.Join(userData.Login)
+				log.Debugf("[collector] joined %s", userData.DisplayName)
+			}
 		}
 	}()
 }
@@ -95,5 +100,5 @@ func (b *Bot) LoadTopChannelsAndJoin() {
 	log.Info("[collector] fetching top channels and joining")
 	b.store.AddChannels(b.helixClient.GetTopChannels()...)
 
-	b.slowlyJoinStoreChannels()
+	b.joinStoreChannels()
 }
