@@ -4,11 +4,13 @@ import Statistics from "./Statistics";
 import { connect } from "react-redux";
 import fetchChannels from "../actions/fetchChannels";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
+import Record from "./Record";
 
 class Base extends React.Component {
 
     state = {
         channelStats: [],
+        records: [],
         activeChannels: null,
     };
 
@@ -16,6 +18,7 @@ class Base extends React.Component {
         new EventService(this.props.apiBaseUrl, data => {
             this.setState({
                 activeChannels: data.activeChannels,
+                records: data.records,
                 channelStats: data.channelStats,
             });
             this.props.dispatch(fetchChannels(data.channelStats.map(stat => stat.id)));
@@ -36,6 +39,7 @@ class Base extends React.Component {
                                 <h2>Messages per Second</h2>
                                 <Statistics channelStats={this.state.channelStats.map(stat => ({ value: stat.msgps, id: stat.id }))} />
                             </div>
+                            {this.state.records.map(record => <Record record={record} />)}
                         </Route>
                     </Switch>
                 </div>

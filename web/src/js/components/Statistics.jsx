@@ -25,9 +25,9 @@ class Statistics extends React.Component {
             </li>);
         }
 
-        return <ul className="Statistics">
+        return <ol className="Statistics">
             {statistics}
-        </ul>
+        </ol>
     }
 }
 

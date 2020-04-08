@@ -22,7 +22,18 @@ type Server struct {
 
 type BroadcastMessage struct {
 	ChannelStats   []ChannelStat `json:"channelStats"`
+	Records        []Record      `json:"records"`
 	ActiveChannels int           `json:"activeChannels"`
+}
+
+type Record struct {
+	Title  string  `json:"title"`
+	Scores []Score `json:"scores"`
+}
+
+type Score struct {
+	ID    string  `json:"id"`
+	Score float64 `json:"score"`
 }
 
 type ChannelStat struct {

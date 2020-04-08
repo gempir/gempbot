@@ -27,6 +27,28 @@ func NewStore() *Store {
 	}
 }
 
+func (s *Store) UpdateMsgps(channelID string, msgps int64) {
+	s.redis.ZAdd("channel:msgps", &redis.Z{Score: float64(msgps), Member: channelID})
+}
+
+func (s *Store) GetMsgps(channelID string) float64 {
+	score, err := s.redis.ZScore("channel:msgps", channelID).Result()
+	if err != nil {
+		return 0
+	}
+
+	return score
+}
+
+func (s *Store) GetMsgpsScores() []redis.Z {
+	scores, err := s.redis.ZRevRangeWithScores("channel:msgps", 0, 9).Result()
+	if err != nil {
+		return []redis.Z{}
+	}
+
+	return scores
+}
+
 func (s *Store) AddChannels(channelIDs ...string) {
 	for _, id := range channelIDs {
 		_, err := s.redis.HSet("channels", id, "1").Result()
