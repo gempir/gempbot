@@ -113,10 +113,15 @@ func (s *Store) GetTopWords() map[string]float64 {
 	return wordcloudWords
 }
 
-func (s *Store) TickDownWord(word string) {
-	_, err := s.redis.ZIncrBy("wordcloud", -1, word).Result()
-	if err != nil {
-		log.Error(err)
+func (s *Store) TickDownAll() {
+	_, err := s.redis.Eval(`
+	local zsetMembers = redis.call('zrange', KEYS[1], '0', '-1') 
+	for k,member in pairs(zsetMembers) do 
+		redis.call('zincrby', KEYS[1], -1, member) 
+	end`,
+		[]string{"wordcloud"}).Result()
+	if err != nil && err.Error() != "redis: nil" {
+		log.Error(err.Error())
 	}
 }
 
