@@ -36,9 +36,13 @@ class Base extends React.Component {
                         </Route>
                         <Route path="/">
                             {this.state.records.map(record => <Record record={record} key={record.title} />)}
-                            <div className="WordCloud">
-                                <ReactWordcloud words={this.state.wordcloudWords} options={{deterministic: true}}/>
-                            </div>
+                            {this.state.wordcloudWords.length > 0 && 
+                            <div className="Record">
+                                <h2>Wordcloud</h2>
+                                <div className="WordCloud">
+                                    <ReactWordcloud words={this.state.wordcloudWords} options={{ deterministic: true, fontSizes: [10, 40], enableTooltip: false, transitionDuration: 250, fontFamily: "monospaced"}} />
+                                </div>
+                            </div>}
                         </Route>
                     </Switch>
                 </div>

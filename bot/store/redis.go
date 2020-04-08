@@ -1,7 +1,7 @@
 package store
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/go-redis/redis/v7"
 	log "github.com/sirupsen/logrus"
@@ -69,7 +69,7 @@ type cloudWord struct {
 
 func (s *Store) AddToWordcloud(words ...string) {
 	for _, word := range words {
-		_, err := s.redis.HIncrBy("wordcloud", word, 1).Result()
+		_, err := s.redis.ZIncrBy("wordcloud", 1, word).Result()
 		if err != nil {
 			log.Error(err)
 			continue
@@ -77,32 +77,44 @@ func (s *Store) AddToWordcloud(words ...string) {
 	}
 }
 
-func (s *Store) GetEntireWordcloud() map[string]int {
-	words, err := s.redis.HGetAll("wordcloud").Result()
+func (s *Store) GetEntireWordcloud() map[string]float64 {
+	words, err := s.redis.ZRangeWithScores("wordcloud", 0, -1).Result()
 	if err != nil {
 		log.Error(err)
-		return map[string]int{}
+		return map[string]float64{}
 	}
 
-	wordcloudWords := map[string]int{}
-	for word, value := range words {
-		res, err := strconv.Atoi(value)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
+	wordcloudWords := map[string]float64{}
+	for _, value := range words {
+		word := fmt.Sprintf("%v", value.Member)
 
-		wordcloudWords[word] = res
-		if res == 0 {
-			s.redis.HDel("wordcloud", word)
+		wordcloudWords[word] = value.Score
+		if value.Score == 0 {
+			s.redis.ZRem("wordcloud")
 		}
 	}
 
 	return wordcloudWords
 }
 
+func (s *Store) GetTopWords() map[string]float64 {
+	words, err := s.redis.ZRevRangeWithScores("wordcloud", 0, 49).Result()
+	if err != nil {
+		log.Error(err)
+		return map[string]float64{}
+	}
+
+	wordcloudWords := map[string]float64{}
+	for _, value := range words {
+		word := fmt.Sprintf("%v", value.Member)
+		wordcloudWords[word] = value.Score
+	}
+
+	return wordcloudWords
+}
+
 func (s *Store) TickDownWord(word string) {
-	_, err := s.redis.HIncrBy("wordcloud", word, -1).Result()
+	_, err := s.redis.ZIncrBy("wordcloud", -1, word).Result()
 	if err != nil {
 		log.Error(err)
 	}

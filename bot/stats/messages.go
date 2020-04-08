@@ -59,9 +59,11 @@ func (b *Broadcaster) startTicker() {
 			Scores: []api.Score{},
 		}
 
-		for word, value := range b.store.GetEntireWordcloud() {
+		for word := range b.store.GetEntireWordcloud() {
 			b.store.TickDownWord(word)
+		}
 
+		for word, value := range b.store.GetTopWords() {
 			message.WordcloudWords = append(message.WordcloudWords, api.WordcloudWord{Text: word, Value: value})
 		}
 

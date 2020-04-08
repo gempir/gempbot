@@ -31,7 +31,13 @@ body {
     }
 
     .WordCloud {
-        width: 200px;
-        height: 200px;
+        width: 500px;
+        height: 370px;
+        padding: 10px;
+        margin: 0;
+        margin-right: 15px;
+        background: var(--lightBackground);
+        border: 1px solid var(--lightBorder);
+        border-radius: 3px;
     }
 }

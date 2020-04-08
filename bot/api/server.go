@@ -28,8 +28,8 @@ type BroadcastMessage struct {
 }
 
 type WordcloudWord struct {
-	Text  string `json:"text"`
-	Value int    `json:"value"`
+	Text  string  `json:"text"`
+	Value float64 `json:"value"`
 }
 
 type Record struct {
