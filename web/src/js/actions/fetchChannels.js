@@ -31,8 +31,8 @@ export default function (channelIds) {
                 dispatch(addChannels(json)).then(() => persistState(getState()));
 
                 resolve();
-            }).catch(() => {
-                reject();
+            }).catch(err => {
+                reject(err);
             });
         });
     };

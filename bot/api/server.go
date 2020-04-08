@@ -22,8 +22,14 @@ type Server struct {
 }
 
 type BroadcastMessage struct {
-	Records        []Record `json:"records"`
-	ActiveChannels int      `json:"activeChannels"`
+	Records        []Record        `json:"records"`
+	WordcloudWords []WordcloudWord `json:"wordcloudWords"`
+	ActiveChannels int             `json:"activeChannels"`
+}
+
+type WordcloudWord struct {
+	Text  string `json:"text"`
+	Value int    `json:"value"`
 }
 
 type Record struct {

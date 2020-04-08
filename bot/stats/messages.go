@@ -34,6 +34,7 @@ func (b *Broadcaster) Start() {
 	log.Info("[stats] starting stats collector")
 
 	go b.startTicker()
+	go b.worldcloudMessageHandler()
 
 	for message := range b.messageQueue {
 		if _, ok := stats[message.RoomID]; !ok {
@@ -49,12 +50,19 @@ func (b *Broadcaster) startTicker() {
 
 	for range ticker.C {
 		message := api.BroadcastMessage{
-			Records: []api.Record{},
+			Records:        []api.Record{},
+			WordcloudWords: []api.WordcloudWord{},
 		}
 
 		msgps := api.Record{
 			Title:  "Current messages/s",
 			Scores: []api.Score{},
+		}
+
+		for word, value := range b.store.GetEntireWordcloud() {
+			b.store.TickDownWord(word)
+
+			message.WordcloudWords = append(message.WordcloudWords, api.WordcloudWord{Text: word, Value: value})
 		}
 
 		for channelID, stat := range stats {
@@ -77,7 +85,11 @@ func (b *Broadcaster) startTicker() {
 			scores = append(scores, api.Score{ID: fmt.Sprintf("%v", z.Member), Score: z.Score})
 		}
 
-		msgps.Scores = msgps.GetScoresSorted()[0:10]
+		maxLen := 10
+		if len(msgps.Scores) < 10 {
+			maxLen = len(msgps.Scores)
+		}
+		msgps.Scores = msgps.GetScoresSorted()[0:maxLen]
 		message.Records = append(message.Records, msgps)
 
 		message.Records = append(message.Records, api.Record{
@@ -87,9 +99,7 @@ func (b *Broadcaster) startTicker() {
 
 		message.ActiveChannels = len(activeChannels)
 
-		if len(stats) > 0 {
-			b.broadcastQueue <- message
-		}
+		b.broadcastQueue <- message
 	}
 }
 

@@ -1,6 +1,8 @@
 package store
 
 import (
+	"strconv"
+
 	"github.com/go-redis/redis/v7"
 	log "github.com/sirupsen/logrus"
 )
@@ -58,6 +60,52 @@ func (s *Store) AddChannels(channelIDs ...string) {
 		}
 	}
 	log.Infof("[store] added %v", channelIDs)
+}
+
+type cloudWord struct {
+	Word string
+	Add  int64
+}
+
+func (s *Store) AddToWordcloud(words ...string) {
+	for _, word := range words {
+		_, err := s.redis.HIncrBy("wordcloud", word, 1).Result()
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+	}
+}
+
+func (s *Store) GetEntireWordcloud() map[string]int {
+	words, err := s.redis.HGetAll("wordcloud").Result()
+	if err != nil {
+		log.Error(err)
+		return map[string]int{}
+	}
+
+	wordcloudWords := map[string]int{}
+	for word, value := range words {
+		res, err := strconv.Atoi(value)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		wordcloudWords[word] = res
+		if res == 0 {
+			s.redis.HDel("wordcloud", word)
+		}
+	}
+
+	return wordcloudWords
+}
+
+func (s *Store) TickDownWord(word string) {
+	_, err := s.redis.HIncrBy("wordcloud", word, -1).Result()
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func (s *Store) RemoveChannel(channelID string) {
