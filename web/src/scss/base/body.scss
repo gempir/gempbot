@@ -22,8 +22,8 @@ body {
         font-size: 12px;
         padding: 2px 4px;
         background: var(--lightBackground);
-        border-right: 1px solid black;
-        border-bottom: 1px solid black;
+        border-right: 1px solid var(--lightBorder);
+        border-bottom: 1px solid var(--lightBorder);
 
         &:empty {
             display: none;

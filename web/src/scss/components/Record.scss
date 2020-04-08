@@ -13,7 +13,8 @@
         margin: 0;
         margin-right: 15px;
         background: var(--lightBackground);
-        border: 1px solid black;
+        border: 1px solid var(--lightBorder);
+        border-radius: 3px;
 
         li {
             display: flex;
