@@ -112,7 +112,6 @@ func (s *Store) GetTopWords() map[string]float64 {
 
 	return wordcloudWords
 }
-
 func (s *Store) TickDownAll() {
 	_, err := s.redis.Eval(`
 	local zsetMembers = redis.call('zrange', KEYS[1], '0', '-1') 
