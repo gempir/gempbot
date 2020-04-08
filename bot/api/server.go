@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/gempir/spamchamp/bot/config"
@@ -21,9 +22,8 @@ type Server struct {
 }
 
 type BroadcastMessage struct {
-	ChannelStats   []ChannelStat `json:"channelStats"`
-	Records        []Record      `json:"records"`
-	ActiveChannels int           `json:"activeChannels"`
+	Records        []Record `json:"records"`
+	ActiveChannels int      `json:"activeChannels"`
 }
 
 type Record struct {
@@ -36,9 +36,12 @@ type Score struct {
 	Score float64 `json:"score"`
 }
 
-type ChannelStat struct {
-	ID    string `json:"id"`
-	Msgps int64  `json:"msgps"`
+func (s *Record) GetScoresSorted() []Score {
+	scores := s.Scores
+	sort.SliceStable(scores, func(i, j int) bool {
+		return scores[i].Score > scores[j].Score
+	})
+	return scores
 }
 
 // NewServer create api Server

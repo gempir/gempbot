@@ -22,6 +22,7 @@ module.exports = (env, options) => {
 			filename: options.mode === "production" ? 'bundle.[hash].js' : "bundle.js",
 			publicPath: "/",
 		},
+		devtool: 'eval-source-map',
 		module: {
 			rules: [
 				{

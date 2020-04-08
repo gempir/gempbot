@@ -49,8 +49,12 @@ func (b *Broadcaster) startTicker() {
 
 	for range ticker.C {
 		message := api.BroadcastMessage{
-			ChannelStats: []api.ChannelStat{},
-			Records:      []api.Record{},
+			Records: []api.Record{},
+		}
+
+		msgps := api.Record{
+			Title:  "Current messages/s",
+			Scores: []api.Score{},
 		}
 
 		for channelID, stat := range stats {
@@ -65,10 +69,7 @@ func (b *Broadcaster) startTicker() {
 				b.store.UpdateMsgps(channelID, rate)
 			}
 
-			message.ChannelStats = append(message.ChannelStats, api.ChannelStat{
-				ID:    channelID,
-				Msgps: rate,
-			})
+			msgps.Scores = append(msgps.Scores, api.Score{ID: channelID, Score: float64(rate)})
 		}
 
 		scores := []api.Score{}
@@ -76,8 +77,11 @@ func (b *Broadcaster) startTicker() {
 			scores = append(scores, api.Score{ID: fmt.Sprintf("%v", z.Member), Score: z.Score})
 		}
 
+		msgps.Scores = msgps.GetScoresSorted()[0:10]
+		message.Records = append(message.Records, msgps)
+
 		message.Records = append(message.Records, api.Record{
-			Title:  "Records: messages/s",
+			Title:  "Record messages/s",
 			Scores: scores,
 		})
 

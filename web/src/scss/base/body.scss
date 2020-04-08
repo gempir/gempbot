@@ -13,15 +13,6 @@ body {
 .Base {
     display: flex;
 
-    h2 {
-        color: var(--text);
-        margin: 0 0 5px;
-    }
-
-    .MessagesPerSecond {
-        margin-right: 20px;
-    }
-
     .ActiveChannels {
         position: absolute;
         left: 0;
