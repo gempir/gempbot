@@ -38,7 +38,6 @@ func (b *Broadcaster) Start() {
 
 	for message := range b.messageQueue {
 		if message.ID == "28b511cc-43b3-44b7-a605-230aadbb2f9b" {
-			log.Info(message.Message)
 			var err error
 			joinedChannels, err = strconv.Atoi(message.Message)
 			if err != nil {
