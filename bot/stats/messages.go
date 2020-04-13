@@ -2,6 +2,7 @@ package stats
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
@@ -13,7 +14,7 @@ import (
 
 var (
 	stats          = map[string]stat{}
-	activeChannels = map[string]bool{}
+	joinedChannels = 0
 )
 
 type Broadcaster struct {
@@ -36,6 +37,15 @@ func (b *Broadcaster) Start() {
 	go b.startTicker()
 
 	for message := range b.messageQueue {
+		if message.ID == "28b511cc-43b3-44b7-a605-230aadbb2f9b" {
+			log.Info(message.Message)
+			var err error
+			joinedChannels, err = strconv.Atoi(message.Message)
+			if err != nil {
+				log.Errorf("Failed to parse relaybroker message: %s", err.Error())
+			}
+			continue
+		}
 		if _, ok := stats[message.RoomID]; !ok {
 			stats[message.RoomID] = newStat(message.Channel)
 		}
@@ -62,7 +72,6 @@ func (b *Broadcaster) startTicker() {
 			if rate == 0 {
 				continue
 			}
-			activeChannels[channelID] = true
 
 			score := b.store.GetMsgps(channelID)
 			if float64(rate) > score {
@@ -89,7 +98,7 @@ func (b *Broadcaster) startTicker() {
 			Scores: scores,
 		})
 
-		message.ActiveChannels = len(activeChannels)
+		message.JoinedChannels = joinedChannels
 
 		b.broadcastQueue <- message
 	}

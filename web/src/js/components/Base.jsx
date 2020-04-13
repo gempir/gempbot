@@ -3,20 +3,19 @@ import EventService from "../service/EventService";
 import { connect } from "react-redux";
 import fetchChannels from "../actions/fetchChannels";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import ReactWordcloud from "react-wordcloud";
 import Record from "./Record";
 
 class Base extends React.Component {
 
     state = {
-        activeChannels: null,
+        joinedChannels: null,
         records: [],
     };
 
     componentDidMount() {
         new EventService(this.props.apiBaseUrl, data => {
             this.setState({
-                activeChannels: data.activeChannels,
+                joinedChannels: data.joinedChannels,
                 records: data.records,
             });
             this.props.dispatch(fetchChannels(new Set(data.records.map(record => record.scores).flat().map(score => score.id))));
@@ -27,7 +26,7 @@ class Base extends React.Component {
         return (
             <BrowserRouter>
                 <div className={"Base"}>
-                    <span className="ActiveChannels">{this.state.activeChannels} channels</span>
+                    <span className="JoinedChannels">{this.state.joinedChannels} channels</span>
                     <Switch>
                         <Route path="/aiden">
                             hello Aiden
