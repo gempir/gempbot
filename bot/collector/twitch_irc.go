@@ -105,6 +105,22 @@ func (b *Bot) joinStoreChannels() {
 	}()
 }
 
+func (b *Bot) SaveAndJoinChannel(channelName string) {
+	users, err := b.helixClient.GetUsersByUsernames([]string{channelName})
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	userids := []string{}
+	for _, channel := range users {
+		userids = append(userids, channel.ID)
+	}
+
+	b.store.AddChannels(userids...)
+	b.joinStoreChannels()
+}
+
 func (b *Bot) LoadTopChannelsAndJoin() {
 	log.Info("[collector] fetching top channels and joining")
 	b.store.AddChannels(b.helixClient.GetTopChannels()...)

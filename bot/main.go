@@ -26,7 +26,7 @@ func main() {
 	bot := collector.NewBot(cfg, &helixClient, rStore, messageQueue)
 	bot.LoadTopChannelsAndJoin()
 	server := api.NewServer(cfg, &helixClient, broadcastQueue)
-	broadcaster := stats.NewBroadcaster(messageQueue, broadcastQueue, rStore)
+	broadcaster := stats.NewBroadcaster(messageQueue, broadcastQueue, rStore, bot)
 
 	go server.Start()
 	go broadcaster.Start()
