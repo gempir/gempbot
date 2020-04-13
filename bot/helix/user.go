@@ -145,6 +145,9 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 		}
 
 		log.Infof("[helix] %d GetUsersByUsernames %v", resp.StatusCode, filteredUsernames)
+		if resp.StatusCode > http.StatusMultipleChoices {
+			return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
+		}
 
 		for _, user := range resp.Data.Users {
 			data := &UserData{
