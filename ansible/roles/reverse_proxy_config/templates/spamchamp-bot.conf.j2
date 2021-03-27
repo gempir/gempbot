@@ -1,6 +1,5 @@
 {{ ws_host }} {
-    proxy / localhost:8035 {
-        websocket
-        header_upstream -Origin
+    reverse_proxy / localhost:8035 {
+        header_up -Origin
     }
 }
