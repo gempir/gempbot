@@ -7,7 +7,6 @@ jobs:
   Relaybroker:
     name: Relaybroker
     runs-on: ubuntu-latest
-    if: startsWith(github.event.issue.title, 'relaybroker')
     steps:
       - name: Setup SSH
         env:
