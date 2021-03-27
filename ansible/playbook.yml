@@ -4,9 +4,9 @@
   remote_user: root
   
   roles:
-    - {role: 'common', tags: 'common'}
-    - {role: 'geerlingguy.redis', tags: 'redis'}
-    - {role: 'relaybroker', tags: 'relaybroker'}
-    - {role: 'bot', tags: 'bot'}
-    - {role: 'caddy-ansible', tags: 'caddy'}
-    - {role: 'reverse_proxy_config', tags: 'caddy'}
+    - {role: 'common', tags: ['common']}
+    - {role: 'geerlingguy.redis', tags: ['redis']}
+    - {role: 'relaybroker', tags: ['relaybroker']}
+    - {role: 'bot', tags: ['bot']}
+    - {role: 'caddy-ansible', tags: ['caddy']}
+    - {role: 'reverse_proxy_config', tags: ['caddy']}
