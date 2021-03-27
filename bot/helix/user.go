@@ -31,7 +31,8 @@ func init() {
 // NewClient Create helix client
 func NewClient(clientID, clientSecret string) Client {
 	client, err := helixClient.NewClient(&helixClient.Options{
-		ClientID: clientID,
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
 	})
 	if err != nil {
 		panic(err)
