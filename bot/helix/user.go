@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	helixClient "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
@@ -11,9 +12,10 @@ import (
 
 // Client wrapper for helix
 type Client struct {
-	clientID   string
-	client     *helixClient.Client
-	httpClient *http.Client
+	clientID     string
+	clientSecret string
+	client       *helixClient.Client
+	httpClient   *http.Client
 }
 
 var (
@@ -27,7 +29,7 @@ func init() {
 }
 
 // NewClient Create helix client
-func NewClient(clientID string) Client {
+func NewClient(clientID, clientSecret string) Client {
 	client, err := helixClient.NewClient(&helixClient.Options{
 		ClientID: clientID,
 	})
@@ -35,10 +37,34 @@ func NewClient(clientID string) Client {
 		panic(err)
 	}
 
+	resp, err := client.RequestAppAccessToken([]string{})
+	if err != nil {
+		panic(err)
+	}
+	log.Infof("Requested access token, response: %d, expires in: %d", resp.StatusCode, resp.Data.ExpiresIn)
+	client.SetAppAccessToken(resp.Data.AccessToken)
+
 	return Client{
-		clientID:   clientID,
-		client:     client,
-		httpClient: &http.Client{},
+		clientID:     clientID,
+		clientSecret: clientSecret,
+		client:       client,
+		httpClient:   &http.Client{},
+	}
+}
+
+// StartRefreshTokenRoutine refresh our token
+func (c *Client) StartRefreshTokenRoutine() {
+	ticker := time.NewTicker(24 * time.Hour)
+
+	for range ticker.C {
+		resp, err := c.client.RequestAppAccessToken([]string{})
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		log.Infof("Requested access token from routine, response: %d, expires in: %d", resp.StatusCode, resp.Data.ExpiresIn)
+
+		c.client.SetAppAccessToken(resp.Data.AccessToken)
 	}
 }
 

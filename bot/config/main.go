@@ -19,7 +19,8 @@ type Config struct {
 	ListenAddress         string   `json:"listenAddress"`
 	Admin                 string   `json:"admin"`
 	Channels              []string `json:"channels"`
-	ClientID              string   `json:"clientID"`
+	ClientID              string   `json:"clientId"`
+	ClientSecret          string   `json:"clientSecret"`
 	LogLevel              string   `json:"logLevel"`
 }
 
