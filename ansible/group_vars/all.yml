@@ -1,5 +1,6 @@
 ---
 web_host: spamchamp.gempir.com
+ws_host: spamchamp-ws.gempir.com
 email: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           38323965663366633439336638303432623035646562323766383533376433393866613966623963

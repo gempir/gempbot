@@ -8,5 +8,5 @@
     - {role: 'geerlingguy.redis', tags: 'redis'}
     - {role: 'relaybroker', tags: 'relaybroker'}
     - {role: 'bot', tags: 'bot'}
-    - {role: 'samdoran.caddy', tags: 'caddy'}
+    - {role: 'caddy-ansible', tags: 'caddy'}
     - {role: 'reverse_proxy_config', tags: 'caddy'}
