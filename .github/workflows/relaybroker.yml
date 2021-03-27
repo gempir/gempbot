@@ -1,8 +1,7 @@
 name: Relaybroker
 
 on:
-  issues:
-    types: [opened, edited]
+  workflow_dispatch:
 
 jobs:
   Relaybroker:
