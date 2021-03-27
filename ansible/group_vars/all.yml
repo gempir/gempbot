@@ -1,5 +1,4 @@
 ---
-bot_host: spamchamp-bot.gempir.com
 web_host: spamchamp.gempir.com
 email: !vault |
           $ANSIBLE_VAULT;1.1;AES256
