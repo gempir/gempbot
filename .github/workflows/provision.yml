@@ -1,14 +1,12 @@
 name: Provision
 
-on:
-  issues:
-    types: [opened,edited]
+on: 
+  workflow_dispatch:
 
 jobs:
   Provision:
     name: Provision
     runs-on: ubuntu-latest
-    if: startsWith(github.event.issue.title, 'provision')
     steps:
       - uses: actions/checkout@v1
 
