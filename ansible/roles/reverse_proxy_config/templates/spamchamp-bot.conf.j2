@@ -1,5 +1,3 @@
 {{ ws_host }} {
-    reverse_proxy / localhost:8035 {
-        header_up -Origin
-    }
+    reverse_proxy 127.0.0.1:8035
 }
