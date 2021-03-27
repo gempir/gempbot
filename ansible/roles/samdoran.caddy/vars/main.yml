@@ -1,4 +1,4 @@
-caddy_url_values:
+_caddy_url_values:
   platform:
     linux: linux
     macosx: darwin
@@ -7,17 +7,14 @@ caddy_url_values:
     i386: '386'
     armv7l: arm7
 
-caddy_service_files:
-  systemd:
-    src: caddy.service.systemd.j2
-    dest: /lib/systemd/system/caddy.service
-  upstart:
-    src: caddy.conf.upstart.j2
-    dest: /etc/init/caddy.conf
-  init:
-    src: caddy.sysvinit.j2
-    dest: /etc/init.d/caddy
+_caddy_service_files:
+  systemd: /lib/systemd/system/caddy.service
+  upstart: /etc/init/caddy.conf
+  init: /etc/init.d/caddy
 
 _platform: "{{ ansible_facts['system'] | lower }}"
-_architecture: "{{ caddy_url_values['architecture'][ansible_facts['architecture']] }}"
-_plugins: "{% for option in caddy_plugins %}{{ option }}{% if not loop.last %},{% endif %}{% endfor %}"
+_architecture: "{{ _caddy_url_values['architecture'][ansible_facts['architecture']] }}"
+_plugins: "{% for option in caddy_plugins %}&p={{ option | replace('/', '%2F') }}{% endfor %}"
+
+_caddy_ssl_path:
+  Debian: /etc/ssl/caddy

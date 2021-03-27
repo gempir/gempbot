@@ -1,0 +1,20 @@
+- name: RHEL | Create caddy copr repository
+  yum_repository:
+    description: Copr repo for caddy owned by @caddy
+    file: caddy
+    name: copr:caddy
+    baseurl: "{{ _caddy_repo_url }}"
+    skip_if_unavailable: yes
+    gpgcheck: yes
+    gpgkey: https://download.copr.fedorainfracloud.org/results/@caddy/caddy/pubkey.gpg
+    repo_gpgcheck: no
+    enabled: yes
+  tags:
+    - caddy
+
+- name: RHEL | Install caddy
+  yum:
+    name: caddy
+    state: latest
+  tags:
+    - caddy

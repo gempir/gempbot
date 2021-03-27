@@ -7,7 +7,7 @@ lint: |
   ansible-lint -x 204,403,502
   yamllint -c molecule/yamllint.yml .
 platforms:
-  - name: caddy-test-default-${MOLECULE_DISTRIBUTION:-centos8}
+  - name: caddy-test-custom-${MOLECULE_DISTRIBUTION:-centos8}
     image: "quay.io/samdoran/${MOLECULE_DISTRIBUTION:-centos8}-ansible:latest"
     command: ${MOLECULE_COMMAND:-""}
     volumes:
@@ -19,6 +19,6 @@ provisioner:
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
 scenario:
-  name: default
+  name: custom
 verifier:
   name: ansible

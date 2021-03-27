@@ -1,0 +1,14 @@
+- name: DEBIAN | Add repository
+  apt_repository:
+    repo: deb [trusted=yes] https://apt.fury.io/caddy/ /
+    mode: '0644'
+    filename: caddy-fury
+  tags:
+    - caddy
+
+- name: DEBIAN | Install caddy
+  apt:
+    name: caddy
+    state: latest
+  tags:
+    - caddy

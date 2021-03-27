@@ -1,3 +1,4 @@
+dist: focal
 language: python
 services: docker
 
@@ -5,21 +6,19 @@ env:
   global:
     - ROLE_NAME: caddy
   matrix:
-    # - MOLECULE_DISTRIBUTION: centos6
     - MOLECULE_DISTRIBUTION: centos7
-    # - MOLECULE_DISTRIBUTION: rhel6
-    # - MOLECULE_DISTRIBUTION: rhel7
-    # - MOLECULE_DISTRIBUTION: ubuntu14
-    - MOLECULE_DISTRIBUTION: ubuntu16
+    - MOLECULE_DISTRIBUTION: centos8
     - MOLECULE_DISTRIBUTION: ubuntu18
+    - MOLECULE_DISTRIBUTION: ubuntu20
     - MOLECULE_DISTRIBUTION: debian8
+      ANSIBLE_PYTHON_INTERPRETER: /usr/bin/python
     - MOLECULE_DISTRIBUTION: debian9
-    # - MOLECULE_DISTRIBUTION: fedora27
-    # - MOLECULE_DISTRIBUTION: fedora28
-    # - MOLECULE_DISTRIBUTION: fedora29
+    - MOLECULE_DISTRIBUTION: debian10
+    - MOLECULE_DISTRIBUTION: fedora31
+    - MOLECULE_DISTRIBUTION: fedora32
 
 install:
-  - pip install molecule docker
+  - pip install molecule[lint]==3.0.6 docker
 
 before_script:
   # Remove "ansible-role-" prefix from role name
@@ -28,6 +27,7 @@ before_script:
   - cd $ROLE_NAME
 
 script:
+  - ansible-galaxy install -n -r molecule/default/requirements.yml
   # Run tests
   - molecule test --all
 

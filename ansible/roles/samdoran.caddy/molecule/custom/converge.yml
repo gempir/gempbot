@@ -1,0 +1,18 @@
+- name: Install custom Caddy binary
+  hosts: all
+  become: yes
+
+  vars:
+    caddy_plugins:
+      - github.com/aksdb/caddy-cgi/v2
+      - github.com/caddy-dns/cloudflare
+      - github.com/caddy-dns/route53
+
+  tasks:
+    - debug:
+        msg: >-
+          Testing with Ansible {{ ansible_version.full }} using Python {{ ansible_facts.python_version }}
+          on {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}
+
+    - import_role:
+        name: caddy

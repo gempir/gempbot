@@ -1,1 +1,1 @@
-caddy_ssl_path: /etc/pki/tls/caddy
+_caddy_repo_url: https://download.copr.fedorainfracloud.org/results/@caddy/caddy/epel-{{ ansible_facts.distribution_major_version }}-$basearch/

@@ -1,0 +1,13 @@
+- name: Cleanup Caddy v1
+  hosts: all
+  become: yes
+
+  tasks:
+    - debug:
+        msg: >-
+          Testing with Ansible {{ ansible_version.full }} using Python {{ ansible_facts.python_version }}
+          on {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}
+
+    - import_role:
+        name: caddy
+        tasks_from: cleanup-v1.yml
