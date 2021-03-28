@@ -41,9 +41,9 @@ jobs:
                   script: systemctl stop ingester
 
             - name: Deploy
-              working-directory: ./bot
+              working-directory: ./services/ingester
               run: |
-                  scp bot ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ingester
+                  scp ingester ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ingester
 
             - name: Start
               uses: appleboy/ssh-action@master

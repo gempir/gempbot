@@ -49,7 +49,7 @@ jobs:
                   script: systemctl stop spamchampbot
 
             - name: Deploy Backend
-              working-directory: ./bot
+              working-directory: ./services/bot
               run: |
                   scp bot ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampbot
 
