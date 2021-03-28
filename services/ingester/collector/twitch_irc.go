@@ -94,6 +94,7 @@ func (b *Bot) joinStoreChannels() {
 
 		for _, userData := range channels {
 			if _, ok := b.joined[userData.Login]; !ok {
+				log.Info(userData.Login)
 				b.joined[userData.Login] = true
 				b.twitchClient.Join(userData.Login)
 				log.Debugf("[collector] joined %s", userData.DisplayName)
