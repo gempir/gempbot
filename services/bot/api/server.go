@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gempir/spamchamp/bot/config"
-	"github.com/gempir/spamchamp/bot/helix"
+	"github.com/gempir/spamchamp/pkg/config"
+	"github.com/gempir/spamchamp/services/bot/helix"
 
 	log "github.com/sirupsen/logrus"
 

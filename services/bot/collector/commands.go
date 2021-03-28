@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gempir/go-twitch-irc/v2"
-	"github.com/gempir/spamchamp/bot/humanize"
+	"github.com/gempir/spamchamp/pkg/humanize"
 	log "github.com/sirupsen/logrus"
 )
 

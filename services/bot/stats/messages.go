@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
-	"github.com/gempir/spamchamp/bot/api"
-	"github.com/gempir/spamchamp/bot/collector"
-	"github.com/gempir/spamchamp/bot/store"
+	"github.com/gempir/spamchamp/services/bot/api"
+	"github.com/gempir/spamchamp/services/bot/store"
 	"github.com/paulbellamy/ratecounter"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,15 +22,13 @@ type Broadcaster struct {
 	messageQueue   chan twitch.PrivateMessage
 	broadcastQueue chan api.BroadcastMessage
 	store          *store.Store
-	bot            *collector.Bot
 }
 
-func NewBroadcaster(messageQueue chan twitch.PrivateMessage, broadcastQueue chan api.BroadcastMessage, store *store.Store, bot *collector.Bot) Broadcaster {
+func NewBroadcaster(messageQueue chan twitch.PrivateMessage, broadcastQueue chan api.BroadcastMessage, store *store.Store) Broadcaster {
 	return Broadcaster{
 		messageQueue:   messageQueue,
 		broadcastQueue: broadcastQueue,
 		store:          store,
-		bot:            bot,
 	}
 }
 
@@ -53,7 +50,7 @@ func (b *Broadcaster) Start() {
 		if val, ok := message.User.Badges["partner"]; ok && val == 1 {
 			if _, ok := joinedPartners[message.User.Name]; !ok {
 				log.Infof("Found partner, joining channel: %s", message.User.Name)
-				b.bot.SaveAndJoinChannel(message.User.Name)
+				// b.bot.SaveAndJoinChannel(message.User.Name)
 				joinedPartners[message.User.Name] = true
 			}
 		}

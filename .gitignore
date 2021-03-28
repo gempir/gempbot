@@ -1,7 +1,10 @@
 .idea
 
-bot/bot
-bot/config.json
+services/bot/bot
+services/bot/config.json
+
+services/ingester/ingester
+services/ingester/config.json
 
 web/node_modules/
 

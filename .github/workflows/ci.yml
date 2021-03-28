@@ -3,21 +3,21 @@ name: CI
 on: [push]
 
 jobs:
-  CI:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v1
+    CI:
+        runs-on: ubuntu-latest
 
-    - name: Build web
-      working-directory: ./web
-      run: |
-        yarn install
-        yarn build
-      
-    - name: Build Bot
-      working-directory: ./bot
-      run: |
-        go get
-        go test
-        go build
+        steps:
+            - uses: actions/checkout@v1
+
+            - name: Build web
+              working-directory: ./web
+              run: |
+                  yarn install
+                  yarn build
+
+            - name: Build Bot
+              working-directory: ./bot
+              run: |
+                  go get
+                  go test
+                  go build

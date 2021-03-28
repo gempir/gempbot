@@ -4,12 +4,11 @@ import (
 	"flag"
 
 	"github.com/gempir/go-twitch-irc/v2"
-	"github.com/gempir/spamchamp/bot/api"
-	"github.com/gempir/spamchamp/bot/collector"
-	"github.com/gempir/spamchamp/bot/config"
-	"github.com/gempir/spamchamp/bot/helix"
-	"github.com/gempir/spamchamp/bot/stats"
-	"github.com/gempir/spamchamp/bot/store"
+	"github.com/gempir/spamchamp/pkg/config"
+	"github.com/gempir/spamchamp/services/bot/api"
+	"github.com/gempir/spamchamp/services/bot/helix"
+	"github.com/gempir/spamchamp/services/bot/stats"
+	"github.com/gempir/spamchamp/services/bot/store"
 )
 
 var messageQueue = make(chan twitch.PrivateMessage)
@@ -24,13 +23,10 @@ func main() {
 	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret)
 	go helixClient.StartRefreshTokenRoutine()
 
-	bot := collector.NewBot(cfg, &helixClient, rStore, messageQueue)
-	bot.LoadTopChannelsAndJoin()
 	server := api.NewServer(cfg, &helixClient, broadcastQueue)
-	broadcaster := stats.NewBroadcaster(messageQueue, broadcastQueue, rStore, bot)
+	broadcaster := stats.NewBroadcaster(messageQueue, broadcastQueue, rStore)
 
-	go server.Start()
 	go broadcaster.Start()
 
-	bot.Connect()
+	server.Start()
 }
