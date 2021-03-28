@@ -84,14 +84,6 @@ func (b *Bot) joinStoreChannels() {
 			return
 		}
 
-		go func() {
-			for _, channelID := range allChannelIds {
-				if _, ok := channels[channelID]; !ok {
-					b.store.RemoveChannel(channelID)
-				}
-			}
-		}()
-
 		for _, userData := range channels {
 			channelName := userData.Login
 
