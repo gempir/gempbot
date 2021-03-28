@@ -27,7 +27,6 @@ jobs:
                   ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
             - name: Build
-              working-directory: ./services/ingester
               run: |
                   ls -lsa 
                   go build
