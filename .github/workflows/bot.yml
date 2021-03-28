@@ -8,6 +8,8 @@ on:
         paths:
             - services/bot/**
             - pkg/**
+            - go.mod
+            - go.sum
 
 jobs:
     Bot:

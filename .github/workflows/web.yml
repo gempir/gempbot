@@ -1,0 +1,29 @@
+name: Web
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - "master"
+        paths:
+            - web/**
+
+jobs:
+    Web:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v1
+
+            - name: Build web
+              working-directory: ./web
+              run: |
+                  yarn install
+                  yarn build
+
+            - name: Deploy Frontend
+              uses: peaceiris/actions-gh-pages@v2.3.1
+              env:
+                  ACTIONS_DEPLOY_KEY: ${{ secrets.ACCESS_TOKEN }}
+                  PUBLISH_BRANCH: gh-pages
+                  PUBLISH_DIR: ./web/public
