@@ -33,7 +33,7 @@ func NewBroadcaster(messageQueue chan twitch.PrivateMessage, broadcastQueue chan
 }
 
 func (b *Broadcaster) Start() {
-	log.Info("[stats] starting stats collector")
+	log.Info("[stats] starting stats broadcaster")
 
 	go b.startTicker()
 

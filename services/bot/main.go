@@ -25,7 +25,6 @@ func main() {
 
 	server := api.NewServer(cfg, &helixClient, broadcastQueue)
 	broadcaster := stats.NewBroadcaster(messageQueue, broadcastQueue, rStore)
-
 	go broadcaster.Start()
 
 	server.Start()

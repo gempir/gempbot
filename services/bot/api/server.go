@@ -70,8 +70,8 @@ func (s *Server) Start() {
 	http.HandleFunc("/api/ws", s.handleConnections)
 	http.Handle("/api/channel", corsHandler(http.HandlerFunc(s.handleChannel)))
 
-	err := http.ListenAndServe(":8035", nil)
 	log.Info("[api] listening on port :8035")
+	err := http.ListenAndServe(":8035", nil)
 	if err != nil {
 		log.Fatal("[api] listenAndServe: ", err)
 	}
