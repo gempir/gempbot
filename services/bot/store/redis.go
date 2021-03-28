@@ -68,6 +68,14 @@ func (s *Store) SubscribePrivateMessages() *redis.PubSub {
 	return s.redis.Subscribe("PRIVMSG")
 }
 
+func (s *Store) PublishJoinedChannels(count int) {
+	s.redis.Publish("JOINEDCHANNELS", count)
+}
+
+func (s *Store) SubscribeJoinedChannels() *redis.PubSub {
+	return s.redis.Subscribe("JOINEDCHANNELS")
+}
+
 func (s *Store) RemoveChannel(channelID string) {
 	_, err := s.redis.HDel("channels", channelID).Result()
 	if err != nil {

@@ -35,10 +35,10 @@ func (b *Broadcaster) Start() {
 
 	go b.startTicker()
 
+	go b.monitorJoinedChannels()
+
 	topic := b.store.SubscribePrivateMessages()
-	// Get the Channel to use
 	channel := topic.Channel()
-	// Itterate any messages sent on the channel
 	for msg := range channel {
 		message := twitch.ParseMessage(msg.Payload).(*twitch.PrivateMessage)
 
@@ -64,6 +64,20 @@ func (b *Broadcaster) Start() {
 		}
 
 		stats[message.RoomID].messages.Incr(1)
+	}
+}
+
+func (b *Broadcaster) monitorJoinedChannels() {
+	topic := b.store.SubscribeJoinedChannels()
+	channel := topic.Channel()
+	for msg := range channel {
+
+		var err error
+		joinedChannels, err = strconv.Atoi(msg.Payload)
+		if err != nil {
+			log.Errorf("Failed to parse joined channels message: %s", err.Error())
+		}
+		continue
 	}
 }
 

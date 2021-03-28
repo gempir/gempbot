@@ -67,6 +67,14 @@ func (b *Bot) Connect() {
 		}
 	}()
 
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+
+		for range ticker.C {
+			b.store.PublishJoinedChannels(len(b.joined))
+		}
+	}()
+
 	log.Fatal(b.twitchClient.Connect())
 }
 
