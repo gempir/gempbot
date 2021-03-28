@@ -13,6 +13,8 @@ jobs:
     ingester:
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/checkout@v1
+
             - name: Setup SSH
               env:
                   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -27,8 +29,8 @@ jobs:
                   ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
             - name: Build
+              working-directory: ./services/ingester
               run: |
-                  ls -lsa 
                   go build
 
             - name: Stop
