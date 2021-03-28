@@ -84,15 +84,23 @@ func (b *Bot) joinStoreChannels() {
 			return
 		}
 
-		for _, userData := range channels {
-			channelName := userData.Login
-
-			if _, ok := b.joined[channelName]; !ok {
-				b.joined[channelName] = true
-				b.twitchClient.Join(channelName)
-				log.Debugf("[collector] joined %s", channelName)
+		go func() {
+			for _, channelID := range allChannelIds {
+				if _, ok := channels[channelID]; !ok {
+					b.store.RemoveChannel(channelID)
+				}
 			}
-		}
+		}()
+
+		// for _, userData := range channels {
+		// 	channelName := userData.Login
+
+		// 	if _, ok := b.joined[channelName]; !ok {
+		// 		b.joined[channelName] = true
+		// 		b.twitchClient.Join(channelName)
+		// 		log.Debugf("[collector] joined %s", channelName)
+		// 	}
+		// }
 	}()
 }
 
