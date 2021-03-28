@@ -27,8 +27,9 @@ jobs:
                   ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
             - name: Build
+              working-directory: ./services/ingester
               run: |
-                  make ingester
+                  go build
 
             - name: Stop
               uses: appleboy/ssh-action@master
