@@ -29,6 +29,7 @@ jobs:
             - name: Build
               working-directory: ./services/ingester
               run: |
+                  ls -lsa 
                   go build
 
             - name: Stop
