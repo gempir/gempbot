@@ -4,9 +4,9 @@ import (
 	"flag"
 
 	"github.com/gempir/spamchamp/pkg/config"
-	"github.com/gempir/spamchamp/services/bot/collector"
 	"github.com/gempir/spamchamp/services/bot/helix"
 	"github.com/gempir/spamchamp/services/bot/store"
+	"github.com/gempir/spamchamp/services/ingester/collector"
 )
 
 func main() {
