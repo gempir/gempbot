@@ -16,8 +16,9 @@ func main() {
 	cfg := config.NewConfig(*configFile)
 	rStore := store.NewStore()
 	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret)
-	go helixClient.StartRefreshTokenRoutine()
 
 	bot := collector.NewBot(cfg, &helixClient, rStore)
 	bot.LoadTopChannelsAndJoin()
+
+	helixClient.StartRefreshTokenRoutine()
 }
