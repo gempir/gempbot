@@ -1,4 +1,4 @@
-name: Bot
+name: bot
 
 on:
     workflow_dispatch:
@@ -12,7 +12,7 @@ on:
             - go.sum
 
 jobs:
-    Bot:
+    bot:
         runs-on: ubuntu-latest
 
         steps:
