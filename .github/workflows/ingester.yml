@@ -6,7 +6,8 @@ on:
         branches:
             - "master"
         paths:
-            - ingester/**
+            - services/ingester/**
+            - pkg/**
 
 jobs:
     ingester:
