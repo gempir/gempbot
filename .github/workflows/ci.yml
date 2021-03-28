@@ -16,8 +16,9 @@ jobs:
                   yarn build
 
             - name: Build Bot
-              working-directory: ./bot
               run: |
-                  go get
-                  go test
-                  go build
+                  make bot
+
+            - name: Build Ingester
+              run: |
+                  make ingester
