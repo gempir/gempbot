@@ -87,6 +87,14 @@ type UserData struct {
 	Email           string `json:"email"`
 }
 
+func chunkBy(items []string, chunkSize int) (chunks [][]string) {
+	for chunkSize < len(items) {
+		items, chunks = items[chunkSize:], append(chunks, items[0:chunkSize:chunkSize])
+	}
+
+	return append(chunks, items)
+}
+
 // GetUsersByUserIds receive userData for given ids
 func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error) {
 	var filteredUserIDs []string
@@ -98,28 +106,17 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 	}
 
 	if len(filteredUserIDs) > 0 {
-		var chunks [][]string
-		for i := 0; i < len(filteredUserIDs); i += 100 {
-			end := i + 100
-
-			if end > len(filteredUserIDs) {
-				end = len(filteredUserIDs)
-			}
-
-			chunks = append(chunks, filteredUserIDs[i:end])
-		}
+		chunks := chunkBy(filteredUserIDs, 100)
 
 		for _, chunk := range chunks {
 			resp, err := c.client.GetUsers(&helixClient.UsersParams{
 				IDs: chunk,
 			})
 			if err != nil {
-				return make(map[string]UserData), err
+				return map[string]UserData{}, err
 			}
-			log.Infof("[helix] %d GetUsersByUserIds %v", resp.StatusCode, chunk)
-			if resp.StatusCode > http.StatusMultipleChoices {
-				return make(map[string]UserData), fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
-			}
+
+			log.Infof("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
 
 			for _, user := range resp.Data.Users {
 				data := &UserData{
@@ -144,7 +141,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 
 	for _, id := range userIDs {
 		if _, ok := userCacheByID[id]; !ok {
-			log.Errorf("Could not find userId, channel might be banned: %s", id)
+			log.Warningf("Could not find userId, channel might be banned: %s", id)
 			continue
 		}
 		result[id] = *userCacheByID[id]

@@ -42,9 +42,6 @@ func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store) *
 func (b *Bot) Connect() {
 	b.startTime = time.Now()
 	b.twitchClient = twitch.NewClient(b.cfg.Username, "oauth:"+b.cfg.OAuth)
-	b.twitchClient.IrcAddress = "127.0.0.1:3333"
-	b.twitchClient.TLS = false
-	b.twitchClient.SetupCmd = "LOGIN spamchampbot"
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
 		log.Info("[collector] joining as anonymous")
@@ -56,6 +53,11 @@ func (b *Bot) Connect() {
 	b.twitchClient.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		b.handlePrivateMessage(message)
 	})
+
+	go func() {
+		time.Sleep(time.Second)
+		b.LoadTopChannelsAndJoin()
+	}()
 
 	go func() {
 		ticker := time.NewTicker(15 * time.Minute)
@@ -92,15 +94,15 @@ func (b *Bot) joinStoreChannels() {
 			}
 		}()
 
-		// for _, userData := range channels {
-		// 	channelName := userData.Login
-
-		// 	if _, ok := b.joined[channelName]; !ok {
-		// 		b.joined[channelName] = true
-		// 		b.twitchClient.Join(channelName)
-		// 		log.Debugf("[collector] joined %s", channelName)
-		// 	}
-		// }
+		for _, userData := range channels {
+			if _, ok := b.joined[userData.Login]; !ok {
+				if b.twitchClient != nil {
+					b.joined[userData.Login] = true
+					b.twitchClient.Join(userData.Login)
+					log.Debugf("[collector] joined %s", userData.Login)
+				}
+			}
+		}
 	}()
 }
 

@@ -18,7 +18,7 @@ func main() {
 	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret)
 
 	bot := collector.NewBot(cfg, &helixClient, rStore)
-	bot.LoadTopChannelsAndJoin()
+	go bot.Connect()
 
 	helixClient.StartRefreshTokenRoutine()
 }
