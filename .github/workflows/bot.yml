@@ -32,33 +32,29 @@ jobs:
                   ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
             - name: Build
-              working-directory: ./web
-              run: |
-                  yarn install
-                  yarn build
-
-            - name: Build
               working-directory: ./services/bot
               run: |
                   go build
 
-            - name: Deploy
-              working-directory: ./services/bot
-              run: |
-                  scp bot ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampbot
-
-            - name: Restart
+            - name: Stop
               uses: appleboy/ssh-action@master
               with:
                   host: ${{ secrets.HOST }}
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl restart spamchampbot
+                  script: systemctl stop spamchampbot
 
-            - name: Deploy Frontend
-              uses: peaceiris/actions-gh-pages@v2.3.1
-              env:
-                  ACTIONS_DEPLOY_KEY: ${{ secrets.ACCESS_TOKEN }}
-                  PUBLISH_BRANCH: gh-pages
-                  PUBLISH_DIR: ./web/public
+            - name: Deploy
+              working-directory: ./services/bot
+              run: |
+                  scp bot ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampbot
+
+            - name: Start
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  key: ${{ secrets.KEY }}
+                  port: ${{ secrets.PORT }}
+                  script: systemctl start spamchampbot
