@@ -13,7 +13,6 @@ import (
 
 // Bot basic logging bot
 type Bot struct {
-	messageQueue chan twitch.PrivateMessage
 	startTime    time.Time
 	cfg          *config.Config
 	helixClient  *helix.Client
@@ -24,19 +23,18 @@ type Bot struct {
 }
 
 // NewBot create new bot instance
-func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store, messageQueue chan twitch.PrivateMessage) *Bot {
+func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store) *Bot {
 	channels, err := helixClient.GetUsersByUserIds(cfg.Channels)
 	if err != nil {
 		log.Fatalf("[collector] failed to load configured channels %s", err.Error())
 	}
 
 	return &Bot{
-		messageQueue: messageQueue,
-		cfg:          cfg,
-		helixClient:  helixClient,
-		store:        store,
-		channels:     channels,
-		joined:       map[string]bool{},
+		cfg:         cfg,
+		helixClient: helixClient,
+		store:       store,
+		channels:    channels,
+		joined:      map[string]bool{},
 	}
 }
 
