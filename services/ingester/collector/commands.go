@@ -10,6 +10,7 @@ import (
 )
 
 func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
+	b.store.PublishPrivateMessage(message.Raw)
 	if message.User.Name == b.cfg.Admin {
 		if strings.HasPrefix(message.Message, "!spamchamp status") {
 			uptime := humanize.TimeSince(b.startTime)

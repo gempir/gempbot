@@ -19,14 +19,12 @@ var (
 )
 
 type Broadcaster struct {
-	messageQueue   chan twitch.PrivateMessage
 	broadcastQueue chan api.BroadcastMessage
 	store          *store.Store
 }
 
-func NewBroadcaster(messageQueue chan twitch.PrivateMessage, broadcastQueue chan api.BroadcastMessage, store *store.Store) Broadcaster {
+func NewBroadcaster(broadcastQueue chan api.BroadcastMessage, store *store.Store) Broadcaster {
 	return Broadcaster{
-		messageQueue:   messageQueue,
 		broadcastQueue: broadcastQueue,
 		store:          store,
 	}
@@ -37,7 +35,13 @@ func (b *Broadcaster) Start() {
 
 	go b.startTicker()
 
-	for message := range b.messageQueue {
+	topic := b.store.SubscribePrivateMessages()
+	// Get the Channel to use
+	channel := topic.Channel()
+	// Itterate any messages sent on the channel
+	for msg := range channel {
+		message := twitch.ParseMessage(msg.Payload).(*twitch.PrivateMessage)
+
 		if message.ID == "28b511cc-43b3-44b7-a605-230aadbb2f9b" {
 			var err error
 			joinedChannels, err = strconv.Atoi(message.Message)
