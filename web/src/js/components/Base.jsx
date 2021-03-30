@@ -28,11 +28,8 @@ class Base extends React.Component {
         return (
             <BrowserRouter>
                 <div className={"Base"}>
-                    <span className="Meta">{this.state.joinedChannels} join channels | {this.state.activeChannels} active channels</span>
+                    <span className="Meta">{this.state.joinedChannels} joined channels | {this.state.activeChannels} active channels</span>
                     <Switch>
-                        <Route path="/aiden">
-                            hello Aiden
-                        </Route>
                         <Route path="/">
                             {this.state.records.map(record => <Record record={record} key={record.title} />)}
                         </Route>
