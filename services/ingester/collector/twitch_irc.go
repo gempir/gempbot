@@ -4,22 +4,22 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/pkg/config"
 	"github.com/gempir/spamchamp/pkg/helix"
 	"github.com/gempir/spamchamp/pkg/store"
+	"github.com/gempir/spamchamp/services/ingester/scaler"
 	log "github.com/sirupsen/logrus"
 )
 
 // Bot basic logging bot
 type Bot struct {
-	startTime    time.Time
-	cfg          *config.Config
-	helixClient  *helix.Client
-	twitchClient *twitch.Client
-	store        *store.Store
-	channels     map[string]helix.UserData
-	joined       map[string]bool
+	startTime   time.Time
+	cfg         *config.Config
+	helixClient *helix.Client
+	scaler      *scaler.Scaler
+	store       *store.Store
+	channels    map[string]helix.UserData
+	joined      map[string]bool
 }
 
 // NewBot create new bot instance
@@ -41,12 +41,7 @@ func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store) *
 // Connect startup the logger and bot
 func (b *Bot) Connect() {
 	b.startTime = time.Now()
-	b.twitchClient = twitch.NewClient(b.cfg.Username, "oauth:"+b.cfg.OAuth)
-
-	b.twitchClient.OnReconnectMessage(func(message twitch.ReconnectMessage) {
-		log.Warning("Received ReconnectMessage, Resetting joined channels")
-		b.joined = make(map[string]bool)
-	})
+	b.scaler = scaler.NewScaler(b.cfg, b.handlePrivateMessage)
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
 		log.Info("[collector] joining as anonymous")
@@ -54,10 +49,6 @@ func (b *Bot) Connect() {
 		log.Info("[collector] joining as user " + b.cfg.Username)
 	}
 	b.initialJoins()
-
-	b.twitchClient.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		b.handlePrivateMessage(message)
-	})
 
 	go func() {
 		time.Sleep(time.Second)
@@ -72,21 +63,16 @@ func (b *Bot) Connect() {
 		}
 	}()
 
-	go func() {
-		ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 
-		for range ticker.C {
-			b.store.PublishJoinedChannels(len(b.joined))
-		}
-	}()
-
-	log.Fatal(b.twitchClient.Connect())
+	for range ticker.C {
+		b.store.PublishJoinedChannels(len(b.joined))
+	}
 }
 
 func (b *Bot) initialJoins() {
 	for _, channel := range b.channels {
-		log.Info("[collector] joining " + channel.Login)
-		b.twitchClient.Join(channel.Login)
+		b.scaler.Join(channel.Login)
 	}
 }
 
@@ -109,17 +95,14 @@ func (b *Bot) joinStoreChannels() {
 
 		for _, userData := range channels {
 			if _, ok := b.joined[userData.Login]; !ok {
-				if b.twitchClient != nil {
-					b.joined[userData.Login] = true
-					b.twitchClient.Join(userData.Login)
-					log.Debugf("[collector] joined %s", userData.Login)
-				}
+				b.joined[userData.Login] = true
+				b.scaler.Join(userData.Login)
 			}
 		}
 	}()
 }
 
-func (b *Bot) SaveAndJoinChannel(channelName string) {
+func (b *Bot) SaveAndJoin(channelName string) {
 	users, err := b.helixClient.GetUsersByUsernames([]string{channelName})
 	if err != nil {
 		log.Error(err)
