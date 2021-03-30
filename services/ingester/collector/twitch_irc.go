@@ -43,6 +43,11 @@ func (b *Bot) Connect() {
 	b.startTime = time.Now()
 	b.twitchClient = twitch.NewClient(b.cfg.Username, "oauth:"+b.cfg.OAuth)
 
+	b.twitchClient.OnReconnectMessage(func(message twitch.ReconnectMessage) {
+		log.Warning("Received ReconnectMessage, Resetting joined channels")
+		b.joined = make(map[string]bool)
+	})
+
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
 		log.Info("[collector] joining as anonymous")
 	} else {
