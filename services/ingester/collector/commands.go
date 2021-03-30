@@ -23,6 +23,15 @@ func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
 			b.LoadTopChannelsAndJoin()
 		}
 	}
+
+	if val, ok := message.User.Badges["partner"]; ok && val == 1 {
+		if _, ok := b.joined[message.User.Name]; !ok {
+			log.Infof("Found partner, joining channel: %s", message.User.Name)
+			b.scaler.Join(message.User.Name)
+			b.store.AddChannels(message.User.ID)
+			b.joined[message.User.Name] = true
+		}
+	}
 }
 
 func (b *Bot) handleJoin(message twitch.PrivateMessage) {

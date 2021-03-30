@@ -51,14 +51,6 @@ func (b *Broadcaster) Start() {
 			continue
 		}
 
-		if val, ok := message.User.Badges["partner"]; ok && val == 1 {
-			if _, ok := joinedPartners[message.User.Name]; !ok {
-				log.Infof("Found partner, joining channel: %s", message.User.Name)
-				// b.bot.SaveAndJoinChannel(message.User.Name)
-				joinedPartners[message.User.Name] = true
-			}
-		}
-
 		if _, ok := stats[message.RoomID]; !ok {
 			stats[message.RoomID] = newStat(message.Channel)
 		}
