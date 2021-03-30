@@ -3,6 +3,7 @@ package scaler
 import (
 	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/pkg/config"
@@ -39,6 +40,12 @@ func (s *Scaler) Join(channelName string) {
 			return
 		}
 	}
+
+	if len(s.clients) > 0 {
+		time.Sleep(time.Second * 10)
+	}
+
+	log.Infof("Creating new client, previous total: %d", len(s.clients))
 
 	newClient := twitch.NewClient(s.cfg.Username, "oauth:"+s.cfg.OAuth)
 	newClient.OnPrivateMessage(s.onPrivateMessage)
