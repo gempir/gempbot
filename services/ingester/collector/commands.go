@@ -10,6 +10,7 @@ import (
 )
 
 func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
+	b.activeChannels[strings.ToLower(message.Channel)] = true
 	b.store.PublishPrivateMessage(message.Raw)
 	if message.User.Name == b.cfg.Admin {
 		if strings.HasPrefix(message.Message, "!spamchamp status") {
