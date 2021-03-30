@@ -4,8 +4,8 @@ import (
 	"flag"
 
 	"github.com/gempir/spamchamp/pkg/config"
-	"github.com/gempir/spamchamp/services/bot/helix"
-	"github.com/gempir/spamchamp/services/bot/store"
+	"github.com/gempir/spamchamp/pkg/helix"
+	"github.com/gempir/spamchamp/pkg/store"
 	"github.com/gempir/spamchamp/services/ingester/collector"
 )
 

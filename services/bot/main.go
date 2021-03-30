@@ -3,15 +3,13 @@ package main
 import (
 	"flag"
 
-	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/pkg/config"
+	"github.com/gempir/spamchamp/pkg/helix"
+	"github.com/gempir/spamchamp/pkg/store"
 	"github.com/gempir/spamchamp/services/bot/api"
-	"github.com/gempir/spamchamp/services/bot/helix"
 	"github.com/gempir/spamchamp/services/bot/stats"
-	"github.com/gempir/spamchamp/services/bot/store"
 )
 
-var messageQueue = make(chan twitch.PrivateMessage)
 var broadcastQueue = make(chan api.BroadcastMessage)
 
 func main() {

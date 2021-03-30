@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
+	"github.com/gempir/spamchamp/pkg/store"
 	"github.com/gempir/spamchamp/services/bot/api"
-	"github.com/gempir/spamchamp/services/bot/store"
 	"github.com/paulbellamy/ratecounter"
 	log "github.com/sirupsen/logrus"
 )

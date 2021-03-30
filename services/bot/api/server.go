@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/gempir/spamchamp/pkg/config"
-	"github.com/gempir/spamchamp/services/bot/helix"
+	"github.com/gempir/spamchamp/pkg/helix"
 
 	log "github.com/sirupsen/logrus"
 
