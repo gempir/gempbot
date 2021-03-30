@@ -13,14 +13,14 @@ import (
 
 // Bot basic logging bot
 type Bot struct {
-	startTime      time.Time
-	cfg            *config.Config
-	helixClient    *helix.Client
-	scaler         *scaler.Scaler
-	store          *store.Store
-	channels       map[string]helix.UserData
-	joined         map[string]bool
-	activeChannels map[string]bool
+	startTime   time.Time
+	cfg         *config.Config
+	helixClient *helix.Client
+	scaler      *scaler.Scaler
+	store       *store.Store
+	channels    map[string]helix.UserData
+	joined      map[string]bool
+	active      map[string]bool
 }
 
 // NewBot create new bot instance
@@ -31,12 +31,12 @@ func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store) *
 	}
 
 	return &Bot{
-		cfg:            cfg,
-		helixClient:    helixClient,
-		store:          store,
-		channels:       channels,
-		joined:         map[string]bool{},
-		activeChannels: map[string]bool{},
+		cfg:         cfg,
+		helixClient: helixClient,
+		store:       store,
+		channels:    channels,
+		joined:      map[string]bool{},
+		active:      map[string]bool{},
 	}
 }
 
@@ -68,7 +68,8 @@ func (b *Bot) Connect() {
 	ticker := time.NewTicker(10 * time.Second)
 
 	for range ticker.C {
-		b.store.PublishJoinedChannels(len(b.activeChannels))
+		b.store.PublishJoinedChannels(len(b.joined))
+		b.store.PublishActiveChannels(len(b.active))
 	}
 }
 

@@ -1,4 +1,4 @@
-package api
+package server
 
 import (
 	"encoding/json"
@@ -24,6 +24,7 @@ type Server struct {
 type BroadcastMessage struct {
 	Records        []Record `json:"records"`
 	JoinedChannels int      `json:"joinedChannels"`
+	ActiveChannels int      `json:"activeChannels"`
 }
 
 type WordcloudWord struct {

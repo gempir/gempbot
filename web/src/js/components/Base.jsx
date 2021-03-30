@@ -9,6 +9,7 @@ class Base extends React.Component {
 
     state = {
         joinedChannels: null,
+        activeChannels: null,
         records: [],
     };
 
@@ -16,6 +17,7 @@ class Base extends React.Component {
         new EventService(this.props.apiBaseUrl, data => {
             this.setState({
                 joinedChannels: data.joinedChannels,
+                activeChannels: data.activeChannels,
                 records: data.records,
             });
             this.props.dispatch(fetchChannels(new Set(data.records.map(record => record.scores).flat().map(score => score.id))));
@@ -26,7 +28,7 @@ class Base extends React.Component {
         return (
             <BrowserRouter>
                 <div className={"Base"}>
-                    <span className="JoinedChannels">{this.state.joinedChannels} channels</span>
+                    <span className="Meta">{this.state.joinedChannels} join channels | {this.state.activeChannels} active channels</span>
                     <Switch>
                         <Route path="/aiden">
                             hello Aiden

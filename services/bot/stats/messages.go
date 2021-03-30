@@ -7,7 +7,7 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/pkg/store"
-	"github.com/gempir/spamchamp/services/bot/api"
+	"github.com/gempir/spamchamp/services/bot/server"
 	"github.com/paulbellamy/ratecounter"
 	log "github.com/sirupsen/logrus"
 )
@@ -15,15 +15,15 @@ import (
 var (
 	stats          = map[string]stat{}
 	joinedChannels = 0
-	joinedPartners = map[string]bool{}
+	activeChannels = 0
 )
 
 type Broadcaster struct {
-	broadcastQueue chan api.BroadcastMessage
+	broadcastQueue chan server.BroadcastMessage
 	store          *store.Store
 }
 
-func NewBroadcaster(broadcastQueue chan api.BroadcastMessage, store *store.Store) Broadcaster {
+func NewBroadcaster(broadcastQueue chan server.BroadcastMessage, store *store.Store) Broadcaster {
 	return Broadcaster{
 		broadcastQueue: broadcastQueue,
 		store:          store,
@@ -36,20 +36,12 @@ func (b *Broadcaster) Start() {
 	go b.startTicker()
 
 	go b.monitorJoinedChannels()
+	go b.monitorActiveChannels()
 
 	topic := b.store.SubscribePrivateMessages()
 	channel := topic.Channel()
 	for msg := range channel {
 		message := twitch.ParseMessage(msg.Payload).(*twitch.PrivateMessage)
-
-		if message.ID == "28b511cc-43b3-44b7-a605-230aadbb2f9b" {
-			var err error
-			joinedChannels, err = strconv.Atoi(message.Message)
-			if err != nil {
-				log.Errorf("Failed to parse relaybroker message: %s", err.Error())
-			}
-			continue
-		}
 
 		if _, ok := stats[message.RoomID]; !ok {
 			stats[message.RoomID] = newStat(message.Channel)
@@ -73,17 +65,31 @@ func (b *Broadcaster) monitorJoinedChannels() {
 	}
 }
 
+func (b *Broadcaster) monitorActiveChannels() {
+	topic := b.store.SubscribeActiveChannels()
+	channel := topic.Channel()
+	for msg := range channel {
+
+		var err error
+		activeChannels, err = strconv.Atoi(msg.Payload)
+		if err != nil {
+			log.Errorf("Failed to parse active channels message: %s", err.Error())
+		}
+		continue
+	}
+}
+
 func (b *Broadcaster) startTicker() {
 	ticker := time.NewTicker(1 * time.Second)
 
 	for range ticker.C {
-		message := api.BroadcastMessage{
-			Records: []api.Record{},
+		message := server.BroadcastMessage{
+			Records: []server.Record{},
 		}
 
-		msgps := api.Record{
+		msgps := server.Record{
 			Title:  "Current messages/s",
-			Scores: []api.Score{},
+			Scores: []server.Score{},
 		}
 
 		for channelID, stat := range stats {
@@ -97,12 +103,12 @@ func (b *Broadcaster) startTicker() {
 				b.store.UpdateMsgps(channelID, rate)
 			}
 
-			msgps.Scores = append(msgps.Scores, api.Score{ID: channelID, Score: float64(rate)})
+			msgps.Scores = append(msgps.Scores, server.Score{ID: channelID, Score: float64(rate)})
 		}
 
-		scores := []api.Score{}
+		scores := []server.Score{}
 		for _, z := range b.store.GetMsgpsScores() {
-			scores = append(scores, api.Score{ID: fmt.Sprintf("%v", z.Member), Score: z.Score})
+			scores = append(scores, server.Score{ID: fmt.Sprintf("%v", z.Member), Score: z.Score})
 		}
 
 		maxLen := 10
@@ -112,21 +118,21 @@ func (b *Broadcaster) startTicker() {
 		msgps.Scores = msgps.GetScoresSorted()[0:maxLen]
 		message.Records = append(message.Records, msgps)
 
-		message.Records = append(message.Records, api.Record{
+		message.Records = append(message.Records, server.Record{
 			Title:  "Record messages/s",
 			Scores: scores,
 		})
 
 		message.JoinedChannels = joinedChannels
+		message.ActiveChannels = activeChannels
 
 		b.broadcastQueue <- message
 	}
 }
 
 type stat struct {
-	channelName  string
-	messages     *ratecounter.RateCounter
-	messageCount int
+	channelName string
+	messages    *ratecounter.RateCounter
 }
 
 func newStat(channelName string) stat {

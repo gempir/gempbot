@@ -76,6 +76,14 @@ func (s *Store) SubscribeJoinedChannels() *redis.PubSub {
 	return s.redis.Subscribe("JOINEDCHANNELS")
 }
 
+func (s *Store) PublishActiveChannels(count int) {
+	s.redis.Publish("ACTIVECHANNELS", count)
+}
+
+func (s *Store) SubscribeActiveChannels() *redis.PubSub {
+	return s.redis.Subscribe("ACTIVECHANNELS")
+}
+
 func (s *Store) RemoveChannel(channelID string) {
 	_, err := s.redis.HDel("channels", channelID).Result()
 	if err != nil {
