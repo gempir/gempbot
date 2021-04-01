@@ -16,8 +16,3 @@
     template: 
       src: templates/config.json.j2 
       dest: /etc/spamchamp/ingester_config.json
-
-  - name: Install caddyfile config
-    template: 
-      src: templates/Caddyfile.j2
-      dest: /etc/caddy/Caddyfile
