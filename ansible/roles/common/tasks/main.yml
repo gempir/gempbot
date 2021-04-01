@@ -49,22 +49,6 @@
     name: spamchamp
     state: present
 
-- name: Create spamchampbot user
-  user:
-    name: spamchampbot
-    shell: /bin/bash
-    groups: 
-      - spamchamp
-    append: yes
-
-- name: Create ingester user
-  user:
-    name: ingester
-    shell: /bin/bash
-    groups: 
-      - spamchamp
-    append: yes
-
 - name: Creates directory
   file:
     path: /etc/spamchamp

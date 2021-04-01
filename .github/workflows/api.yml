@@ -1,4 +1,4 @@
-name: bot
+name: api
 
 on:
     workflow_dispatch:
@@ -6,13 +6,13 @@ on:
         branches:
             - "master"
         paths:
-            - services/bot/**
+            - services/api/**
             - pkg/**
             - go.mod
             - go.sum
 
 jobs:
-    bot:
+    api:
         runs-on: ubuntu-latest
 
         steps:
@@ -32,7 +32,7 @@ jobs:
                   ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
             - name: Build
-              working-directory: ./services/bot
+              working-directory: ./services/api
               run: |
                   go build
 
@@ -43,12 +43,12 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl stop spamchampbot
+                  script: systemctl stop spamchampapi
 
             - name: Deploy
-              working-directory: ./services/bot
+              working-directory: ./services/api
               run: |
-                  scp bot ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampbot
+                  scp api ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampapi
 
             - name: Start
               uses: appleboy/ssh-action@master
@@ -57,4 +57,4 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl start spamchampbot
+                  script: systemctl start spamchampapi

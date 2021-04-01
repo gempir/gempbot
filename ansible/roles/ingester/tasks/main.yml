@@ -1,4 +1,12 @@
 ---
+  - name: Create ingester user
+    user:
+      name: ingester
+      shell: /bin/bash
+      groups: 
+        - spamchamp
+      append: yes
+
   - name: Install Service
     template: 
       src: templates/service.j2 
@@ -8,3 +16,8 @@
     template: 
       src: templates/config.json.j2 
       dest: /etc/spamchamp/ingester_config.json
+
+  - name: Install caddyfile config
+    template: 
+      src: templates/Caddyfile.j2
+      dest: /etc/caddy/Caddyfile

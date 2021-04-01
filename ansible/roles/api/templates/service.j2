@@ -1,12 +1,12 @@
 [Unit]
-Description=spamchampbot
+Description=spamchamp api
 After=network.target
 StartLimitBurst=10
 
 [Service]
 Restart=always
 RestartSec=5
-ExecStart=/home/spamchampbot/bot --config /etc/spamchamp/bot_config.json
+ExecStart=/home/api/api --config /etc/spamchamp/api_config.json
 
 [Install]
 WantedBy=multi-user.target

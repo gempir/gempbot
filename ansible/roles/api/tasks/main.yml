@@ -1,0 +1,24 @@
+---
+  - name: Create api user
+    user:
+      name: api
+      shell: /bin/bash
+      groups: 
+        - spamchamp
+      append: yes
+
+  - name: Install Api Service
+    template: 
+      src: templates/service.j2 
+      dest: /etc/systemd/system/api.service
+
+  - name: Install Api Config
+    template: 
+      src: templates/config.json.j2 
+      dest: /etc/spamchamp/api_config.json
+
+  - name: Install Api proxy config
+    template: 
+      src: templates/Caddyfile.j2
+      dest: /etc/caddy/Caddyfile
+    notify: Restart caddy

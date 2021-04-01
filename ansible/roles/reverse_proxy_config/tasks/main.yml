@@ -1,2 +1,0 @@
-- name: Install Bot proxy config
-  template: src=templates/spamchamp-bot.conf.j2 dest=/etc/caddy/Caddyfile

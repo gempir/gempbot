@@ -1,7 +1,7 @@
 .idea
 
-services/bot/bot
-services/bot/config.json
+services/api/api
+services/api/config.json
 
 services/ingester/ingester
 services/ingester/config.json

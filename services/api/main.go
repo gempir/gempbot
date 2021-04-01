@@ -6,8 +6,8 @@ import (
 	"github.com/gempir/spamchamp/pkg/config"
 	"github.com/gempir/spamchamp/pkg/helix"
 	"github.com/gempir/spamchamp/pkg/store"
-	"github.com/gempir/spamchamp/services/bot/server"
-	"github.com/gempir/spamchamp/services/bot/stats"
+	"github.com/gempir/spamchamp/services/api/server"
+	"github.com/gempir/spamchamp/services/api/stats"
 )
 
 var broadcastQueue = make(chan server.BroadcastMessage)

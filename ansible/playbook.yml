@@ -7,6 +7,5 @@
     - {role: 'common', tags: ['common']}
     - {role: 'geerlingguy.redis', tags: ['redis']}
     - {role: 'ingester', tags: ['ingester']}
-    - {role: 'bot', tags: ['bot']}
+    - {role: 'api', tags: ['api']}
     - {role: 'caddy-ansible', tags: ['caddy']}
-    - {role: 'reverse_proxy_config', tags: ['caddy']}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/pkg/store"
-	"github.com/gempir/spamchamp/services/bot/server"
+	"github.com/gempir/spamchamp/services/api/server"
 	"github.com/paulbellamy/ratecounter"
 	log "github.com/sirupsen/logrus"
 )
