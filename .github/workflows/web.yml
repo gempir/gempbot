@@ -26,4 +26,4 @@ jobs:
               env:
                   ACTIONS_DEPLOY_KEY: ${{ secrets.ACCESS_TOKEN }}
                   PUBLISH_BRANCH: gh-pages
-                  PUBLISH_DIR: ./web/public
+                  PUBLISH_DIR: ./web/build
