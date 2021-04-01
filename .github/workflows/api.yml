@@ -43,12 +43,12 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl stop spamchampapi
+                  script: systemctl stop api
 
             - name: Deploy
               working-directory: ./services/api
               run: |
-                  scp api ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/spamchampapi
+                  scp api ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/api
 
             - name: Start
               uses: appleboy/ssh-action@master
@@ -57,4 +57,4 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl start spamchampapi
+                  script: systemctl start api
