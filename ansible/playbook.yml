@@ -7,5 +7,5 @@
     - {role: 'common', tags: ['common']}
     - {role: 'geerlingguy.redis', tags: ['redis']}
     - {role: 'ingester', tags: ['ingester']}
-    - {role: 'api', tags: ['api']}
     - {role: 'caddy-ansible', tags: ['caddy']}
+    - {role: 'api', tags: ['api']}
