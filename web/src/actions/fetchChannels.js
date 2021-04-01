@@ -1,7 +1,7 @@
-import addChannels from "./addChannels";
-import persistState from "../storage/persistState";
+import {addChannels} from "./addChannels";
+import {persistState} from "../storage/persistState";
 
-export default function (channelIds) {
+export function fetchChannels(channelIds) {
     return function (dispatch, getState) {
 
         const channelIdsToFetch = [];

@@ -1,4 +1,4 @@
-export default function () {
+export function loadState() {
     try {
         const serializedState = localStorage.getItem('state');
         if (serializedState === null) {

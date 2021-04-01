@@ -1,7 +1,7 @@
 import React from "react";
 import EventService from "../service/EventService";
 import { connect } from "react-redux";
-import fetchChannels from "../actions/fetchChannels";
+import {fetchChannels} from "../actions/fetchChannels";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import Record from "./Record";
 

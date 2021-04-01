@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { createStore, applyMiddleware, Store } from "redux";
 import thunk from "redux-thunk";
 import { Provider } from "react-redux";
-import reducer from "./store/reducer";
-import createInitialState from "./store/createInitialState";
+import {reducer} from "./store/reducer";
+import {createInitialState} from "./store/createInitialState";
 import Base from './components/Base';
-import persistState from './storage/persistState';
+import {persistState} from './storage/persistState';
 
 
 export default class App extends Component {

@@ -1,10 +1,7 @@
-import loadState from "../storage/loadState";
+import {loadState} from "../storage/loadState";
 
-export default () => {
-
+export function createInitialState() {
     const persistedState = loadState();
-
-    console.log(process.env);
 
     return {
         loading: false,

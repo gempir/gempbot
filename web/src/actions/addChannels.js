@@ -1,4 +1,4 @@
-export default function (channels) {
+export function addChannels(channels) {
     return function (dispatch, getState) {
         dispatch({
             type: "SET_CHANNELS",

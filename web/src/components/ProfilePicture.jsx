@@ -6,6 +6,6 @@ export default class ProfilePicture extends React.Component {
     };
 
     render() {
-        return <img {...this.props} width={"30"} height={"30"}/>;
+        return <img {...this.props} width={"30"} height={"30"} alt="profile" />;
     }
 }

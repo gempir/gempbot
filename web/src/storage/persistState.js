@@ -1,4 +1,4 @@
-export default function (state) {
+export function persistState(state) {
     try {
         const serializedState = JSON.stringify(state);
         localStorage.setItem('state', serializedState);
