@@ -1,5 +1,7 @@
+import { EventMessage } from "../types/Events";
+
 export default class EventService {
-    constructor(apiBaseUrl: string, callback: (data: Record<string, unknown>) => void) {
+    constructor(apiBaseUrl: string, callback: (data: EventMessage) => void) {
 
         function connect() {
             var ws = new WebSocket(`${apiBaseUrl.replace("https://", "wss://").replace("http://", "ws://")}/api/ws`);
