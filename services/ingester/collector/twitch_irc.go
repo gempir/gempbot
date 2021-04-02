@@ -2,6 +2,7 @@ package collector
 
 import (
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gempir/spamchamp/pkg/config"
@@ -18,9 +19,19 @@ type Bot struct {
 	helixClient *helix.Client
 	scaler      *scaler.Scaler
 	store       *store.Store
-	channels    map[string]helix.UserData
-	joined      map[string]bool
-	active      map[string]bool
+	channels    stringUserDataSyncMap
+	joined      stringBoolSyncMap
+	active      stringBoolSyncMap
+}
+
+type stringUserDataSyncMap struct {
+	m     map[string]helix.UserData
+	mutex *sync.Mutex
+}
+
+type stringBoolSyncMap struct {
+	m     map[string]bool
+	mutex *sync.Mutex
 }
 
 // NewBot create new bot instance
@@ -30,13 +41,20 @@ func NewBot(cfg *config.Config, helixClient *helix.Client, store *store.Store) *
 		log.Fatalf("[collector] failed to load configured channels %s", err.Error())
 	}
 
+	channelsMap := stringUserDataSyncMap{m: map[string]helix.UserData{}, mutex: &sync.Mutex{}}
+	for key, data := range channels {
+		channelsMap.mutex.Lock()
+		channelsMap.m[key] = data
+		channelsMap.mutex.Unlock()
+	}
+
 	return &Bot{
 		cfg:         cfg,
 		helixClient: helixClient,
 		store:       store,
-		channels:    channels,
-		joined:      map[string]bool{},
-		active:      map[string]bool{},
+		channels:    channelsMap,
+		joined:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
+		active:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
 	}
 }
 
@@ -68,13 +86,13 @@ func (b *Bot) Connect() {
 	ticker := time.NewTicker(10 * time.Second)
 
 	for range ticker.C {
-		b.store.PublishJoinedChannels(len(b.joined))
-		b.store.PublishActiveChannels(len(b.active))
+		b.store.PublishJoinedChannels(len(b.joined.m))
+		b.store.PublishActiveChannels(len(b.active.m))
 	}
 }
 
 func (b *Bot) initialJoins() {
-	for _, channel := range b.channels {
+	for _, channel := range b.channels.m {
 		b.scaler.Join(channel.Login)
 	}
 }
@@ -97,8 +115,10 @@ func (b *Bot) joinStoreChannels() {
 		}()
 
 		for _, userData := range channels {
-			if _, ok := b.joined[userData.Login]; !ok {
-				b.joined[userData.Login] = true
+			if _, ok := b.joined.m[userData.Login]; !ok {
+				b.joined.mutex.Lock()
+				b.joined.m[userData.Login] = true
+				b.joined.mutex.Unlock()
 				b.scaler.Join(userData.Login)
 			}
 		}

@@ -10,7 +10,9 @@ import (
 )
 
 func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
-	b.active[strings.ToLower(message.Channel)] = true
+	b.active.mutex.Lock()
+	b.active.m[strings.ToLower(message.Channel)] = true
+	b.active.mutex.Unlock()
 	b.store.PublishPrivateMessage(message.Raw)
 	if message.User.Name == b.cfg.Admin {
 		if strings.HasPrefix(message.Message, "!spamchamp status") {
@@ -26,11 +28,13 @@ func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
 	}
 
 	if val, ok := message.User.Badges["partner"]; ok && val == 1 {
-		if _, ok := b.joined[message.User.Name]; !ok {
+		if _, ok := b.joined.m[message.User.Name]; !ok {
 			log.Infof("Found partner, joining channel: %s", message.User.Name)
 			b.scaler.Join(message.User.Name)
 			b.store.AddChannels(message.User.ID)
-			b.joined[message.User.Name] = true
+			b.joined.mutex.Lock()
+			b.joined.m[message.User.Name] = true
+			b.joined.mutex.Unlock()
 		}
 	}
 }
