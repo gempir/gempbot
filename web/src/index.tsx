@@ -1,5 +1,20 @@
+import { StrictMode, useContext } from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
-import './scss/app.scss';
+import { StateProvider, store } from './store';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+function App() {
+    const { state } = useContext(store);
+
+    return <div>
+        {state.apiBaseUrl}
+    </div>
+}
+
+ReactDOM.render(
+    <StrictMode>
+        <StateProvider>
+            <App />
+        </StateProvider>
+    </StrictMode>,
+    document.getElementById('root')
+);
