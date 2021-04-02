@@ -17,6 +17,7 @@ const RecordConatiner = styled.div`
     background: var(--bg-bright);
     border: 1px solid var(--bg-brighter);
     margin: 1rem;
+    margin-right: 0;
     padding: 1rem;
 
     h2 {
