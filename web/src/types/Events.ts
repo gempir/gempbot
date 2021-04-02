@@ -11,6 +11,12 @@ export interface Record {
 }
 
 export interface Score {
-    id: string
+    user: User
     score: number
+}
+
+export interface User {
+    id: string
+    displayName: string
+    profilePicture: string
 }
