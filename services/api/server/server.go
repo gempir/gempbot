@@ -36,8 +36,14 @@ type Record struct {
 }
 
 type Score struct {
-	ID    string  `json:"id"`
+	User  User    `json:"user"`
 	Score float64 `json:"score"`
+}
+
+type User struct {
+	Id             string `json:"id"`
+	DisplayName    string `json:"displayName"`
+	ProfilePicture string `json:"profilePicture"`
 }
 
 func (s *Record) GetScoresSorted() []Score {

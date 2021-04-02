@@ -22,7 +22,7 @@ func main() {
 	go helixClient.StartRefreshTokenRoutine()
 
 	server := server.NewServer(cfg, &helixClient, broadcastQueue)
-	broadcaster := stats.NewBroadcaster(broadcastQueue, rStore)
+	broadcaster := stats.NewBroadcaster(broadcastQueue, rStore, &helixClient)
 	go broadcaster.Start()
 
 	server.Start()

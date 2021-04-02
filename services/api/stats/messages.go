@@ -1,11 +1,11 @@
 package stats
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
+	"github.com/gempir/spamchamp/pkg/helix"
 	"github.com/gempir/spamchamp/pkg/store"
 	"github.com/gempir/spamchamp/services/api/server"
 	"github.com/paulbellamy/ratecounter"
@@ -21,12 +21,14 @@ var (
 type Broadcaster struct {
 	broadcastQueue chan server.BroadcastMessage
 	store          *store.Store
+	helixClient    *helix.Client
 }
 
-func NewBroadcaster(broadcastQueue chan server.BroadcastMessage, store *store.Store) Broadcaster {
+func NewBroadcaster(broadcastQueue chan server.BroadcastMessage, store *store.Store, helixClient *helix.Client) Broadcaster {
 	return Broadcaster{
 		broadcastQueue: broadcastQueue,
 		store:          store,
+		helixClient:    helixClient,
 	}
 }
 
@@ -92,6 +94,17 @@ func (b *Broadcaster) startTicker() {
 			Scores: []server.Score{},
 		}
 
+		var ids []string
+		for channelID, _ := range stats {
+			ids = append(ids, channelID)
+		}
+
+		users, err := b.helixClient.GetUsersByUserIds(ids)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
 		for channelID, stat := range stats {
 			rate := stat.messages.Rate() / 3
 			if rate == 0 {
@@ -103,12 +116,24 @@ func (b *Broadcaster) startTicker() {
 				b.store.UpdateMsgps(channelID, rate)
 			}
 
-			msgps.Scores = append(msgps.Scores, server.Score{ID: channelID, Score: float64(rate)})
+			msgps.Scores = append(msgps.Scores, server.Score{User: buildUser(users[channelID]), Score: float64(rate)})
+		}
+
+		storeScores := b.store.GetMsgpsScores()
+		ids = []string{}
+		for _, z := range storeScores {
+			ids = append(ids, z.Member.(string))
+		}
+
+		users, err = b.helixClient.GetUsersByUserIds(ids)
+		if err != nil {
+			log.Error(err)
+			return
 		}
 
 		scores := []server.Score{}
-		for _, z := range b.store.GetMsgpsScores() {
-			scores = append(scores, server.Score{ID: fmt.Sprintf("%v", z.Member), Score: z.Score})
+		for _, z := range storeScores {
+			scores = append(scores, server.Score{User: buildUser(users[z.Member.(string)]), Score: z.Score})
 		}
 
 		maxLen := 10
@@ -127,6 +152,14 @@ func (b *Broadcaster) startTicker() {
 		message.ActiveChannels = activeChannels
 
 		b.broadcastQueue <- message
+	}
+}
+
+func buildUser(userData helix.UserData) server.User {
+	return server.User{
+		Id:             userData.ID,
+		DisplayName:    userData.DisplayName,
+		ProfilePicture: userData.ProfileImageURL,
 	}
 }
 
