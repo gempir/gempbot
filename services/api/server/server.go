@@ -4,10 +4,9 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/gempir/spamchamp/pkg/store"
-
 	"github.com/gempir/spamchamp/pkg/config"
 	"github.com/gempir/spamchamp/pkg/helix"
+	"github.com/gempir/spamchamp/pkg/store"
 	"github.com/rs/cors"
 
 	log "github.com/sirupsen/logrus"
@@ -17,10 +16,11 @@ import (
 
 // Server api server
 type Server struct {
-	cfg            *config.Config
-	broadcastQueue chan BroadcastMessage
-	helixClient    *helix.Client
-	store          *store.Store
+	cfg             *config.Config
+	broadcastQueue  chan BroadcastMessage
+	helixClient     *helix.Client
+	helixUserClient *helix.Client
+	store           *store.Store
 }
 
 type BroadcastMessage struct {
@@ -59,12 +59,13 @@ func (s *Record) GetScoresSorted() []Score {
 }
 
 // NewServer create api Server
-func NewServer(cfg *config.Config, helixClient *helix.Client, store *store.Store, broadcastQueue chan BroadcastMessage) Server {
+func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Store, broadcastQueue chan BroadcastMessage) Server {
 	return Server{
-		cfg:            cfg,
-		broadcastQueue: broadcastQueue,
-		helixClient:    helixClient,
-		store:          store,
+		cfg:             cfg,
+		broadcastQueue:  broadcastQueue,
+		helixClient:     helixClient,
+		helixUserClient: helixUserClient,
+		store:           store,
 	}
 }
 

@@ -19,9 +19,11 @@ func main() {
 	cfg := config.NewConfig(*configFile)
 	rStore := store.NewStore()
 	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret)
+	helixUserClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret)
+	go helixUserClient.StartRefreshTokenRoutine()
 	go helixClient.StartRefreshTokenRoutine()
 
-	server := server.NewServer(cfg, &helixClient, rStore, broadcastQueue)
+	server := server.NewServer(cfg, &helixClient, &helixUserClient, rStore, broadcastQueue)
 	broadcaster := stats.NewBroadcaster(broadcastQueue, rStore, &helixClient)
 	go broadcaster.Start()
 
