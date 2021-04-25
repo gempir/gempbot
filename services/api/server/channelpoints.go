@@ -11,6 +11,7 @@ import (
 )
 
 func (s *Server) subscribeChannelPoints() {
+	// s.helixClient.Client.SetUserAccessToken(s.store.Client.HGet("accessToken", "77829817").String())
 	response, err := s.helixClient.Client.CreateEventSubSubscription(
 		&helix.EventSubSubscription{
 			Condition: helix.EventSubCondition{BroadcasterUserID: "77829817"},
