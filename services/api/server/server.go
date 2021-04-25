@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/gempir/spamchamp/services/api/emotechief"
+
 	"github.com/gempir/spamchamp/pkg/config"
 	"github.com/gempir/spamchamp/pkg/helix"
 	"github.com/gempir/spamchamp/pkg/store"
@@ -21,6 +23,7 @@ type Server struct {
 	helixClient     *helix.Client
 	helixUserClient *helix.Client
 	store           *store.Store
+	emotechief      *emotechief.EmoteChief
 }
 
 type BroadcastMessage struct {
@@ -59,13 +62,14 @@ func (s *Record) GetScoresSorted() []Score {
 }
 
 // NewServer create api Server
-func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Store, broadcastQueue chan BroadcastMessage) Server {
+func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Store, emotechief *emotechief.EmoteChief, broadcastQueue chan BroadcastMessage) Server {
 	return Server{
 		cfg:             cfg,
 		broadcastQueue:  broadcastQueue,
 		helixClient:     helixClient,
 		helixUserClient: helixUserClient,
 		store:           store,
+		emotechief:      emotechief,
 	}
 }
 

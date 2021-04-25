@@ -6,6 +6,7 @@ import (
 	"github.com/gempir/spamchamp/pkg/config"
 	"github.com/gempir/spamchamp/pkg/helix"
 	"github.com/gempir/spamchamp/pkg/store"
+	"github.com/gempir/spamchamp/services/api/emotechief"
 	"github.com/gempir/spamchamp/services/api/server"
 	"github.com/gempir/spamchamp/services/api/stats"
 )
@@ -23,7 +24,8 @@ func main() {
 	go helixUserClient.StartRefreshTokenRoutine()
 	go helixClient.StartRefreshTokenRoutine()
 
-	server := server.NewServer(cfg, &helixClient, &helixUserClient, rStore, broadcastQueue)
+	emoteChief := emotechief.NewEmoteChief(rStore, cfg)
+	server := server.NewServer(cfg, &helixClient, &helixUserClient, rStore, emoteChief, broadcastQueue)
 	broadcaster := stats.NewBroadcaster(broadcastQueue, rStore, &helixClient)
 	go broadcaster.Start()
 
