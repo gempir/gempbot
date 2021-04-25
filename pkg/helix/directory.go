@@ -6,7 +6,7 @@ import (
 )
 
 func (c *Client) GetTopChannels() []string {
-	response, err := c.client.GetStreams(&helix.StreamsParams{Type: "live", First: 100})
+	response, err := c.Client.GetStreams(&helix.StreamsParams{Type: "live", First: 100})
 	if err != nil {
 		log.Error(err.Error())
 	}

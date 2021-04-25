@@ -72,7 +72,9 @@ func (s *Server) Start() {
 	}
 
 	go s.handleMessages()
+	go s.subscribeChannelPoints()
 	http.HandleFunc("/api/ws", s.handleConnections)
+	http.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
 
 	log.Info("[api] listening on port :8035")
 	err := http.ListenAndServe(":8035", nil)

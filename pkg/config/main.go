@@ -22,6 +22,7 @@ type Config struct {
 	ClientID              string   `json:"clientId"`
 	ClientSecret          string   `json:"clientSecret"`
 	LogLevel              string   `json:"logLevel"`
+	Secret                string   `json:"secret"`
 }
 
 // ChannelConfig config for indiviual channels
