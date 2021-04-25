@@ -67,8 +67,10 @@ func (e *EmoteChief) SetEmote(userId, emoteId string) error {
 		currentEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
 	}
 
-	req, err := http.NewRequest("DELETE", "https://api.betterttv.net/3/emotes/"+bttvUserId+"/shared/"+currentEmoteId, nil)
-	req.Header.Set("Authorization", "Bearer "+bearerToken)
+	req, err := http.NewRequest("DELETE", "https://api.betterttv.net/3/emotes/"+currentEmoteId+"/shared/"+bttvUserId, nil)
+	req.Header.Set("authorization", "Bearer "+bearerToken)
+	req.Header.Set("authority", "api.betterttv.net")
+	req.Header.Set("accept", "json")
 	if err != nil {
 		log.Error(err)
 	}
@@ -84,8 +86,10 @@ func (e *EmoteChief) SetEmote(userId, emoteId string) error {
 	log.Infof("Deletion: %d", resp.StatusCode)
 
 	log.Infof("Adding Emote %s %s", bttvUserId, emoteId)
-	req, err = http.NewRequest("PUT", "https://api.betterttv.net/3/emotes/"+bttvUserId+"/shared/"+emoteId, nil)
-	req.Header.Set("Authorization", "Bearer "+bearerToken)
+	req, err = http.NewRequest("PUT", "https://api.betterttv.net/3/emotes/"+emoteId+"/shared/"+bttvUserId, nil)
+	req.Header.Set("authorization", "Bearer "+bearerToken)
+	req.Header.Set("authority", "api.betterttv.net")
+	req.Header.Set("accept", "json")
 	if err != nil {
 		log.Error(err)
 		return err

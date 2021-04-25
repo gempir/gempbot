@@ -4,10 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
+
+	"github.com/gempir/spamchamp/pkg/humanize"
 
 	"github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
+
+var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
 func (s *Server) subscribeChannelPoints() {
 	// s.helixUserClient.Client.SetUserAccessToken(s.store.Client.HGet("accessToken", "77829817").Val())
@@ -36,6 +41,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		s.handleChallenge(w, r)
 		return
 	}
+	log.Info(humanize.FormatRequest(r))
 
 	var event helix.EventSubChannelPointsCustomRewardRedemptionEvent
 	err := json.NewDecoder(r.Body).Decode(&event)
@@ -45,8 +51,16 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	s.emotechief.SetEmote(event.BroadcasterUserID, event.UserInput)
-	log.Info(event.UserInput)
+	matches := bttvRegex.FindAllString(event.UserInput, -1)
+	log.Infof("%v", matches)
+	for _, match := range matches {
+		_ = s.emotechief.SetEmote(event.BroadcasterUserID, match)
+		fmt.Fprint(w, "success")
+		return
+	}
+
+	log.Warnf("Could not find emote in message: %s", event.UserInput)
+	http.Error(w, "Could not find emote", http.StatusBadRequest)
 }
 
 func (s *Server) handleChallenge(w http.ResponseWriter, r *http.Request) {
