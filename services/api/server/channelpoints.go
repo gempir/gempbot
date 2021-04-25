@@ -14,7 +14,7 @@ func (s *Server) subscribeChannelPoints() {
 	response, err := s.helixClient.Client.CreateEventSubSubscription(
 		&helix.EventSubSubscription{
 			Condition: helix.EventSubCondition{BroadcasterUserID: "77829817"},
-			Transport: helix.EventSubTransport{Method: "webhook", Callback: "https://6f44b847ea18.ngrok.io", Secret: s.cfg.Secret},
+			Transport: helix.EventSubTransport{Method: "webhook", Callback: s.cfg.HttpBaseUrl, Secret: s.cfg.Secret},
 			Type:      "channel.channel_points_custom_reward_redemption.add",
 			Version:   "1",
 		},
