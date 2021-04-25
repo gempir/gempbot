@@ -4,8 +4,11 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/gempir/spamchamp/pkg/store"
+
 	"github.com/gempir/spamchamp/pkg/config"
 	"github.com/gempir/spamchamp/pkg/helix"
+	"github.com/rs/cors"
 
 	log "github.com/sirupsen/logrus"
 
@@ -17,6 +20,7 @@ type Server struct {
 	cfg            *config.Config
 	broadcastQueue chan BroadcastMessage
 	helixClient    *helix.Client
+	store          *store.Store
 }
 
 type BroadcastMessage struct {
@@ -55,11 +59,12 @@ func (s *Record) GetScoresSorted() []Score {
 }
 
 // NewServer create api Server
-func NewServer(cfg *config.Config, helixClient *helix.Client, broadcastQueue chan BroadcastMessage) Server {
+func NewServer(cfg *config.Config, helixClient *helix.Client, store *store.Store, broadcastQueue chan BroadcastMessage) Server {
 	return Server{
 		cfg:            cfg,
 		broadcastQueue: broadcastQueue,
 		helixClient:    helixClient,
+		store:          store,
 	}
 }
 
@@ -73,11 +78,15 @@ func (s *Server) Start() {
 
 	go s.handleMessages()
 	go s.subscribeChannelPoints()
-	http.HandleFunc("/api/ws", s.handleConnections)
-	http.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
 
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/ws", s.handleConnections)
+	mux.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
+	mux.HandleFunc("/api/oauth", s.handleOauth)
+
+	handler := cors.Default().Handler(mux)
 	log.Info("[api] listening on port :8035")
-	err := http.ListenAndServe(":8035", nil)
+	err := http.ListenAndServe(":8035", handler)
 	if err != nil {
 		log.Fatal("[api] listenAndServe: ", err)
 	}

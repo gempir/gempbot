@@ -23,7 +23,7 @@ export function App() {
             setActiveChannels(message.activeChannels);
             setRecords(message.records);
         });
-    }, [state.apiBaseUrl])
+    }, [state.apiBaseUrl]);
 
     return <AppContainer>
         <Meta activeChannels={activeChannels} joinedChannels={joinedChannels} />

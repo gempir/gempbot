@@ -8,7 +8,7 @@ const RecordsContainer = styled.div`
 
 export function Records({ records }: { records: Array<Record> }) {
     return <RecordsContainer>
-        {records.map(record => <RecordComponent record={record} />)}
+        {records.map(record => <RecordComponent key={record.title} record={record} />)}
 
     </RecordsContainer>
 }

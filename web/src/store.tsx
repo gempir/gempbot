@@ -3,6 +3,7 @@ import { createContext, useState } from "react";
 export interface State {
     apiBaseUrl: string,
     twitchClientId: string,
+    baseUrl: string,
 }
 
 export type Action = Record<string, unknown>;
@@ -11,6 +12,7 @@ const defaultContext = {
     state: {
         apiBaseUrl: process.env.REACT_APP_API_BASE_URL,
         twitchClientId: process.env.REACT_APP_TWITCH_CLIENT_ID,
+        baseUrl: process.env.REACT_APP_BASE_URL,
     } as State,
     setState: (state: State) => { },
 };
