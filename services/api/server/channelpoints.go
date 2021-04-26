@@ -88,8 +88,13 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 
 	matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
-		_ = s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1])
-		fmt.Fprint(w, "success")
+		err = s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1])
+		if err == nil {
+			fmt.Fprint(w, "success")
+			return
+		}
+		log.Error(err)
+		http.Error(w, "Failed to set emote", http.StatusBadRequest)
 		return
 	}
 
