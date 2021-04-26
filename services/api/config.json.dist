@@ -6,6 +6,7 @@
     "clientSecret": "12312asdasd",
     "logLevel": "info",
     "secret:" "gempir123123",
+    "bttvToken: "",
     "httpBaseUrl": "https://123.ngrok.io",
     "channels": ["77829817", "11148817", "114745759"]
 }

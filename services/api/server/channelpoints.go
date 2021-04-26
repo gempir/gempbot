@@ -5,12 +5,48 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-
-	"github.com/gempir/spamchamp/pkg/humanize"
+	"time"
 
 	"github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
+
+type channelPointRedemption struct {
+	Subscription struct {
+		ID        string `json:"id"`
+		Status    string `json:"status"`
+		Type      string `json:"type"`
+		Version   string `json:"version"`
+		Condition struct {
+			BroadcasterUserID string `json:"broadcaster_user_id"`
+			RewardID          string `json:"reward_id"`
+		} `json:"condition"`
+		Transport struct {
+			Method   string `json:"method"`
+			Callback string `json:"callback"`
+		} `json:"transport"`
+		CreatedAt time.Time `json:"created_at"`
+		Cost      int       `json:"cost"`
+	} `json:"subscription"`
+	Event struct {
+		BroadcasterUserID    string    `json:"broadcaster_user_id"`
+		BroadcasterUserLogin string    `json:"broadcaster_user_login"`
+		BroadcasterUserName  string    `json:"broadcaster_user_name"`
+		ID                   string    `json:"id"`
+		UserID               string    `json:"user_id"`
+		UserLogin            string    `json:"user_login"`
+		UserName             string    `json:"user_name"`
+		UserInput            string    `json:"user_input"`
+		Status               string    `json:"status"`
+		RedeemedAt           time.Time `json:"redeemed_at"`
+		Reward               struct {
+			ID     string `json:"id"`
+			Title  string `json:"title"`
+			Prompt string `json:"prompt"`
+			Cost   int    `json:"cost"`
+		} `json:"reward"`
+	} `json:"event"`
+}
 
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
@@ -41,25 +77,23 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		s.handleChallenge(w, r)
 		return
 	}
-	log.Info(humanize.FormatRequest(r))
 
-	var event helix.EventSubChannelPointsCustomRewardRedemptionEvent
-	err := json.NewDecoder(r.Body).Decode(&event)
+	var redemption channelPointRedemption
+	err := json.NewDecoder(r.Body).Decode(&redemption)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	matches := bttvRegex.FindAllString(event.UserInput, -1)
-	log.Infof("%v", matches)
-	for _, match := range matches {
-		_ = s.emotechief.SetEmote(event.BroadcasterUserID, match)
+	matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
+	if len(matches) == 1 && len(matches[0]) == 2 {
+		_ = s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1])
 		fmt.Fprint(w, "success")
 		return
 	}
 
-	log.Warnf("Could not find emote in message: %s", event.UserInput)
+	log.Warnf("Could not find emote in message: %s", redemption.Event.UserInput)
 	http.Error(w, "Could not find emote", http.StatusBadRequest)
 }
 
@@ -72,5 +106,6 @@ func (s *Server) handleChallenge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Infof("Challenge success: %s", event.Challenge)
 	fmt.Fprint(w, event.Challenge)
 }

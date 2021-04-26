@@ -46,10 +46,23 @@ type bttvDashboardResponse struct {
 	} `json:"sharedEmotes"`
 }
 
-func (e *EmoteChief) SetEmote(userId, emoteId string) error {
-	bearerToken := ""
-	bttvUserId := "5590fac14d62b7e22aaac72c"
-	resp, err := http.Get("https://api.betterttv.net/3/users/" + bttvUserId + "?limited=false&personal=false")
+func (e *EmoteChief) SetEmote(channelUserID, emoteId string) error {
+	resp, err := http.Get("https://api.betterttv.net/3/cached/users/twitch/" + channelUserID)
+	if err != nil {
+		return err
+	}
+
+	var userResp struct {
+		ID string `json:"id"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&userResp)
+	if err != nil {
+		return err
+	}
+
+	bttvUserId := userResp.ID
+
+	resp, err = http.Get("https://api.betterttv.net/3/users/" + bttvUserId + "?limited=false&personal=false")
 	if err != nil {
 		return err
 	}
@@ -60,15 +73,13 @@ func (e *EmoteChief) SetEmote(userId, emoteId string) error {
 		return err
 	}
 
-	log.Info("%v", dashboard)
-	// log.Info(dashboard.Sharedemotes)
-	currentEmoteId := e.store.Client.HGet("bttv_emote", userId).Val()
+	currentEmoteId := e.store.Client.HGet("bttv_emote", channelUserID).Val()
 	if currentEmoteId == "" || len(dashboard.Sharedemotes) > 0 {
 		currentEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
 	}
 
 	req, err := http.NewRequest("DELETE", "https://api.betterttv.net/3/emotes/"+currentEmoteId+"/shared/"+bttvUserId, nil)
-	req.Header.Set("authorization", "Bearer "+bearerToken)
+	req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
 	req.Header.Set("authority", "api.betterttv.net")
 	req.Header.Set("accept", "json")
 	if err != nil {
@@ -87,7 +98,7 @@ func (e *EmoteChief) SetEmote(userId, emoteId string) error {
 
 	log.Infof("Adding Emote %s %s", bttvUserId, emoteId)
 	req, err = http.NewRequest("PUT", "https://api.betterttv.net/3/emotes/"+emoteId+"/shared/"+bttvUserId, nil)
-	req.Header.Set("authorization", "Bearer "+bearerToken)
+	req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
 	req.Header.Set("authority", "api.betterttv.net")
 	req.Header.Set("accept", "json")
 	if err != nil {
