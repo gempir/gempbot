@@ -26,9 +26,11 @@ export function Login() {
 
 
     useEffect(() => {
-        if (window.location.hash) {
+        const hash = window.location.hash;
+        window.location.hash = "";
+        if (hash) {
             const reg = /#access_token=(\w*)&/ig;
-            const match = reg.exec(window.location.hash);
+            const match = reg.exec(hash);
             if (!match || typeof match[1] === "undefined") {
                 return;
             }
