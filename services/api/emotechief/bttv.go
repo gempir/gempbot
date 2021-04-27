@@ -127,36 +127,10 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId string) error {
 			dbCfg = db
 		}
 	}
-
-	sharedEmotesLimit := 0
 	if dbCfg.ID == "" {
-		// the own account is fetched differently
-		req, err := http.NewRequest("GET", "https://api.betterttv.net/3/account", nil)
-		req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
-		if err != nil {
-			log.Error(err)
-		}
-
-		resp, err = e.httpClient.Do(req)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-
-		var account accountResponse
-		err = json.NewDecoder(resp.Body).Decode(&account)
-		if err != nil {
-			return err
-		}
-
-		if account.ID == bttvUserId {
-			sharedEmotesLimit = account.Limits.Sharedemotes
-		} else {
-			return errors.New("Dashboard not found in account, no permission to moderate")
-		}
-	} else {
-		sharedEmotesLimit = dbCfg.Limits.Sharedemotes
+		return errors.New("Dashboard not found in account, no permission to moderate")
 	}
+	sharedEmotesLimit := dbCfg.Limits.Sharedemotes
 
 	// figure currently added emotes
 	resp, err = http.Get("https://api.betterttv.net/3/users/" + bttvUserId + "?limited=false&personal=false")
@@ -170,10 +144,23 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId string) error {
 		return err
 	}
 
+	for _, emote := range dashboard.Sharedemotes {
+		if emote.ID == emoteId {
+			return errors.New("Emote already added")
+		}
+	}
+
+	for _, emote := range dashboard.Channelemotes {
+		if emote.ID == emoteId {
+			return errors.New("Emote already a channelEmote")
+		}
+	}
+
+	log.Infof("Current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
 	// figure out the current emote
-	currentEmoteId := e.store.Client.HGet("bttv_emote", channelUserID).Val()
-	if len(dashboard.Sharedemotes) >= sharedEmotesLimit || currentEmoteId != "" {
-		if currentEmoteId == "" || len(dashboard.Sharedemotes) > 0 {
+	if len(dashboard.Sharedemotes) >= sharedEmotesLimit {
+		currentEmoteId := e.store.Client.HGet("bttv_emote", channelUserID).Val()
+		if currentEmoteId == "" {
 			currentEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
 		}
 
@@ -206,6 +193,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId string) error {
 		return err
 	}
 	log.Infof("Added: %s %s %d", bttvUserId, emoteId, resp.StatusCode)
+	e.store.Client.HSet("bttv_emote", channelUserID, emoteId)
 
 	return nil
 }
