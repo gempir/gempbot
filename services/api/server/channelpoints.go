@@ -51,6 +51,8 @@ type channelPointRedemption struct {
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
 func (s *Server) subscribeChannelPoints() {
+	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
+	// Internally they check if the app token has authenticated users
 	// s.helixUserClient.Client.SetUserAccessToken(s.store.Client.HGet("accessToken", "77829817").Val())
 	response, err := s.helixUserClient.Client.CreateEventSubSubscription(
 		&helix.EventSubSubscription{
