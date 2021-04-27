@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 	"time"
@@ -70,10 +71,17 @@ func (s *Server) subscribeChannelPoints() {
 }
 
 func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Request) {
-	// verified := helix.VerifyEventSubNotification(s.cfg.Secret, r.Header, "")
-	// if !verified {
-	// 	http.Error(w, "failed verfication", http.StatusPreconditionFailed)
-	// }
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, "failed reading body", http.StatusBadRequest)
+	}
+
+	verified := helix.VerifyEventSubNotification(s.cfg.Secret, r.Header, string(body))
+	if !verified {
+		log.Errorf("Failed verification: %s", r.Header.Get("Twitch-Eventsub-Message-Id"))
+		http.Error(w, "failed verfication", http.StatusPreconditionFailed)
+	}
 
 	if r.Header.Get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification" {
 		s.handleChallenge(w, r)
@@ -81,10 +89,10 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	}
 
 	var redemption channelPointRedemption
-	err := json.NewDecoder(r.Body).Decode(&redemption)
+	err = json.Unmarshal(body, &redemption)
 	if err != nil {
 		log.Error(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Failed decoding body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
