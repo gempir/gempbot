@@ -14,7 +14,7 @@ import (
 type Client struct {
 	clientID     string
 	clientSecret string
-	client       *helixClient.Client
+	Client       *helixClient.Client
 	httpClient   *http.Client
 }
 
@@ -38,7 +38,7 @@ func NewClient(clientID, clientSecret string) Client {
 		panic(err)
 	}
 
-	resp, err := client.RequestAppAccessToken([]string{})
+	resp, err := client.RequestAppAccessToken([]string{"channel:read:redemptions"})
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +48,7 @@ func NewClient(clientID, clientSecret string) Client {
 	return Client{
 		clientID:     clientID,
 		clientSecret: clientSecret,
-		client:       client,
+		Client:       client,
 		httpClient:   &http.Client{},
 	}
 }
@@ -58,14 +58,14 @@ func (c *Client) StartRefreshTokenRoutine() {
 	ticker := time.NewTicker(24 * time.Hour)
 
 	for range ticker.C {
-		resp, err := c.client.RequestAppAccessToken([]string{})
+		resp, err := c.Client.RequestAppAccessToken([]string{})
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 		log.Infof("Requested access token from routine, response: %d, expires in: %d", resp.StatusCode, resp.Data.ExpiresIn)
 
-		c.client.SetAppAccessToken(resp.Data.AccessToken)
+		c.Client.SetAppAccessToken(resp.Data.AccessToken)
 	}
 }
 
@@ -109,7 +109,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 		chunks := chunkBy(filteredUserIDs, 100)
 
 		for _, chunk := range chunks {
-			resp, err := c.client.GetUsers(&helixClient.UsersParams{
+			resp, err := c.Client.GetUsers(&helixClient.UsersParams{
 				IDs: chunk,
 			})
 			if err != nil {
@@ -161,7 +161,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	}
 
 	if len(filteredUsernames) > 0 {
-		resp, err := c.client.GetUsers(&helixClient.UsersParams{
+		resp, err := c.Client.GetUsers(&helixClient.UsersParams{
 			Logins: filteredUsernames,
 		})
 		if err != nil {

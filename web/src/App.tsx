@@ -5,6 +5,7 @@ import { Records } from "./components/Records";
 import EventService from "./service/EventService";
 import { store } from "./store";
 import { EventMessage, Record } from "./types/Events";
+import { Login } from "./components/Login";
 
 const AppContainer = styled.main`
     
@@ -22,10 +23,11 @@ export function App() {
             setActiveChannels(message.activeChannels);
             setRecords(message.records);
         });
-    }, [state.apiBaseUrl])
+    }, [state.apiBaseUrl]);
 
     return <AppContainer>
         <Meta activeChannels={activeChannels} joinedChannels={joinedChannels} />
-        <Records records={records} /> 
+        <Records records={records} />
+        <Login />
     </AppContainer>
 }

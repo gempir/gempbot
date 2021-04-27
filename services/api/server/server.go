@@ -4,8 +4,12 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/gempir/spamchamp/services/api/emotechief"
+
 	"github.com/gempir/spamchamp/pkg/config"
 	"github.com/gempir/spamchamp/pkg/helix"
+	"github.com/gempir/spamchamp/pkg/store"
+	"github.com/rs/cors"
 
 	log "github.com/sirupsen/logrus"
 
@@ -14,9 +18,12 @@ import (
 
 // Server api server
 type Server struct {
-	cfg            *config.Config
-	broadcastQueue chan BroadcastMessage
-	helixClient    *helix.Client
+	cfg             *config.Config
+	broadcastQueue  chan BroadcastMessage
+	helixClient     *helix.Client
+	helixUserClient *helix.Client
+	store           *store.Store
+	emotechief      *emotechief.EmoteChief
 }
 
 type BroadcastMessage struct {
@@ -55,11 +62,14 @@ func (s *Record) GetScoresSorted() []Score {
 }
 
 // NewServer create api Server
-func NewServer(cfg *config.Config, helixClient *helix.Client, broadcastQueue chan BroadcastMessage) Server {
+func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Store, emotechief *emotechief.EmoteChief, broadcastQueue chan BroadcastMessage) Server {
 	return Server{
-		cfg:            cfg,
-		broadcastQueue: broadcastQueue,
-		helixClient:    helixClient,
+		cfg:             cfg,
+		broadcastQueue:  broadcastQueue,
+		helixClient:     helixClient,
+		helixUserClient: helixUserClient,
+		store:           store,
+		emotechief:      emotechief,
 	}
 }
 
@@ -72,10 +82,16 @@ func (s *Server) Start() {
 	}
 
 	go s.handleMessages()
-	http.HandleFunc("/api/ws", s.handleConnections)
+	go s.subscribeChannelPoints()
 
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/ws", s.handleConnections)
+	mux.HandleFunc("/api/oauth", s.handleOauth)
+	mux.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
+
+	handler := cors.Default().Handler(mux)
 	log.Info("[api] listening on port :8035")
-	err := http.ListenAndServe(":8035", nil)
+	err := http.ListenAndServe(":8035", handler)
 	if err != nil {
 		log.Fatal("[api] listenAndServe: ", err)
 	}

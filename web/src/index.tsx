@@ -16,6 +16,7 @@ const GlobalStyle = createGlobalStyle`
     --theme2-bright: #3498db;
     --text: #F5F5F5;
     --text-dark: #616161;
+    --twitch: #6441a5;
 
     background: var(--bg);
     margin: 0;

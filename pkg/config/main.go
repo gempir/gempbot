@@ -22,6 +22,9 @@ type Config struct {
 	ClientID              string   `json:"clientId"`
 	ClientSecret          string   `json:"clientSecret"`
 	LogLevel              string   `json:"logLevel"`
+	Secret                string   `json:"secret"`
+	HttpBaseUrl           string   `json:"httpBaseUrl"`
+	BttvToken             string   `json:"bttvToken"`
 }
 
 // ChannelConfig config for indiviual channels
