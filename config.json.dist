@@ -1,12 +1,12 @@
 {
     "admin": "gempir",
     "username": "justinfan123123",
-    "oauth": "oauthtokenforchat",
+    "oauth": "oauth:tokenforchat",
     "clientId": "sdfjhasldkjfha",
     "clientSecret": "12312asdasd",
     "logLevel": "info",
-    "secret:" "gempir123123",
+    "secret:" "api-secret-for-webhooks",
     "bttvToken: "",
-    "httpBaseUrl": "https://123.ngrok.io",
+    "apiBaseUrl": "https://123.ngrok.io",
     "channels": ["77829817", "11148817", "114745759"]
 }
