@@ -23,7 +23,7 @@ type Config struct {
 	ClientSecret          string   `json:"clientSecret"`
 	LogLevel              string   `json:"logLevel"`
 	Secret                string   `json:"secret"`
-	HttpBaseUrl           string   `json:"httpBaseUrl"`
+	ApiBaseUrl            string   `json:"apiBaseUrl"`
 	BttvToken             string   `json:"bttvToken"`
 }
 
