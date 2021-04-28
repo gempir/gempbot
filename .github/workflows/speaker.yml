@@ -1,4 +1,4 @@
-name: speaker
+name: ingester
 
 on:
     workflow_dispatch:
@@ -6,13 +6,13 @@ on:
         branches:
             - "master"
         paths:
-            - services/speaker/**
+            - services/ingester/**
             - pkg/**
             - go.mod
             - go.sum
 
 jobs:
-    speaker:
+    ingester:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v1
@@ -31,7 +31,7 @@ jobs:
                   ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
             - name: Build
-              working-directory: ./services/speaker
+              working-directory: ./services/ingester
               run: |
                   go build
 
@@ -42,12 +42,12 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl stop speaker
+                  script: systemctl stop ingester
 
             - name: Deploy
-              working-directory: ./services/speaker
+              working-directory: ./services/ingester
               run: |
-                  scp speaker ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/speaker
+                  scp ingester ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ingester
 
             - name: Start
               uses: appleboy/ssh-action@master
@@ -56,4 +56,4 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl start speaker
+                  script: systemctl start ingester

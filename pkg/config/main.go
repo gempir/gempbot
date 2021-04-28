@@ -104,7 +104,6 @@ func loadConfiguration(filePath string) *Config {
 	}
 
 	// normalize
-	cfg.OAuth = strings.TrimPrefix(cfg.OAuth, "oauth:")
 	cfg.LogLevel = strings.ToLower(cfg.LogLevel)
 	cfg.setupLogger()
 

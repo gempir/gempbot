@@ -14,7 +14,7 @@ import (
 var broadcastQueue = make(chan server.BroadcastMessage)
 
 func main() {
-	configFile := flag.String("config", "config.json", "json config file")
+	configFile := flag.String("config", "../../config.json", "json config file")
 	flag.Parse()
 
 	cfg := config.NewConfig(*configFile)
@@ -25,8 +25,8 @@ func main() {
 	go helixClient.StartRefreshTokenRoutine()
 
 	emoteChief := emotechief.NewEmoteChief(rStore, cfg)
-	server := server.NewServer(cfg, &helixClient, &helixUserClient, rStore, emoteChief, broadcastQueue)
-	broadcaster := stats.NewBroadcaster(broadcastQueue, rStore, &helixClient)
+	server := server.NewServer(cfg, helixClient, helixUserClient, rStore, emoteChief, broadcastQueue)
+	broadcaster := stats.NewBroadcaster(broadcastQueue, rStore, helixClient)
 	go broadcaster.Start()
 
 	server.Start()

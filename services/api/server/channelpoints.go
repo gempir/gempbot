@@ -84,7 +84,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	}
 
 	if r.Header.Get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification" {
-		s.handleChallenge(w, r)
+		s.handleChallenge(w, body)
 		return
 	}
 
@@ -98,7 +98,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 
 	matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
-		err = s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1])
+		err = s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
 		if err != nil {
 			log.Warn(err)
 		}
@@ -110,12 +110,14 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	http.Error(w, "Could not find emote", http.StatusBadRequest)
 }
 
-func (s *Server) handleChallenge(w http.ResponseWriter, r *http.Request) {
-	var event struct{ Challenge string }
-	err := json.NewDecoder(r.Body).Decode(&event)
+func (s *Server) handleChallenge(w http.ResponseWriter, body []byte) {
+	var event struct {
+		Challenge string `json:"challenge"`
+	}
+	err := json.Unmarshal(body, &event)
 	if err != nil {
-		log.Error(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Errorf("Failed to handle challenge: %s", err.Error())
+		http.Error(w, "Failed to handle challenge: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 

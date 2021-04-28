@@ -56,3 +56,8 @@
     owner: root
     group: spamchamp
     mode: 0750
+
+- name: Install Config
+  template: 
+    src: templates/config.json.j2 
+    dest: /etc/spamchamp/config.json

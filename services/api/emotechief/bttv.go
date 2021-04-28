@@ -86,7 +86,7 @@ type accountResponse struct {
 	Email string `json:"email"`
 }
 
-func (e *EmoteChief) SetEmote(channelUserID, emoteId string) error {
+func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) error {
 	// first figure out the bttvUserId for the channel, might cache this later on
 	resp, err := http.Get("https://api.betterttv.net/3/cached/users/twitch/" + channelUserID)
 	if err != nil {
@@ -195,5 +195,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId string) error {
 	log.Infof("Added: %s %s %d", bttvUserId, emoteId, resp.StatusCode)
 	e.store.Client.HSet("bttv_emote", channelUserID, emoteId)
 
-	return nil
+	err = e.store.PublishSpeakerMessage(channel, "Added new emote: "+emoteId)
+
+	return err
 }

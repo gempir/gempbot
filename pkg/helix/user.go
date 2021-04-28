@@ -29,7 +29,7 @@ func init() {
 }
 
 // NewClient Create helix client
-func NewClient(clientID, clientSecret string) Client {
+func NewClient(clientID, clientSecret string) *Client {
 	client, err := helixClient.NewClient(&helixClient.Options{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
@@ -45,7 +45,7 @@ func NewClient(clientID, clientSecret string) Client {
 	log.Infof("Requested access token, response: %d, expires in: %d", resp.StatusCode, resp.Data.ExpiresIn)
 	client.SetAppAccessToken(resp.Data.AccessToken)
 
-	return Client{
+	return &Client{
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		Client:       client,

@@ -1,6 +1,8 @@
 package store
 
 import (
+	"encoding/json"
+
 	"github.com/go-redis/redis/v7"
 	log "github.com/sirupsen/logrus"
 )
@@ -74,6 +76,25 @@ func (s *Store) PublishJoinedChannels(count int) {
 
 func (s *Store) SubscribeJoinedChannels() *redis.PubSub {
 	return s.Client.Subscribe("JOINEDCHANNELS")
+}
+
+func (s *Store) SubscribeSpeakerMessage() *redis.PubSub {
+	return s.Client.Subscribe("SPEAKERMESSAGE")
+}
+
+type SpeakerMessage struct {
+	Channel string
+	Message string
+}
+
+func (s *Store) PublishSpeakerMessage(channel, message string) error {
+	data, err := json.Marshal(&SpeakerMessage{channel, message})
+	if err != nil {
+		return err
+	}
+
+	s.Client.Publish("SPEAKERMESSAGE", data)
+	return nil
 }
 
 func (s *Store) PublishActiveChannels(count int) {

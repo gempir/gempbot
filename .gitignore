@@ -1,9 +1,9 @@
 .idea
 
-services/api/api
-services/api/config.json
+config.json
 
+services/api/api
 services/ingester/ingester
-services/ingester/config.json
+services/speaker/speaker
 
 web/node_modules/
