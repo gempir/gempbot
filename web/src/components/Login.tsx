@@ -21,7 +21,7 @@ const LoginContainer = styled.a`
 `;
 
 export function Login() {
-    const {state, setState} = useContext(store);
+    const {state, setAccessToken} = useContext(store);
 
     useEffect(() => {
         const hash = window.location.hash;
@@ -35,10 +35,10 @@ export function Login() {
 
             if (match[1] ){
                 window.localStorage.setItem("accessToken", match[1]);
-                setState({...state, accessToken: match[1]});
+                setAccessToken(match[1]);
             }
         }
-    }, [state.apiBaseUrl, setState]);
+    }, [state.apiBaseUrl, setAccessToken]);
 
     useEffect(() => {
         if (state.accessToken) {

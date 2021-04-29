@@ -17,6 +17,7 @@ const defaultContext = {
         accessToken: window.localStorage.getItem("accessToken")
     } as State,
     setState: (state: State) => { },
+    setAccessToken: (accessToken: string) => { },
 };
 
 const store = createContext(defaultContext);
@@ -25,7 +26,9 @@ const { Provider } = store;
 const StateProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
     const [state, setState] = useState({ ...defaultContext.state });
 
-    return <Provider value={{ state, setState }}>{children}</Provider>;
+    const setAccessToken = (accessToken: string) => setState({...state, accessToken});
+
+    return <Provider value={{ state, setState, setAccessToken }}>{children}</Provider>;
 };
 
 export { store, StateProvider };
