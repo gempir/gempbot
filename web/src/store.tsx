@@ -16,17 +16,14 @@ const defaultContext = {
         baseUrl: process.env.REACT_APP_BASE_URL,
         accessToken: window.localStorage.getItem("accessToken")
     } as State,
-    setState: (state: Partial<State>) => { },
+    setState: (state: State) => { },
 };
 
 const store = createContext(defaultContext);
 const { Provider } = store;
 
 const StateProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
-    const [state, setStateDefault] = useState({ ...defaultContext.state });
-
-    // @ts-ignore i don't know why partial isn't accepted here :/
-    const setState = (partialState: Partial<State>) => setStateDefault({...state, partialState});
+    const [state, setState] = useState({ ...defaultContext.state });
 
     return <Provider value={{ state, setState }}>{children}</Provider>;
 };

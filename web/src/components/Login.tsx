@@ -33,18 +33,20 @@ export function Login() {
                 return;
             }
 
-            window.localStorage.setItem("accessToken", match[1]);
-            setState({accessToken: match[1]});
-
-            
+            if (match[1] ){
+                window.localStorage.setItem("accessToken", match[1]);
+                setState({...state, accessToken: match[1]});
+            }
         }
     }, [state.apiBaseUrl, setState]);
 
     useEffect(() => {
-        fetch(state.apiBaseUrl + "/api/oauth", {
-            method: 'post',
-            body: JSON.stringify({accessToken: state.accessToken})
-        })
+        if (state.accessToken) {
+            fetch(state.apiBaseUrl + "/api/oauth", {
+                method: 'post',
+                body: JSON.stringify({accessToken: state.accessToken})
+            })
+        }
     }, [state.accessToken, state.apiBaseUrl]);
 
     if (state.accessToken) {
