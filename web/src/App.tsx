@@ -2,6 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { Meta } from "./components/Meta";
 import { Records } from "./components/Records";
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+} from "react-router-dom";
 import EventService from "./service/EventService";
 import { store } from "./store";
 import { EventMessage, Record } from "./types/Events";
@@ -26,8 +31,17 @@ export function App() {
     }, [state.apiBaseUrl]);
 
     return <AppContainer>
-        <Meta activeChannels={activeChannels} joinedChannels={joinedChannels} />
-        <Records records={records} />
-        <Login />
+        <Router>
+            <Login />
+            <Switch>
+                <Route path="/dashboard">
+                </Route>
+                <Route path="/">
+                    <Meta activeChannels={activeChannels} joinedChannels={joinedChannels} />
+                    <Records records={records} />
+                </Route>
+            </Switch>
+        </Router>
+
     </AppContainer>
 }
