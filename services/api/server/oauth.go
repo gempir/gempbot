@@ -30,6 +30,16 @@ func (s *Server) handleOauth(w http.ResponseWriter, r *http.Request) {
 
 	s.store.Client.HSet("accessToken", resp.Data.UserID, data.AccessToken)
 	log.Infof("Stored new accessToken for %s %v", resp.Data.Login, resp.Data.Scopes)
+
+	// by default subscribe channelPoints
+	sub, err := json.Marshal(&subscription{[]redemption{redemption{"bttv emote"}}})
+	if err != nil {
+		log.Infof("Failed to add subscription to redis %s", err)
+	}
+	err = s.store.Client.HSet("subscriptions", resp.Data.UserID, sub).Err()
+	if err != nil {
+		log.Infof("Failed to add subscription to redis %s", err)
+	}
 	go s.subscribeChannelPoints(resp.Data.UserID)
 
 	fmt.Fprint(w, "success")

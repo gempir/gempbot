@@ -82,14 +82,7 @@ func (s *Server) Start() {
 	}
 
 	go s.handleMessages()
-
-	values, err := s.store.Client.HGetAll("accessToken").Result()
-	if err != nil {
-		log.Error("Failed to fetch current accessTokens")
-	}
-	for userID := range values {
-		go s.subscribeChannelPoints(userID)
-	}
+	go s.createSubscribtions()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/ws", s.handleConnections)
@@ -98,9 +91,19 @@ func (s *Server) Start() {
 
 	handler := cors.Default().Handler(mux)
 	log.Info("[api] listening on port :8035")
-	err = http.ListenAndServe(":8035", handler)
+	err := http.ListenAndServe(":8035", handler)
 	if err != nil {
 		log.Fatal("[api] listenAndServe: ", err)
+	}
+}
+
+func (s *Server) createSubscribtions() {
+	values, err := s.store.Client.HGetAll("subscriptions").Result()
+	if err != nil {
+		log.Error("Failed to fetch current accessTokens")
+	}
+	for userID := range values {
+		s.subscribeChannelPoints(userID)
 	}
 }
 
