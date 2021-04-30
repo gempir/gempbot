@@ -6,11 +6,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
+
+const bttvEmoteRedemptionTitle = "bttv emote"
 
 type channelPointRedemption struct {
 	Subscription struct {
@@ -95,6 +98,11 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		log.Error(err)
 		http.Error(w, "Failed decoding body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if strings.ToLower(redemption.Event.Reward.Title) != bttvEmoteRedemptionTitle {
+		fmt.Fprint(w, "success, not handled")
 		return
 	}
 
