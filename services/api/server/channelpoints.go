@@ -13,12 +13,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type subscription struct {
-	Redemptions []redemption
+type UserConfig struct {
+	Redemptions Redemptions
 }
 
-type redemption struct {
-	Title string
+type Redemptions struct {
+	Bttv Redemption
+}
+
+type Redemption struct {
+	Title  string
+	Active bool
 }
 
 type channelPointRedemption struct {
@@ -109,27 +114,25 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	}
 
 	// get active subscritions for this channel
-	val, err := s.store.Client.HGet("subscriptions", redemption.Event.UserID).Result()
+	val, err := s.store.Client.HGet("userConfig", redemption.Event.UserID).Result()
 	if err != nil {
 		log.Error("No active subscription found", err)
 		return
 	}
-	var sub subscription
-	if err := json.Unmarshal([]byte(val), &sub); err != nil {
+	var userCfg UserConfig
+	if err := json.Unmarshal([]byte(val), &userCfg); err != nil {
 		log.Error(err)
 		return
 	}
 
-	for _, redempt := range sub.Redemptions {
-		if strings.Contains(strings.ToLower(redempt.Title), "bttv") {
-			matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
-			if len(matches) == 1 && len(matches[0]) == 2 {
-				err = s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
-				if err != nil {
-					log.Warn(err)
-				}
-				return
+	if userCfg.Redemptions.Bttv.Active && strings.Contains(strings.ToLower(userCfg.Redemptions.Bttv.Title), "bttv") {
+		matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
+		if len(matches) == 1 && len(matches[0]) == 2 {
+			err = s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
+			if err != nil {
+				log.Warn(err)
 			}
+			return
 		}
 	}
 

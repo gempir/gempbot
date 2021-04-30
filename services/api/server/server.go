@@ -88,8 +88,9 @@ func (s *Server) Start() {
 	mux.HandleFunc("/api/ws", s.handleConnections)
 	mux.HandleFunc("/api/oauth", s.handleOauth)
 	mux.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
+	mux.HandleFunc("/api/userConfig", s.handleUserConfig)
 
-	handler := cors.Default().Handler(mux)
+	handler := cors.AllowAll().Handler(mux)
 	log.Info("[api] listening on port :8035")
 	err := http.ListenAndServe(":8035", handler)
 	if err != nil {

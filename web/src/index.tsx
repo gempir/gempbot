@@ -10,8 +10,8 @@ const GlobalStyle = createGlobalStyle`
         --bg-bright: #18181b;
         --bg-brighter: #3d4146;
         --bg-dark: #121416;
-        --theme: #00CC66;
-        --theme-bright: #00FF80;
+        --theme: #009148;
+        --theme-bright: #00a552;
         --theme2: #2980b9;
         --theme2-bright: #3498db;
         --theme2-dark: #24618a;

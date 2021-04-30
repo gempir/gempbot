@@ -11,6 +11,7 @@ import EventService from "./service/EventService";
 import { store } from "./store";
 import { EventMessage, Record } from "./types/Events";
 import { Login } from "./components/Login";
+import { Dashboard } from "./components/Dashboard";
 
 const AppContainer = styled.main`
     
@@ -35,6 +36,7 @@ export function App() {
             <Login />
             <Switch>
                 <Route path="/dashboard">
+                    <Dashboard />
                 </Route>
                 <Route path="/">
                     <Meta activeChannels={activeChannels} joinedChannels={joinedChannels} />
