@@ -29,7 +29,7 @@ export function Dashboard() {
                     <span className="slider round"></span>
                 </label>
                 <div className="redemption-title">
-                    <span>Channel Points Reward Title</span>
+                    <span>Channel Points Reward Name</span>
                     <input type="text" value={userCfg.Redemptions.Bttv.Title} spellCheck={false} onChange={(e) => {
                         const newConfig = JSON.parse(JSON.stringify(userCfg));
                         newConfig.Redemptions.Bttv.Title = e.target.value;
