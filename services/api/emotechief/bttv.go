@@ -81,6 +81,11 @@ type dashboardCfg struct {
 }
 
 func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmote *bttvEmoteResponse, removedEmote *bttvEmoteResponse, err error) {
+	addedEmote, err = getBttvEmote(emoteId)
+	if err != nil {
+		return
+	}
+
 	// first figure out the bttvUserId for the channel, might cache this later on
 	var resp *http.Response
 	resp, err = http.Get("https://api.betterttv.net/3/cached/users/twitch/" + channelUserID)
@@ -147,6 +152,10 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 			err = errors.New("Emote already added")
 			return
 		}
+		if emote.Code == addedEmote.Code {
+			err = errors.New("Emote code already added")
+			return
+		}
 	}
 
 	for _, emote := range dashboard.Channelemotes {
@@ -154,10 +163,14 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 			err = errors.New("Emote already a channelEmote")
 			return
 		}
+		if emote.Code == addedEmote.Code {
+			err = errors.New("Emote code already a channelEmote")
+			return
+		}
 	}
 
 	var currentEmoteId string
-	log.Infof("Current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
+	log.Debugf("Current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
 	// figure out the current emote
 	if len(dashboard.Sharedemotes) >= sharedEmotesLimit {
 		currentEmoteId = e.store.Client.HGet("bttv_emote", channelUserID).Val()
@@ -194,11 +207,13 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 		log.Error(err)
 		return
 	}
-	log.Infof("Added: %s %s %d", bttvUserId, emoteId, resp.StatusCode)
+	log.Debugf("Added: %s %s %d", bttvUserId, emoteId, resp.StatusCode)
 	e.store.Client.HSet("bttv_emote", channelUserID, emoteId)
 
 	removedEmote, err = getBttvEmote(currentEmoteId)
-	addedEmote, _ = getBttvEmote(emoteId)
+	if err != nil {
+		return
+	}
 
 	return
 }

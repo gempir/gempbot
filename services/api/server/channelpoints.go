@@ -169,7 +169,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		if len(matches) == 1 && len(matches[0]) == 2 {
 			emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
 			if err != nil {
-				log.Warn(err)
+				log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
 				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
 				return
 			}
