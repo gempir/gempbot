@@ -116,7 +116,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 				return map[string]UserData{}, err
 			}
 
-			log.Infof("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
+			log.Debugf("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
 
 			for _, user := range resp.Data.Users {
 				data := &UserData{

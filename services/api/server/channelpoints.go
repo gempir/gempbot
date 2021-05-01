@@ -85,6 +85,7 @@ func (s *Server) subscribeChannelPoints(userID string) {
 		return
 	}
 
+	// shit is broken here, doesn't insert
 	for _, sub := range response.Data.EventSubSubscriptions {
 		s.store.Client.HSet("subscriptions:"+userID, sub.ID)
 	}
