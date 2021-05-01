@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/nicklaw5/helix"
+	nickHelix "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -65,26 +66,58 @@ type channelPointRedemption struct {
 
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
-func (s *Server) subscribeChannelPoints(channelId string) {
-	log.Infof("Subscribing webhooks for: %s", channelId)
+func (s *Server) subscribeChannelPoints(userID string) {
+	log.Infof("Subscribing webhooks for: %s", userID)
 
 	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
 	// Internally they check if the app token has authenticated users
 	// s.helixUserClient.Client.SetUserAccessToken(s.store.Client.HGet("accessToken", "77829817").Val())
 	response, err := s.helixUserClient.Client.CreateEventSubSubscription(
-		&helix.EventSubSubscription{
-			Condition: helix.EventSubCondition{BroadcasterUserID: channelId},
+		&nickHelix.EventSubSubscription{
+			Condition: helix.EventSubCondition{BroadcasterUserID: userID},
 			Transport: helix.EventSubTransport{Method: "webhook", Callback: s.cfg.ApiBaseUrl + "/api/redemption", Secret: s.cfg.Secret},
 			Type:      "channel.channel_points_custom_reward_redemption.add",
 			Version:   "1",
 		},
 	)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Error subscribing: %s", err)
 		return
 	}
 
+	for _, sub := range response.Data.EventSubSubscriptions {
+		s.store.Client.HSet("subscriptions:"+userID, sub.ID)
+	}
+
 	log.Info(response)
+}
+
+func (s *Server) syncSubscriptions() {
+	resp, err := s.helixUserClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{})
+	if err != nil {
+		log.Errorf("Failed to get subscriptions: %s", err)
+	}
+
+	subscribed := map[string]bool{}
+
+	log.Infof("Found %d total subscriptions", resp.Data.Total)
+
+	for _, sub := range resp.Data.EventSubSubscriptions {
+		if sub.Condition.BroadcasterUserID != "" && sub.Transport.Callback == s.cfg.ApiBaseUrl+"/api/redemption" {
+			s.store.Client.HSet("subscriptions:"+sub.Condition.BroadcasterUserID, sub.ID)
+			subscribed[sub.Condition.BroadcasterUserID] = true
+		}
+	}
+
+	values, err := s.store.Client.HGetAll("userConfig").Result()
+	if err != nil {
+		log.Error("Failed to fetch current accessTokens")
+	}
+	for userID := range values {
+		if _, ok := subscribed[userID]; !ok {
+			s.subscribeChannelPoints(userID)
+		}
+	}
 }
 
 func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +158,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if userCfg.Redemptions.Bttv.Active && strings.Contains(strings.ToLower(userCfg.Redemptions.Bttv.Title), "bttv") {
+	if userCfg.Redemptions.Bttv.Active && strings.EqualFold(redemption.Event.Reward.Title, userCfg.Redemptions.Bttv.Title) {
 		matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 		if len(matches) == 1 && len(matches[0]) == 2 {
 			err = s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
@@ -137,6 +170,26 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	}
 
 	fmt.Fprint(w, "success")
+}
+
+func (s *Server) unsubscribeChannelPoints(userID string) error {
+	log.Infof("Unsubscribing webhooks for: %s", userID)
+
+	values, err := s.store.Client.HGetAll("subscriptions:" + userID).Result()
+	if err != nil {
+		return err
+	}
+
+	for _, subId := range values {
+		response, err := s.helixUserClient.Client.RemoveEventSubSubscription(subId)
+		if err != nil {
+			return err
+		}
+
+		log.Info(response)
+	}
+
+	return nil
 }
 
 func (s *Server) handleChallenge(w http.ResponseWriter, body []byte) {

@@ -82,7 +82,7 @@ func (s *Server) Start() {
 	}
 
 	go s.handleMessages()
-	go s.createSubscribtions()
+	go s.syncSubscriptions()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/ws", s.handleConnections)
@@ -91,20 +91,10 @@ func (s *Server) Start() {
 	mux.HandleFunc("/api/userConfig", s.handleUserConfig)
 
 	handler := cors.AllowAll().Handler(mux)
-	log.Info("[api] listening on port :8035")
+	log.Info("listening on port :8035")
 	err := http.ListenAndServe(":8035", handler)
 	if err != nil {
-		log.Fatal("[api] listenAndServe: ", err)
-	}
-}
-
-func (s *Server) createSubscribtions() {
-	values, err := s.store.Client.HGetAll("subscriptions").Result()
-	if err != nil {
-		log.Error("Failed to fetch current accessTokens")
-	}
-	for userID := range values {
-		s.subscribeChannelPoints(userID)
+		log.Fatal("listenAndServe: ", err)
 	}
 }
 
@@ -123,7 +113,7 @@ func (s *Server) handleConnections(w http.ResponseWriter, r *http.Request) {
 		// Read in a new message as JSON and map it to a Message object
 		err := ws.ReadJSON(&msg)
 		if err != nil {
-			log.Infof("[api] error: %v", err)
+			log.Debugf("handleConnection error: %v", err)
 			delete(clients, ws)
 			break
 		}
@@ -140,7 +130,7 @@ func (s *Server) handleMessages() {
 		for client := range clients {
 			err := client.WriteJSON(msg)
 			if err != nil {
-				log.Errorf("[api] error: %v", err)
+				log.Errorf("broadcast error: %v", err)
 				client.Close()
 				delete(clients, client)
 			}

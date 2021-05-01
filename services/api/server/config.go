@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/go-redis/redis/v7"
 	"github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
@@ -45,10 +46,40 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		newConfig := false
+
+		_, err = s.store.Client.HGet("userConfig", auth.Data.UserID).Result()
+		if err == redis.Nil {
+			newConfig = true
+		} else if err != nil {
+			log.Error(err)
+		}
+
 		_, err = s.store.Client.HSet("userConfig", auth.Data.UserID, body).Result()
 		if err != nil {
 			log.Error(err)
 			http.Error(w, "Failed updating: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if newConfig {
+			log.Info("Created new config for: ", auth.Data.Login)
+			s.subscribeChannelPoints(auth.Data.UserID)
+		}
+
+		writeJSON(w, "", http.StatusOK)
+	} else if r.Method == http.MethodDelete {
+		_, err := s.store.Client.HDel("userConfig", auth.Data.UserID).Result()
+		if err != nil {
+			log.Error(err)
+			http.Error(w, "Failed deleting: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = s.unsubscribeChannelPoints(auth.Data.UserID)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, "Failed to unsubscribe"+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -66,7 +97,10 @@ func writeJSON(w http.ResponseWriter, data interface{}, code int) {
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
-	w.Write(js)
+	_, err = w.Write(js)
+	if err != nil {
+		log.Errorf("Faile to writeJSON: %s", err)
+	}
 }
 
 func (s *Server) authenticate(r *http.Request) (bool, *helix.ValidateTokenResponse) {

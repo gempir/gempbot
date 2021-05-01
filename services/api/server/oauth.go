@@ -29,7 +29,7 @@ func (s *Server) handleOauth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.store.Client.HSet("accessToken", resp.Data.UserID, data.AccessToken)
-	log.Infof("Stored new accessToken for %s %v", resp.Data.Login, resp.Data.Scopes)
+	log.Debugf("Stored new accessToken for %s %v", resp.Data.Login, resp.Data.Scopes)
 
 	fmt.Fprint(w, "success")
 }

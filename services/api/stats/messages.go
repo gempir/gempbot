@@ -33,7 +33,7 @@ func NewBroadcaster(broadcastQueue chan server.BroadcastMessage, store *store.St
 }
 
 func (b *Broadcaster) Start() {
-	log.Info("[stats] starting stats broadcaster")
+	log.Info("starting stats broadcaster")
 
 	go b.startTicker()
 

@@ -20,6 +20,7 @@ export function useUserConfig(onSave: () => void): [UserConfig | null, (userConf
     const { accessToken, apiBaseUrl } = useContext(store).state;
 
     const [userConfig, setUserConfig] = useState<UserConfig | null>(null);
+    const [changeCounter, setChangeCounter] = useState(0);
 
     useEffect(() => {
         if (accessToken) {
@@ -31,10 +32,15 @@ export function useUserConfig(onSave: () => void): [UserConfig | null, (userConf
 
 
     useDebounce(() => {
-        if (userConfig && accessToken) {
+        if (changeCounter && userConfig && accessToken) {
             fetch(apiBaseUrl + "/api/userConfig", { headers: { accessToken }, method: "POST", body: JSON.stringify(userConfig) }).then(onSave);
         }
-    }, 500, [userConfig]);
+    }, 500, [changeCounter]);
 
-    return [userConfig, setUserConfig]
+    const setCfg = (config: UserConfig) => {
+        setUserConfig(config)
+        setChangeCounter(changeCounter + 1);
+    };
+
+    return [userConfig, setCfg]
 }

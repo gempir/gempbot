@@ -36,7 +36,7 @@ type ChannelConfig struct {
 func NewConfig(filePath string) *Config {
 	cfg := loadConfiguration(filePath)
 
-	log.Info("[config] loaded config from " + filePath)
+	log.Info("loaded config from " + filePath)
 
 	return cfg
 }
@@ -109,7 +109,7 @@ func loadConfiguration(filePath string) *Config {
 
 	// ensure required
 	if cfg.ClientID == "" {
-		log.Fatal("[config] No clientID specified")
+		log.Fatal("No clientID specified")
 	}
 
 	return &cfg

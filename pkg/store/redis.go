@@ -22,7 +22,7 @@ func NewStore() *Store {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Info("[store] connection to redis established")
+	log.Info("connection to redis established")
 
 	return &Store{
 		Client: client,
@@ -59,7 +59,7 @@ func (s *Store) AddChannels(channelIDs ...string) {
 			continue
 		}
 	}
-	log.Infof("[store] added %v", channelIDs)
+	log.Debugf(" added %v", channelIDs)
 }
 
 func (s *Store) PublishPrivateMessage(message string) {
@@ -110,7 +110,7 @@ func (s *Store) RemoveChannel(channelID string) {
 	if err != nil {
 		log.Error(err)
 	}
-	log.Infof("[store] removed %s", channelID)
+	log.Infof("removed %s", channelID)
 }
 
 func (s *Store) GetAllChannels() []string {
