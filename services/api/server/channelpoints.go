@@ -85,7 +85,6 @@ func (s *Server) subscribeChannelPoints(userID string) {
 		return
 	}
 
-	// shit is broken here, doesn't insert
 	for _, sub := range response.Data.EventSubSubscriptions {
 		s.store.Client.HSet("subscriptions:"+userID, sub.ID)
 	}
@@ -148,9 +147,9 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	}
 
 	// get active subscritions for this channel
-	val, err := s.store.Client.HGet("userConfig", redemption.Event.UserID).Result()
+	val, err := s.store.Client.HGet("userConfig", redemption.Event.BroadcasterUserID).Result()
 	if err != nil {
-		log.Error("No active subscription found", err)
+		log.Errorf("No active subscription found %s", err)
 		return
 	}
 	var userCfg UserConfig
