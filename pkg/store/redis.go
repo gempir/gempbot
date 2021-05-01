@@ -87,14 +87,14 @@ type SpeakerMessage struct {
 	Message string
 }
 
-func (s *Store) PublishSpeakerMessage(channel, message string) error {
+func (s *Store) PublishSpeakerMessage(channel, message string) {
 	data, err := json.Marshal(&SpeakerMessage{channel, message})
 	if err != nil {
-		return err
+		log.Error(err)
+		return
 	}
 
 	s.Client.Publish("SPEAKERMESSAGE", data)
-	return nil
 }
 
 func (s *Store) PublishActiveChannels(count int) {

@@ -47,6 +47,24 @@ type bttvDashboardResponse struct {
 	} `json:"sharedEmotes"`
 }
 
+type bttvEmoteResponse struct {
+	ID             string    `json:"id"`
+	Code           string    `json:"code"`
+	Imagetype      string    `json:"imageType"`
+	Createdat      time.Time `json:"createdAt"`
+	Updatedat      time.Time `json:"updatedAt"`
+	Global         bool      `json:"global"`
+	Live           bool      `json:"live"`
+	Sharing        bool      `json:"sharing"`
+	Approvalstatus string    `json:"approvalStatus"`
+	User           struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Displayname string `json:"displayName"`
+		Providerid  string `json:"providerId"`
+	} `json:"user"`
+}
+
 type dashboardsResponse []dashboardCfg
 
 type dashboardCfg struct {
@@ -86,11 +104,11 @@ type accountResponse struct {
 	Email string `json:"email"`
 }
 
-func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) error {
+func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (*bttvEmoteResponse, error) {
 	// first figure out the bttvUserId for the channel, might cache this later on
 	resp, err := http.Get("https://api.betterttv.net/3/cached/users/twitch/" + channelUserID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var userResp struct {
@@ -98,7 +116,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) error {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&userResp)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	bttvUserId := userResp.ID
 
@@ -107,18 +125,19 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) error {
 	req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
 	if err != nil {
 		log.Error(err)
+		return nil, err
 	}
 
 	resp, err = e.httpClient.Do(req)
 	if err != nil {
 		log.Error(err)
-		return err
+		return nil, err
 	}
 
 	var dashboards dashboardsResponse
 	err = json.NewDecoder(resp.Body).Decode(&dashboards)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var dbCfg dashboardCfg
@@ -128,31 +147,31 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) error {
 		}
 	}
 	if dbCfg.ID == "" {
-		return errors.New("Dashboard not found in account, no permission to moderate")
+		return nil, errors.New("Dashboard not found in account, no permission to moderate")
 	}
 	sharedEmotesLimit := dbCfg.Limits.Sharedemotes
 
 	// figure currently added emotes
 	resp, err = http.Get("https://api.betterttv.net/3/users/" + bttvUserId + "?limited=false&personal=false")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var dashboard bttvDashboardResponse
 	err = json.NewDecoder(resp.Body).Decode(&dashboard)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, emote := range dashboard.Sharedemotes {
 		if emote.ID == emoteId {
-			return errors.New("Emote already added")
+			return nil, errors.New("Emote already added")
 		}
 	}
 
 	for _, emote := range dashboard.Channelemotes {
 		if emote.ID == emoteId {
-			return errors.New("Emote already a channelEmote")
+			return nil, errors.New("Emote already a channelEmote")
 		}
 	}
 
@@ -174,7 +193,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) error {
 		resp, err = e.httpClient.Do(req)
 		if err != nil {
 			log.Error(err)
-			return err
+			return nil, err
 		}
 		log.Infof("Deleted: %s %s %d", bttvUserId, currentEmoteId, resp.StatusCode)
 	}
@@ -184,18 +203,28 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) error {
 	req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
 	if err != nil {
 		log.Error(err)
-		return err
+		return nil, err
 	}
 
 	resp, err = e.httpClient.Do(req)
 	if err != nil {
 		log.Error(err)
-		return err
+		return nil, err
 	}
 	log.Infof("Added: %s %s %d", bttvUserId, emoteId, resp.StatusCode)
 	e.store.Client.HSet("bttv_emote", channelUserID, emoteId)
 
-	err = e.store.PublishSpeakerMessage(channel, "Added new emote: "+emoteId)
+	response, err := http.Get("https://api.betterttv.net/3/emotes/" + emoteId)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
 
-	return err
+	var emoteResponse bttvEmoteResponse
+	err = json.NewDecoder(response.Body).Decode(&emoteResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emoteResponse, nil
 }
