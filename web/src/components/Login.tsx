@@ -58,7 +58,7 @@ export function Login() {
     url.searchParams.set("client_id", state.twitchClientId);
     url.searchParams.set("redirect_uri", state.baseUrl);
     url.searchParams.set("response_type", "token");
-    url.searchParams.set("scope", "channel:read:redemptions");
+    url.searchParams.set("scope", "channel:read:redemptions,channel:read:redemptions");
 
     return <LoginContainer href={url.toString()}>Login</LoginContainer>;
 }
