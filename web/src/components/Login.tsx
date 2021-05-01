@@ -46,6 +46,7 @@ export function Login() {
                 method: 'post',
                 body: JSON.stringify({accessToken: state.accessToken})
             })
+            // validate accessToken
         }
     }, [state.accessToken, state.apiBaseUrl]);
 
@@ -97,11 +98,19 @@ const DashboardButton = styled.div`
     text-decoration: none;
     font-weight: bold;
     border-radius: 3px;
-    background: var(--theme2);
+    background: var(--theme2-dark);
     cursor: pointer;
 
+    &.dashboard {
+        background: var(--theme);
+
+        &:hover {
+        background: var(--theme-bright);
+    }
+    }
+
     &:hover {
-        background: var(--theme2-dark);
+        background: var(--theme2);
     }
 `;
 
@@ -122,7 +131,7 @@ function LoggedIn() {
             </DashboardButton>
         </Link>
         <Link to="/dashboard">
-            <DashboardButton>
+            <DashboardButton className="dashboard">
                 Dashboard
             </DashboardButton>
         </Link>

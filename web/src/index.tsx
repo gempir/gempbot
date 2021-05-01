@@ -19,6 +19,8 @@ const GlobalStyle = createGlobalStyle`
         --text-dark: #616161;
         --twitch: #6441a5;
         --twitch-dark: #4c317e;
+        --danger: #e74c3c;
+        --danger-dark: #c0392b;
 
         background: var(--bg);
         margin: 0;

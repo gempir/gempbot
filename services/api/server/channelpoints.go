@@ -67,8 +67,6 @@ type channelPointRedemption struct {
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
 func (s *Server) subscribeChannelPoints(userID string) {
-	log.Infof("Subscribing webhooks for: %s", userID)
-
 	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
 	// Internally they check if the app token has authenticated users
 	// s.helixUserClient.Client.SetUserAccessToken(s.store.Client.HGet("accessToken", "77829817").Val())
@@ -86,10 +84,29 @@ func (s *Server) subscribeChannelPoints(userID string) {
 	}
 
 	for _, sub := range response.Data.EventSubSubscriptions {
-		s.store.Client.HSet("subscriptions:"+userID, sub.ID)
+		log.Infof("New subscription for %s id: %s", userID, sub.ID)
+		s.store.Client.HSet("subscriptions", userID, sub.ID)
 	}
 
 	log.Info(response)
+}
+
+func (s *Server) unsubscribeChannelPoints(userID string) error {
+	log.Infof("Unsubscribing webhooks for: %s", userID)
+
+	subId, err := s.store.Client.HGet("subscriptions", userID).Result()
+	if err != nil {
+		return err
+	}
+
+	response, err := s.helixUserClient.Client.RemoveEventSubSubscription(subId)
+	if err != nil {
+		return err
+	}
+
+	log.Info(response)
+
+	return nil
 }
 
 func (s *Server) syncSubscriptions() {
@@ -98,24 +115,13 @@ func (s *Server) syncSubscriptions() {
 		log.Errorf("Failed to get subscriptions: %s", err)
 	}
 
-	subscribed := map[string]bool{}
-
-	log.Infof("Found %d total subscriptions", resp.Data.Total)
+	log.Infof("Found %d total subscriptions, syncing to DB", resp.Data.Total)
 
 	for _, sub := range resp.Data.EventSubSubscriptions {
-		if sub.Condition.BroadcasterUserID != "" && sub.Transport.Callback == s.cfg.ApiBaseUrl+"/api/redemption" {
-			s.store.Client.HSet("subscriptions:"+sub.Condition.BroadcasterUserID, sub.ID)
-			subscribed[sub.Condition.BroadcasterUserID] = true
-		}
-	}
-
-	values, err := s.store.Client.HGetAll("userConfig").Result()
-	if err != nil {
-		log.Error("Failed to fetch current accessTokens")
-	}
-	for userID := range values {
-		if _, ok := subscribed[userID]; !ok {
-			s.subscribeChannelPoints(userID)
+		if sub.Condition.BroadcasterUserID != "" {
+			s.store.Client.HSet("subscriptions", sub.Condition.BroadcasterUserID, sub.ID)
+		} else {
+			log.Warnf("Unknown subscription %v", sub)
 		}
 	}
 }
@@ -181,26 +187,6 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	}
 
 	fmt.Fprint(w, "success")
-}
-
-func (s *Server) unsubscribeChannelPoints(userID string) error {
-	log.Infof("Unsubscribing webhooks for: %s", userID)
-
-	values, err := s.store.Client.HGetAll("subscriptions:" + userID).Result()
-	if err != nil {
-		return err
-	}
-
-	for _, subId := range values {
-		response, err := s.helixUserClient.Client.RemoveEventSubSubscription(subId)
-		if err != nil {
-			return err
-		}
-
-		log.Info(response)
-	}
-
-	return nil
 }
 
 func (s *Server) handleChallenge(w http.ResponseWriter, body []byte) {

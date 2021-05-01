@@ -1,11 +1,12 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useUserConfig } from "../hooks/useUserConfig";
+import { Reset } from "./Reset";
 
 export function Dashboard() {
     const [classNames, setClassNames] = useState(["userConfig"]);
 
-    const [userCfg, setConfig] = useUserConfig(() => {
+    const [userCfg, setUserConfig] = useUserConfig(() => {
         const newClassNames = classNames.slice();
         newClassNames.push("saved");
         setClassNames(newClassNames)
@@ -16,6 +17,7 @@ export function Dashboard() {
     });
 
     return <DashboardContainer>
+        {userCfg && <Reset setUserConfig={setUserConfig} />}
         {userCfg && <div className={classNames.join(" ")}>
             <div className={"redemption"}>
                 <img src="/images/bttv.png" alt={"bttv"} />
@@ -24,7 +26,7 @@ export function Dashboard() {
                         const newConfig = JSON.parse(JSON.stringify(userCfg));
                         newConfig.Redemptions.Bttv.Active = e.target.checked;
 
-                        setConfig(newConfig);
+                        setUserConfig(newConfig);
                     }} />
                     <span className="slider round"></span>
                 </label>
@@ -34,7 +36,7 @@ export function Dashboard() {
                         const newConfig = JSON.parse(JSON.stringify(userCfg));
                         newConfig.Redemptions.Bttv.Title = e.target.value;
 
-                        setConfig(newConfig);
+                        setUserConfig(newConfig);
                     }} />
                 </div>
                 <span className="hint">
@@ -63,8 +65,9 @@ const DashboardContainer = styled.div`
     .redemption {
         display: flex;
         align-items: center;
-        background: var(--bg-dark);
-        padding: 1rem;
+        background: var(--bg-bright);
+        border: 1px solid var(--bg-brighter);
+        padding: 0.5rem;
 
         img {
             max-height: 3rem;
@@ -77,7 +80,7 @@ const DashboardContainer = styled.div`
 
             span {
                 position: absolute;
-                top: -15px;
+                top: -13px;
                 left: 18px;
                 font-size: 11px;
             }
@@ -114,15 +117,13 @@ const DashboardContainer = styled.div`
         display: inline-block;
         width: 60px;
         height: 34px;
-    }
 
-    /* Hide default HTML checkbox */
-    .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
+        input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
     }
-
     /* The slider */
     .slider {
         position: absolute;
@@ -134,26 +135,26 @@ const DashboardContainer = styled.div`
         background-color: #ccc;
         -webkit-transition: .4s;
         transition: .4s;
-    }
 
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        -webkit-transition: .4s;
-        transition: .4s;
+        &:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
     }
 
     input:checked + .slider {
-        background-color: #2196F3;
+        background-color: var(--theme-bright);
     }
 
     input:focus + .slider {
-     box-shadow: 0 0 1px #2196F3;
+     box-shadow: 0 0 1px var(--theme-bright);
     }
 
     input:checked + .slider:before {
@@ -162,12 +163,11 @@ const DashboardContainer = styled.div`
         transform: translateX(26px);
     }
 
-    /* Rounded sliders */
     .slider.round {
         border-radius: 34px;
-    }
 
-    .slider.round:before {
-        border-radius: 50%;
+        &:before {
+            border-radius: 50%;
+        }
     }
 `;
