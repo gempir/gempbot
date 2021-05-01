@@ -29,6 +29,14 @@
     port: '443'
     proto: tcp
 
+- name: sshd configuration file update
+  template:
+    src: templates/config.json.j2 
+    dest: /etc/ssh/sshd_config
+  validate: '/usr/sbin/sshd -T -f %s'
+  notify:
+  - restart sshd
+
 - name: Set firewall default policy
   ufw: 
     state: enabled 
