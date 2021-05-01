@@ -54,13 +54,7 @@ export function Login() {
         return <LoggedIn />;
     }
 
-    const url = new URL("https://id.twitch.tv/oauth2/authorize")
-    url.searchParams.set("client_id", state.twitchClientId);
-    url.searchParams.set("redirect_uri", state.baseUrl);
-    url.searchParams.set("response_type", "token");
-    url.searchParams.set("scope", "channel:read:redemptions channel:manage:redemptions");
-
-    return <LoginContainer href={url.toString()}>Login</LoginContainer>;
+    return <LoginContainer href={createOAuthUrl(state.twitchClientId, state.baseUrl).toString()}>Login</LoginContainer>;
 }
 
 const ButtonsContainer = styled.div`
@@ -118,11 +112,7 @@ function LoggedIn() {
     const {state} = useContext(store);
     const [loginText, setLoginText] = useState("Logged In");
 
-    const url = new URL("https://id.twitch.tv/oauth2/authorize")
-    url.searchParams.set("client_id", state.twitchClientId);
-    url.searchParams.set("redirect_uri", state.baseUrl);
-    url.searchParams.set("response_type", "token");
-    url.searchParams.set("scope", "channel:read:redemptions");
+    
 
     return <ButtonsContainer>
         <Link to="/">
@@ -135,8 +125,18 @@ function LoggedIn() {
                 Dashboard
             </DashboardButton>
         </Link>
-        <LoggedInContainer href={url.toString()} onMouseEnter={() => setLoginText("force login")} onMouseLeave={() => setLoginText("Logged In")}>
+        <LoggedInContainer href={createOAuthUrl(state.twitchClientId, state.baseUrl).toString()} onMouseEnter={() => setLoginText("force login")} onMouseLeave={() => setLoginText("Logged In")}>
             {loginText}
         </LoggedInContainer>
     </ButtonsContainer>;
+}
+
+function createOAuthUrl(clientId: string, baseUrl: string): URL {
+    const url = new URL("https://id.twitch.tv/oauth2/authorize")
+    url.searchParams.set("client_id", clientId);
+    url.searchParams.set("redirect_uri", baseUrl);
+    url.searchParams.set("response_type", "token");
+    url.searchParams.set("scope", "channel:read:redemptions channel:manage:redemptions");
+
+    return url;
 }
