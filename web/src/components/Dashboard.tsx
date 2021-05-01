@@ -28,12 +28,18 @@ export function Dashboard() {
                     }} />
                     <span className="slider round"></span>
                 </label>
-                <input type="text" value={userCfg.Redemptions.Bttv.Title} spellCheck={false} onChange={(e) => {
-                    const newConfig = JSON.parse(JSON.stringify(userCfg));
-                    newConfig.Redemptions.Bttv.Title = e.target.value;
+                <div className="redemption-title">
+                    <span>Channel Points Reward Title</span>
+                    <input type="text" value={userCfg.Redemptions.Bttv.Title} spellCheck={false} onChange={(e) => {
+                        const newConfig = JSON.parse(JSON.stringify(userCfg));
+                        newConfig.Redemptions.Bttv.Title = e.target.value;
 
-                    setConfig(newConfig);
-                }} />
+                        setConfig(newConfig);
+                    }} />
+                </div>
+                <span className="hint">
+                    make sure <strong>gempbot</strong> is bttv editor
+                </span>
             </div>
         </div>}
     </DashboardContainer>
@@ -66,19 +72,38 @@ const DashboardContainer = styled.div`
             margin-right: 2rem;
         }
 
-        input {
-            margin: 0;
-            padding: 0;
-            margin-left: 1rem;
-            font-size: 1rem;
-            background: var(--bg);
-            border: 1px solid var(--bg-bright);
-            padding: 5px;
-            color: white;
+        .redemption-title {
+            position: relative;
 
-            &:focus {
-                outline: none;
-                border: 1px solid var(--theme2);
+            span {
+                position: absolute;
+                top: -15px;
+                left: 18px;
+                font-size: 11px;
+            }
+
+            input {
+                margin: 0;
+                padding: 0;
+                margin-left: 1rem;
+                font-size: 1rem;
+                background: var(--bg);
+                border: 1px solid var(--bg-bright);
+                padding: 5px;
+                color: white;
+
+                &:focus {
+                    outline: none;
+                    border: 1px solid var(--theme2);
+                }
+            }
+        }
+        
+        .hint {
+            margin-left: 1rem;
+
+            strong {
+                color: var(--theme-bright);
             }
         }
     }

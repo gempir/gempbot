@@ -80,30 +80,6 @@ type dashboardCfg struct {
 	} `json:"limits"`
 }
 
-type accountResponse struct {
-	ID                    string      `json:"id"`
-	Flags                 int         `json:"flags"`
-	Name                  string      `json:"name"`
-	Displayname           string      `json:"displayName"`
-	Avatar                string      `json:"avatar"`
-	Providerid            string      `json:"providerId"`
-	Bots                  []string    `json:"bots"`
-	Subscriptionid        interface{} `json:"subscriptionId"`
-	Subscriptioncreatedat interface{} `json:"subscriptionCreatedAt"`
-	Glow                  bool        `json:"glow"`
-	Plan                  string      `json:"plan"`
-	Limits                struct {
-		Channelemotes  int `json:"channelEmotes"`
-		Sharedemotes   int `json:"sharedEmotes"`
-		Personalemotes int `json:"personalEmotes"`
-	} `json:"limits"`
-	Discord struct {
-		Userid  interface{} `json:"userId"`
-		Guildid interface{} `json:"guildId"`
-	} `json:"discord"`
-	Email string `json:"email"`
-}
-
 func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmote *bttvEmoteResponse, removedEmote *bttvEmoteResponse, err error) {
 	// first figure out the bttvUserId for the channel, might cache this later on
 	var resp *http.Response
