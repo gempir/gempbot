@@ -161,14 +161,21 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	if userCfg.Redemptions.Bttv.Active && strings.EqualFold(redemption.Event.Reward.Title, userCfg.Redemptions.Bttv.Title) {
 		matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 		if len(matches) == 1 && len(matches[0]) == 2 {
-			emoteResponse, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
+			emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
 			if err != nil {
 				log.Warn(err)
 				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
 				return
 			}
 
-			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteResponse.Code, redemption.Event.UserName))
+			if emoteAdded != nil && emoteRemoved != nil {
+				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
+			} else if emoteAdded != nil {
+				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
+			} else {
+				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
+			}
+
 			return
 		}
 	}

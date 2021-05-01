@@ -3,6 +3,7 @@ package bot
 import (
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/gempir/spamchamp/pkg/config"
+	"github.com/gempir/spamchamp/pkg/humanize"
 	"github.com/gempir/spamchamp/pkg/store"
 )
 
@@ -30,5 +31,5 @@ func (b *Bot) Connect() {
 }
 
 func (b *Bot) Say(channel, message string) {
-	b.client.Say(channel, message)
+	b.client.Say(channel, humanize.CharLimiter(message, 500))
 }
