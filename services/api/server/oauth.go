@@ -49,7 +49,17 @@ func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, statu
 		"result": {fmt.Sprint(status)},
 	}
 
-	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode()+"#"+scToken, http.StatusFound)
+	cookie := http.Cookie{
+		Name:    "scToken",
+		Value:   scToken,
+		Domain:  s.cfg.CookieDomain,
+		Expires: time.Now().Add(365 * 24 * time.Hour),
+		Path:    "/",
+	}
+
+	http.SetCookie(w, &cookie)
+
+	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode(), http.StatusFound)
 }
 
 func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse, *userAcessTokenData) {
@@ -115,7 +125,6 @@ func (s *Server) refreshToken(scToken string, token userAcessTokenData) (bool, *
 		log.Errorf("failed to set userAccessTokenData to redis: %s", err)
 		return false, nil
 	}
-	log.Infof("refreshed a token")
 
 	return true, &newToken
 }

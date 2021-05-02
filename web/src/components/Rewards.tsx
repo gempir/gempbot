@@ -20,7 +20,7 @@ const RewardContainer = styled.div`
 
 export function Rewards({ rewards }: { rewards: Array<RewardInterface> }) {
     return <RewardsContainer>
-        {rewards.map(reward => <RewardContainer>
+        {rewards.map(reward => <RewardContainer key={reward.id}>
             <div className="container">
                 <img src={reward.image?.url_2x ?? reward.default_image.url_2x} alt={reward.title} />
                 <div>
