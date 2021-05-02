@@ -19,7 +19,7 @@ func (s *Server) handleOauth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	success, resp, err := s.helixClient.Client.ValidateToken(data.AccessToken)
+	success, _, err := s.helixClient.Client.ValidateToken(data.AccessToken)
 	if !success || err != nil {
 		if err != nil {
 			log.Error(err)
@@ -27,9 +27,6 @@ func (s *Server) handleOauth(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "token did not validate", http.StatusBadRequest)
 		return
 	}
-
-	s.store.Client.HSet("accessToken", resp.Data.UserID, data.AccessToken)
-	log.Debugf("Stored new accessToken for %s %v", resp.Data.Login, resp.Data.Scopes)
 
 	fmt.Fprint(w, "success")
 }
