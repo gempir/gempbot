@@ -1,3 +1,4 @@
 ---
 web_host: spamchamp.gempir.com
+cookie_domain: gempir.com
 api_host: spamchamp-api.gempir.com

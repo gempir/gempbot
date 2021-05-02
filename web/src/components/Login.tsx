@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from "react";
-import { store } from "./../store";
-import styled from "styled-components";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import styled from "styled-components";
+import { store } from "./../store";
 
 const LoginContainer = styled.a`
     position: absolute;
@@ -21,40 +21,13 @@ const LoginContainer = styled.a`
 `;
 
 export function Login() {
-    const {state, setAccessToken} = useContext(store);
+    const { state } = useContext(store);
 
-    useEffect(() => {
-        const hash = window.location.hash;
-        window.location.hash = "";
-        if (hash) {
-            const reg = /#access_token=(\w*)&/ig;
-            const match = reg.exec(hash);
-            if (!match || typeof match[1] === "undefined") {
-                return;
-            }
-
-            if (match[1] ){
-                window.localStorage.setItem("accessToken", match[1]);
-                setAccessToken(match[1]);
-            }
-        }
-    }, [state.apiBaseUrl, setAccessToken]);
-
-    useEffect(() => {
-        if (state.accessToken) {
-            fetch(state.apiBaseUrl + "/api/oauth", {
-                method: 'post',
-                body: JSON.stringify({accessToken: state.accessToken})
-            })
-            // validate accessToken
-        }
-    }, [state.accessToken, state.apiBaseUrl]);
-
-    if (state.accessToken) {
+    if (state.scToken) {
         return <LoggedIn />;
     }
 
-    return <LoginContainer href={createOAuthUrl(state.twitchClientId, state.baseUrl).toString()}>Login</LoginContainer>;
+    return <LoginContainer href={createOAuthUrl(state.twitchClientId, state.apiBaseUrl).toString()}>Login</LoginContainer>;
 }
 
 const ButtonsContainer = styled.div`
@@ -109,10 +82,10 @@ const DashboardButton = styled.div`
 `;
 
 function LoggedIn() {
-    const {state} = useContext(store);
+    const { state } = useContext(store);
     const [loginText, setLoginText] = useState("Logged In");
 
-    
+
 
     return <ButtonsContainer>
         <Link to="/">
@@ -125,17 +98,18 @@ function LoggedIn() {
                 Dashboard
             </DashboardButton>
         </Link>
-        <LoggedInContainer href={createOAuthUrl(state.twitchClientId, state.baseUrl).toString()} onMouseEnter={() => setLoginText("force login")} onMouseLeave={() => setLoginText("Logged In")}>
+        <LoggedInContainer href={createOAuthUrl(state.twitchClientId, state.apiBaseUrl).toString()} onMouseEnter={() => setLoginText("force login")} onMouseLeave={() => setLoginText("Logged In")}>
             {loginText}
         </LoggedInContainer>
     </ButtonsContainer>;
 }
 
-function createOAuthUrl(clientId: string, baseUrl: string): URL {
+function createOAuthUrl(clientId: string, apiBaseUrl: string): URL {
     const url = new URL("https://id.twitch.tv/oauth2/authorize")
     url.searchParams.set("client_id", clientId);
-    url.searchParams.set("redirect_uri", baseUrl);
-    url.searchParams.set("response_type", "token");
+    url.searchParams.set("redirect_uri", apiBaseUrl + "/api/callback");
+    url.searchParams.set("response_type", "code");
+    url.searchParams.set("claims", JSON.stringify({ "userinfo": { "picture": null, "preferred_username": null, } }));
     url.searchParams.set("scope", "channel:read:redemptions channel:manage:redemptions");
 
     return url;

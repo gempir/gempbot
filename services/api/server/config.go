@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-redis/redis/v7"
-	"github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -101,18 +100,4 @@ func writeJSON(w http.ResponseWriter, data interface{}, code int) {
 	if err != nil {
 		log.Errorf("Faile to writeJSON: %s", err)
 	}
-}
-
-func (s *Server) authenticate(r *http.Request) (bool, *helix.ValidateTokenResponse) {
-	token := r.Header.Get("accessToken")
-	if token == "" {
-		return false, nil
-	}
-
-	success, resp, err := s.helixClient.Client.ValidateToken(token)
-	if err != nil {
-		log.Errorf("Failed to authenticate: %s", err)
-	}
-
-	return success, resp
 }

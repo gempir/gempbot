@@ -83,10 +83,11 @@ func (s *Server) Start() {
 
 	go s.handleMessages()
 	go s.syncSubscriptions()
+	go s.tokenRefreshRoutine()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/ws", s.handleConnections)
-	mux.HandleFunc("/api/oauth", s.handleOauth)
+	mux.HandleFunc("/api/callback", s.handleCallback)
 	mux.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
 	mux.HandleFunc("/api/userConfig", s.handleUserConfig)
 

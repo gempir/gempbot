@@ -4,7 +4,7 @@ export interface State {
     apiBaseUrl: string,
     twitchClientId: string,
     baseUrl: string,
-    accessToken: string | null,
+    scToken: string | null,
 }
 
 export type Action = Record<string, unknown>;
@@ -14,10 +14,10 @@ const defaultContext = {
         apiBaseUrl: process.env.REACT_APP_API_BASE_URL,
         twitchClientId: process.env.REACT_APP_TWITCH_CLIENT_ID,
         baseUrl: process.env.REACT_APP_BASE_URL,
-        accessToken: window.localStorage.getItem("accessToken")
+        scToken: window.localStorage.getItem("scToken")
     } as State,
     setState: (state: State) => { },
-    setAccessToken: (accessToken: string) => { },
+    setScToken: (scToken: string | null) => { },
 };
 
 const store = createContext(defaultContext);
@@ -26,9 +26,17 @@ const { Provider } = store;
 const StateProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
     const [state, setState] = useState({ ...defaultContext.state });
 
-    const setAccessToken = (accessToken: string) => setState({...state, accessToken});
+    const setScToken = (scToken: string | null) => {
+        if (scToken === null) {
+            window.localStorage.removeItem("scToken");
+        } else {
+            window.localStorage.setItem("scToken", scToken);
+        }
 
-    return <Provider value={{ state, setState, setAccessToken }}>{children}</Provider>;
+        setState({...state, scToken});
+    };
+
+    return <Provider value={{ state, setState, setScToken }}>{children}</Provider>;
 };
 
 export { store, StateProvider };

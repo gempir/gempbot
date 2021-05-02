@@ -24,6 +24,9 @@ type Config struct {
 	LogLevel              string   `json:"logLevel"`
 	Secret                string   `json:"secret"`
 	ApiBaseUrl            string   `json:"apiBaseUrl"`
+	WebBaseUrl            string   `json:"webBaseUrl"`
+	WebhookApiBaseUrl     string   `json:"webhookApiBaseUrl"`
+	CookieDomain          string   `json:"cookieDomain"`
 	BttvToken             string   `json:"bttvToken"`
 }
 

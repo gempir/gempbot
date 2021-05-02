@@ -29,10 +29,11 @@ func init() {
 }
 
 // NewClient Create helix client
-func NewClient(clientID, clientSecret string) *Client {
+func NewClient(clientID, clientSecret, redirectURI string) *Client {
 	client, err := helixClient.NewClient(&helixClient.Options{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
+		RedirectURI:  redirectURI,
 	})
 	if err != nil {
 		panic(err)
