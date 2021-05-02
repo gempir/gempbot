@@ -15,7 +15,7 @@ func main() {
 
 	cfg := config.NewConfig(*configFile)
 	rStore := store.NewStore()
-	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret)
+	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, "")
 
 	bot := collector.NewBot(cfg, helixClient, rStore)
 	go bot.Connect()
