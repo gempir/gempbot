@@ -83,6 +83,7 @@ func (s *Server) Start() {
 
 	go s.handleMessages()
 	go s.syncSubscriptions()
+	go s.tokenRefreshRoutine()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/ws", s.handleConnections)
