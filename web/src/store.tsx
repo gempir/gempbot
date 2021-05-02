@@ -17,7 +17,7 @@ const defaultContext = {
         scToken: window.localStorage.getItem("scToken")
     } as State,
     setState: (state: State) => { },
-    setScToken: (scToken: string) => { },
+    setScToken: (scToken: string | null) => { },
 };
 
 const store = createContext(defaultContext);
@@ -26,8 +26,13 @@ const { Provider } = store;
 const StateProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
     const [state, setState] = useState({ ...defaultContext.state });
 
-    const setScToken = (scToken: string) => {
-        window.localStorage.setItem("scToken", scToken);
+    const setScToken = (scToken: string | null) => {
+        if (scToken === null) {
+            window.localStorage.removeItem("scToken");
+        } else {
+            window.localStorage.setItem("scToken", scToken);
+        }
+
         setState({...state, scToken});
     };
 
