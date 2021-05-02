@@ -48,11 +48,8 @@ func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, statu
 	params := url.Values{
 		"result": {fmt.Sprint(status)},
 	}
-	if scToken != "" {
-		params.Add("scToken", scToken)
-	}
 
-	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode(), http.StatusFound)
+	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode()+"#"+scToken, http.StatusFound)
 }
 
 func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse) {
