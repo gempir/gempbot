@@ -160,7 +160,7 @@ func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenRe
 	return success, resp, &token
 }
 
-func (s *Server) refreshToken(scToken string, token userAcessTokenData) (bool, *userAcessTokenData) {
+func (s *Server) refreshToken(userID string, token userAcessTokenData) (bool, *userAcessTokenData) {
 	resp, err := s.helixClient.Client.RefreshUserAccessToken(token.RefreshToken)
 	if err != nil {
 		log.Errorf("failed refresh userAcessToken: %s", err)
@@ -174,7 +174,7 @@ func (s *Server) refreshToken(scToken string, token userAcessTokenData) (bool, *
 		return false, nil
 	}
 
-	err = s.store.Client.HSet("userAccessTokens", scToken, marshalled).Err()
+	err = s.store.Client.HSet("userAccessTokensData", userID, marshalled).Err()
 	if err != nil {
 		log.Errorf("failed to set userAccessTokenData to redis: %s", err)
 		return false, nil
@@ -187,7 +187,7 @@ func (s *Server) tokenRefreshRoutine() {
 	for {
 		time.Sleep(time.Hour)
 
-		tokens, err := s.store.Client.HGetAll("userAccessTokens").Result()
+		tokens, err := s.store.Client.HGetAll("userAccessTokensData").Result()
 		if err != nil {
 			log.Errorf("tried refreshing tokens: %s", err)
 			continue
@@ -195,14 +195,14 @@ func (s *Server) tokenRefreshRoutine() {
 
 		log.Infof("starting refresh of %d tokens", len(tokens))
 
-		for scToken, tokenDataString := range tokens {
+		for userID, tokenDataString := range tokens {
 			var userToken userAcessTokenData
 			if err := json.Unmarshal([]byte(tokenDataString), &userToken); err != nil {
 				log.Errorf("failed unmarshal userAccessTokenData in tokenRefreshRoutine %s", err)
 				continue
 			}
 
-			s.refreshToken(scToken, userToken)
+			s.refreshToken(userID, userToken)
 			time.Sleep(time.Millisecond * 500)
 		}
 
