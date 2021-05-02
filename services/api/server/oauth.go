@@ -10,6 +10,7 @@ import (
 
 	nickHelix "github.com/nicklaw5/helix"
 
+	"github.com/dgrijalva/jwt-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,6 +18,15 @@ type userAcessTokenData struct {
 	AccessToken  string
 	RefreshToken string
 	Scope        string
+}
+
+type tokenClaims struct {
+	UserID         string
+	StandardClaims jwt.StandardClaims
+}
+
+func (t *tokenClaims) Valid() error {
+	return nil
 }
 
 func (s *Server) handleCallback(w http.ResponseWriter, r *http.Request) {
@@ -29,19 +39,48 @@ func (s *Server) handleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// validate
+	success, validateResp, err := s.helixClient.Client.ValidateToken(resp.Data.AccessToken)
+	if !success || err != nil {
+		log.Errorf("failed to veryify new Token %s", err)
+		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
+	}
+
+	token, err := s.createApiToken(validateResp.Data.UserID)
+	if err != nil {
+		log.Errorf("failed to create jwt token in callback %s", err)
+		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
+	}
+
 	marshalled, err := json.Marshal(userAcessTokenData{resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " ")})
 	if err != nil {
 		log.Errorf("failed to marshal userAcessToken in callback %s", err)
 		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
 	}
 
-	err = s.store.Client.HSet("userAccessTokens", code, marshalled).Err()
+	err = s.store.Client.HSet("userAccessTokensData", validateResp.Data.UserID, marshalled).Err()
 	if err != nil {
 		log.Errorf("failed to set userAccessToken in callback: %s", err)
 		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
 	}
 
-	s.dashboardRedirect(w, r, http.StatusOK, code)
+	s.dashboardRedirect(w, r, http.StatusOK, token)
+}
+
+func (s *Server) createApiToken(userID string) (string, error) {
+	expirationTime := time.Now().Add(365 * 24 * time.Hour)
+	claims := &tokenClaims{
+		UserID: userID,
+		StandardClaims: jwt.StandardClaims{
+			// In JWT, the expiry time is expressed as unix milliseconds
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(s.cfg.Secret))
+
+	return tokenString, err
 }
 
 func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, status int, scToken string) {
@@ -65,7 +104,22 @@ func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, statu
 func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse, *userAcessTokenData) {
 	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 
-	val, err := s.store.Client.HGet("userAccessTokens", scToken).Result()
+	// Initialize a new instance of `Claims`
+	claims := &tokenClaims{}
+
+	// Parse the JWT string and store the result in `claims`.
+	// Note that we are passing the key in this method as well. This method will return an error
+	// if the token is invalid (if it has expired according to the expiry time we set on sign in),
+	// or if the signature does not match
+	tkn, err := jwt.ParseWithClaims(scToken, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(s.cfg.Secret), nil
+	})
+	if err != nil || !tkn.Valid {
+		log.Errorf("found to validate jwt: %s", err)
+		return false, nil, nil
+	}
+
+	val, err := s.store.Client.HGet("userAccessTokensData", claims.UserID).Result()
 	if err != nil {
 		log.Errorf("found no accessToken: %s", err)
 		return false, nil, nil

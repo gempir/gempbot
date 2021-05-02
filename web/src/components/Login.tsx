@@ -22,7 +22,7 @@ const LoginContainer = styled.a`
 
 export function Login() {
     const { state } = useContext(store);
-
+    
     if (state.scToken) {
         return <LoggedIn />;
     }
@@ -84,8 +84,6 @@ const DashboardButton = styled.div`
 function LoggedIn() {
     const { state } = useContext(store);
     const [loginText, setLoginText] = useState("Logged In");
-
-
 
     return <ButtonsContainer>
         <Link to="/">
