@@ -14,12 +14,7 @@ import { Login } from "./components/Login";
 import { Dashboard } from "./components/Dashboard";
 
 const AppContainer = styled.main`
-    strong {
-        display: block;
-        width: 100%;
-        text-align: center;
-        color: var(--danger);
-    }
+
 `
 
 export function App() {
@@ -49,7 +44,6 @@ export function App() {
     }, [state.apiBaseUrl]);
 
     return <AppContainer>
-        <strong>Don't use this yet for your channel points, it will break soon since it's still in development. I'm working on a stable version.</strong>
         <Router>
             <Login />
             <Switch>
