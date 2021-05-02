@@ -18,7 +18,7 @@ func createDefaultUserConfig() UserConfig {
 }
 
 func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
-	ok, auth := s.authenticate(r)
+	ok, auth, _ := s.authenticate(r)
 	if !ok {
 		http.Error(w, "bad authentication", http.StatusForbidden)
 		return

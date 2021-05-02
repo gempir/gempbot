@@ -1,7 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import { useRewards } from "../hooks/useRewards";
 import { useUserConfig } from "../hooks/useUserConfig";
 import { Reset } from "./Reset";
+import { Rewards } from "./Rewards";
 
 export function Dashboard() {
     const [classNames, setClassNames] = useState(["userConfig"]);
@@ -15,6 +17,8 @@ export function Dashboard() {
             setClassNames(["userConfig"]);
         }, 500);
     });
+
+    const [rewards] = useRewards();
 
     return <DashboardContainer>
         {userCfg && <Reset setUserConfig={setUserConfig} />}
@@ -44,6 +48,7 @@ export function Dashboard() {
                 </span>
             </div>
         </div>}
+        <Rewards rewards={rewards} />
     </DashboardContainer>
 }
 
@@ -51,6 +56,9 @@ const DashboardContainer = styled.div`
     margin-top: 5rem;
     margin-left: 1rem;
     margin-right: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 2rem;
 
     .userConfig {
         padding-bottom: 2rem;

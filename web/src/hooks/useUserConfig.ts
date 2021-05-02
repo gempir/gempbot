@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useDebounce } from "react-use";
+import { checkToken } from "../service/checkToken";
 import { store } from "../store";
 
 export interface UserConfig {
@@ -54,12 +55,4 @@ export function useUserConfig(onSave: () => void): [UserConfig | null | undefine
     };
 
     return [userConfig, setCfg]
-}
-
-function checkToken(setScToken: (scToken: string | null) => void, response: Response) {
-    if (response.status === 403) {
-        setScToken(null);
-    }
-
-    return response
 }

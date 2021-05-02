@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"sort"
+	"sync"
 
 	"github.com/gempir/spamchamp/services/api/emotechief"
 
@@ -73,7 +74,8 @@ func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *h
 	}
 }
 
-var clients = make(map[*websocket.Conn]bool) // connected clients
+// var clients = make(map[*websocket.Conn]bool) // connected clients
+var clients sync.Map
 var upgrader = websocket.Upgrader{}
 
 func (s *Server) Start() {
@@ -90,6 +92,7 @@ func (s *Server) Start() {
 	mux.HandleFunc("/api/callback", s.handleCallback)
 	mux.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
 	mux.HandleFunc("/api/userConfig", s.handleUserConfig)
+	mux.HandleFunc("/api/rewards", s.handleRewards)
 
 	handler := cors.AllowAll().Handler(mux)
 	log.Info("listening on port :8035")
@@ -105,7 +108,7 @@ func (s *Server) handleConnections(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	clients[ws] = true
+	clients.Store(ws, true)
 	// Make sure we close the connection when the function returns
 	defer ws.Close()
 
@@ -115,7 +118,7 @@ func (s *Server) handleConnections(w http.ResponseWriter, r *http.Request) {
 		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Debugf("handleConnection error: %v", err)
-			delete(clients, ws)
+			clients.Delete(ws)
 			break
 		}
 		// Send the newly received message to the broadcast channel
@@ -128,13 +131,17 @@ func (s *Server) handleMessages() {
 		// Grab the next message from the broadcast channel
 		msg := <-s.broadcastQueue
 		// Send it out to every client that is currently connected
-		for client := range clients {
-			err := client.WriteJSON(msg)
+		clients.Range(func(client, value interface{}) bool {
+			res := client.(*websocket.Conn)
+			err := res.WriteJSON(msg)
 			if err != nil {
 				log.Errorf("broadcast error: %v", err)
-				client.Close()
-				delete(clients, client)
+				res.Close()
+				clients.Delete(client)
 			}
-		}
+
+			return true
+		})
+
 	}
 }

@@ -52,19 +52,19 @@ func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, statu
 	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode()+"#"+scToken, http.StatusFound)
 }
 
-func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse) {
+func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse, *userAcessTokenData) {
 	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 
 	val, err := s.store.Client.HGet("userAccessTokens", scToken).Result()
 	if err != nil {
 		log.Errorf("found no accessToken: %s", err)
-		return false, nil
+		return false, nil, nil
 	}
 
 	var token userAcessTokenData
 	if err := json.Unmarshal([]byte(val), &token); err != nil {
 		log.Errorf("failed to unmarshal token: %s", err)
-		return false, nil
+		return false, nil, nil
 	}
 
 	success, resp, err := s.helixClient.Client.ValidateToken(token.AccessToken)
@@ -77,7 +77,7 @@ func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenRe
 		if resp.Error == "Unauthorized" {
 			success, refreshResp := s.refreshToken(scToken, token)
 			if !success {
-				return false, nil
+				return false, nil, nil
 			}
 
 			success, resp, err = s.helixClient.Client.ValidateToken(refreshResp.AccessToken)
@@ -86,14 +86,14 @@ func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenRe
 					log.Errorf("refreshed Token did not validate: %s", err)
 				}
 
-				return success, resp
+				return success, resp, refreshResp
 			}
 		}
 
-		return false, nil
+		return false, nil, nil
 	}
 
-	return success, resp
+	return success, resp, &token
 }
 
 func (s *Server) refreshToken(scToken string, token userAcessTokenData) (bool, *userAcessTokenData) {
