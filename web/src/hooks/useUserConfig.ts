@@ -17,27 +17,27 @@ export interface Redemption {
 
 
 export function useUserConfig(onSave: () => void): [UserConfig | null | undefined, (userConfig: UserConfig | null) => void] {
-    const { accessToken, apiBaseUrl } = useContext(store).state;
+    const { scToken, apiBaseUrl } = useContext(store).state;
 
     const [userConfig, setUserConfig] = useState<UserConfig | null | undefined>(undefined);
     const [changeCounter, setChangeCounter] = useState(0);
 
     const fetchConfig = () => {
-        if (accessToken) {
-            fetch(apiBaseUrl + "/api/userConfig", { headers: { accessToken } })
+        if (scToken) {
+            fetch(apiBaseUrl + "/api/userConfig", { headers: { Authorization: "Bearer " + scToken } })
                 .then(response => response.json())
                 .then((userConfig) => setUserConfig(userConfig));
         }
     };
 
-    useEffect(fetchConfig, [accessToken, apiBaseUrl]);
+    useEffect(fetchConfig, [scToken, apiBaseUrl]);
 
 
     useDebounce(() => {
-        if (changeCounter && userConfig && accessToken) {
-            fetch(apiBaseUrl + "/api/userConfig", { headers: { accessToken }, method: "POST", body: JSON.stringify(userConfig) }).then(onSave);
-        } else if (changeCounter && userConfig === null && accessToken) {
-            fetch(apiBaseUrl + "/api/userConfig", { headers: { accessToken }, method: "DELETE"}).then(fetchConfig);
+        if (changeCounter && userConfig && scToken) {
+            fetch(apiBaseUrl + "/api/userConfig", { headers: { Authorization: "Bearer " + scToken }, method: "POST", body: JSON.stringify(userConfig) }).then(onSave);
+        } else if (changeCounter && userConfig === null && scToken) {
+            fetch(apiBaseUrl + "/api/userConfig", { headers: { Authorization: "Bearer " + scToken }, method: "DELETE"}).then(fetchConfig);
         }
     }, 500, [changeCounter]);
 

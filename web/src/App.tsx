@@ -23,11 +23,23 @@ const AppContainer = styled.main`
 `
 
 export function App() {
-    const { state } = useContext(store);
+    const { state, setScToken } = useContext(store);
     const [joinedChannels, setJoinedChannels] = useState(0);
     const [activeChannels, setActiveChannels] = useState(0);
     const [records, setRecords] = useState<Array<Record>>([]);
 
+
+    const search = window.location.search;
+    useEffect(() => {
+        const urlParams = new URLSearchParams(search);
+        const scToken = urlParams.get("scToken");
+        if (scToken) {
+            window.history.replaceState({}, document.title, "/dashboard");
+            setScToken(scToken);
+        }
+    }, [search, setScToken]);
+
+    
     useEffect(() => {
         new EventService(state.apiBaseUrl, (message: EventMessage) => {
             setJoinedChannels(message.joinedChannels);

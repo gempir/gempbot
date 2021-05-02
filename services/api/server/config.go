@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/go-redis/redis/v7"
-	"github.com/nicklaw5/helix"
+	nickHelix "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -103,15 +104,27 @@ func writeJSON(w http.ResponseWriter, data interface{}, code int) {
 	}
 }
 
-func (s *Server) authenticate(r *http.Request) (bool, *helix.ValidateTokenResponse) {
-	token := r.Header.Get("accessToken")
-	if token == "" {
+func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse) {
+	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+
+	val, err := s.store.Client.HGet("accessTokens", scToken).Result()
+	if err != nil {
+		log.Error(err)
 		return false, nil
 	}
 
-	success, resp, err := s.helixClient.Client.ValidateToken(token)
-	if err != nil {
-		log.Errorf("Failed to authenticate: %s", err)
+	var accessToken *nickHelix.UserAccessTokenResponse
+	if err := json.Unmarshal([]byte(val), &accessToken); err != nil {
+		log.Error(err)
+		return false, nil
+	}
+
+	success, resp, err := s.helixClient.Client.ValidateToken(accessToken.Data.AccessToken)
+	if !success || err != nil {
+		if err != nil {
+			log.Error(err)
+		}
+		return false, nil
 	}
 
 	return success, resp

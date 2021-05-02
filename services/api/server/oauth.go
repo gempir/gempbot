@@ -4,32 +4,43 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func (s *Server) handleOauth(w http.ResponseWriter, r *http.Request) {
-	var data struct {
-		AccessToken string `json:"accessToken"`
+func (s *Server) handleCallback(w http.ResponseWriter, r *http.Request) {
+	code := r.URL.Query().Get("code")
+
+	resp, err := s.helixUserClient.Client.RequestUserAccessToken(code)
+	if err != nil || resp.StatusCode >= 400 {
+		log.Error(err, resp)
+		s.dashboardRedirect(w, r, http.StatusForbidden, "")
+		return
 	}
-	err := json.NewDecoder(r.Body).Decode(&data)
+
+	marshalled, err := json.Marshal(resp.Data)
 	if err != nil {
 		log.Error(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
 	}
 
-	success, resp, err := s.helixClient.Client.ValidateToken(data.AccessToken)
-	if !success || err != nil {
-		if err != nil {
-			log.Error(err)
-		}
-		http.Error(w, "token did not validate", http.StatusBadRequest)
-		return
+	err = s.store.Client.HSet("accessTokens", code, marshalled).Err()
+	if err != nil {
+		log.Error(err)
+		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
 	}
 
-	s.store.Client.HSet("accessToken", resp.Data.UserID, data.AccessToken)
-	log.Debugf("Stored new accessToken for %s %v", resp.Data.Login, resp.Data.Scopes)
+	s.dashboardRedirect(w, r, http.StatusOK, code)
+}
 
-	fmt.Fprint(w, "success")
+func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, status int, scToken string) {
+	params := url.Values{
+		"result": {fmt.Sprint(status)},
+	}
+	if scToken != "" {
+		params.Add("scToken", scToken)
+	}
+
+	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode(), http.StatusFound)
 }

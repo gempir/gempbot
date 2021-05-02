@@ -19,8 +19,8 @@ func main() {
 
 	cfg := config.NewConfig(*configFile)
 	rStore := store.NewStore()
-	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret)
-	helixUserClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret)
+	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, "")
+	helixUserClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, cfg.ApiBaseUrl+"/api/callback")
 	go helixUserClient.StartRefreshTokenRoutine()
 	go helixClient.StartRefreshTokenRoutine()
 
