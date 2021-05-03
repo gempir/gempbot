@@ -1,30 +1,16 @@
-import { createContext, useState } from "react";
+import { Store as PStore } from "pullstate";
 import { getCookie } from "./service/cookie";
 
-export interface State {
+export interface Store {
     twitchClientId: string,
     baseUrl: string,
+    apiBaseUrl: string,
     scToken: string | null,
 }
 
-export type Action = Record<string, unknown>;
-
-const defaultContext = {
-    state: {
-        twitchClientId: process.env.REACT_APP_TWITCH_CLIENT_ID,
-        baseUrl: process.env.REACT_APP_BASE_URL,
-        scToken: getCookie("scToken") ,
-    } as State,
-    setState: (state: State) => { },
-};
-
-const store = createContext(defaultContext);
-const { Provider } = store;
-
-const StateProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
-    const [state, setState] = useState({ ...defaultContext.state });
-
-    return <Provider value={{ state, setState }}>{children}</Provider>;
-};
-
-export { store, StateProvider };
+export const store = new PStore<Store>({
+    twitchClientId: process.env.REACT_APP_TWITCH_CLIENT_ID ?? "",
+    apiBaseUrl: process.env.REACT_APP_API_BASE_URL ?? "",
+    baseUrl: process.env.REACT_APP_BASE_URL ?? "",
+    scToken: getCookie("scToken"),
+});

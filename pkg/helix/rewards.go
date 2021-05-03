@@ -60,13 +60,6 @@ func (c *Client) GetRewards(userID, userAccessToken string) (*GetRewardsResponse
 		return nil, err
 	}
 
-	// bodyBytes, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// bodyString := string(bodyBytes)
-	// log.Info(bodyString)
-
 	var getRewardsResponse GetRewardsResponse
 	err = json.NewDecoder(resp.Body).Decode(&getRewardsResponse)
 	if err != nil {

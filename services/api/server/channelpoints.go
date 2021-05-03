@@ -182,6 +182,9 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 			}
 
 			return
+		} else {
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: no bttv link found in message", redemption.Event.UserName))
+			return
 		}
 	}
 

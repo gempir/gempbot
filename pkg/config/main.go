@@ -119,6 +119,7 @@ func loadConfiguration(filePath string) *Config {
 }
 
 func (cfg *Config) setupLogger() {
+	// log.SetReportCaller(true)
 	switch cfg.LogLevel {
 	case "fatal":
 		log.SetLevel(log.FatalLevel)

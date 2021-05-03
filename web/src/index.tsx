@@ -2,7 +2,6 @@ import React, { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
 import { createGlobalStyle } from 'styled-components';
 import { App } from './App';
-import { StateProvider } from './store';
 
 const GlobalStyle = createGlobalStyle`
     body {
@@ -39,12 +38,10 @@ const GlobalStyle = createGlobalStyle`
 
 ReactDOM.render(
     <StrictMode>
-        <StateProvider>
-            <React.Fragment>
-                <GlobalStyle />
-                <App />
-            </React.Fragment>
-        </StateProvider>
+        <React.Fragment>
+            <GlobalStyle />
+            <App />
+        </React.Fragment>
     </StrictMode>,
     document.getElementById('root')
 );

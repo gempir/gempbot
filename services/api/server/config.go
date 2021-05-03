@@ -26,13 +26,15 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
 		val, err := s.store.Client.HGet("userConfig", auth.Data.UserID).Result()
-		if err != nil {
+		if err != nil || val == "" {
 			writeJSON(w, createDefaultUserConfig(), http.StatusOK)
 			return
 		}
+
 		var userConfig UserConfig
 		if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
-			log.Error(err)
+			log.Errorf("can't unmarshal saved config %s", err)
+			http.Error(w, "can't recover config"+err.Error(), http.StatusBadRequest)
 			return
 		}
 

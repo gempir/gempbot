@@ -1,4 +1,4 @@
-import { getCookie } from "./cookie"
+import { store } from "../store";
 
 export enum Method {
     GET = "GET",
@@ -7,10 +7,11 @@ export enum Method {
 }
 
 export async function doFetch(method: Method, path: string, body: any = undefined) {
-    const token = getCookie("scToken");
+    const {apiBaseUrl, scToken} = store.getRawState();
+
     const headers: Record<string, string> = { 'content-type': 'application/json' }
-    if (token) {
-        headers.Authorization = `Bearer ${token}`
+    if (scToken) {
+        headers.Authorization = `Bearer ${scToken}`
     }
 
     const config: RequestInit = {
@@ -24,7 +25,7 @@ export async function doFetch(method: Method, path: string, body: any = undefine
         config.body = JSON.stringify(body)
     }
 
-    return window.fetch(`${process.env.REACT_APP_API_BASE_URL}${path}`, config)
+    return window.fetch(`${apiBaseUrl}${path}`, config)
         .then(async response => {
             if (response.status === 401) {
                 window.location.assign("/")

@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { store } from "./../store";
@@ -21,13 +21,13 @@ const LoginContainer = styled.a`
 `;
 
 export function Login() {
-    const { state } = useContext(store);
-    
-    if (state.scToken) {
+    const scToken = store.useState(s => s.scToken);
+
+    if (scToken) {
         return <LoggedIn />;
     }
 
-    return <LoginContainer href={createOAuthUrl(state.twitchClientId).toString()}>Login</LoginContainer>;
+    return <LoginContainer href={createOAuthUrl().toString()}>Login</LoginContainer>;
 }
 
 const ButtonsContainer = styled.div`
@@ -82,7 +82,6 @@ const DashboardButton = styled.div`
 `;
 
 function LoggedIn() {
-    const { state } = useContext(store);
     const [loginText, setLoginText] = useState("Logged In");
 
     return <ButtonsContainer>
@@ -96,16 +95,18 @@ function LoggedIn() {
                 Dashboard
             </DashboardButton>
         </Link>
-        <LoggedInContainer href={createOAuthUrl(state.twitchClientId).toString()} onMouseEnter={() => setLoginText("force login")} onMouseLeave={() => setLoginText("Logged In")}>
+        <LoggedInContainer href={createOAuthUrl().toString()} onMouseEnter={() => setLoginText("force login")} onMouseLeave={() => setLoginText("Logged In")}>
             {loginText}
         </LoggedInContainer>
     </ButtonsContainer>;
 }
 
-function createOAuthUrl(clientId: string): URL {
+function createOAuthUrl(): URL {
+    const { apiBaseUrl, twitchClientId } = store.getRawState();
+
     const url = new URL("https://id.twitch.tv/oauth2/authorize")
-    url.searchParams.set("client_id", clientId);
-    url.searchParams.set("redirect_uri", process.env.REACT_APP_API_BASE_URL + "/api/callback");
+    url.searchParams.set("client_id", twitchClientId);
+    url.searchParams.set("redirect_uri", apiBaseUrl + "/api/callback");
     url.searchParams.set("response_type", "code");
     url.searchParams.set("claims", JSON.stringify({ "userinfo": { "picture": null, "preferred_username": null, } }));
     url.searchParams.set("scope", "channel:read:redemptions channel:manage:redemptions");
