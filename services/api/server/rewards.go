@@ -9,7 +9,7 @@ import (
 func (s *Server) handleRewards(w http.ResponseWriter, r *http.Request) {
 	ok, auth, token := s.authenticate(r)
 	if !ok {
-		http.Error(w, "bad authentication", http.StatusForbidden)
+		http.Error(w, "bad authentication", http.StatusUnauthorized)
 		return
 	}
 

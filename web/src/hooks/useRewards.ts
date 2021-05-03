@@ -1,7 +1,5 @@
-import { useContext, useEffect, useState } from "react";
-import { checkToken } from "../service/checkToken";
-import { handleResponse } from "../service/fetch";
-import { store } from "../store";
+import { useEffect, useState } from "react";
+import { doFetch, Method } from "../service/doFetch";
 
 export interface Reward {
     broadcaster_name: string;
@@ -48,21 +46,13 @@ export interface MaxPerUserPerStreamSetting {
 }
 
 export function useRewards() {
-    const { scToken, apiBaseUrl } = useContext(store).state;
-    const { setScToken } = useContext(store);
-
     const [rewards, setRewards] = useState<Array<Reward>>([]);
 
     const fetchRewards = () => {
-        if (scToken) {
-            fetch(apiBaseUrl + "/api/rewards", { headers: { Authorization: "Bearer " + scToken } })
-                .then(handleResponse)
-                .then(response => setRewards(response.data))
-                .catch((resp) => checkToken(setScToken, resp));
-        }
+        doFetch(Method.GET, "/api/rewards").then(response => setRewards(response.data));
     };
 
-    useEffect(fetchRewards, [scToken, apiBaseUrl, setScToken]);
+    useEffect(fetchRewards, []);
 
     return [rewards];
 }

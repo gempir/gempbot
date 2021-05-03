@@ -35,7 +35,7 @@ func (s *Server) handleCallback(w http.ResponseWriter, r *http.Request) {
 	resp, err := s.helixUserClient.Client.RequestUserAccessToken(code)
 	if err != nil || resp.StatusCode >= 400 {
 		log.Errorf("failed to request userAccessToken: %s %v", err, resp)
-		s.dashboardRedirect(w, r, http.StatusForbidden, "")
+		s.dashboardRedirect(w, r, http.StatusBadRequest, "")
 		return
 	}
 
