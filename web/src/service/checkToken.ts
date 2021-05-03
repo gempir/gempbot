@@ -2,6 +2,4 @@ export function checkToken(setScToken: (scToken: string | null) => void, respons
     if (response.status === 403) {
         setScToken(null);
     }
-
-    return response
 }

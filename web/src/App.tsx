@@ -4,7 +4,6 @@ import {
 
     Route, Switch
 } from "react-router-dom";
-import { useCookie } from "react-use";
 import styled from "styled-components";
 import { Dashboard } from "./components/Dashboard";
 import { Login } from "./components/Login";
@@ -17,19 +16,11 @@ import { EventMessage, Record } from "./types/Events";
 const AppContainer = styled.main``;
 
 export function App() {
-    const { state, setScToken } = useContext(store);
+    const { state } = useContext(store);
     const [joinedChannels, setJoinedChannels] = useState(0);
     const [activeChannels, setActiveChannels] = useState(0);
-    const [records, setRecords] = useState<Array<Record>>([]);
+    const [records, setRecords] = useState<Array<Record>>([])
 
-    const [cookie] = useCookie("scToken");
-    useEffect(() => {
-        if (cookie && state.scToken !== cookie) {
-            setScToken(cookie);
-        }
-    }, [cookie, setScToken, state.scToken]);
-
-    
     useEffect(() => {
         new EventService(state.apiBaseUrl, (message: EventMessage) => {
             setJoinedChannels(message.joinedChannels);

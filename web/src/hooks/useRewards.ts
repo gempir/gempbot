@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { checkToken } from "../service/checkToken";
+import { handleResponse } from "../service/fetch";
 import { store } from "../store";
 
 export interface Reward {
@@ -55,10 +56,9 @@ export function useRewards() {
     const fetchRewards = () => {
         if (scToken) {
             fetch(apiBaseUrl + "/api/rewards", { headers: { Authorization: "Bearer " + scToken } })
-                .then(response => checkToken(setScToken, response))
-                .then(response => response.json())
+                .then(handleResponse)
                 .then(response => setRewards(response.data))
-                .catch();
+                .catch((resp) => checkToken(setScToken, resp));
         }
     };
 

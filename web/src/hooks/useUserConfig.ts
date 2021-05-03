@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useDebounce } from "react-use";
 import { checkToken } from "../service/checkToken";
+import { handleResponse } from "../service/fetch";
 import { store } from "../store";
 
 export interface UserConfig {
@@ -27,10 +28,9 @@ export function useUserConfig(onSave: () => void): [UserConfig | null | undefine
     const fetchConfig = () => {
         if (scToken) {
             fetch(apiBaseUrl + "/api/userConfig", { headers: { Authorization: "Bearer " + scToken } })
-                .then(response => checkToken(setScToken, response))
-                .then(response => response.json())
+                .then(handleResponse)
                 .then((userConfig) => setUserConfig(userConfig))
-                .catch();
+                .catch((resp) => checkToken(setScToken, resp));
         }
     };
 
@@ -40,12 +40,14 @@ export function useUserConfig(onSave: () => void): [UserConfig | null | undefine
     useDebounce(() => {
         if (changeCounter && userConfig && scToken) {
             fetch(apiBaseUrl + "/api/userConfig", { headers: { Authorization: "Bearer " + scToken }, method: "POST", body: JSON.stringify(userConfig) })
-            .then(response => checkToken(setScToken, response))
-            .then(onSave);
+            .then(handleResponse)
+            .then(onSave)
+            .catch((resp) => checkToken(setScToken, resp));
         } else if (changeCounter && userConfig === null && scToken) {
             fetch(apiBaseUrl + "/api/userConfig", { headers: { Authorization: "Bearer " + scToken }, method: "DELETE"})
-            .then(response => checkToken(setScToken, response))
-            .then(fetchConfig);
+            .then(handleResponse)
+            .then(fetchConfig)
+            .catch((resp) => checkToken(setScToken, resp));
         }
     }, 500, [changeCounter]);
 

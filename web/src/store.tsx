@@ -1,4 +1,5 @@
 import { createContext, useState } from "react";
+import { deleteCookie, getCookie, setCookie } from "./service/cookie";
 
 export interface State {
     apiBaseUrl: string,
@@ -14,7 +15,7 @@ const defaultContext = {
         apiBaseUrl: process.env.REACT_APP_API_BASE_URL,
         twitchClientId: process.env.REACT_APP_TWITCH_CLIENT_ID,
         baseUrl: process.env.REACT_APP_BASE_URL,
-        scToken: window.localStorage.getItem("scToken")
+        scToken: getCookie("scToken")
     } as State,
     setState: (state: State) => { },
     setScToken: (scToken: string | null) => { },
@@ -28,12 +29,14 @@ const StateProvider = ({ children }: { children: JSX.Element }): JSX.Element => 
 
     const setScToken = (scToken: string | null) => {
         if (scToken === null) {
-            window.localStorage.removeItem("scToken");
+            deleteCookie("scToken")
         } else {
-            window.localStorage.setItem("scToken", scToken);
+            setCookie("scToken", scToken, 365);
         }
 
-        setState({...state, scToken});
+        if (scToken !== state.scToken) {
+            setState({...state, scToken});
+        }
     };
 
     return <Provider value={{ state, setState, setScToken }}>{children}</Provider>;

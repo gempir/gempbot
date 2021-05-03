@@ -8,7 +8,7 @@ const ResetContainer = styled.div`
     left: 1rem;
     display: block;
     color: white;
-    padding: 1rem 2rem;
+    padding: 1rem 1rem;
     text-decoration: none;
     font-weight: bold;
     border-radius: 3px;
@@ -21,5 +21,9 @@ const ResetContainer = styled.div`
 `;
 
 export function Reset({ setUserConfig }: { setUserConfig: (userConfig: UserConfig | null) => void }) {
-    return <ResetContainer onClick={() => setUserConfig(null)}>Reset</ResetContainer>;
+    return <ResetContainer onClick={() => {
+        if (window.confirm(`Do you really want to reset?\n- Channel Point Rewards from spamchamp\n- Settings on spamchamp.gempir.com\n- Unsubscribes all webhooks for your channel`)) {
+            setUserConfig(null);
+        }
+    }}>Reset</ResetContainer>;
 }
