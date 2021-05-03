@@ -27,7 +27,7 @@ export function Login() {
         return <LoggedIn />;
     }
 
-    return <LoginContainer href={createOAuthUrl(state.twitchClientId, state.apiBaseUrl).toString()}>Login</LoginContainer>;
+    return <LoginContainer href={createOAuthUrl(state.twitchClientId).toString()}>Login</LoginContainer>;
 }
 
 const ButtonsContainer = styled.div`
@@ -96,16 +96,16 @@ function LoggedIn() {
                 Dashboard
             </DashboardButton>
         </Link>
-        <LoggedInContainer href={createOAuthUrl(state.twitchClientId, state.apiBaseUrl).toString()} onMouseEnter={() => setLoginText("force login")} onMouseLeave={() => setLoginText("Logged In")}>
+        <LoggedInContainer href={createOAuthUrl(state.twitchClientId).toString()} onMouseEnter={() => setLoginText("force login")} onMouseLeave={() => setLoginText("Logged In")}>
             {loginText}
         </LoggedInContainer>
     </ButtonsContainer>;
 }
 
-function createOAuthUrl(clientId: string, apiBaseUrl: string): URL {
+function createOAuthUrl(clientId: string): URL {
     const url = new URL("https://id.twitch.tv/oauth2/authorize")
     url.searchParams.set("client_id", clientId);
-    url.searchParams.set("redirect_uri", apiBaseUrl + "/api/callback");
+    url.searchParams.set("redirect_uri", process.env.REACT_APP_API_BASE_URL + "/api/callback");
     url.searchParams.set("response_type", "code");
     url.searchParams.set("claims", JSON.stringify({ "userinfo": { "picture": null, "preferred_username": null, } }));
     url.searchParams.set("scope", "channel:read:redemptions channel:manage:redemptions");

@@ -1,10 +1,10 @@
 import { EventMessage } from "../types/Events";
 
 export default class EventService {
-    constructor(apiBaseUrl: string, callback: (data: EventMessage) => void) {
+    constructor(callback: (data: EventMessage) => void) {
 
         function connect() {
-            var ws = new WebSocket(`${apiBaseUrl.replace("https://", "wss://").replace("http://", "ws://")}/api/ws`);
+            var ws = new WebSocket(`${process.env.REACT_APP_API_BASE_URL!.replace("https://", "wss://").replace("http://", "ws://")}/api/ws`);
             
             ws.onmessage = (event) => {
                 callback(JSON.parse(event.data));
