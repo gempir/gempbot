@@ -1,4 +1,5 @@
 import { store } from "../store";
+import { deleteCookie } from "./cookie";
 
 export enum Method {
     GET = "GET",
@@ -28,6 +29,7 @@ export async function doFetch(method: Method, path: string, body: any = undefine
     return window.fetch(`${apiBaseUrl}${path}`, config)
         .then(async response => {
             if (response.status === 401) {
+                deleteCookie("scToken");
                 window.location.assign("/")
                 return
             }
