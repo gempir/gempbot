@@ -14,10 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type UserConfig struct {
-	Redemptions Redemptions
-}
-
 type Redemptions struct {
 	Bttv Redemption
 }
