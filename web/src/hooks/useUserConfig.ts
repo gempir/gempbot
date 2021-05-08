@@ -30,7 +30,7 @@ export function useUserConfig(onSave: () => void = () => {}, onError: () => void
     const managing = store.useState(s => s.managing);
 
     const fetchConfig = () => {
-        let endPoint = "/api/userConfig"
+        let endPoint = "/api/userConfig";
         if (managing) {
             endPoint += `?managing=${managing}`;
         }
@@ -42,7 +42,11 @@ export function useUserConfig(onSave: () => void = () => {}, onError: () => void
 
     useDebounce(() => {
         if (changeCounter && userConfig) {
-            doFetch(Method.POST, "/api/userConfig", userConfig).then(onSave).catch(onError);
+            let endPoint = "/api/userConfig";
+            if (managing) {
+                endPoint += `?managing=${managing}`;
+            }
+            doFetch(Method.POST, endPoint, userConfig).then(onSave).catch(onError);
         } else if (changeCounter && userConfig === null) {
             doFetch(Method.DELETE, "/api/userConfig").then(fetchConfig).catch(onError);
         }

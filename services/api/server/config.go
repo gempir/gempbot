@@ -40,7 +40,7 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		userConfig, err := s.getUserConfig(auth.Data.UserID)
+		userConfig, err, _ := s.getUserConfig(auth.Data.UserID)
 		if err != nil {
 			http.Error(w, "can't recover config"+err.Error(), http.StatusBadRequest)
 			return
@@ -48,30 +48,20 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 
 		managing := r.URL.Query().Get("managing")
 		if managing != "" {
-			userData, err := s.helixClient.GetUsersByUsernames([]string{managing})
-			if err != nil || len(userData) == 0 {
-				http.Error(w, "can't resolve managing in config "+err.Error(), http.StatusBadRequest)
+			ownerUserID, err := s.checkEditor(r, userConfig)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
 			}
 
-			isEditor := false
-			for _, editor := range userConfig.Protected.EditorFor {
-				if editor == userData[managing].ID {
-					isEditor = true
-				}
-			}
-
-			if !isEditor {
-				http.Error(w, "User is not editor", http.StatusBadRequest)
-			}
-
-			managingUserConfig, err := s.getUserConfig(userData[managing].ID)
+			managingUserConfig, err, _ := s.getUserConfig(ownerUserID)
 			if err != nil {
 				http.Error(w, "can't recover config"+err.Error(), http.StatusBadRequest)
 				return
 			}
 			newEditorForNames := []string{}
 
-			userData, err = s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
+			userData, err := s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
 			if err != nil {
 				http.Error(w, "can't resolve editorFor in config "+err.Error(), http.StatusBadRequest)
 			}
@@ -79,7 +69,7 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 				newEditorForNames = append(newEditorForNames, user.Login)
 			}
 
-			managingUserConfig.Protected.EditorFor = newEditorForNames
+			userConfig.Protected.EditorFor = newEditorForNames
 			writeJSON(w, managingUserConfig, http.StatusOK)
 		} else {
 			newEditorNames := []string{}
@@ -116,7 +106,7 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = s.processConfig(auth.Data.UserID, body)
+		err = s.processConfig(auth.Data.UserID, body, r)
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
 			http.Error(w, "failed processing config: "+err.Error(), http.StatusBadRequest)
@@ -144,33 +134,60 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *Server) getUserConfig(userID string) (UserConfig, error) {
+func (s *Server) getUserConfig(userID string) (UserConfig, error, bool) {
 	val, err := s.store.Client.HGet("userConfig", userID).Result()
 	if err != nil || val == "" {
-		return createDefaultUserConfig(), nil
+		return createDefaultUserConfig(), err, true
 	}
 
 	var userConfig UserConfig
 	if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
-		return UserConfig{}, errors.New("can't find config")
+		return createDefaultUserConfig(), errors.New("can't find config"), true
 	}
 
-	return userConfig, nil
+	return userConfig, nil, false
 }
 
-func (s *Server) processConfig(userID string, body []byte) error {
-	isNew := false
+func (s *Server) checkEditor(r *http.Request, userConfig UserConfig) (string, error) {
+	managing := r.URL.Query().Get("managing")
 
-	val, err := s.store.Client.HGet("userConfig", userID).Result()
-	if err == redis.Nil {
-		isNew = true
-	} else if err != nil {
+	if managing == "" {
+		return "", nil
+	}
+
+	userData, err := s.helixClient.GetUsersByUsernames([]string{managing})
+	if err != nil || len(userData) == 0 {
+		return "", errors.New("can't find editor")
+	}
+
+	isEditor := false
+	for _, editor := range userConfig.Protected.EditorFor {
+		if editor == userData[managing].ID {
+			isEditor = true
+		}
+	}
+
+	if !isEditor {
+		return "", errors.New("User is not editor")
+	}
+
+	return userData[managing].ID, nil
+}
+
+func (s *Server) processConfig(userID string, body []byte, r *http.Request) error {
+	oldConfig, err, isNew := s.getUserConfig(userID)
+	if err != nil {
 		return err
 	}
 
-	var oldConfig UserConfig
-	if !isNew {
-		if err := json.Unmarshal([]byte(val), &oldConfig); err != nil {
+	ownerUserID, err := s.checkEditor(r, oldConfig)
+	if err != nil {
+		return err
+	}
+
+	if ownerUserID != "" {
+		oldConfig, err, isNew = s.getUserConfig(ownerUserID)
+		if err != nil {
 			return err
 		}
 	}
@@ -185,28 +202,38 @@ func (s *Server) processConfig(userID string, body []byte) error {
 		protected.EditorFor = []string{}
 	}
 
-	newEditorIds := []string{}
-
-	userData, err := s.helixClient.GetUsersByUsernames(newConfig.Editors)
-	if err != nil {
-		return err
-	}
-	if len(newConfig.Editors) != len(userData) {
-		return errors.New("Failed to find all editors")
-	}
-
-	for _, user := range userData {
-		if user.ID == userID {
-			return errors.New("You can't be your own editor")
-		}
-
-		newEditorIds = append(newEditorIds, user.ID)
-	}
-
 	configToSave := UserConfig{
 		Redemptions: newConfig.Redemptions,
-		Editors:     newEditorIds,
 		Protected:   protected,
+	}
+
+	if ownerUserID == "" {
+		newEditorIds := []string{}
+
+		userData, err := s.helixClient.GetUsersByUsernames(newConfig.Editors)
+		if err != nil {
+			return err
+		}
+		if len(newConfig.Editors) != len(userData) {
+			return errors.New("Failed to find all editors")
+		}
+
+		for _, user := range userData {
+			if user.ID == userID {
+				return errors.New("You can't be your own editor")
+			}
+
+			newEditorIds = append(newEditorIds, user.ID)
+		}
+
+		configToSave.Editors = newEditorIds
+
+		for _, user := range userData {
+			err := s.addEditorFor(user.ID, userID)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	js, err := json.Marshal(configToSave)
@@ -214,16 +241,14 @@ func (s *Server) processConfig(userID string, body []byte) error {
 		return err
 	}
 
-	_, err = s.store.Client.HSet("userConfig", userID, js).Result()
-	if err != nil {
-		return err
+	saveTarget := userID
+	if ownerUserID != "" {
+		saveTarget = ownerUserID
 	}
 
-	for _, user := range userData {
-		err := s.addEditorFor(user.ID, userID)
-		if err != nil {
-			return err
-		}
+	_, err = s.store.Client.HSet("userConfig", saveTarget, js).Result()
+	if err != nil {
+		return err
 	}
 
 	if isNew {
