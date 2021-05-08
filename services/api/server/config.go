@@ -40,44 +40,74 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		val, err := s.store.Client.HGet("userConfig", auth.Data.UserID).Result()
-		if err != nil || val == "" {
-			writeJSON(w, createDefaultUserConfig(), http.StatusOK)
-			return
-		}
-
-		var userConfig UserConfig
-		if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
-			log.Errorf("can't unmarshal saved config %s", err)
+		userConfig, err := s.getUserConfig(auth.Data.UserID)
+		if err != nil {
 			http.Error(w, "can't recover config"+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		newEditorNames := []string{}
+		managing := r.URL.Query().Get("managing")
+		if managing != "" {
+			userData, err := s.helixClient.GetUsersByUsernames([]string{managing})
+			if err != nil || len(userData) == 0 {
+				http.Error(w, "can't resolve managing in config "+err.Error(), http.StatusBadRequest)
+			}
 
-		userData, err := s.helixClient.GetUsersByUserIds(userConfig.Editors)
-		if err != nil {
-			http.Error(w, "can't resolve editors in config "+err.Error(), http.StatusBadRequest)
+			isEditor := false
+			for _, editor := range userConfig.Protected.EditorFor {
+				if editor == userData[managing].ID {
+					isEditor = true
+				}
+			}
+
+			if !isEditor {
+				http.Error(w, "User is not editor", http.StatusBadRequest)
+			}
+
+			managingUserConfig, err := s.getUserConfig(userData[managing].ID)
+			if err != nil {
+				http.Error(w, "can't recover config"+err.Error(), http.StatusBadRequest)
+				return
+			}
+			newEditorForNames := []string{}
+
+			userData, err = s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
+			if err != nil {
+				http.Error(w, "can't resolve editorFor in config "+err.Error(), http.StatusBadRequest)
+			}
+			for _, user := range userData {
+				newEditorForNames = append(newEditorForNames, user.Login)
+			}
+
+			managingUserConfig.Protected.EditorFor = newEditorForNames
+			writeJSON(w, managingUserConfig, http.StatusOK)
+		} else {
+			newEditorNames := []string{}
+
+			userData, err := s.helixClient.GetUsersByUserIds(userConfig.Editors)
+			if err != nil {
+				http.Error(w, "can't resolve editors in config "+err.Error(), http.StatusBadRequest)
+			}
+			for _, user := range userData {
+				newEditorNames = append(newEditorNames, user.Login)
+			}
+
+			userConfig.Editors = newEditorNames
+
+			newEditorForNames := []string{}
+
+			userData, err = s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
+			if err != nil {
+				http.Error(w, "can't resolve editorFor in config "+err.Error(), http.StatusBadRequest)
+			}
+			for _, user := range userData {
+				newEditorForNames = append(newEditorForNames, user.Login)
+			}
+
+			userConfig.Protected.EditorFor = newEditorForNames
+			writeJSON(w, userConfig, http.StatusOK)
 		}
-		for _, user := range userData {
-			newEditorNames = append(newEditorNames, user.Login)
-		}
 
-		userConfig.Editors = newEditorNames
-
-		newEditorForNames := []string{}
-
-		userData, err = s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
-		if err != nil {
-			http.Error(w, "can't resolve editorFor in config "+err.Error(), http.StatusBadRequest)
-		}
-		for _, user := range userData {
-			newEditorForNames = append(newEditorForNames, user.Login)
-		}
-
-		userConfig.Protected.EditorFor = newEditorForNames
-
-		writeJSON(w, userConfig, http.StatusOK)
 	} else if r.Method == http.MethodPost {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -112,6 +142,20 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, "", http.StatusOK)
 	}
 
+}
+
+func (s *Server) getUserConfig(userID string) (UserConfig, error) {
+	val, err := s.store.Client.HGet("userConfig", userID).Result()
+	if err != nil || val == "" {
+		return createDefaultUserConfig(), nil
+	}
+
+	var userConfig UserConfig
+	if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
+		return UserConfig{}, errors.New("can't find config")
+	}
+
+	return userConfig, nil
 }
 
 func (s *Server) processConfig(userID string, body []byte) error {
