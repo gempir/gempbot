@@ -142,7 +142,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 
 	for _, id := range userIDs {
 		if _, ok := userCacheByID[id]; !ok {
-			log.Warningf("Could not find userId, channel might be banned: %s", id)
+			log.Debugf("Could not find userId, channel might be banned: %s", id)
 			continue
 		}
 		result[id] = *userCacheByID[id]
