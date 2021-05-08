@@ -42,9 +42,19 @@
     state: enabled 
     policy: reject
 
+- name: Install logrotate config
+  template: 
+    src: templates/logrotate.j2 
+    dest: /etc/logrotate.d/rsyslog
+
 - name: Install htop
   apt: 
     name: htop
+    state: present
+
+- name: Install ncdu
+  apt: 
+    name: ncdu
     state: present
 
 - name: Install apt-transport-https
