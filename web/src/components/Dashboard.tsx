@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useRewards } from "../hooks/useRewards";
 import { useUserConfig } from "../hooks/useUserConfig";
-import { Reset } from "./Reset";
+import { Menu } from "./Menu";
 import { Rewards } from "./Rewards";
 
 export function Dashboard() {
@@ -16,14 +16,22 @@ export function Dashboard() {
         setTimeout(() => {
             setClassNames(["userConfig"]);
         }, 500);
+    }, () => {
+        const newClassNames = classNames.slice();
+        newClassNames.push("error");
+        setClassNames(newClassNames)
+
+        setTimeout(() => {
+            setClassNames(["userConfig"]);
+        }, 500);
     });
 
     const [rewards] = useRewards();
 
     return <DashboardContainer>
-        {userCfg && <Reset setUserConfig={setUserConfig} />}
-        {userCfg && <div className={classNames.join(" ")}>
-            <div className={"redemption"}>
+        {userCfg && <Menu userConfig={userCfg} setUserConfig={setUserConfig} />}
+        {<div className={classNames.join(" ")}>
+            {userCfg && <div className={"redemption"}>
                 <img src="/images/bttv.png" alt={"bttv"} />
                 <label className="switch">
                     <input type="checkbox" checked={userCfg.Redemptions.Bttv.Active} onChange={(e) => {
@@ -46,7 +54,7 @@ export function Dashboard() {
                 <span className="hint">
                     make sure <strong>gempbot</strong> is bttv editor
                 </span>
-            </div>
+            </div>}
         </div>}
         <Rewards rewards={rewards} />
     </DashboardContainer>
@@ -67,6 +75,10 @@ const DashboardContainer = styled.div`
 
         &.saved {
             background: var(--theme);
+        }
+
+        &.error {
+            background: var(--danger);
         }
     }
 

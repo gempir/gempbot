@@ -6,6 +6,7 @@ export interface Store {
     baseUrl: string,
     apiBaseUrl: string,
     scToken: string | null,
+    managing: string,
 }
 
 export const store = new PStore<Store>({
@@ -13,4 +14,5 @@ export const store = new PStore<Store>({
     apiBaseUrl: process.env.REACT_APP_API_BASE_URL ?? "",
     baseUrl: process.env.REACT_APP_BASE_URL ?? "",
     scToken: getCookie("scToken"),
+    managing: "",
 });

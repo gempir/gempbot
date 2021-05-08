@@ -49,7 +49,7 @@ export function useRewards() {
     const [rewards, setRewards] = useState<Array<Reward>>([]);
 
     const fetchRewards = () => {
-        doFetch(Method.GET, "/api/rewards").then(response => setRewards(response.data));
+        doFetch(Method.GET, "/api/rewards").then(response => setRewards(response.data ?? []));
     };
 
     useEffect(fetchRewards, []);

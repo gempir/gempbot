@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
     BrowserRouter as Router,
-
     Route, Switch
 } from "react-router-dom";
 import styled from "styled-components";
@@ -40,6 +39,5 @@ export function App() {
                 </Route>
             </Switch>
         </Router>
-
     </AppContainer>
 }

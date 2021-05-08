@@ -195,7 +195,9 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	result := make(map[string]UserData)
 
 	for _, username := range usernames {
-		result[strings.ToLower(username)] = *userCacheByUsername[strings.ToLower(username)]
+		if val, ok := userCacheByUsername[strings.ToLower(username)]; ok {
+			result[strings.ToLower(username)] = *val
+		}
 	}
 
 	return result, nil

@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 
@@ -52,12 +53,36 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		newEditorNames := []string{}
+
+		userData, err := s.helixClient.GetUsersByUserIds(userConfig.Editors)
+		if err != nil {
+			http.Error(w, "can't resolve editors in config "+err.Error(), http.StatusBadRequest)
+		}
+		for _, user := range userData {
+			newEditorNames = append(newEditorNames, user.Login)
+		}
+
+		userConfig.Editors = newEditorNames
+
+		newEditorForNames := []string{}
+
+		userData, err = s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
+		if err != nil {
+			http.Error(w, "can't resolve editorFor in config "+err.Error(), http.StatusBadRequest)
+		}
+		for _, user := range userData {
+			newEditorForNames = append(newEditorForNames, user.Login)
+		}
+
+		userConfig.Protected.EditorFor = newEditorForNames
+
 		writeJSON(w, userConfig, http.StatusOK)
 	} else if r.Method == http.MethodPost {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Errorf("Failed reading update body: %s", err)
-			http.Error(w, "failed reading body"+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failure saving body: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -116,9 +141,27 @@ func (s *Server) processConfig(userID string, body []byte) error {
 		protected.EditorFor = []string{}
 	}
 
+	newEditorIds := []string{}
+
+	userData, err := s.helixClient.GetUsersByUsernames(newConfig.Editors)
+	if err != nil {
+		return err
+	}
+	if len(newConfig.Editors) != len(userData) {
+		return errors.New("Failed to find all editors")
+	}
+
+	for _, user := range userData {
+		if user.ID == userID {
+			return errors.New("You can't be your own editor")
+		}
+
+		newEditorIds = append(newEditorIds, user.ID)
+	}
+
 	configToSave := UserConfig{
 		Redemptions: newConfig.Redemptions,
-		Editors:     newConfig.Editors,
+		Editors:     newEditorIds,
 		Protected:   protected,
 	}
 
@@ -130,6 +173,13 @@ func (s *Server) processConfig(userID string, body []byte) error {
 	_, err = s.store.Client.HSet("userConfig", userID, js).Result()
 	if err != nil {
 		return err
+	}
+
+	for _, user := range userData {
+		err := s.addEditorFor(user.ID, userID)
+		if err != nil {
+			return err
+		}
 	}
 
 	if isNew {
@@ -153,4 +203,39 @@ func writeJSON(w http.ResponseWriter, data interface{}, code int) {
 	if err != nil {
 		log.Errorf("Faile to writeJSON: %s", err)
 	}
+}
+
+func (s *Server) addEditorFor(editorID, userID string) error {
+	isNew := true
+
+	val, err := s.store.Client.HGet("userConfig", editorID).Result()
+	if err == redis.Nil {
+		isNew = true
+	} else if err != nil {
+		return err
+	}
+
+	var userConfig UserConfig
+	if !isNew {
+		if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
+			return err
+		}
+	} else {
+		userConfig = createDefaultUserConfig()
+	}
+
+	userConfig.Protected.EditorFor = append(userConfig.Protected.EditorFor, userID)
+
+	js, err := json.Marshal(userConfig)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("New Editor %s for user %s", editorID, userID)
+	_, err = s.store.Client.HSet("userConfig", editorID, js).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
