@@ -69,8 +69,10 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 				newEditorForNames = append(newEditorForNames, user.Login)
 			}
 
-			userConfig.Protected.EditorFor = newEditorForNames
+			managingUserConfig.Editors = []string{}
+			managingUserConfig.Protected.EditorFor = newEditorForNames
 			writeJSON(w, managingUserConfig, http.StatusOK)
+			return
 		} else {
 			newEditorNames := []string{}
 
@@ -96,6 +98,7 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 
 			userConfig.Protected.EditorFor = newEditorForNames
 			writeJSON(w, userConfig, http.StatusOK)
+			return
 		}
 
 	} else if r.Method == http.MethodPost {
@@ -136,7 +139,10 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getUserConfig(userID string) (UserConfig, error, bool) {
 	val, err := s.store.Client.HGet("userConfig", userID).Result()
-	if err != nil || val == "" {
+	if err == redis.Nil || val == "" {
+		return createDefaultUserConfig(), nil, true
+	}
+	if err != nil {
 		return createDefaultUserConfig(), err, true
 	}
 
@@ -198,11 +204,12 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 	}
 
 	protected := oldConfig.Protected
-	if protected.EditorFor != nil {
+	if protected.EditorFor == nil {
 		protected.EditorFor = []string{}
 	}
 
 	configToSave := UserConfig{
+		Editors:     oldConfig.Editors,
 		Redemptions: newConfig.Redemptions,
 		Protected:   protected,
 	}
@@ -227,6 +234,13 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 		}
 
 		configToSave.Editors = newEditorIds
+
+		for _, editor := range oldConfig.Editors {
+			err := s.removeEditorFor(editor, userID)
+			if err != nil {
+				return err
+			}
+		}
 
 		for _, user := range userData {
 			err := s.addEditorFor(user.ID, userID)
@@ -294,6 +308,49 @@ func (s *Server) addEditorFor(editorID, userID string) error {
 	}
 
 	userConfig.Protected.EditorFor = append(userConfig.Protected.EditorFor, userID)
+
+	js, err := json.Marshal(userConfig)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("New Editor %s for user %s", editorID, userID)
+	_, err = s.store.Client.HSet("userConfig", editorID, js).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) removeEditorFor(editorID, userID string) error {
+	isNew := true
+
+	val, err := s.store.Client.HGet("userConfig", editorID).Result()
+	if err == redis.Nil {
+		isNew = true
+	} else if err != nil {
+		return err
+	}
+
+	var userConfig UserConfig
+	if !isNew {
+		if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
+			return err
+		}
+	} else {
+		userConfig = createDefaultUserConfig()
+	}
+
+	newEditorFor := []string{}
+
+	for _, editor := range userConfig.Protected.EditorFor {
+		if userID != editor {
+			newEditorFor = append(newEditorFor, editor)
+		}
+	}
+
+	userConfig.Protected.EditorFor = newEditorFor
 
 	js, err := json.Marshal(userConfig)
 	if err != nil {

@@ -1,6 +1,7 @@
 import React, { KeyboardEvent, useRef, useState } from "react";
 import styled from "styled-components";
 import { SetUserConfig, UserConfig } from "../hooks/useUserConfig";
+import { store } from "../store";
 import { Managing } from "./Managing";
 import { Reset } from "./Reset";
 
@@ -17,8 +18,8 @@ const MenuContainer = styled.div`
 
 export function Menu({ userConfig, setUserConfig }: { userConfig: UserConfig | null | undefined, setUserConfig: SetUserConfig }) {
     return <MenuContainer>
-        <Reset setUserConfig={setUserConfig} />
         <Managing userConfig={userConfig} />
+        <Reset setUserConfig={setUserConfig} />
         <EditorManager setUserConfig={setUserConfig} userConfig={userConfig} />
     </MenuContainer>
 }
@@ -79,6 +80,8 @@ const EditorManagerContainer = styled.div`
 `;
 
 function EditorManager({ setUserConfig, userConfig }: { setUserConfig: SetUserConfig, userConfig: UserConfig | null | undefined }) {
+    const managing = store.useState(s => s.managing);
+    
     const loadedEditors: Record<string, string> = {};
     userConfig?.Editors.map(editor => {
         loadedEditors["e" + (Object.values(loadedEditors).length + 1)] = editor
@@ -108,6 +111,10 @@ function EditorManager({ setUserConfig, userConfig }: { setUserConfig: SetUserCo
     }
 
     const creatingNewEditor = Object.values(editors).filter(editor => editor.length === 0).length === 0;
+
+    if (managing !== "") {
+        return null;
+    }
 
     return <EditorManagerContainer>
         {editorInputs}

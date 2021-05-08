@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { UserConfig } from "../hooks/useUserConfig";
+import { store } from "../store";
 
 
 const ResetContainer = styled.div`
@@ -21,6 +22,11 @@ const ResetContainer = styled.div`
 `;
 
 export function Reset({ setUserConfig }: { setUserConfig: (userConfig: UserConfig | null) => void }) {
+    const managing = store.useState(s => s.managing);
+    if (managing !== "") {
+        return null;
+    }
+
     return <ResetContainer onClick={() => {
         if (window.confirm(`Do you really want to reset?\n- Channel Point Rewards on Twitch from spamchamp\n- Settings on spamchamp.gempir.com\n- Unsubscribes all webhooks for your channel`)) {
             setUserConfig(null);
