@@ -46,7 +46,7 @@ type GetRewardsResponse struct {
 }
 
 func (c *Client) GetRewards(userID, userAccessToken string) (*GetRewardsResponse, error) {
-	req, err := http.NewRequest("GET", "https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id="+userID, nil)
+	req, err := http.NewRequest(http.MethodGet, "https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id="+userID, nil)
 	req.Header.Set("authorization", "Bearer "+userAccessToken)
 	req.Header.Set("client-id", c.clientID)
 	if err != nil {
