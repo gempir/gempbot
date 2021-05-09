@@ -108,7 +108,6 @@ function createOAuthUrl(): URL {
     url.searchParams.set("client_id", twitchClientId);
     url.searchParams.set("redirect_uri", apiBaseUrl + "/api/callback");
     url.searchParams.set("response_type", "code");
-    url.searchParams.set("claims", JSON.stringify({ "userinfo": { "picture": null, "preferred_username": null, } }));
     url.searchParams.set("scope", "channel:read:redemptions channel:manage:redemptions");
 
     return url;
