@@ -106,7 +106,7 @@ function EditorManager({ setUserConfig, userConfig }: { setUserConfig: SetUserCo
     };
 
     const editorInputs = [];
-    for (const [key, value] of Object.entries(editors)) {
+    for (const [key, value] of Object.entries(editors).sort()) {
         editorInputs.push(<EditorInput key={key} editor={value} id={key} onChange={changeEditor} />);
     }
 
