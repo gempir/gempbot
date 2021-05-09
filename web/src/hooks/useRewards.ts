@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
+import { store } from "../store";
 
 export interface Reward {
     broadcaster_name: string;
@@ -47,12 +48,17 @@ export interface MaxPerUserPerStreamSetting {
 
 export function useRewards() {
     const [rewards, setRewards] = useState<Array<Reward>>([]);
+    const managing = store.useState(s => s.managing);
 
     const fetchRewards = () => {
-        doFetch(Method.GET, "/api/rewards").then(response => setRewards(response.data));
+        let endPoint = "/api/rewards";
+        if (managing) {
+            endPoint += `?managing=${managing}`;
+        }
+        doFetch(Method.GET, endPoint).then(response => setRewards(response.data ?? []));
     };
 
-    useEffect(fetchRewards, []);
+    useEffect(fetchRewards, [managing]);
 
     return [rewards];
 }

@@ -141,11 +141,12 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 	result := make(map[string]UserData)
 
 	for _, id := range userIDs {
-		if _, ok := userCacheByID[id]; !ok {
+		val, ok := userCacheByID[id]
+		if !ok {
 			log.Debugf("Could not find userId, channel might be banned: %s", id)
 			continue
 		}
-		result[id] = *userCacheByID[id]
+		result[id] = *val
 	}
 
 	return result, nil
@@ -195,7 +196,12 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	result := make(map[string]UserData)
 
 	for _, username := range usernames {
-		result[strings.ToLower(username)] = *userCacheByUsername[strings.ToLower(username)]
+		val, ok := userCacheByUsername[strings.ToLower(username)]
+		if !ok {
+			log.Debugf("Could not find userId, channel might be banned: %s", username)
+			continue
+		}
+		result[strings.ToLower(username)] = *val
 	}
 
 	return result, nil
