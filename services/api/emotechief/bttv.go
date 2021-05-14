@@ -87,6 +87,11 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 		return
 	}
 
+	if !addedEmote.Sharing {
+		err = errors.New("Emote is not shared")
+		return
+	}
+
 	// first figure out the bttvUserId for the channel, might cache this later on
 	var resp *http.Response
 	resp, err = http.Get("https://api.betterttv.net/3/cached/users/twitch/" + channelUserID)
