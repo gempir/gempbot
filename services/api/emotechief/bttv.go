@@ -3,6 +3,7 @@ package emotechief
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -227,6 +228,10 @@ func getBttvEmote(emoteID string) (*bttvEmoteResponse, error) {
 	if err != nil {
 		log.Error(err)
 		return nil, err
+	}
+
+	if response.StatusCode <= 100 || response.StatusCode >= 400 {
+		return nil, fmt.Errorf("Bad bttv response: %d", response.StatusCode)
 	}
 
 	var emoteResponse bttvEmoteResponse
