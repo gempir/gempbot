@@ -1,70 +1,21 @@
-import styled from "styled-components";
-import { ProfilePicture } from "./ProfilePicture";
 import { Record } from "../types/Events";
-
-const RecordsContainer = styled.div`
-    display: flex;
-`;
+import { ProfilePicture } from "./ProfilePicture";
 
 export function Records({ records }: { records: Array<Record> }) {
-    return <RecordsContainer>
+    return <div className="flex flex-row pl-5">
         {records.map(record => <RecordComponent key={record.title} record={record} />)}
-
-    </RecordsContainer>
+    </div>
 }
 
-const RecordConatiner = styled.div`
-    background: var(--bg-bright);
-    border: 1px solid var(--bg-brighter);
-    margin: 1rem;
-    margin-right: 0;
-    padding: 1rem;
-
-    h2 {
-        color: var(--text);
-        margin: 0;
-        margin-bottom: 1rem;
-        padding: 0;
-    }
-
-    ol {
-        color: white;
-        font-size: 1.5rem;
-        font-weight: bold;
-        width: 500px;
-        padding: 0;
-        margin: 0;
-        margin-right: 15px;
-        background: var(--lightBackground);
-        border: 1px solid var(--lightBorder);
-        border-radius: 3px;
-
-        li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.25rem;
-
-            img {
-                margin-right: 10px;
-            }
-
-            .value {
-                text-align: right;
-                flex: 1 1 auto;
-            }
-        }
-    }
-`;
-
 function RecordComponent({ record }: { record: Record }) {
-    return <RecordConatiner>
-        <h2>{record.title}</h2>
+    return <div className="bg-gray-600 rounded shadow p-5 w-64 mr-5 ml-0">
+        <h2 className="text-1xl font-bold">{record.title}</h2>
         <ol>
-            {record.scores.map(score => <li key={score.user.id}>
+            {record.scores.map(score => <li key={score.user.id} className="flex flex-row justify-between items-center m-1">
                 <ProfilePicture src={score.user.profilePicture} />
-                <span>{score.user.displayName}</span>
-                <span className={"value"}>{score.score}</span>
+                <span className="font-bold">{score.user.displayName}</span>
+                <span className="font-bold">{score.score}</span>
             </li>)}
         </ol>
-    </RecordConatiner>
+    </div>
 }

@@ -1,22 +1,12 @@
-import styled from "styled-components";
 
-const MetaContainer = styled.div`
-    display: inline-block;
-    background: var(--bg-bright);
-    border: 1px solid var(--bg-brighter);
-    padding: 0.5rem;
-    margin: 1rem;
-    margin-right: 0;
-    margin-bottom: 0;
-`;
 
 export function Meta({ activeChannels, joinedChannels }: { [key: string]: number }) {
-    return <>
-        <MetaContainer>
+    return <div className="flex flex-row">
+        <div className="rounded shadow bg-gray-700 p-5 w-64 m-5">
             Joined Channels: <strong>{joinedChannels}</strong>
-        </MetaContainer>
-        <MetaContainer>
+        </div>
+        <div className="rounded shadow bg-gray-700 p-5 w-64 m-5 -ml-0">
             Active Channels: <strong>{activeChannels}</strong>
-        </MetaContainer>
-    </>
+        </div>
+    </div>
 }

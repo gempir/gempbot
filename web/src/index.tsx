@@ -1,5 +1,6 @@
 import React, { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
+import "./index.css";
 import { createGlobalStyle } from 'styled-components';
 import { App } from './App';
 
@@ -20,19 +21,6 @@ const GlobalStyle = createGlobalStyle`
         --twitch-dark: #4c317e;
         --danger: #e74c3c;
         --danger-dark: #c0392b;
-
-        background: var(--bg);
-        margin: 0;
-        padding: 0;
-        color: var(--text);
-        margin: 0;
-        font-family: Helvetica, Arial, sans-serif;
-        height: 100%;
-        width: 100%;
-
-        * {
-            box-sizing: border-box;
-        }
     }
 `
 
