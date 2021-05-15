@@ -8,7 +8,7 @@ export function Reset({ setUserConfig }: { setUserConfig: (userConfig: UserConfi
         return null;
     }
 
-    return <div className="p-3 bg-red-900 hover:bg-red-800 shadow rounded cursor-pointer" onClick={() => {
+    return <div className="p-3 opacity-25 hover:opacity-100 bg-red-900 hover:bg-red-800 shadow rounded cursor-pointer" onClick={() => {
         if (window.confirm(`Do you really want to reset?\n- Channel Point Rewards on Twitch from spamchamp\n- Settings on spamchamp.gempir.com\n- Unsubscribes all webhooks for your channel`)) {
             setUserConfig(null);
         }
