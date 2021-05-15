@@ -1,13 +1,16 @@
 import { useUserConfig } from "../hooks/useUserConfig";
 import { Menu } from "./Menu";
+import { BttvForm } from "./RewardForms/BttvForm";
 
 export function Dashboard() {
     const [userCfg, setUserConfig] = useUserConfig();
 
+    if (!userCfg) {
+        return null;
+    }
+
     return <div>
-        {userCfg && <Menu userConfig={userCfg} setUserConfig={setUserConfig} />}
-        {/* {userCfg && <>
-            <BttvForm />
-        </>} */}
+        <Menu userConfig={userCfg} setUserConfig={setUserConfig} />
+        <BttvForm />
     </div>
 }

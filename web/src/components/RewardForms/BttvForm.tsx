@@ -9,16 +9,18 @@ export function BttvForm() {
 
     return (
         /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className="m-4 p-4 bg-gray-800 rounded shadow">
             {/* register your input into the hook by invoking the "register" function */}
-            <input defaultValue="test" {...register("example")} />
+            <input defaultValue="Bttv Emote" {...register("name")} className="bg-gray-700 p-2 rounded shadow block" />
 
             {/* include validation with required or other standard HTML validation rules */}
-            <input {...register("exampleRequired", { required: true })} />
+            <input {...register("exampleRequired", { required: true })} className="bg-gray-700 p-2 rounded shadow block mt-3" />
             {/* errors will return when field validation fails  */}
             {errors.exampleRequired && <span>This field is required</span>}
 
-            <input type="submit" />
+            <div className="flex justify-end">
+                <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3" value="save" />
+            </div>
         </form>
     );
 }
