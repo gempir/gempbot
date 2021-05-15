@@ -1,18 +1,19 @@
 import { useForm } from "react-hook-form";
-import { SetUserConfig } from "../../hooks/useUserConfig";
+import { BttvReward, SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
 
-export interface BttvFormData {
-    title: string;
-    cost: string;
-    backgroundColor: string;
-    maxPerStream: string;
-    maxPerUserPerStream: string;
-    globalCooldownInMinutes: string;
-}
 
-export function BttvForm({ setUserConfig }: { setUserConfig: SetUserConfig }) {
+
+export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
     const { register, handleSubmit, formState: { errors } } = useForm();
-    const onSubmit = (data: BttvFormData) => console.log(data);
+    const onSubmit = (data: BttvReward) => setUserConfig(
+        {
+            ...userConfig,
+            Rewards: {
+                ...userConfig?.Rewards,
+                Bttv: data
+            }
+        }
+    );
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="m-4 p-4 bg-gray-800 rounded shadow">

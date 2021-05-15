@@ -4,27 +4,31 @@ import { doFetch, Method } from "../service/doFetch";
 import { store } from "../store";
 
 export interface UserConfig {
-    Redemptions: Redemptions;
     Editors: Array<string>;
     Protected: Protected;
+    Rewards: Rewards;
+}
+
+export interface Rewards {
+    Bttv: null | BttvReward
+}
+
+export interface BttvReward {
+    title: string;
+    cost: string;
+    backgroundColor: string;
+    maxPerStream: string;
+    maxPerUserPerStream: string;
+    globalCooldownInMinutes: string;
 }
 
 export interface Protected {
     EditorFor: Array<string>;
 }
 
-export interface Redemptions {
-    Bttv: Redemption;
-}
-
-export interface Redemption {
-    Title: string;
-    Active: boolean;
-}
-
 export type SetUserConfig = (userConfig: UserConfig | null) => void;
 
-export function useUserConfig(onSave: () => void = () => {}, onError: () => void = () => {}): [UserConfig | null | undefined, SetUserConfig] {
+export function useUserConfig(onSave: () => void = () => { }, onError: () => void = () => { }): [UserConfig | null | undefined, SetUserConfig] {
     const [userConfig, setUserConfig] = useState<UserConfig | null | undefined>(undefined);
     const [changeCounter, setChangeCounter] = useState(0);
     const managing = store.useState(s => s.managing);
