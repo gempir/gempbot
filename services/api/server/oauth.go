@@ -2,9 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -84,10 +82,6 @@ func (s *Server) createApiToken(userID string) (string, error) {
 }
 
 func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, status int, scToken string) {
-	params := url.Values{
-		"result": {fmt.Sprint(status)},
-	}
-
 	cookie := http.Cookie{
 		Name:    "scToken",
 		Value:   scToken,
@@ -98,7 +92,7 @@ func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, statu
 
 	http.SetCookie(w, &cookie)
 
-	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode(), http.StatusFound)
+	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard", http.StatusFound)
 }
 
 func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {

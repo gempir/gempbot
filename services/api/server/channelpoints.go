@@ -234,6 +234,8 @@ func (s *Server) createChannelPointReward(userID string, request BttvReward) (Bt
 		return BttvReward{}, err
 	}
 
+	log.Info(resp)
+
 	return BttvReward{
 		Title:                             resp.Title,
 		Prompt:                            resp.Prompt,

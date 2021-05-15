@@ -15,11 +15,19 @@ export interface Rewards {
 
 export interface BttvReward {
     title: string;
+    prompt?: string;
     cost: number;
-    backgroundColor: string;
-    maxPerStream: number;
-    maxPerUserPerStream: number;
-    globalCooldownSeconds: number;
+    backgroundColor?: string;
+    isMaxPerStreamEnabled?: boolean;
+    maxPerStream?: number;
+    isUserInputRequired?: boolean;
+    isMaxPerUserPerStreamEnabled?: boolean;
+    maxPerUserPerStream?: number;
+    isGlobalCooldownEnabled?: boolean;
+    globalCooldownSeconds?: number;
+    shouldRedemptionsSkipRequestQueue?: boolean;
+    Enabled?: boolean;
+    ID?: string;
 }
 
 export interface Protected {

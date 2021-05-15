@@ -24,15 +24,15 @@ type BttvReward struct {
 	Title                             string `json:"title"`
 	Prompt                            string `json:"prompt"`
 	Cost                              int    `json:"cost"`
-	Backgroundcolor                   string `json:"backgroundColor"`
-	IsMaxPerStreamEnabled             bool   `json:"isMaxPerStreamEnabled"`
-	MaxPerStream                      int    `json:"maxPerStream"`
-	IsUserInputRequired               bool   `json:"isUserInputRequired"`
-	IsMaxPerUserPerStreamEnabled      bool   `json:"isMaxPerUserPerStreamEnabled"`
-	MaxPerUserPerStream               int    `json:"maxPerUserPerStream"`
-	IsGlobalCooldownEnabled           bool   `json:"isGlobalCooldownEnabled"`
-	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds"`
-	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue"`
+	Backgroundcolor                   string `json:"backgroundColor,omitempty"`
+	IsMaxPerStreamEnabled             bool   `json:"isMaxPerStreamEnabled,omitempty"`
+	MaxPerStream                      int    `json:"maxPerStream,omitempty"`
+	IsUserInputRequired               bool   `json:"isUserInputRequired,omitempty"`
+	IsMaxPerUserPerStreamEnabled      bool   `json:"isMaxPerUserPerStreamEnabled,omitempty"`
+	MaxPerUserPerStream               int    `json:"maxPerUserPerStream,omitempty"`
+	IsGlobalCooldownEnabled           bool   `json:"isGlobalCooldownEnabled,omitempty"`
+	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds,omitempty"`
+	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue,omitempty"`
 	Enabled                           bool
 	ID                                string
 }
