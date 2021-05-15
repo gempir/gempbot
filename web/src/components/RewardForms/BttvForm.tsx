@@ -1,9 +1,18 @@
 import { useForm } from "react-hook-form";
+import { SetUserConfig } from "../../hooks/useUserConfig";
 
-export function BttvForm() {
+export interface BttvFormData {
+    title: string;
+    cost: string;
+    backgroundColor: string;
+    maxPerStream: string;
+    maxPerUserPerStream: string;
+    globalCooldownInMinutes: string;
+}
+
+export function BttvForm({ setUserConfig }: { setUserConfig: SetUserConfig }) {
     const { register, handleSubmit, formState: { errors } } = useForm();
-    // @ts-ignore
-    const onSubmit = data => console.log(data);
+    const onSubmit = (data: BttvFormData) => console.log(data);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="m-4 p-4 bg-gray-800 rounded shadow">
@@ -14,14 +23,34 @@ export function BttvForm() {
             </label>
 
             <label className="block mt-3">
-                Cost 
-                <input defaultValue="Bttv Emote" type="number" spellCheck={false} {...register("cost", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+                Cost
+                <input defaultValue="10000" type="number" spellCheck={false} {...register("cost", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
                 {errors.cost && <span className="text-red-700">required</span>}
             </label>
 
             <label className="block mt-3">
                 Prompt
                 <input spellCheck={false} disabled {...register("prompt")} className="block cursor-not-allowed truncate form-input w-full opacity-25 border-none bg-gray-700 mt-2 p-2 rounded shadow" defaultValue="Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by spamchamp.gempir.com" />
+            </label>
+
+            <label className="block mt-3">
+                Background Color
+                <input placeholder="#FFFFFF" spellCheck={false} {...register("backgroundColor")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+            </label>
+
+            <label className="inline-flex items-center mt-3">
+                Max per Stream
+                <input placeholder="∞" type="number" spellCheck={false} {...register("maxPerStream")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+            </label>
+
+            <label className="inline-flex items-center mt-3">
+                Max per User per Stream
+                <input placeholder="∞" type="number" spellCheck={false} {...register("maxPerUserPerStream")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+            </label>
+
+            <label className="inline-flex items-center mt-3">
+                Global Cooldown in Minutes
+                <input placeholder="0" type="number" spellCheck={false} {...register("globalCooldownInMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
             <div className="flex flex-row justify-between items-center select-none">

@@ -11,6 +11,6 @@ export function Dashboard() {
 
     return <div>
         <Menu userConfig={userCfg} setUserConfig={setUserConfig} />
-        <BttvForm />
+        <BttvForm setUserConfig={setUserConfig} />
     </div>
 }
