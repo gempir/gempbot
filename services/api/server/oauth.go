@@ -101,6 +101,20 @@ func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, statu
 	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode(), http.StatusFound)
 }
 
+func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {
+	val, err := s.store.Client.HGet("userAccessTokensData", userID).Result()
+	if err != nil {
+		return userAcessTokenData{}, err
+	}
+
+	var token userAcessTokenData
+	if err := json.Unmarshal([]byte(val), &token); err != nil {
+		return userAcessTokenData{}, err
+	}
+
+	return token, nil
+}
+
 func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse, *userAcessTokenData) {
 	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 
@@ -119,15 +133,9 @@ func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenRe
 		return false, nil, nil
 	}
 
-	val, err := s.store.Client.HGet("userAccessTokensData", claims.UserID).Result()
+	token, err := s.getUserAccessToken(claims.UserID)
 	if err != nil {
-		log.Errorf("found no accessToken: %s", err)
-		return false, nil, nil
-	}
-
-	var token userAcessTokenData
-	if err := json.Unmarshal([]byte(val), &token); err != nil {
-		log.Errorf("failed to unmarshal token: %s", err)
+		log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
 		return false, nil, nil
 	}
 

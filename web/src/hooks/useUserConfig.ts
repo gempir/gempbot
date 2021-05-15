@@ -15,11 +15,11 @@ export interface Rewards {
 
 export interface BttvReward {
     title: string;
-    cost: string;
+    cost: number;
     backgroundColor: string;
-    maxPerStream: string;
-    maxPerUserPerStream: string;
-    globalCooldownInMinutes: string;
+    maxPerStream: number;
+    maxPerUserPerStream: number;
+    globalCooldownSeconds: number;
 }
 
 export interface Protected {

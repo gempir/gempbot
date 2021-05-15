@@ -6,10 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	"strings"
 	"time"
 
-	"github.com/nicklaw5/helix"
+	"github.com/gempir/spamchamp/pkg/helix"
 	nickHelix "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
@@ -67,8 +66,8 @@ func (s *Server) subscribeChannelPoints(userID string) {
 	// Internally they check if the app token has authenticated users
 	response, err := s.helixUserClient.Client.CreateEventSubSubscription(
 		&nickHelix.EventSubSubscription{
-			Condition: helix.EventSubCondition{BroadcasterUserID: userID},
-			Transport: helix.EventSubTransport{Method: "webhook", Callback: s.cfg.WebhookApiBaseUrl + "/api/redemption", Secret: s.cfg.Secret},
+			Condition: nickHelix.EventSubCondition{BroadcasterUserID: userID},
+			Transport: nickHelix.EventSubTransport{Method: "webhook", Callback: s.cfg.WebhookApiBaseUrl + "/api/redemption", Secret: s.cfg.Secret},
 			Type:      "channel.channel_points_custom_reward_redemption.add",
 			Version:   "1",
 		},
@@ -128,7 +127,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		http.Error(w, "failed reading body", http.StatusBadRequest)
 	}
 
-	verified := helix.VerifyEventSubNotification(s.cfg.Secret, r.Header, string(body))
+	verified := nickHelix.VerifyEventSubNotification(s.cfg.Secret, r.Header, string(body))
 	if !verified {
 		log.Errorf("Failed verification: %s", r.Header.Get("Twitch-Eventsub-Message-Id"))
 		http.Error(w, "failed verfication", http.StatusPreconditionFailed)
@@ -159,7 +158,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if userCfg.Redemptions.Bttv.Active && strings.EqualFold(redemption.Event.Reward.Title, userCfg.Redemptions.Bttv.Title) {
+	if userCfg.Rewards.BttvReward.Enabled && userCfg.Rewards.BttvReward.ID == redemption.Event.Reward.ID {
 		matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 		if len(matches) == 1 && len(matches[0]) == 2 {
 			emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
@@ -197,4 +196,58 @@ func (s *Server) handleChallenge(w http.ResponseWriter, body []byte) {
 
 	log.Infof("Challenge success: %s", event.Challenge)
 	fmt.Fprint(w, event.Challenge)
+}
+
+func (s *Server) createChannelPointReward(userID string, request BttvReward) (BttvReward, error) {
+	token, err := s.getUserAccessToken(userID)
+	if err != nil {
+		return BttvReward{}, err
+	}
+
+	req := helix.CreateCustomRewardRequest{
+		Title:                             request.Title,
+		Prompt:                            "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by spamchamp.gempir.com",
+		Cost:                              request.Cost,
+		IsEnabled:                         request.Enabled,
+		BackgroundColor:                   request.Backgroundcolor,
+		IsUserInputRequired:               true,
+		ShouldRedemptionsSkipRequestQueue: false,
+	}
+
+	if request.MaxPerStream != 0 {
+		req.IsMaxPerStreamEnabled = true
+		req.MaxPerStream = request.MaxPerStream
+	}
+
+	if request.MaxPerUserPerStream != 0 {
+		req.IsMaxPerUserPerStreamEnabled = true
+		req.MaxPerUserPerStream = request.MaxPerUserPerStream
+	}
+
+	if request.GlobalCooldownSeconds != 0 {
+		req.IsGlobalCooldownEnabled = true
+		req.GlobalCoolDownSeconds = request.GlobalCooldownSeconds
+	}
+
+	resp, err := s.helixUserClient.CreateReward(userID, token.AccessToken, req)
+	if err != nil {
+		return BttvReward{}, err
+	}
+
+	return BttvReward{
+		Title:                             resp.Title,
+		Prompt:                            resp.Prompt,
+		Cost:                              resp.Cost,
+		Backgroundcolor:                   resp.BackgroundColor,
+		IsMaxPerStreamEnabled:             resp.MaxPerStreamSetting.IsEnabled,
+		MaxPerStream:                      resp.MaxPerStreamSetting.MaxPerStream,
+		IsMaxPerUserPerStreamEnabled:      resp.MaxPerUserPerStreamSetting.IsEnabled,
+		MaxPerUserPerStream:               resp.MaxPerUserPerStreamSetting.MaxPerUserPerStream,
+		IsUserInputRequired:               resp.IsUserInputRequired,
+		IsGlobalCooldownEnabled:           resp.GlobalCooldownSetting.IsEnabled,
+		GlobalCooldownSeconds:             resp.GlobalCooldownSetting.GlobalCooldownSeconds,
+		ShouldRedemptionsSkipRequestQueue: resp.ShouldRedemptionsSkipRequestQueue,
+		Enabled:                           resp.IsEnabled,
+		ID:                                resp.ID,
+	}, nil
 }

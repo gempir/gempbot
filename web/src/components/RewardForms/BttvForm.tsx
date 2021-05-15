@@ -1,22 +1,35 @@
 import { useForm } from "react-hook-form";
-import { BttvReward, SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
+import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
 
-
+interface BttvRewardForm {
+    title: string;
+    cost: string;
+    backgroundColor: string;
+    maxPerStream: string;
+    maxPerUserPerStream: string;
+    globalCooldownMinutes: string;
+}
 
 export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
     const { register, handleSubmit, formState: { errors } } = useForm();
-    const onSubmit = (data: BttvReward) => setUserConfig(
+    const onSubmit = (data: BttvRewardForm) => setUserConfig(
         {
             ...userConfig,
             Rewards: {
                 ...userConfig?.Rewards,
-                Bttv: data
+                Bttv: {
+                    ...data,
+                    cost: Number(data.cost),
+                    maxPerStream: Number(data.maxPerStream),
+                    maxPerUserPerStream: Number(data.maxPerUserPerStream),
+                    globalCooldownSeconds: Number(data.globalCooldownMinutes) * 60
+                }
             }
         }
     );
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="m-4 p-4 bg-gray-800 rounded shadow">
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl m-4 p-4 bg-gray-800 rounded shadow">
             <label className="block">
                 Title
                 <input defaultValue="Bttv Emote" spellCheck={false} {...register("title", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
@@ -39,23 +52,23 @@ export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig
                 <input placeholder="#FFFFFF" spellCheck={false} {...register("backgroundColor")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
-            <label className="inline-flex items-center mt-3">
+            <label className="flex items-center mt-3">
                 Max per Stream
                 <input placeholder="∞" type="number" spellCheck={false} {...register("maxPerStream")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
-            <label className="inline-flex items-center mt-3">
+            <label className="flex items-center mt-3">
                 Max per User per Stream
                 <input placeholder="∞" type="number" spellCheck={false} {...register("maxPerUserPerStream")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
-            <label className="inline-flex items-center mt-3">
+            <label className="flex items-center mt-3">
                 Global Cooldown in Minutes
-                <input placeholder="0" type="number" spellCheck={false} {...register("globalCooldownInMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+                <input placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
             <div className="flex flex-row justify-between items-center select-none">
-                <label className="inline-flex items-center">
+                <label className="flex items-center">
                     <input type="checkbox" className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" />
                     <span className="ml-2">Enabled</span>
                 </label>

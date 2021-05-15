@@ -11,9 +11,30 @@ import (
 )
 
 type UserConfig struct {
-	Redemptions Redemptions
-	Editors     []string
-	Protected   Protected
+	Editors   []string
+	Protected Protected
+	Rewards   Rewards
+}
+
+type Rewards struct {
+	BttvReward `json:"Bttv"`
+}
+
+type BttvReward struct {
+	Title                             string `json:"title"`
+	Prompt                            string `json:"prompt"`
+	Cost                              int    `json:"cost"`
+	Backgroundcolor                   string `json:"backgroundColor"`
+	IsMaxPerStreamEnabled             bool   `json:"isMaxPerStreamEnabled"`
+	MaxPerStream                      int    `json:"maxPerStream"`
+	IsUserInputRequired               bool   `json:"isUserInputRequired"`
+	IsMaxPerUserPerStreamEnabled      bool   `json:"isMaxPerUserPerStreamEnabled"`
+	MaxPerUserPerStream               int    `json:"maxPerUserPerStream"`
+	IsGlobalCooldownEnabled           bool   `json:"isGlobalCooldownEnabled"`
+	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds"`
+	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue"`
+	Enabled                           bool
+	ID                                string
 }
 
 type Protected struct {
@@ -22,13 +43,11 @@ type Protected struct {
 
 func createDefaultUserConfig() UserConfig {
 	return UserConfig{
-		Redemptions: Redemptions{
-			Bttv: Redemption{Title: "Bttv emote", Active: false},
-		},
 		Editors: []string{},
 		Protected: Protected{
 			EditorFor: []string{},
 		},
+		Rewards: Rewards{},
 	}
 }
 
@@ -209,9 +228,9 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 	}
 
 	configToSave := UserConfig{
-		Editors:     oldConfig.Editors,
-		Redemptions: newConfig.Redemptions,
-		Protected:   protected,
+		Editors:   oldConfig.Editors,
+		Rewards:   newConfig.Rewards,
+		Protected: protected,
 	}
 
 	if ownerUserID == "" {
@@ -250,14 +269,28 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 		}
 	}
 
-	js, err := json.Marshal(configToSave)
-	if err != nil {
-		return err
-	}
-
 	saveTarget := userID
 	if ownerUserID != "" {
 		saveTarget = ownerUserID
+	}
+
+	// the saving to twitch part
+	if configToSave.Rewards.BttvReward.ID == "" {
+		log.Info("creating reward")
+		reward, err := s.createChannelPointReward(saveTarget, newConfig.Rewards.BttvReward)
+		if err != nil {
+			return err
+		}
+
+		newConfig.Rewards.BttvReward = reward
+	} else {
+		log.Info("updating reward")
+		// update reward
+	}
+
+	js, err := json.Marshal(configToSave)
+	if err != nil {
+		return err
 	}
 
 	_, err = s.store.Client.HSet("userConfig", saveTarget, js).Result()

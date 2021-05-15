@@ -92,7 +92,6 @@ func (s *Server) Start() {
 	mux.HandleFunc("/api/callback", s.handleCallback)
 	mux.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
 	mux.HandleFunc("/api/userConfig", s.handleUserConfig)
-	mux.HandleFunc("/api/rewards", s.handleRewards)
 
 	handler := cors.AllowAll().Handler(mux)
 	log.Info("listening on port :8035")
