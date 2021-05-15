@@ -4,7 +4,7 @@ import {
     Route, Switch
 } from "react-router-dom";
 import { Dashboard } from "./components/Dashboard";
-import { Login } from "./components/Login";
+import { Navbar } from "./components/Navbar";
 import { Meta } from "./components/Meta";
 import { Records } from "./components/Records";
 import EventService from "./service/EventService";
@@ -25,7 +25,7 @@ export function App() {
     }, []);
 
     return <Router>
-        <Login />
+        <Navbar />
         <Switch>
             <Route path="/dashboard">
                 <Dashboard />

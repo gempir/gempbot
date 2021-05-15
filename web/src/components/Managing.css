@@ -1,0 +1,22 @@
+.Managing {
+    position: relative;
+}
+
+.Managing select {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    position: relative;
+    height: 50px;
+}
+
+.Managing:after {
+    content: "▼";
+    color: white;
+    pointer-events: none;
+    position: absolute;
+    right: 10px;
+    top: 20px;
+    margin: auto;
+}
