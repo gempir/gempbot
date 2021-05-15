@@ -1,4 +1,3 @@
-import React from "react";
 import { useUserConfig } from "../hooks/useUserConfig";
 import { Menu } from "./Menu";
 
