@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useUserConfig } from "../hooks/useUserConfig";
-import { Menu } from "./Menu";
-import { BttvForm } from "./RewardForms/BttvForm";
+import { useUserConfig } from "../../hooks/useUserConfig";
+import { Menu } from "../Menu";
+import { BttvForm } from "../RewardForms/BttvForm";
 
 export function Dashboard() {
     const [renderKey, setRenderKey] = useState(1);
