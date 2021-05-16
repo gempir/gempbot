@@ -17,11 +17,11 @@ export function App() {
     const [records, setRecords] = useState<Array<Record>>([])
 
     useEffect(() => {
-        new EventService((message: EventMessage) => {
-            setJoinedChannels(message.joinedChannels);
-            setActiveChannels(message.activeChannels);
-            setRecords(message.records);
-        });
+        // new EventService((message: EventMessage) => {
+        //     setJoinedChannels(message.joinedChannels);
+        //     setActiveChannels(message.activeChannels);
+        //     setRecords(message.records);
+        // });
     }, []);
 
     return <Router>

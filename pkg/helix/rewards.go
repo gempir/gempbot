@@ -76,7 +76,7 @@ type CreateCustomRewardRequest struct {
 	Prompt                            string `json:"prompt"`
 	Cost                              int    `json:"cost"`
 	IsEnabled                         bool   `json:"is_enabled"`
-	BackgroundColor                   string `json:"background_color"`
+	BackgroundColor                   string `json:"background_color,omitempty"`
 	IsUserInputRequired               bool   `json:"is_user_input_required"`
 	IsMaxPerStreamEnabled             bool   `json:"is_max_per_stream_enabled"`
 	MaxPerStream                      int    `json:"max_per_stream"`

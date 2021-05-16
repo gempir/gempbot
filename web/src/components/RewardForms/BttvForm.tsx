@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
 
@@ -81,7 +82,7 @@ export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig
 
             <label className="flex items-center mt-3">
                 Global Cooldown in Minutes
-                <input defaultValue={userConfig.Rewards.Bttv?.globalCooldownSeconds ?? 0 / 60} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+                <input defaultValue={(userConfig.Rewards.Bttv?.globalCooldownSeconds ?? 0) / 60} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
             <div className="flex flex-row justify-between items-center select-none">

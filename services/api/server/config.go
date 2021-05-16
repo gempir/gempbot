@@ -211,6 +211,7 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) (Use
 	if err != nil {
 		return UserConfig{}, err
 	}
+	editorConfig := oldConfig
 
 	ownerUserID, err := s.checkEditor(r, oldConfig)
 	if err != nil {
@@ -301,6 +302,32 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) (Use
 		log.Infof("Created new config for: %s, subscribing webhooks", userID)
 		s.subscribeChannelPoints(userID)
 	}
+
+	newEditorNames := []string{}
+
+	userData, err := s.helixClient.GetUsersByUserIds(editorConfig.Editors)
+	if err != nil {
+		return UserConfig{}, err
+	}
+	for _, user := range userData {
+		newEditorNames = append(newEditorNames, user.Login)
+	}
+
+	configToSave.Editors = newEditorNames
+
+	configToSave.Protected = editorConfig.Protected
+
+	newEditorForNames := []string{}
+
+	userData, err = s.helixClient.GetUsersByUserIds(editorConfig.Protected.EditorFor)
+	if err != nil {
+		return UserConfig{}, errors.New("can't resolve editorFor in config " + err.Error())
+	}
+	for _, user := range userData {
+		newEditorForNames = append(newEditorForNames, user.Login)
+	}
+
+	configToSave.Protected.EditorFor = newEditorForNames
 
 	return configToSave, nil
 }
