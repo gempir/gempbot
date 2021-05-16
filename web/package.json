@@ -20,7 +20,7 @@
     "devDependencies": {
         "@types/react-router-dom": "^5.1.7",
         "autoprefixer": "^9",
-        "postcss": "^8",
+        "postcss": "^7",
         "tailwindcss": "npm:@tailwindcss/postcss7-compat"
     },
     "scripts": {
