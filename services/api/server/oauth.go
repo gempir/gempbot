@@ -2,9 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -84,10 +82,6 @@ func (s *Server) createApiToken(userID string) (string, error) {
 }
 
 func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, status int, scToken string) {
-	params := url.Values{
-		"result": {fmt.Sprint(status)},
-	}
-
 	cookie := http.Cookie{
 		Name:    "scToken",
 		Value:   scToken,
@@ -98,7 +92,21 @@ func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, statu
 
 	http.SetCookie(w, &cookie)
 
-	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard"+"?"+params.Encode(), http.StatusFound)
+	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard", http.StatusFound)
+}
+
+func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {
+	val, err := s.store.Client.HGet("userAccessTokensData", userID).Result()
+	if err != nil {
+		return userAcessTokenData{}, err
+	}
+
+	var token userAcessTokenData
+	if err := json.Unmarshal([]byte(val), &token); err != nil {
+		return userAcessTokenData{}, err
+	}
+
+	return token, nil
 }
 
 func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse, *userAcessTokenData) {
@@ -119,15 +127,9 @@ func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenRe
 		return false, nil, nil
 	}
 
-	val, err := s.store.Client.HGet("userAccessTokensData", claims.UserID).Result()
+	token, err := s.getUserAccessToken(claims.UserID)
 	if err != nil {
-		log.Errorf("found no accessToken: %s", err)
-		return false, nil, nil
-	}
-
-	var token userAcessTokenData
-	if err := json.Unmarshal([]byte(val), &token); err != nil {
-		log.Errorf("failed to unmarshal token: %s", err)
+		log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
 		return false, nil, nil
 	}
 

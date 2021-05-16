@@ -1,83 +1,16 @@
 import React, { KeyboardEvent, useRef, useState } from "react";
-import styled from "styled-components";
 import { SetUserConfig, UserConfig } from "../hooks/useUserConfig";
 import { store } from "../store";
 import { Managing } from "./Managing";
 import { Reset } from "./Reset";
 
-const MenuContainer = styled.div`
-    display: inline-grid;
-    grid-auto-flow: column;
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    border-radius: 3px;
-    cursor: pointer;
-    grid-gap: 0.5rem;
-`;
-
 export function Menu({ userConfig, setUserConfig }: { userConfig: UserConfig | null | undefined, setUserConfig: SetUserConfig }) {
-    return <MenuContainer>
+    return <div className="flex flex-row flex-wrap gap-4 ml-4">
         <Managing userConfig={userConfig} />
         <Reset setUserConfig={setUserConfig} />
         <EditorManager setUserConfig={setUserConfig} userConfig={userConfig} />
-    </MenuContainer>
+    </div>
 }
-
-const EditorManagerContainer = styled.div`
-    display: inline-grid;
-    grid-auto-flow: column;
-    grid-gap: 0.5rem;
-
-    .editor-input {
-        background: var(--bg-bright);
-        border: 1px solid var(--bg-brighter);
-        color: white;
-        outline: none;
-        padding-right: 0.5rem;
-        font-size: 0.8rem;
-        line-height: 1.2rem;
-        position: relative;
-        height: 50px;
-
-        input {
-            outline: none;
-            max-width: 6rem;
-            padding: 1rem;
-            padding-right: 0;
-            background: transparent;
-            border: 0;
-            color: white;
-        }
-
-        span {
-            padding: 0.5rem;
-            font-weight: bold;
-            user-select: none;
-
-            &:hover {
-                color: var(--danger);
-            }
-        }
-    }
-
-    .add-editor {
-        height: 50px;
-        padding: 1rem;
-        font-size: 0.8rem;
-        background: var(--theme-bright);
-        border-radius: 3px;
-        opacity: 1;
-        font-weight: bold;
-        line-height: 1.2rem;
-        transition: opacity 0.2s ease-in-out;
-        user-select: none;
-
-        &:hover {
-            opacity: 1;
-        }
-    }
-`;
 
 function EditorManager({ setUserConfig, userConfig }: { setUserConfig: SetUserConfig, userConfig: UserConfig | null | undefined }) {
     const managing = store.useState(s => s.managing);
@@ -116,14 +49,14 @@ function EditorManager({ setUserConfig, userConfig }: { setUserConfig: SetUserCo
         return null;
     }
 
-    return <EditorManagerContainer>
+    return <>
         {editorInputs}
-        {creatingNewEditor && <div className="add-editor" onClick={() => {
+        {creatingNewEditor && <div className="bg-green-700 rounded shadow p-3 cursor-pointer hover:bg-green-600" onClick={() => {
             const newEditors = { ...editors };
             newEditors["e" + (Object.values(editors).length + 1)] = "";
             setEditors(newEditors);
         }}>add editor</div>}
-    </EditorManagerContainer>
+    </>
 }
 
 function EditorInput({ id, editor, onChange }: { id: string, editor: string, onChange: (id: string, value: string | null) => void }) {
@@ -138,8 +71,8 @@ function EditorInput({ id, editor, onChange }: { id: string, editor: string, onC
         }
     };
 
-    return <div className="editor-input">
-        <input ref={ref} type="text" value={value} onKeyDown={(e) => handleKeyPress(e)} onChange={(e) => setValue(e.target.value)} onBlur={() => onChange(id, value)} key={editor} />
-        <span onClick={() => onChange(id, null)}>X</span>
+    return <div className="flex items-center">
+        <input className="bg-blue-900 hover:bg-blue-800 focus:bg-blue:800 p-3 rounded shadow w-24 rounded-r-none truncate" spellCheck={false} ref={ref} type="text" value={value} onKeyDown={(e) => handleKeyPress(e)} onChange={(e) => setValue(e.target.value)} onBlur={() => onChange(id, value)} key={editor} />
+        <span className="bg-red-900 p-3 px-1 font-bold opacity-25 hover:opacity-100 cursor-pointer rounded rounded-l-none" onClick={() => onChange(id, null)}>X</span>
     </div>;
 }

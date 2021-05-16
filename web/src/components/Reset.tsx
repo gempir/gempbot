@@ -1,25 +1,6 @@
-import styled from "styled-components";
 import { UserConfig } from "../hooks/useUserConfig";
 import { store } from "../store";
 
-
-const ResetContainer = styled.div`
-    display: block;
-    color: white;
-    padding: 1rem 1rem;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 3px;
-    background: var(--danger-dark);
-    cursor: pointer;
-    opacity: 0.25;
-    transition: opacity 0.2s ease-in-out;
-
-    &:hover {
-        background: var(--danger);
-        opacity: 1;
-    }
-`;
 
 export function Reset({ setUserConfig }: { setUserConfig: (userConfig: UserConfig | null) => void }) {
     const managing = store.useState(s => s.managing);
@@ -27,9 +8,9 @@ export function Reset({ setUserConfig }: { setUserConfig: (userConfig: UserConfi
         return null;
     }
 
-    return <ResetContainer onClick={() => {
+    return <div className="p-3 opacity-25 hover:opacity-100 bg-red-900 hover:bg-red-800 shadow rounded cursor-pointer" onClick={() => {
         if (window.confirm(`Do you really want to reset?\n- Channel Point Rewards on Twitch from spamchamp\n- Settings on spamchamp.gempir.com\n- Unsubscribes all webhooks for your channel`)) {
             setUserConfig(null);
         }
-    }}>Reset</ResetContainer>;
+    }}>Reset</div>;
 }

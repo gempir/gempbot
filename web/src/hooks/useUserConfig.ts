@@ -4,27 +4,40 @@ import { doFetch, Method } from "../service/doFetch";
 import { store } from "../store";
 
 export interface UserConfig {
-    Redemptions: Redemptions;
     Editors: Array<string>;
     Protected: Protected;
+    Rewards: Rewards;
+}
+
+export interface Rewards {
+    Bttv: null | BttvReward
+}
+
+export interface BttvReward {
+    title: string;
+    prompt?: string;
+    cost: number;
+    backgroundColor?: string;
+    isMaxPerStreamEnabled?: boolean;
+    maxPerStream?: number;
+    isUserInputRequired?: boolean;
+    isMaxPerUserPerStreamEnabled?: boolean;
+    maxPerUserPerStream?: number;
+    isGlobalCooldownEnabled?: boolean;
+    globalCooldownSeconds?: number;
+    shouldRedemptionsSkipRequestQueue?: boolean;
+    enabled?: boolean;
+    isDefault: boolean;
+    ID?: string;
 }
 
 export interface Protected {
     EditorFor: Array<string>;
 }
 
-export interface Redemptions {
-    Bttv: Redemption;
-}
-
-export interface Redemption {
-    Title: string;
-    Active: boolean;
-}
-
 export type SetUserConfig = (userConfig: UserConfig | null) => void;
 
-export function useUserConfig(onSave: () => void = () => {}, onError: () => void = () => {}): [UserConfig | null | undefined, SetUserConfig] {
+export function useUserConfig(onSave: () => void = () => { }, onError: () => void = () => { }, onUserConfigChange: () => void = () => {}): [UserConfig | null | undefined, SetUserConfig] {
     const [userConfig, setUserConfig] = useState<UserConfig | null | undefined>(undefined);
     const [changeCounter, setChangeCounter] = useState(0);
     const managing = store.useState(s => s.managing);
@@ -39,6 +52,8 @@ export function useUserConfig(onSave: () => void = () => {}, onError: () => void
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchConfig, [managing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(onUserConfigChange, [userConfig]);
 
     useDebounce(() => {
         if (changeCounter && userConfig) {
@@ -46,7 +61,10 @@ export function useUserConfig(onSave: () => void = () => {}, onError: () => void
             if (managing) {
                 endPoint += `?managing=${managing}`;
             }
-            doFetch(Method.POST, endPoint, userConfig).then(onSave).catch(onError);
+            doFetch(Method.POST, endPoint, userConfig).then((data: UserConfig) => {
+                setUserConfig(data);
+                onSave();
+            }).catch(onError);
         } else if (changeCounter && userConfig === null) {
             doFetch(Method.DELETE, "/api/userConfig").then(fetchConfig).catch(onError);
         }

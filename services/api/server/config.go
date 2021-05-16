@@ -11,9 +11,31 @@ import (
 )
 
 type UserConfig struct {
-	Redemptions Redemptions
-	Editors     []string
-	Protected   Protected
+	Editors   []string
+	Protected Protected
+	Rewards   Rewards
+}
+
+type Rewards struct {
+	*BttvReward `json:"Bttv"`
+}
+
+type BttvReward struct {
+	Title                             string `json:"title"`
+	Prompt                            string `json:"prompt"`
+	Cost                              int    `json:"cost"`
+	Backgroundcolor                   string `json:"backgroundColor"`
+	IsMaxPerStreamEnabled             bool   `json:"isMaxPerStreamEnabled"`
+	MaxPerStream                      int    `json:"maxPerStream"`
+	IsUserInputRequired               bool   `json:"isUserInputRequired"`
+	IsMaxPerUserPerStreamEnabled      bool   `json:"isMaxPerUserPerStreamEnabled"`
+	MaxPerUserPerStream               int    `json:"maxPerUserPerStream"`
+	IsGlobalCooldownEnabled           bool   `json:"isGlobalCooldownEnabled"`
+	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds"`
+	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue"`
+	Enabled                           bool   `json:"enabled"`
+	IsDefault                         bool   `json:"isDefault"`
+	ID                                string
 }
 
 type Protected struct {
@@ -22,13 +44,23 @@ type Protected struct {
 
 func createDefaultUserConfig() UserConfig {
 	return UserConfig{
-		Redemptions: Redemptions{
-			Bttv: Redemption{Title: "Bttv emote", Active: false},
-		},
 		Editors: []string{},
 		Protected: Protected{
 			EditorFor: []string{},
 		},
+		Rewards: Rewards{
+			BttvReward: createDefaultBttvReward(),
+		},
+	}
+}
+
+func createDefaultBttvReward() *BttvReward {
+	return &BttvReward{
+		IsDefault: true,
+		Title:     "Bttv Emote",
+		Prompt:    bttvPrompt,
+		Enabled:   false,
+		Cost:      10000,
 	}
 }
 
@@ -109,14 +141,14 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = s.processConfig(auth.Data.UserID, body, r)
+		newConfig, err := s.processConfig(auth.Data.UserID, body, r)
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
 			http.Error(w, "failed processing config: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		writeJSON(w, "", http.StatusOK)
+		writeJSON(w, newConfig, http.StatusOK)
 	} else if r.Method == http.MethodDelete {
 		_, err := s.store.Client.HDel("userConfig", auth.Data.UserID).Result()
 		if err != nil {
@@ -132,7 +164,7 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeJSON(w, "", http.StatusOK)
+		writeJSON(w, nil, http.StatusOK)
 	}
 
 }
@@ -149,6 +181,10 @@ func (s *Server) getUserConfig(userID string) (UserConfig, error, bool) {
 	var userConfig UserConfig
 	if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
 		return createDefaultUserConfig(), errors.New("can't find config"), true
+	}
+
+	if userConfig.Rewards.BttvReward == nil {
+		userConfig.Rewards.BttvReward = createDefaultBttvReward()
 	}
 
 	return userConfig, nil, false
@@ -180,27 +216,28 @@ func (s *Server) checkEditor(r *http.Request, userConfig UserConfig) (string, er
 	return userData[managing].ID, nil
 }
 
-func (s *Server) processConfig(userID string, body []byte, r *http.Request) error {
+func (s *Server) processConfig(userID string, body []byte, r *http.Request) (UserConfig, error) {
 	oldConfig, err, isNew := s.getUserConfig(userID)
 	if err != nil {
-		return err
+		return UserConfig{}, err
 	}
+	editorConfig := oldConfig
 
 	ownerUserID, err := s.checkEditor(r, oldConfig)
 	if err != nil {
-		return err
+		return UserConfig{}, err
 	}
 
 	if ownerUserID != "" {
 		oldConfig, err, isNew = s.getUserConfig(ownerUserID)
 		if err != nil {
-			return err
+			return UserConfig{}, err
 		}
 	}
 
 	var newConfig UserConfig
 	if err := json.Unmarshal(body, &newConfig); err != nil {
-		return err
+		return UserConfig{}, err
 	}
 
 	protected := oldConfig.Protected
@@ -209,9 +246,8 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 	}
 
 	configToSave := UserConfig{
-		Editors:     oldConfig.Editors,
-		Redemptions: newConfig.Redemptions,
-		Protected:   protected,
+		Editors:   oldConfig.Editors,
+		Protected: protected,
 	}
 
 	if ownerUserID == "" {
@@ -219,15 +255,15 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 
 		userData, err := s.helixClient.GetUsersByUsernames(newConfig.Editors)
 		if err != nil {
-			return err
+			return UserConfig{}, err
 		}
 		if len(newConfig.Editors) != len(userData) {
-			return errors.New("Failed to find all editors")
+			return UserConfig{}, errors.New("Failed to find all editors")
 		}
 
 		for _, user := range userData {
 			if user.ID == userID {
-				return errors.New("You can't be your own editor")
+				return UserConfig{}, errors.New("You can't be your own editor")
 			}
 
 			newEditorIds = append(newEditorIds, user.ID)
@@ -238,21 +274,16 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 		for _, editor := range oldConfig.Editors {
 			err := s.removeEditorFor(editor, userID)
 			if err != nil {
-				return err
+				return UserConfig{}, err
 			}
 		}
 
 		for _, user := range userData {
 			err := s.addEditorFor(user.ID, userID)
 			if err != nil {
-				return err
+				return UserConfig{}, err
 			}
 		}
-	}
-
-	js, err := json.Marshal(configToSave)
-	if err != nil {
-		return err
 	}
 
 	saveTarget := userID
@@ -260,17 +291,52 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 		saveTarget = ownerUserID
 	}
 
+	if !newConfig.Rewards.BttvReward.IsDefault {
+		reward, err := s.createOrUpdateChannelPointReward(saveTarget, *newConfig.Rewards.BttvReward, oldConfig.Rewards.BttvReward.ID)
+		if err != nil {
+			return UserConfig{}, err
+		}
+
+		configToSave.Rewards.BttvReward = &reward
+	} else {
+		configToSave.Rewards.BttvReward = createDefaultBttvReward()
+	}
+
+	js, err := json.Marshal(configToSave)
+	if err != nil {
+		return UserConfig{}, err
+	}
+
 	_, err = s.store.Client.HSet("userConfig", saveTarget, js).Result()
 	if err != nil {
-		return err
+		return UserConfig{}, err
 	}
 
 	if isNew {
-		log.Info("Created new config for: ", userID)
+		log.Infof("Created new config for: %s, subscribing webhooks", userID)
 		s.subscribeChannelPoints(userID)
 	}
 
-	return nil
+	configToSave.Editors = []string{}
+	if ownerUserID == "" {
+		configToSave.Editors = newConfig.Editors
+	}
+
+	configToSave.Protected = editorConfig.Protected
+
+	newEditorForNames := []string{}
+
+	userData, err := s.helixClient.GetUsersByUserIds(editorConfig.Protected.EditorFor)
+	if err != nil {
+		return UserConfig{}, errors.New("can't resolve editorFor in config " + err.Error())
+	}
+	for _, user := range userData {
+		newEditorForNames = append(newEditorForNames, user.Login)
+	}
+
+	configToSave.Protected.EditorFor = newEditorForNames
+
+	return configToSave, nil
 }
 
 func writeJSON(w http.ResponseWriter, data interface{}, code int) {
