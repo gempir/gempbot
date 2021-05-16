@@ -26,7 +26,7 @@ export interface BttvReward {
     isGlobalCooldownEnabled?: boolean;
     globalCooldownSeconds?: number;
     shouldRedemptionsSkipRequestQueue?: boolean;
-    Enabled?: boolean;
+    enabled?: boolean;
     ID?: string;
 }
 
@@ -58,7 +58,10 @@ export function useUserConfig(onSave: () => void = () => { }, onError: () => voi
             if (managing) {
                 endPoint += `?managing=${managing}`;
             }
-            doFetch(Method.POST, endPoint, userConfig).then(onSave).catch(onError);
+            doFetch(Method.POST, endPoint, userConfig).then((data: UserConfig) => {
+                setUserConfig(data);
+                onSave();
+            }).catch(onError);
         } else if (changeCounter && userConfig === null) {
             doFetch(Method.DELETE, "/api/userConfig").then(fetchConfig).catch(onError);
         }

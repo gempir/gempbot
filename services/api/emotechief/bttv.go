@@ -136,7 +136,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 		}
 	}
 	if dbCfg.ID == "" {
-		err = errors.New("Dashboard not found in account, no permission to moderate")
+		err = errors.New("No permission to moderate, add gempbot as BetterTTV editor")
 		return
 	}
 	sharedEmotesLimit := dbCfg.Limits.Sharedemotes

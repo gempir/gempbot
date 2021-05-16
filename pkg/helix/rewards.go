@@ -73,17 +73,17 @@ func (c *Client) GetRewards(userID, userAccessToken string) (*GetRewardsResponse
 
 type CreateCustomRewardRequest struct {
 	Title                             string `json:"title"`
-	Prompt                            string `json:"prompt,omitempty"`
+	Prompt                            string `json:"prompt"`
 	Cost                              int    `json:"cost"`
 	IsEnabled                         bool   `json:"is_enabled"`
-	BackgroundColor                   string `json:"background_color,omitempty"`
-	IsUserInputRequired               bool   `json:"is_user_input_required,omitempty"`
+	BackgroundColor                   string `json:"background_color"`
+	IsUserInputRequired               bool   `json:"is_user_input_required"`
 	IsMaxPerStreamEnabled             bool   `json:"is_max_per_stream_enabled"`
-	MaxPerStream                      int    `json:"max_per_stream,omitempty"`
+	MaxPerStream                      int    `json:"max_per_stream"`
 	IsMaxPerUserPerStreamEnabled      bool   `json:"is_max_per_user_per_stream_enabled"`
-	MaxPerUserPerStream               int    `json:"max_per_user_per_stream,omitempty"`
+	MaxPerUserPerStream               int    `json:"max_per_user_per_stream"`
 	IsGlobalCooldownEnabled           bool   `json:"is_global_cooldown_enabled"`
-	GlobalCoolDownSeconds             int    `json:"global_cooldown_seconds,omitempty"`
+	GlobalCoolDownSeconds             int    `json:"global_cooldown_seconds"`
 	ShouldRedemptionsSkipRequestQueue bool   `json:"should_redemptions_skip_request_queue"`
 }
 

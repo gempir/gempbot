@@ -216,6 +216,9 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request BttvRew
 		BackgroundColor:                   request.Backgroundcolor,
 		IsUserInputRequired:               true,
 		ShouldRedemptionsSkipRequestQueue: false,
+		IsMaxPerStreamEnabled:             false,
+		IsMaxPerUserPerStreamEnabled:      false,
+		IsGlobalCooldownEnabled:           false,
 	}
 
 	if request.MaxPerStream != 0 {
