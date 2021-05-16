@@ -21,9 +21,9 @@ type Rewards struct {
 }
 
 type BttvReward struct {
-	Title                             string `json:"title"`
-	Prompt                            string `json:"prompt"`
-	Cost                              int    `json:"cost"`
+	Title                             string `json:"title,omitempty"`
+	Prompt                            string `json:"prompt,omitempty"`
+	Cost                              int    `json:"cost,omitempty"`
 	Backgroundcolor                   string `json:"backgroundColor,omitempty"`
 	IsMaxPerStreamEnabled             bool   `json:"isMaxPerStreamEnabled,omitempty"`
 	MaxPerStream                      int    `json:"maxPerStream,omitempty"`
@@ -33,7 +33,7 @@ type BttvReward struct {
 	IsGlobalCooldownEnabled           bool   `json:"isGlobalCooldownEnabled,omitempty"`
 	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds,omitempty"`
 	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue,omitempty"`
-	Enabled                           bool
+	Enabled                           bool   `json:"enabled,omitempty"`
 	ID                                string
 }
 
@@ -47,7 +47,14 @@ func createDefaultUserConfig() UserConfig {
 		Protected: Protected{
 			EditorFor: []string{},
 		},
-		Rewards: Rewards{},
+		Rewards: Rewards{
+			BttvReward: BttvReward{
+				Title:   "Bttv Emote",
+				Prompt:  bttvPrompt,
+				Enabled: false,
+				Cost:    10000,
+			},
+		},
 	}
 }
 
@@ -229,7 +236,6 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 
 	configToSave := UserConfig{
 		Editors:   oldConfig.Editors,
-		Rewards:   newConfig.Rewards,
 		Protected: protected,
 	}
 
@@ -274,19 +280,12 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) erro
 		saveTarget = ownerUserID
 	}
 
-	// the saving to twitch part
-	if configToSave.Rewards.BttvReward.ID == "" {
-		log.Info("creating reward")
-		reward, err := s.createChannelPointReward(saveTarget, newConfig.Rewards.BttvReward)
-		if err != nil {
-			return err
-		}
-
-		newConfig.Rewards.BttvReward = reward
-	} else {
-		log.Info("updating reward")
-		// update reward
+	reward, err := s.createOrUpdateChannelPointReward(saveTarget, newConfig.Rewards.BttvReward, oldConfig.Rewards.BttvReward.ID)
+	if err != nil {
+		return err
 	}
+
+	configToSave.Rewards.BttvReward = reward
 
 	js, err := json.Marshal(configToSave)
 	if err != nil {

@@ -3,9 +3,7 @@ package helix
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -77,16 +75,22 @@ type CreateCustomRewardRequest struct {
 	Title                             string `json:"title"`
 	Prompt                            string `json:"prompt,omitempty"`
 	Cost                              int    `json:"cost"`
-	IsEnabled                         bool   `json:"is_enabled,omitempty"`
+	IsEnabled                         bool   `json:"is_enabled"`
 	BackgroundColor                   string `json:"background_color,omitempty"`
 	IsUserInputRequired               bool   `json:"is_user_input_required,omitempty"`
-	IsMaxPerStreamEnabled             bool   `json:"is_max_per_stream_enabled,omitempty"`
+	IsMaxPerStreamEnabled             bool   `json:"is_max_per_stream_enabled"`
 	MaxPerStream                      int    `json:"max_per_stream,omitempty"`
-	IsMaxPerUserPerStreamEnabled      bool   `json:"is_max_per_user_per_stream_enabled,omitempty"`
+	IsMaxPerUserPerStreamEnabled      bool   `json:"is_max_per_user_per_stream_enabled"`
 	MaxPerUserPerStream               int    `json:"max_per_user_per_stream,omitempty"`
-	IsGlobalCooldownEnabled           bool   `json:"is_global_cooldown_enabled,omitempty"`
+	IsGlobalCooldownEnabled           bool   `json:"is_global_cooldown_enabled"`
 	GlobalCoolDownSeconds             int    `json:"global_cooldown_seconds,omitempty"`
-	ShouldRedemptionsSkipRequestQueue bool   `json:"should_redemptions_skip_request_queue,omitempty"`
+	ShouldRedemptionsSkipRequestQueue bool   `json:"should_redemptions_skip_request_queue"`
+}
+
+type ErrorResponse struct {
+	Error   string `json:"error"`
+	Status  int    `json:"status"`
+	Message string `json:"message"`
 }
 
 type CreateCustomRewardResponse struct {
@@ -129,15 +133,21 @@ type CreateCustomRewardResponseDataItem struct {
 	CooldownExpiresAt                 interface{} `json:"cooldown_expires_at"`
 }
 
-func (c *Client) CreateReward(userID, userAccessToken string, reward CreateCustomRewardRequest) (CreateCustomRewardResponseDataItem, error) {
+func (c *Client) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (CreateCustomRewardResponseDataItem, error) {
+	log.Infof("Updating Reward for user %s reward title: %s", userID, reward.Title)
 	marshalled, err := json.Marshal(reward)
 	if err != nil {
 		return CreateCustomRewardResponseDataItem{}, err
 	}
 
-	log.Info(bytes.NewBuffer(marshalled))
+	url := "https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=" + userID
+	method := http.MethodPost
+	if rewardID != "" {
+		url = url + "&id=" + rewardID
+		method = http.MethodPatch
+	}
 
-	req, err := http.NewRequest(http.MethodPost, "https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id="+userID, bytes.NewBuffer(marshalled))
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalled))
 	req.Header.Set("authorization", "Bearer "+userAccessToken)
 	req.Header.Set("client-id", c.clientID)
 	req.Header.Set("Content-Type", "application/json")
@@ -152,13 +162,16 @@ func (c *Client) CreateReward(userID, userAccessToken string, reward CreateCusto
 		return CreateCustomRewardResponseDataItem{}, err
 	}
 
+	log.Infof("[%d][%s] %s", resp.StatusCode, method, url)
+
 	if resp.StatusCode >= 400 {
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		var response ErrorResponse
+		err = json.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			return CreateCustomRewardResponseDataItem{}, fmt.Errorf("Failed to read bad reward create response %s", err.Error())
+			return CreateCustomRewardResponseDataItem{}, fmt.Errorf("Failed to unmarshal reward error response: %s", err.Error())
 		}
-		log.Errorf("Failed to create reward %s", string(bodyBytes))
-		return CreateCustomRewardResponseDataItem{}, errors.New("Failed to create reward")
+
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("Failed to create reward: %s", response.Message)
 	}
 
 	var response CreateCustomRewardResponse

@@ -22,6 +22,10 @@ type Redemption struct {
 	Active bool
 }
 
+const (
+	bttvPrompt = "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by spamchamp.gempir.com"
+)
+
 type channelPointRedemption struct {
 	Subscription struct {
 		ID        string `json:"id"`
@@ -198,7 +202,7 @@ func (s *Server) handleChallenge(w http.ResponseWriter, body []byte) {
 	fmt.Fprint(w, event.Challenge)
 }
 
-func (s *Server) createChannelPointReward(userID string, request BttvReward) (BttvReward, error) {
+func (s *Server) createOrUpdateChannelPointReward(userID string, request BttvReward, rewardID string) (BttvReward, error) {
 	token, err := s.getUserAccessToken(userID)
 	if err != nil {
 		return BttvReward{}, err
@@ -206,7 +210,7 @@ func (s *Server) createChannelPointReward(userID string, request BttvReward) (Bt
 
 	req := helix.CreateCustomRewardRequest{
 		Title:                             request.Title,
-		Prompt:                            "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by spamchamp.gempir.com",
+		Prompt:                            bttvPrompt,
 		Cost:                              request.Cost,
 		IsEnabled:                         request.Enabled,
 		BackgroundColor:                   request.Backgroundcolor,
@@ -229,12 +233,10 @@ func (s *Server) createChannelPointReward(userID string, request BttvReward) (Bt
 		req.GlobalCoolDownSeconds = request.GlobalCooldownSeconds
 	}
 
-	resp, err := s.helixUserClient.CreateReward(userID, token.AccessToken, req)
+	resp, err := s.helixUserClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
 	if err != nil {
 		return BttvReward{}, err
 	}
-
-	log.Info(resp)
 
 	return BttvReward{
 		Title:                             resp.Title,

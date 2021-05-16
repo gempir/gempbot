@@ -8,6 +8,7 @@ interface BttvRewardForm {
     maxPerStream: string;
     maxPerUserPerStream: string;
     globalCooldownMinutes: string;
+    enabled: boolean;
 }
 
 export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
@@ -64,12 +65,12 @@ export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig
 
             <label className="flex items-center mt-3">
                 Global Cooldown in Minutes
-                <input defaultValue={userConfig.Rewards.Bttv?.globalCooldownSeconds ?  userConfig.Rewards.Bttv?.globalCooldownSeconds / 60 : undefined} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+                <input defaultValue={userConfig.Rewards.Bttv?.globalCooldownSeconds ? userConfig.Rewards.Bttv?.globalCooldownSeconds / 60 : undefined} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
             <div className="flex flex-row justify-between items-center select-none">
                 <label className="flex items-center">
-                    <input defaultChecked={userConfig.Rewards.Bttv?.Enabled} type="checkbox" className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" />
+                    <input defaultChecked={userConfig.Rewards.Bttv?.Enabled} type="checkbox" {...register("enabled")} className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" />
                     <span className="ml-2">Enabled</span>
                 </label>
                 <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3" value="save" />
