@@ -17,7 +17,7 @@ type UserConfig struct {
 }
 
 type Rewards struct {
-	BttvReward `json:"Bttv"`
+	*BttvReward `json:"Bttv"`
 }
 
 type BttvReward struct {
@@ -49,14 +49,18 @@ func createDefaultUserConfig() UserConfig {
 			EditorFor: []string{},
 		},
 		Rewards: Rewards{
-			BttvReward: BttvReward{
-				IsDefault: true,
-				Title:     "Bttv Emote",
-				Prompt:    bttvPrompt,
-				Enabled:   false,
-				Cost:      10000,
-			},
+			BttvReward: createDefaultBttvReward(),
 		},
+	}
+}
+
+func createDefaultBttvReward() *BttvReward {
+	return &BttvReward{
+		IsDefault: true,
+		Title:     "Bttv Emote",
+		Prompt:    bttvPrompt,
+		Enabled:   false,
+		Cost:      10000,
 	}
 }
 
@@ -179,6 +183,10 @@ func (s *Server) getUserConfig(userID string) (UserConfig, error, bool) {
 		return createDefaultUserConfig(), errors.New("can't find config"), true
 	}
 
+	if userConfig.Rewards.BttvReward == nil {
+		userConfig.Rewards.BttvReward = createDefaultBttvReward()
+	}
+
 	return userConfig, nil, false
 }
 
@@ -284,12 +292,14 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) (Use
 	}
 
 	if !newConfig.Rewards.BttvReward.IsDefault {
-		reward, err := s.createOrUpdateChannelPointReward(saveTarget, newConfig.Rewards.BttvReward, oldConfig.Rewards.BttvReward.ID)
+		reward, err := s.createOrUpdateChannelPointReward(saveTarget, *newConfig.Rewards.BttvReward, oldConfig.Rewards.BttvReward.ID)
 		if err != nil {
 			return UserConfig{}, err
 		}
 
-		configToSave.Rewards.BttvReward = reward
+		configToSave.Rewards.BttvReward = &reward
+	} else {
+		configToSave.Rewards.BttvReward = createDefaultBttvReward()
 	}
 
 	js, err := json.Marshal(configToSave)

@@ -5,7 +5,7 @@ import { store } from "../store";
 export function Navbar() {
     const scToken = store.useState(s => s.scToken);
 
-    let buttons = <Login className="p-4 rounded shadow bg-purple-900 hover:bg-purple-600" />
+    let buttons = <Login className="p-4 rounded shadow bg-purple-800 hover:bg-purple-600" />
 
     if (scToken) {
         buttons = <LoggedIn />;
@@ -24,7 +24,7 @@ function LoggedIn() {
         <Link to="/dashboard" className="p-4 rounded shadow bg-blue-900 hover:bg-blue-800">
             Dashboard
         </Link>
-        <Login className={`p-4 rounded shadow bg-purple-700 hover:bg-purple-600`}/>
+        <Login className={`p-4 rounded shadow opacity-25 bg-purple-800 hover:bg-purple-600`}/>
     </>;
 }
 
