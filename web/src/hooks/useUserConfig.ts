@@ -27,6 +27,7 @@ export interface BttvReward {
     globalCooldownSeconds?: number;
     shouldRedemptionsSkipRequestQueue?: boolean;
     enabled?: boolean;
+    isDefault: boolean;
     ID?: string;
 }
 

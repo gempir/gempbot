@@ -34,6 +34,7 @@ type BttvReward struct {
 	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds"`
 	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue"`
 	Enabled                           bool   `json:"enabled"`
+	IsDefault                         bool   `json:"isDefault"`
 	ID                                string
 }
 
@@ -49,10 +50,11 @@ func createDefaultUserConfig() UserConfig {
 		},
 		Rewards: Rewards{
 			BttvReward: BttvReward{
-				Title:   "Bttv Emote",
-				Prompt:  bttvPrompt,
-				Enabled: false,
-				Cost:    10000,
+				IsDefault: true,
+				Title:     "Bttv Emote",
+				Prompt:    bttvPrompt,
+				Enabled:   false,
+				Cost:      10000,
 			},
 		},
 	}
@@ -281,12 +283,14 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) (Use
 		saveTarget = ownerUserID
 	}
 
-	reward, err := s.createOrUpdateChannelPointReward(saveTarget, newConfig.Rewards.BttvReward, oldConfig.Rewards.BttvReward.ID)
-	if err != nil {
-		return UserConfig{}, err
-	}
+	if !newConfig.Rewards.BttvReward.IsDefault {
+		reward, err := s.createOrUpdateChannelPointReward(saveTarget, newConfig.Rewards.BttvReward, oldConfig.Rewards.BttvReward.ID)
+		if err != nil {
+			return UserConfig{}, err
+		}
 
-	configToSave.Rewards.BttvReward = reward
+		configToSave.Rewards.BttvReward = reward
+	}
 
 	js, err := json.Marshal(configToSave)
 	if err != nil {
@@ -303,23 +307,16 @@ func (s *Server) processConfig(userID string, body []byte, r *http.Request) (Use
 		s.subscribeChannelPoints(userID)
 	}
 
-	newEditorNames := []string{}
-
-	userData, err := s.helixClient.GetUsersByUserIds(editorConfig.Editors)
-	if err != nil {
-		return UserConfig{}, err
+	configToSave.Editors = []string{}
+	if ownerUserID == "" {
+		configToSave.Editors = newConfig.Editors
 	}
-	for _, user := range userData {
-		newEditorNames = append(newEditorNames, user.Login)
-	}
-
-	configToSave.Editors = newEditorNames
 
 	configToSave.Protected = editorConfig.Protected
 
 	newEditorForNames := []string{}
 
-	userData, err = s.helixClient.GetUsersByUserIds(editorConfig.Protected.EditorFor)
+	userData, err := s.helixClient.GetUsersByUserIds(editorConfig.Protected.EditorFor)
 	if err != nil {
 		return UserConfig{}, errors.New("can't resolve editorFor in config " + err.Error())
 	}

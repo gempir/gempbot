@@ -9,6 +9,7 @@ interface BttvRewardForm {
     maxPerUserPerStream: string;
     globalCooldownMinutes: string;
     enabled: boolean;
+    isDefault: boolean
 }
 
 export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
@@ -20,6 +21,7 @@ export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig
                 ...userConfig?.Rewards,
                 Bttv: {
                     ...data,
+                    isDefault: false,
                     cost: Number(data.cost),
                     maxPerStream: Number(data.maxPerStream),
                     maxPerUserPerStream: Number(data.maxPerUserPerStream),
