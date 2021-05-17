@@ -197,7 +197,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 			log.Error(err)
 			return
 		}
-		log.Infof("Deleted: %s %s %d", bttvUserId, currentEmoteId, resp.StatusCode)
+		log.Infof("[%d] Deleted channelId: %s emoteId: %s", resp.StatusCode, channelUserID, currentEmoteId)
 	}
 
 	// Add new emote
@@ -213,7 +213,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 		log.Error(err)
 		return
 	}
-	log.Infof("Added: %s %s %d", bttvUserId, emoteId, resp.StatusCode)
+	log.Infof("[%d] Added channelId: %s emoteId: %s", resp.StatusCode, channelUserID, emoteId)
 	e.store.Client.HSet("bttv_emote", channelUserID, emoteId)
 
 	removedEmote, err = getBttvEmote(currentEmoteId)
