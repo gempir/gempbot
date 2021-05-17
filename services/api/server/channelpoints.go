@@ -162,7 +162,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if userCfg.Rewards.BttvReward.Enabled && userCfg.Rewards.BttvReward.ID == redemption.Event.Reward.ID {
+	if userCfg.Rewards.BttvReward != nil && userCfg.Rewards.BttvReward.Enabled && userCfg.Rewards.BttvReward.ID == redemption.Event.Reward.ID {
 		matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 		if len(matches) == 1 && len(matches[0]) == 2 {
 			emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
