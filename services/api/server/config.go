@@ -355,7 +355,7 @@ func writeJSON(w http.ResponseWriter, data interface{}, code int) {
 }
 
 func (s *Server) addEditorFor(editorID, userID string) error {
-	isNew := true
+	isNew := false
 
 	val, err := s.store.Client.HGet("userConfig", editorID).Result()
 	if err == redis.Nil {
