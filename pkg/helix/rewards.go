@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -140,14 +142,23 @@ func (c *Client) CreateOrUpdateReward(userID, userAccessToken string, reward Cre
 		return CreateCustomRewardResponseDataItem{}, err
 	}
 
-	url := "https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=" + userID
 	method := http.MethodPost
+	reqUrl, err := url.Parse("https://api.twitch.tv/helix/channel_points/custom_rewards")
+	if err != nil {
+		return CreateCustomRewardResponseDataItem{}, err
+	}
+
+	query := reqUrl.Query()
+	query.Set("broadcaster_id", userID)
+
 	if rewardID != "" {
-		url = url + "&id=" + rewardID
+		query.Set("id", rewardID)
 		method = http.MethodPatch
 	}
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalled))
+	reqUrl.RawQuery = query.Encode()
+
+	req, err := http.NewRequest(method, reqUrl.String(), bytes.NewBuffer(marshalled))
 	req.Header.Set("authorization", "Bearer "+userAccessToken)
 	req.Header.Set("client-id", c.clientID)
 	req.Header.Set("Content-Type", "application/json")
@@ -162,7 +173,7 @@ func (c *Client) CreateOrUpdateReward(userID, userAccessToken string, reward Cre
 		return CreateCustomRewardResponseDataItem{}, err
 	}
 
-	log.Infof("[%d][%s] %s", resp.StatusCode, method, url)
+	log.Infof("[%d][%s] %s", resp.StatusCode, method, reqUrl.String())
 
 	if resp.StatusCode >= 400 {
 		var response ErrorResponse
@@ -181,8 +192,101 @@ func (c *Client) CreateOrUpdateReward(userID, userAccessToken string, reward Cre
 	}
 
 	if len(response.Data) != 1 {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("%d amount of rewards returned after creation", len(response.Data))
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("%d amount of rewards returned after creation invalid", len(response.Data))
 	}
 
 	return response.Data[0], nil
+}
+
+type UpdateRedemptionStatusRequest struct {
+	Status string `json:"status"`
+}
+
+type UpdateRedemptionStatusResponse struct {
+	Data []struct {
+		BroadcasterName  string    `json:"broadcaster_name"`
+		BroadcasterLogin string    `json:"broadcaster_login"`
+		BroadcasterID    string    `json:"broadcaster_id"`
+		ID               string    `json:"id"`
+		UserID           string    `json:"user_id"`
+		UserName         string    `json:"user_name"`
+		UserLogin        string    `json:"user_login"`
+		UserInput        string    `json:"user_input"`
+		Status           string    `json:"status"`
+		RedeemedAt       time.Time `json:"redeemed_at"`
+		Reward           struct {
+			ID     string `json:"id"`
+			Title  string `json:"title"`
+			Prompt string `json:"prompt"`
+			Cost   int    `json:"cost"`
+		} `json:"reward"`
+	} `json:"data"`
+}
+
+func (c *Client) UpdateRedemptionStatus(broadcasterID, userAccessToken string, rewardID string, redemptionID string, statusSuccess bool) error {
+
+	request := UpdateRedemptionStatusRequest{}
+	if statusSuccess {
+		request.Status = "FULFILLED"
+	} else {
+		request.Status = "CANCELED"
+	}
+
+	marshalled, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+
+	method := http.MethodPatch
+	reqUrl, err := url.Parse("https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions")
+	if err != nil {
+		return err
+	}
+
+	query := reqUrl.Query()
+
+	query.Set("broadcaster_id", broadcasterID)
+	query.Set("id", redemptionID)
+	query.Set("reward_id", rewardID)
+
+	reqUrl.RawQuery = query.Encode()
+
+	req, err := http.NewRequest(method, reqUrl.String(), bytes.NewBuffer(marshalled))
+	req.Header.Set("authorization", "Bearer "+userAccessToken)
+	req.Header.Set("client-id", c.clientID)
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	log.Infof("[%d][%s] %s %s", resp.StatusCode, method, reqUrl, marshalled)
+
+	if resp.StatusCode >= 400 {
+		var response ErrorResponse
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			return fmt.Errorf("Failed to unmarshal redemption status error response: %s", err.Error())
+		}
+
+		return fmt.Errorf("Failed update redemption: %s", response.Message)
+	}
+
+	var response UpdateRedemptionStatusResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return err
+	}
+
+	if len(response.Data) != 1 {
+		return fmt.Errorf("%d amount of redemptions returned after creation invalid", len(response.Data))
+	}
+
+	return nil
 }

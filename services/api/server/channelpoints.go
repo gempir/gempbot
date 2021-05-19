@@ -162,6 +162,8 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	success := false
+
 	if userCfg.Rewards.BttvReward != nil && userCfg.Rewards.BttvReward.Enabled && userCfg.Rewards.BttvReward.ID == redemption.Event.Reward.ID {
 		matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 		if len(matches) == 1 && len(matches[0]) == 2 {
@@ -169,18 +171,29 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 			if err != nil {
 				log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
 				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
-				return
-			}
-
-			if emoteAdded != nil && emoteRemoved != nil {
+			} else if emoteAdded != nil && emoteRemoved != nil {
+				success = true
 				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
 			} else if emoteAdded != nil {
+				success = true
 				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
 			} else {
+				success = true
 				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
 			}
 		} else {
 			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
+		}
+	}
+
+	token, err := s.getUserAccessToken(redemption.Event.BroadcasterUserID)
+	if err != nil {
+		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
+	} else {
+		log.Info(token)
+		err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
+		if err != nil {
+			log.Errorf("Failed to update redemption status %s", err.Error())
 		}
 	}
 
