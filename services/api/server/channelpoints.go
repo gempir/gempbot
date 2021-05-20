@@ -162,9 +162,9 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	success := false
-
 	if userCfg.Rewards.BttvReward != nil && userCfg.Rewards.BttvReward.Enabled && userCfg.Rewards.BttvReward.ID == redemption.Event.Reward.ID {
+		success := false
+
 		matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 		if len(matches) == 1 && len(matches[0]) == 2 {
 			emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
@@ -184,16 +184,16 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		} else {
 			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
 		}
-	}
 
-	token, err := s.getUserAccessToken(redemption.Event.BroadcasterUserID)
-	if err != nil {
-		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
-	} else {
-		log.Info(token)
-		err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
+		token, err := s.getUserAccessToken(redemption.Event.BroadcasterUserID)
 		if err != nil {
-			log.Errorf("Failed to update redemption status %s", err.Error())
+			log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
+		} else {
+			log.Info(token)
+			err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
+			if err != nil {
+				log.Errorf("Failed to update redemption status %s", err.Error())
+			}
 		}
 	}
 
