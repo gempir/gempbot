@@ -2,4 +2,4 @@
 web_host: spamchamp.gempir.com
 cookie_domain: gempir.com
 api_host: spamchamp-api.gempir.com
-sc1_netdata_host: sc1.netdata.gempir.com
+sc1_netdata_host: netdata.sc1.gempir.com
