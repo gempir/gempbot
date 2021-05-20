@@ -5,7 +5,6 @@
   
   roles:
     - {role: 'common', tags: ['common']}
-    - {role: 'netdata', tags: ['netdata']}
     - {role: 'geerlingguy.redis', tags: ['redis']}
     - {role: 'ingester', tags: ['ingester']}
     - {role: 'speaker', tags: ['speaker']}
