@@ -23,7 +23,7 @@ type Redemption struct {
 }
 
 const (
-	bttvPrompt = "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by spamchamp.gempir.com"
+	bttvPrompt = "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by bitraft.gempir.com"
 )
 
 type channelPointRedemption struct {

@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
+import { SetUserConfig, UserConfig } from "../../../hooks/useUserConfig";
 
 interface BttvRewardForm {
     title: string;

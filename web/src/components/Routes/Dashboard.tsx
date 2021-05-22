@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useTitle } from "react-use";
 import { useUserConfig } from "../../hooks/useUserConfig";
-import { Menu } from "../Menu";
-import { BttvForm } from "../RewardForms/BttvForm";
+import { Menu } from "../Dashboard/Menu";
+import { BttvForm } from "../Dashboard/RewardForms/BttvForm";
 
 export function Dashboard() {
+    useTitle("bitraft - Dashboard");
     const [renderKey, setRenderKey] = useState(1);
     const [userCfg, setUserConfig] = useUserConfig(undefined, undefined, () => setRenderKey(renderKey + 1));
 

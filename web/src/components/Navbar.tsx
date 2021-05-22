@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { createLoginUrl } from "../factory/createLoginUrl";
 import { store } from "../store";
 
 
@@ -24,19 +25,13 @@ function LoggedIn() {
         <Link to="/dashboard" className="p-4 rounded shadow bg-blue-900 hover:bg-blue-800">
             Dashboard
         </Link>
-        <Login className={`p-4 rounded shadow opacity-25 bg-purple-800 hover:bg-purple-600`}/>
+        <Login className={`p-4 rounded shadow opacity-25 bg-purple-800 hover:bg-purple-600`} />
     </>;
 }
 
 function Login({ className }: { className?: string }) {
     const { apiBaseUrl, twitchClientId } = store.getRawState();
-
-    const url = new URL("https://id.twitch.tv/oauth2/authorize")
-    url.searchParams.set("client_id", twitchClientId);
-    url.searchParams.set("redirect_uri", apiBaseUrl + "/api/callback");
-    url.searchParams.set("response_type", "code");
-    url.searchParams.set("scope", "channel:read:redemptions channel:manage:redemptions");
-
+    const url = createLoginUrl(apiBaseUrl, twitchClientId);
 
     return <a className={className} href={url.toString()}>Login</a>
 }

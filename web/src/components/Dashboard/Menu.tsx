@@ -1,6 +1,6 @@
 import React, { KeyboardEvent, useRef, useState } from "react";
-import { SetUserConfig, UserConfig } from "../hooks/useUserConfig";
-import { store } from "../store";
+import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
+import { store } from "../../store";
 import { Managing } from "./Managing";
 import { Reset } from "./Reset";
 

@@ -1,12 +1,11 @@
 ---
-- name: Provision hosts for spamchamp
+- name: Provision hosts for bitraft
   hosts: all
   remote_user: root
   
   roles:
     - {role: 'common', tags: ['common']}
     - {role: 'geerlingguy.redis', tags: ['redis']}
-    - {role: 'ingester', tags: ['ingester']}
     - {role: 'speaker', tags: ['speaker']}
     - {role: 'caddy-ansible', tags: ['caddy']}
     - {role: 'api', tags: ['api']}

@@ -62,20 +62,20 @@
     name: apt-transport-https
     state: present
 
-- name: Ensure group "spamchamp" exists
+- name: Ensure group "bitraft" exists
   group:
-    name: spamchamp
+    name: bitraft
     state: present
 
 - name: Creates directory
   file:
-    path: /etc/spamchamp
+    path: /etc/bitraft
     state: directory
     owner: root
-    group: spamchamp
+    group: bitraft
     mode: 0750
 
 - name: Install Config
   template: 
     src: templates/config.json.j2 
-    dest: /etc/spamchamp/config.json
+    dest: /etc/bitraft/config.json

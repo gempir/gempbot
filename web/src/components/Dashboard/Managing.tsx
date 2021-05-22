@@ -1,5 +1,5 @@
-import { UserConfig } from "../hooks/useUserConfig";
-import { store } from "../store";
+import { UserConfig } from "../../hooks/useUserConfig";
+import { store } from "../../store";
 
 export function Managing({ userConfig }: { userConfig: UserConfig | null | undefined }) {
     if (userConfig?.Protected.EditorFor.length === 0) {
