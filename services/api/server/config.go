@@ -223,8 +223,8 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 		return echo.NewHTTPError(http.StatusForbidden, "no config found for owner")
 	}
 
-	for _, editor := range userConfig.Protected.EditorFor {
-		if editor == ownerUserID {
+	for _, editor := range userConfig.Editors {
+		if editor == editorUserID {
 			return nil
 		}
 	}
