@@ -204,6 +204,8 @@ func (s *Server) tokenRefreshRoutine() {
 				continue
 			}
 
+			s.subscribeChannelPoints(userID)
+
 			s.refreshToken(userID, userToken)
 			time.Sleep(time.Millisecond * 500)
 		}
