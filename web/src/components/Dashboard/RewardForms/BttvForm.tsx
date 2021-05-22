@@ -35,7 +35,7 @@ export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig
         <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl m-4 p-4 bg-gray-800 rounded shadow">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-5">
-                    <img src="/images/bttv.png" alt="Bttv Emote Reward" className="w-16" />
+                    <img src="/images/bttv.png" alt="BetterTTV Logo" className="w-16" />
                     <h3 className="text-xl font-bold">BetterTTV Emote</h3>
                 </div>
                 <div className="text-gray-600">

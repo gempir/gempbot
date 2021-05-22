@@ -57,7 +57,7 @@ func createDefaultUserConfig() UserConfig {
 func createDefaultBttvReward() *BttvReward {
 	return &BttvReward{
 		IsDefault: true,
-		Title:     "Bttv Emote",
+		Title:     "BetterTTV Emote",
 		Prompt:    bttvPrompt,
 		Enabled:   false,
 		Cost:      10000,
