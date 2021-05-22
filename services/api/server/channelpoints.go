@@ -6,9 +6,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gempir/spamchamp/pkg/helix"
+	"github.com/gempir/spamchamp/pkg/slice"
 	nickHelix "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
@@ -82,36 +84,32 @@ func (s *Server) subscribeChannelPoints(userID string) {
 	}
 
 	for _, sub := range response.Data.EventSubSubscriptions {
-		log.Infof("New subscription for %s id: %s", userID, sub.ID)
+		log.Infof("[%d] New subscription for %s id: %s", response.StatusCode, userID, sub.ID)
 		s.store.Client.HSet("subscriptions", userID, sub.ID)
 	}
-
-	log.Info(response)
 }
 
-func (s *Server) unsubscribeChannelPoints(userID string) error {
-	log.Infof("Unsubscribing webhooks for: %s", userID)
-
+func (s *Server) unsubscribeChannelPoints(userID string, reason string) error {
 	subId, err := s.store.Client.HGet("subscriptions", userID).Result()
 	if err != nil {
 		return err
 	}
 
-	_, err = s.store.Client.HDel("subscriptions", userID).Result()
-	if err != nil {
-		return err
-	}
-
-	return s.removeEventSubSubscription(subId)
+	return s.removeEventSubSubscription(userID, subId, reason)
 }
 
-func (s *Server) removeEventSubSubscription(subscriptionID string) error {
+func (s *Server) removeEventSubSubscription(userID string, subscriptionID string, reason string) error {
 	response, err := s.helixUserClient.Client.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
 		return err
 	}
 
-	log.Info(response)
+	log.Infof("[%d] removed EventSubSubscription for %s reason: %s", response.StatusCode, userID, reason)
+
+	_, err = s.store.Client.HDel("subscriptions", userID).Result()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -120,32 +118,48 @@ func (s *Server) syncSubscriptions() {
 	resp, err := s.helixUserClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{})
 	if err != nil {
 		log.Errorf("Failed to get subscriptions: %s", err)
+		return
 	}
 
-	log.Infof("Found %d total subscriptions, syncing to DB", resp.Data.Total)
+	log.Infof("Found %d total subscriptions, syncing to Redis", resp.Data.Total)
+	subscribed := []string{}
 
 	for _, sub := range resp.Data.EventSubSubscriptions {
-		if sub.Condition.BroadcasterUserID != "" {
-			exists, err := s.store.Client.HExists("userConfig", sub.Condition.BroadcasterUserID).Result()
+		exists, err := s.store.Client.HExists("userConfig", sub.Condition.BroadcasterUserID).Result()
+		if err != nil {
+			log.Errorf("Failed to get userConfig while syncing %s", err.Error())
+			continue
+		}
+		if !exists {
+			err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "no userConfig found")
 			if err != nil {
-				log.Error(err)
+				log.Errorf("Failed to unsubscribe %s error: %s", sub.Condition.BroadcasterUserID, err.Error())
 			}
+			continue
+		}
 
-			if exists {
-				s.store.Client.HSet("subscriptions", sub.Condition.BroadcasterUserID, sub.ID)
-			} else {
-				log.Infof("Unsubscribing channel points, no userConfig found for channel: %s", sub.Condition.BroadcasterUserID)
-				err := s.unsubscribeChannelPoints(sub.Condition.BroadcasterUserID)
-				if err != nil {
-					log.Errorf("Failed to remove subscription for channel %s", sub.Condition.BroadcasterUserID)
-				}
-			}
-		} else {
-			log.Warnf("Unknown subscription %v, removing it", sub)
-			err := s.removeEventSubSubscription(sub.ID)
+		if !strings.Contains(sub.Transport.Callback, s.cfg.WebhookApiBaseUrl) {
+			err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "unknown transport, unsubscribing")
 			if err != nil {
-				log.Errorf("Failed to remove unknown subscription %s", err.Error())
+				log.Errorf("Failed to unsubscribe %s error: %s", sub.Condition.BroadcasterUserID, err.Error())
 			}
+			continue
+		}
+
+		subscribed = append(subscribed, sub.Condition.BroadcasterUserID)
+		s.store.Client.HSet("subscriptions", sub.Condition.BroadcasterUserID, sub.ID)
+	}
+
+	userConfigs, err := s.store.Client.HGetAll("userConfig").Result()
+	if err != nil {
+		log.Errorf("Failed to sync subscriptions with userConfig: %s", err)
+		return
+	}
+
+	for userID := range userConfigs {
+		if !slice.Contains(subscribed, userID) {
+			log.Info("Found no subscription for existing userConfig, creating subscription")
+			s.subscribeChannelPoints(userID)
 		}
 	}
 }

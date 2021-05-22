@@ -157,7 +157,7 @@ func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = s.unsubscribeChannelPoints(auth.Data.UserID)
+		err = s.unsubscribeChannelPoints(auth.Data.UserID, "userDeleted")
 		if err != nil {
 			log.Error(err)
 			http.Error(w, "Failed to unsubscribe"+err.Error(), http.StatusInternalServerError)
