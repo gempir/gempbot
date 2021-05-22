@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { SetUserConfig, UserConfig } from "../../../hooks/useUserConfig";
+import { doFetch, Method } from "../../../service/doFetch";
 
 interface BttvRewardForm {
     title: string;
@@ -12,7 +13,7 @@ interface BttvRewardForm {
     isDefault: boolean
 }
 
-export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
+export function BttvForm({ userConfig, setUserConfig, fetchConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig, fetchConfig: () => void }) {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const onSubmit = (data: BttvRewardForm) => setUserConfig(
         {
@@ -39,9 +40,12 @@ export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig
                     <h3 className="text-xl font-bold">BetterTTV Emote</h3>
                 </div>
                 <div className="text-gray-600">
-                    {userConfig.Rewards.Bttv?.ID}
-                    {/* {userConfig.Rewards.Bttv?.ID && 
-                    <div className="bg-red-700 hover:bg-red-600 p-2 rounded shadow mt-3 text-gray-100 inline-block ml-3 cursor-pointer">Delete</div>} */}
+                    {userConfig.Rewards.Bttv?.ID &&
+                        <div className="bg-red-700 hover:bg-red-600 p-2 rounded shadow mt-3 text-gray-100 inline-block ml-3 cursor-pointer"
+                            onClick={() => doFetch(Method.DELETE, `/api/reward/${userConfig.CurrentUserID}/${userConfig.Rewards.Bttv?.ID}`).then(fetchConfig)}>
+                            Delete
+                        </div>
+                    }
                 </div>
             </div>
             <p className="my-2 mb-4 text-gray-400">

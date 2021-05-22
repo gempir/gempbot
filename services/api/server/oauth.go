@@ -34,10 +34,9 @@ func (s *Server) handleCallback(c echo.Context) error {
 
 	resp, err := s.helixUserClient.Client.RequestUserAccessToken(code)
 	if err != nil || resp.StatusCode >= 400 {
-		log.Errorf("failed to request userAccessToken: %s %v", err, resp)
+		log.Errorf("failed to request userAccessToken: %s %s", err, resp.ErrorMessage)
 		// @TODO redirect to somewhere better
-		s.dashboardRedirect(c, http.StatusBadRequest, "")
-		return err
+		return s.dashboardRedirect(c, http.StatusBadRequest, "")
 	}
 
 	// validate
@@ -61,8 +60,7 @@ func (s *Server) handleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to set userAccessToken in callback: %s", err)
 	}
 
-	s.dashboardRedirect(c, http.StatusOK, token)
-	return nil
+	return s.dashboardRedirect(c, http.StatusOK, token)
 }
 
 func (s *Server) createApiToken(userID string) (string, error) {
@@ -81,7 +79,7 @@ func (s *Server) createApiToken(userID string) (string, error) {
 	return tokenString, err
 }
 
-func (s *Server) dashboardRedirect(c echo.Context, status int, scToken string) {
+func (s *Server) dashboardRedirect(c echo.Context, status int, scToken string) error {
 	cookie := http.Cookie{
 		Name:    "scToken",
 		Value:   scToken,
@@ -91,7 +89,7 @@ func (s *Server) dashboardRedirect(c echo.Context, status int, scToken string) {
 	}
 
 	c.SetCookie(&cookie)
-	c.Redirect(status, s.cfg.WebBaseUrl+"/dashboard")
+	return c.Redirect(status, s.cfg.WebBaseUrl+"/dashboard")
 }
 
 func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {
@@ -108,7 +106,7 @@ func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {
 	return token, nil
 }
 
-func (s *Server) authenticate(c echo.Context) (bool, *nickHelix.ValidateTokenResponse, *userAcessTokenData) {
+func (s *Server) authenticate(c echo.Context) (*nickHelix.ValidateTokenResponse, *userAcessTokenData, error) {
 	scToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 
 	// Initialize a new instance of `Claims`
@@ -123,13 +121,13 @@ func (s *Server) authenticate(c echo.Context) (bool, *nickHelix.ValidateTokenRes
 	})
 	if err != nil || !tkn.Valid {
 		log.Errorf("found to validate jwt: %s", err)
-		return false, nil, nil
+		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "bad authentication")
 	}
 
 	token, err := s.getUserAccessToken(claims.UserID)
 	if err != nil {
 		log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
-		return false, nil, nil
+		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to get userAccessTokenData: %s", err.Error())
 	}
 
 	success, resp, err := s.helixClient.Client.ValidateToken(token.AccessToken)
@@ -142,7 +140,7 @@ func (s *Server) authenticate(c echo.Context) (bool, *nickHelix.ValidateTokenRes
 		if resp.Error == "Unauthorized" {
 			success, refreshResp := s.refreshToken(scToken, token)
 			if !success {
-				return false, nil, nil
+				return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "failed to refresh token")
 			}
 
 			success, resp, err = s.helixClient.Client.ValidateToken(refreshResp.AccessToken)
@@ -151,14 +149,14 @@ func (s *Server) authenticate(c echo.Context) (bool, *nickHelix.ValidateTokenRes
 					log.Errorf("refreshed Token did not validate: %s", err)
 				}
 
-				return success, resp, refreshResp
+				return resp, refreshResp, echo.NewHTTPError(http.StatusUnauthorized, "refreshed token did not validate")
 			}
 		}
 
-		return false, nil, nil
+		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "token not valid")
 	}
 
-	return success, resp, &token
+	return resp, &token, nil
 }
 
 func (s *Server) refreshToken(userID string, token userAcessTokenData) (bool, *userAcessTokenData) {

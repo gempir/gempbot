@@ -7,6 +7,7 @@ export interface UserConfig {
     Editors: Array<string>;
     Protected: Protected;
     Rewards: Rewards;
+    CurrentUserID?: string;
 }
 
 export interface Rewards {
@@ -37,7 +38,7 @@ export interface Protected {
 
 export type SetUserConfig = (userConfig: UserConfig | null) => void;
 
-export function useUserConfig(onSave: () => void = () => { }, onError: () => void = () => { }, onUserConfigChange: () => void = () => {}): [UserConfig | null | undefined, SetUserConfig] {
+export function useUserConfig(onUserConfigChange: () => void = () => {}): [UserConfig | null | undefined, SetUserConfig, () => void] {
     const [userConfig, setUserConfig] = useState<UserConfig | null | undefined>(undefined);
     const [changeCounter, setChangeCounter] = useState(0);
     const managing = store.useState(s => s.managing);
@@ -47,7 +48,7 @@ export function useUserConfig(onSave: () => void = () => { }, onError: () => voi
         if (managing) {
             endPoint += `?managing=${managing}`;
         }
-        doFetch(Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig)).catch(onError)
+        doFetch(Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig))
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,12 +62,9 @@ export function useUserConfig(onSave: () => void = () => { }, onError: () => voi
             if (managing) {
                 endPoint += `?managing=${managing}`;
             }
-            doFetch(Method.POST, endPoint, userConfig).then((data: UserConfig) => {
-                setUserConfig(data);
-                onSave();
-            }).catch(onError);
+            doFetch(Method.POST, endPoint, userConfig).then(fetchConfig);
         } else if (changeCounter && userConfig === null) {
-            doFetch(Method.DELETE, "/api/userConfig").then(fetchConfig).catch(onError);
+            doFetch(Method.DELETE, "/api/userConfig");
         }
     }, 500, [changeCounter]);
 
@@ -75,5 +73,5 @@ export function useUserConfig(onSave: () => void = () => { }, onError: () => voi
         setChangeCounter(changeCounter + 1);
     };
 
-    return [userConfig, setCfg]
+    return [userConfig, setCfg, fetchConfig]
 }

@@ -4,11 +4,12 @@ import { deleteCookie } from "./cookie";
 export enum Method {
     GET = "GET",
     POST = "POST",
-    DELETE = "POST"
+    DELETE = "DELETE",
+    PATCH = "PATCH"
 }
 
 export async function doFetch(method: Method, path: string, body: any = undefined) {
-    const {apiBaseUrl, scToken} = store.getRawState();
+    const { apiBaseUrl, scToken } = store.getRawState();
 
     const headers: Record<string, string> = { 'content-type': 'application/json' }
     if (scToken) {

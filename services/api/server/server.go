@@ -40,6 +40,7 @@ func (s *Server) Start() {
 	e.POST("/api/redemption", s.handleChannelPointsRedemption)
 	e.GET("/api/userConfig", s.handleUserConfig)
 	e.POST("/api/userConfig", s.handleUserConfig)
+	e.DELETE("/api/reward/:userID/:rewardID", s.handleRewardDeletion)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{s.cfg.WebBaseUrl},
