@@ -32,11 +32,12 @@ func (t *tokenClaims) Valid() error {
 func (s *Server) handleCallback(c echo.Context) error {
 	code := c.QueryParam("code")
 
+	log.Infof("[%s]", code)
 	resp, err := s.helixUserClient.Client.RequestUserAccessToken(code)
 	if err != nil || resp.StatusCode >= 400 {
 		log.Errorf("failed to request userAccessToken: %s %s", err, resp.ErrorMessage)
 		// @TODO redirect to somewhere better
-		return s.dashboardRedirect(c, http.StatusBadRequest, "")
+		return s.dashboardRedirect(c, "")
 	}
 
 	// validate
@@ -60,7 +61,7 @@ func (s *Server) handleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to set userAccessToken in callback: %s", err)
 	}
 
-	return s.dashboardRedirect(c, http.StatusOK, token)
+	return s.dashboardRedirect(c, token)
 }
 
 func (s *Server) createApiToken(userID string) (string, error) {
@@ -79,7 +80,7 @@ func (s *Server) createApiToken(userID string) (string, error) {
 	return tokenString, err
 }
 
-func (s *Server) dashboardRedirect(c echo.Context, status int, scToken string) error {
+func (s *Server) dashboardRedirect(c echo.Context, scToken string) error {
 	cookie := http.Cookie{
 		Name:    "scToken",
 		Value:   scToken,
@@ -89,7 +90,13 @@ func (s *Server) dashboardRedirect(c echo.Context, status int, scToken string) e
 	}
 
 	c.SetCookie(&cookie)
-	return c.Redirect(status, s.cfg.WebBaseUrl+"/dashboard")
+	err := c.Redirect(http.StatusFound, s.cfg.WebBaseUrl+"/dashboard")
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	return nil
 }
 
 func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {
