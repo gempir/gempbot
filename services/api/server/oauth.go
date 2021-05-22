@@ -187,8 +187,6 @@ func (s *Server) refreshToken(userID string, token userAcessTokenData) (bool, *u
 
 func (s *Server) tokenRefreshRoutine() {
 	for {
-		time.Sleep(time.Hour)
-
 		tokens, err := s.store.Client.HGetAll("userAccessTokensData").Result()
 		if err != nil {
 			log.Errorf("tried refreshing tokens: %s", err)
