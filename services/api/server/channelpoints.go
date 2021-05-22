@@ -83,8 +83,9 @@ func (s *Server) subscribeChannelPoints(userID string) {
 		return
 	}
 
+	log.Infof("[%d] created subsciption", response.StatusCode)
 	for _, sub := range response.Data.EventSubSubscriptions {
-		log.Infof("[%d] New subscription for %s id: %s", response.StatusCode, userID, sub.ID)
+		log.Infof("new subscription for %s id: %s", userID, sub.ID)
 		s.store.Client.HSet("subscriptions", userID, sub.ID)
 	}
 }
