@@ -11,6 +11,7 @@ import (
 
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/slice"
+	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )
@@ -83,7 +84,7 @@ func (s *Server) subscribeChannelPoints(userID string) {
 		return
 	}
 
-	log.Infof("[%d] created subsciption", response.StatusCode)
+	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
 		s.store.Client.HSet("subscriptions", userID, sub.ID)
@@ -165,42 +166,37 @@ func (s *Server) syncSubscriptions() {
 	}
 }
 
-func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
+	body, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		log.Error(err)
-		http.Error(w, "failed reading body", http.StatusBadRequest)
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed reading body")
 	}
 
-	verified := nickHelix.VerifyEventSubNotification(s.cfg.Secret, r.Header, string(body))
+	verified := nickHelix.VerifyEventSubNotification(s.cfg.Secret, c.Request().Header, string(body))
 	if !verified {
-		log.Errorf("Failed verification: %s", r.Header.Get("Twitch-Eventsub-Message-Id"))
-		http.Error(w, "failed verfication", http.StatusPreconditionFailed)
+		return echo.NewHTTPError(http.StatusPreconditionFailed, "failed verfication")
 	}
 
-	if r.Header.Get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification" {
-		s.handleChallenge(w, body)
-		return
+	if c.Request().Header.Get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification" {
+		return s.handleChallenge(c, body)
 	}
 
 	var redemption channelPointRedemption
 	err = json.Unmarshal(body, &redemption)
 	if err != nil {
-		log.Error(err)
-		http.Error(w, "Failed decoding body: "+err.Error(), http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed decoding body: "+err.Error())
 	}
 
 	// get active subscritions for this channel
 	val, err := s.store.Client.HGet("userConfig", redemption.Event.BroadcasterUserID).Result()
 	if err != nil {
 		log.Errorf("Won't handle redemption, no userConfig found %s", err)
-		return
+		return err
 	}
 	var userCfg UserConfig
 	if err := json.Unmarshal([]byte(val), &userCfg); err != nil {
 		log.Error(err)
-		return
+		return err
 	}
 
 	if userCfg.Rewards.BttvReward != nil && userCfg.Rewards.BttvReward.Enabled && userCfg.Rewards.BttvReward.ID == redemption.Event.Reward.ID {
@@ -238,22 +234,20 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	fmt.Fprint(w, "success")
+	return c.String(http.StatusOK, "success")
 }
 
-func (s *Server) handleChallenge(w http.ResponseWriter, body []byte) {
+func (s *Server) handleChallenge(c echo.Context, body []byte) error {
 	var event struct {
 		Challenge string `json:"challenge"`
 	}
 	err := json.Unmarshal(body, &event)
 	if err != nil {
-		log.Errorf("Failed to handle challenge: %s", err.Error())
-		http.Error(w, "Failed to handle challenge: "+err.Error(), http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Failed to handle challenge: "+err.Error(), http.StatusBadRequest))
 	}
 
 	log.Infof("Challenge success: %s", event.Challenge)
-	fmt.Fprint(w, event.Challenge)
+	return c.String(http.StatusOK, event.Challenge)
 }
 
 func (s *Server) createOrUpdateChannelPointReward(userID string, request BttvReward, rewardID string) (BttvReward, error) {
