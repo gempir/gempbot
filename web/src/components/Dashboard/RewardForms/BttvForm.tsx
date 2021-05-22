@@ -40,6 +40,8 @@ export function BttvForm({ userConfig, setUserConfig }: { userConfig: UserConfig
                 </div>
                 <div className="text-gray-600">
                     {userConfig.Rewards.Bttv?.ID}
+                    {/* {userConfig.Rewards.Bttv?.ID && 
+                    <div className="bg-red-700 hover:bg-red-600 p-2 rounded shadow mt-3 text-gray-100 inline-block ml-3 cursor-pointer">Delete</div>} */}
                 </div>
             </div>
             <p className="my-2 mb-4 text-gray-400">
