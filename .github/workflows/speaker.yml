@@ -1,4 +1,4 @@
-name: ingester
+name: speaker
 
 on:
     workflow_dispatch:
