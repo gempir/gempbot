@@ -13,7 +13,7 @@ on:
             - go.sum
 
 jobs:
-    ingester:
+    speaker:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v1
@@ -32,7 +32,7 @@ jobs:
                   ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
             - name: Build
-              working-directory: ./services/ingester
+              working-directory: ./services/speaker
               run: |
                   go build
 
@@ -43,12 +43,12 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl stop ingester
+                  script: systemctl stop speaker
 
             - name: Deploy
-              working-directory: ./services/ingester
+              working-directory: ./services/speaker
               run: |
-                  scp ingester ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ingester
+                  scp speaker ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/speaker
 
             - name: Start
               uses: appleboy/ssh-action@master
@@ -57,4 +57,4 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
-                  script: systemctl start ingester
+                  script: systemctl start speaker
