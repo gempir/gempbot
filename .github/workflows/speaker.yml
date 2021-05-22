@@ -6,7 +6,7 @@ on:
         branches:
             - "master"
         paths:
-            - services/ingester/**
+            - services/speaker/**
             - pkg/**
             - go.mod
             - go.sum
