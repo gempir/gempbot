@@ -7,7 +7,7 @@ import { BttvForm } from "../Dashboard/RewardForms/BttvForm";
 export function Dashboard() {
     useTitle("bitraft - Dashboard");
     const [renderKey, setRenderKey] = useState(1);
-    const [userCfg, setUserConfig] = useUserConfig(undefined, undefined, () => setRenderKey(renderKey + 1));
+    const [userCfg, setUserConfig, fetchConfig] = useUserConfig(() => setRenderKey(renderKey + 1));
 
     if (!userCfg) {
         return null;
@@ -16,6 +16,6 @@ export function Dashboard() {
     // force re-mount when switching the channel to manage, to re-render forms and their defaultValues
     return <div key={renderKey}>
         <Menu userConfig={userCfg} setUserConfig={setUserConfig} />
-        <BttvForm userConfig={userCfg} setUserConfig={setUserConfig} />
+        <BttvForm userConfig={userCfg} setUserConfig={setUserConfig} fetchConfig={fetchConfig} />
     </div>
 }

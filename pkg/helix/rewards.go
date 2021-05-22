@@ -290,3 +290,46 @@ func (c *Client) UpdateRedemptionStatus(broadcasterID, userAccessToken string, r
 
 	return nil
 }
+
+func (c *Client) DeleteReward(userID string, userAccessToken string, rewardID string) error {
+	method := http.MethodDelete
+	reqUrl, err := url.Parse("https://api.twitch.tv/helix/channel_points/custom_rewards")
+	if err != nil {
+		return err
+	}
+
+	query := reqUrl.Query()
+	query.Set("broadcaster_id", userID)
+	query.Set("id", rewardID)
+
+	reqUrl.RawQuery = query.Encode()
+
+	req, err := http.NewRequest(method, reqUrl.String(), nil)
+	req.Header.Set("authorization", "Bearer "+userAccessToken)
+	req.Header.Set("client-id", c.clientID)
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	log.Infof("[%d][%s] %s", resp.StatusCode, method, reqUrl.String())
+
+	if resp.StatusCode >= 400 {
+		var response ErrorResponse
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			return fmt.Errorf("Failed to unmarshal reward error response: %s", err.Error())
+		}
+
+		return fmt.Errorf("Failed to create reward: %s", response.Message)
+	}
+
+	return nil
+}

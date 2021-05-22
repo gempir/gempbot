@@ -12,9 +12,10 @@ import (
 )
 
 type UserConfig struct {
-	Editors   []string
-	Protected Protected
-	Rewards   Rewards
+	Editors       []string
+	Protected     Protected
+	Rewards       Rewards
+	CurrentUserID string
 }
 
 type Rewards struct {
@@ -66,9 +67,9 @@ func createDefaultBttvReward() *BttvReward {
 }
 
 func (s *Server) handleUserConfig(c echo.Context) error {
-	ok, auth, _ := s.authenticate(c)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "bad authentication")
+	auth, _, err := s.authenticate(c)
+	if err != nil {
+		return err
 	}
 
 	if c.Request().Method == http.MethodGet {
@@ -100,6 +101,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 
 			managingUserConfig.Editors = []string{}
 			managingUserConfig.Protected.EditorFor = newEditorForNames
+			managingUserConfig.CurrentUserID = ownerUserID
 
 			return c.JSON(http.StatusOK, managingUserConfig)
 		} else {
@@ -125,6 +127,8 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 				newEditorForNames = append(newEditorForNames, user.Login)
 			}
 
+			userConfig.CurrentUserID = auth.Data.UserID
+
 			userConfig.Protected.EditorFor = newEditorForNames
 			return c.JSON(http.StatusOK, userConfig)
 		}
@@ -136,13 +140,13 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving body "+err.Error())
 		}
 
-		newConfig, err := s.processConfig(auth.Data.UserID, body, c)
+		_, err = s.processConfig(auth.Data.UserID, body, c)
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
 			return echo.NewHTTPError(http.StatusBadRequest, "failed processing config: "+err.Error())
 		}
 
-		return c.JSON(http.StatusOK, newConfig)
+		return c.JSON(http.StatusOK, nil)
 	} else if c.Request().Method == http.MethodDelete {
 		_, err := s.store.Client.HDel("userConfig", auth.Data.UserID).Result()
 		if err != nil {
@@ -156,7 +160,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to unsubscribe: "+err.Error())
 		}
 
-		return c.NoContent(http.StatusOK)
+		return c.JSON(http.StatusOK, nil)
 	}
 
 	return nil
@@ -207,6 +211,25 @@ func (s *Server) checkEditor(c echo.Context, userConfig UserConfig) (string, err
 	}
 
 	return userData[managing].ID, nil
+}
+
+func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
+	if editorUserID == ownerUserID {
+		return nil
+	}
+
+	userConfig, err, _ := s.getUserConfig(ownerUserID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, "no config found for owner")
+	}
+
+	for _, editor := range userConfig.Protected.EditorFor {
+		if editor == ownerUserID {
+			return nil
+		}
+	}
+
+	return echo.NewHTTPError(http.StatusForbidden, "user is not editor")
 }
 
 func (s *Server) processConfig(userID string, body []byte, c echo.Context) (UserConfig, error) {
@@ -295,12 +318,7 @@ func (s *Server) processConfig(userID string, body []byte, c echo.Context) (User
 		configToSave.Rewards.BttvReward = createDefaultBttvReward()
 	}
 
-	js, err := json.Marshal(configToSave)
-	if err != nil {
-		return UserConfig{}, err
-	}
-
-	_, err = s.store.Client.HSet("userConfig", saveTarget, js).Result()
+	err = s.saveConfig(saveTarget, configToSave)
 	if err != nil {
 		return UserConfig{}, err
 	}
@@ -332,19 +350,18 @@ func (s *Server) processConfig(userID string, body []byte, c echo.Context) (User
 	return configToSave, nil
 }
 
-func writeJSON(w http.ResponseWriter, data interface{}, code int) {
-	js, err := json.Marshal(data)
+func (s *Server) saveConfig(userID string, userConfig UserConfig) error {
+	js, err := json.Marshal(userConfig)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(code)
-	_, err = w.Write(js)
+	_, err = s.store.Client.HSet("userConfig", userID, js).Result()
 	if err != nil {
-		log.Errorf("Faile to writeJSON: %s", err)
+		return err
 	}
+
+	return nil
 }
 
 func (s *Server) addEditorFor(editorID, userID string) error {
