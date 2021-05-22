@@ -97,7 +97,16 @@ func (s *Server) unsubscribeChannelPoints(userID string) error {
 		return err
 	}
 
-	response, err := s.helixUserClient.Client.RemoveEventSubSubscription(subId)
+	_, err = s.store.Client.HDel("subscriptions", userID).Result()
+	if err != nil {
+		return err
+	}
+
+	return s.removeEventSubSubscription(subId)
+}
+
+func (s *Server) removeEventSubSubscription(subscriptionID string) error {
+	response, err := s.helixUserClient.Client.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
 		return err
 	}
@@ -117,9 +126,26 @@ func (s *Server) syncSubscriptions() {
 
 	for _, sub := range resp.Data.EventSubSubscriptions {
 		if sub.Condition.BroadcasterUserID != "" {
-			s.store.Client.HSet("subscriptions", sub.Condition.BroadcasterUserID, sub.ID)
+			exists, err := s.store.Client.HExists("userConfig", sub.Condition.BroadcasterUserID).Result()
+			if err != nil {
+				log.Error(err)
+			}
+
+			if exists {
+				s.store.Client.HSet("subscriptions", sub.Condition.BroadcasterUserID, sub.ID)
+			} else {
+				log.Infof("Unsubscribing channel points, no userConfig found for channel: %s", sub.Condition.BroadcasterUserID)
+				err := s.unsubscribeChannelPoints(sub.Condition.BroadcasterUserID)
+				if err != nil {
+					log.Errorf("Failed to remove subscription for channel %s", sub.Condition.BroadcasterUserID)
+				}
+			}
 		} else {
-			log.Warnf("Unknown subscription %v", sub)
+			log.Warnf("Unknown subscription %v, removing it", sub)
+			err := s.removeEventSubSubscription(sub.ID)
+			if err != nil {
+				log.Errorf("Failed to remove unknown subscription %s", err.Error())
+			}
 		}
 	}
 }
@@ -153,7 +179,7 @@ func (s *Server) handleChannelPointsRedemption(w http.ResponseWriter, r *http.Re
 	// get active subscritions for this channel
 	val, err := s.store.Client.HGet("userConfig", redemption.Event.BroadcasterUserID).Result()
 	if err != nil {
-		log.Errorf("No active subscription found %s", err)
+		log.Errorf("Won't handle redemption, no userConfig found %s", err)
 		return
 	}
 	var userCfg UserConfig
