@@ -2,12 +2,10 @@ import React, { KeyboardEvent, useRef, useState } from "react";
 import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
 import { store } from "../../store";
 import { Managing } from "./Managing";
-import { Reset } from "./Reset";
 
 export function Menu({ userConfig, setUserConfig }: { userConfig: UserConfig | null | undefined, setUserConfig: SetUserConfig }) {
     return <div className="flex flex-row flex-wrap gap-4 ml-4">
         <Managing userConfig={userConfig} />
-        <Reset setUserConfig={setUserConfig} />
         <EditorManager setUserConfig={setUserConfig} userConfig={userConfig} />
     </div>
 }
