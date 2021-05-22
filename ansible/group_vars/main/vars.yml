@@ -2,4 +2,4 @@
 web_host: bitraft.gempir.com
 cookie_domain: gempir.com
 api_host: bitraft-api.gempir.com
-sc1_netdata_host: netdata.sc1.gempir.com
+netdata_host: netdata.br1.gempir.com
