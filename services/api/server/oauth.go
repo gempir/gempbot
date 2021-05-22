@@ -2,12 +2,10 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 
 	"github.com/dgrijalva/jwt-go"
@@ -29,40 +27,42 @@ func (t *tokenClaims) Valid() error {
 	return nil
 }
 
-func (s *Server) handleCallback(c echo.Context) error {
-	code := c.QueryParam("code")
+func (s *Server) handleCallback(w http.ResponseWriter, r *http.Request) {
+	code := r.URL.Query().Get("code")
 
 	resp, err := s.helixUserClient.Client.RequestUserAccessToken(code)
 	if err != nil || resp.StatusCode >= 400 {
 		log.Errorf("failed to request userAccessToken: %s %v", err, resp)
-		// @TODO redirect to somewhere better
-		s.dashboardRedirect(c, http.StatusBadRequest, "")
-		return err
+		s.dashboardRedirect(w, r, http.StatusBadRequest, "")
+		return
 	}
 
 	// validate
 	success, validateResp, err := s.helixClient.Client.ValidateToken(resp.Data.AccessToken)
 	if !success || err != nil {
-		return fmt.Errorf("failed to veryify new Token %s", err)
+		log.Errorf("failed to veryify new Token %s", err)
+		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
 	}
 
 	token, err := s.createApiToken(validateResp.Data.UserID)
 	if err != nil {
-		return fmt.Errorf("failed to create jwt token in callback %s", err)
+		log.Errorf("failed to create jwt token in callback %s", err)
+		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
 	}
 
 	marshalled, err := json.Marshal(userAcessTokenData{resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " ")})
 	if err != nil {
-		return fmt.Errorf("failed to marshal userAcessToken in callback %s", err)
+		log.Errorf("failed to marshal userAcessToken in callback %s", err)
+		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
 	}
 
 	err = s.store.Client.HSet("userAccessTokensData", validateResp.Data.UserID, marshalled).Err()
 	if err != nil {
-		return fmt.Errorf("failed to set userAccessToken in callback: %s", err)
+		log.Errorf("failed to set userAccessToken in callback: %s", err)
+		s.dashboardRedirect(w, r, http.StatusInternalServerError, "")
 	}
 
-	s.dashboardRedirect(c, http.StatusOK, token)
-	return nil
+	s.dashboardRedirect(w, r, http.StatusOK, token)
 }
 
 func (s *Server) createApiToken(userID string) (string, error) {
@@ -81,7 +81,7 @@ func (s *Server) createApiToken(userID string) (string, error) {
 	return tokenString, err
 }
 
-func (s *Server) dashboardRedirect(c echo.Context, status int, scToken string) {
+func (s *Server) dashboardRedirect(w http.ResponseWriter, r *http.Request, status int, scToken string) {
 	cookie := http.Cookie{
 		Name:    "scToken",
 		Value:   scToken,
@@ -90,8 +90,9 @@ func (s *Server) dashboardRedirect(c echo.Context, status int, scToken string) {
 		Path:    "/",
 	}
 
-	c.SetCookie(&cookie)
-	c.Redirect(status, s.cfg.WebBaseUrl+"/dashboard")
+	http.SetCookie(w, &cookie)
+
+	http.Redirect(w, r, s.cfg.WebBaseUrl+"/dashboard", http.StatusFound)
 }
 
 func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {
@@ -108,8 +109,8 @@ func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {
 	return token, nil
 }
 
-func (s *Server) authenticate(c echo.Context) (bool, *nickHelix.ValidateTokenResponse, *userAcessTokenData) {
-	scToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
+func (s *Server) authenticate(r *http.Request) (bool, *nickHelix.ValidateTokenResponse, *userAcessTokenData) {
+	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 
 	// Initialize a new instance of `Claims`
 	claims := &tokenClaims{}

@@ -1,13 +1,16 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/gempir/bitraft/services/api/emotechief"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/gempir/bitraft/pkg/config"
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/store"
+	"github.com/rs/cors"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Server api server
@@ -34,15 +37,15 @@ func (s *Server) Start() {
 	go s.syncSubscriptions()
 	go s.tokenRefreshRoutine()
 
-	e := echo.New()
-	e.HideBanner = true
-	e.GET("/api/callback", s.handleCallback)
-	e.POST("/api/redemption", s.handleChannelPointsRedemption)
-	e.GET("/api/userConfig", s.handleUserConfig)
-	e.POST("/api/userConfig", s.handleUserConfig)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/callback", s.handleCallback)
+	mux.HandleFunc("/api/redemption", s.handleChannelPointsRedemption)
+	mux.HandleFunc("/api/userConfig", s.handleUserConfig)
 
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{s.cfg.WebBaseUrl},
-	}))
-	e.Logger.Fatal(e.Start(":8035"))
+	handler := cors.AllowAll().Handler(mux)
+	log.Info("listening on port :8035")
+	err := http.ListenAndServe(":8035", handler)
+	if err != nil {
+		log.Fatal("listenAndServe: ", err)
+	}
 }

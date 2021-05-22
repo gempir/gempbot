@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/go-redis/redis/v7"
-	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -65,34 +64,38 @@ func createDefaultBttvReward() *BttvReward {
 	}
 }
 
-func (s *Server) handleUserConfig(c echo.Context) error {
-	ok, auth, _ := s.authenticate(c)
+func (s *Server) handleUserConfig(w http.ResponseWriter, r *http.Request) {
+	ok, auth, _ := s.authenticate(r)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "bad authentication")
+		http.Error(w, "bad authentication", http.StatusUnauthorized)
+		return
 	}
 
-	if c.Request().Method == http.MethodGet {
+	if r.Method == http.MethodGet {
 		userConfig, err, _ := s.getUserConfig(auth.Data.UserID)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "can't recover config"+err.Error())
+			http.Error(w, "can't recover config"+err.Error(), http.StatusBadRequest)
+			return
 		}
 
-		managing := c.QueryParam("managing")
+		managing := r.URL.Query().Get("managing")
 		if managing != "" {
-			ownerUserID, err := s.checkEditor(c, userConfig)
+			ownerUserID, err := s.checkEditor(r, userConfig)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
 			}
 
 			managingUserConfig, err, _ := s.getUserConfig(ownerUserID)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "can't recover config"+err.Error())
+				http.Error(w, "can't recover config"+err.Error(), http.StatusBadRequest)
+				return
 			}
 			newEditorForNames := []string{}
 
 			userData, err := s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "can't resolve editorFor in config "+err.Error())
+				http.Error(w, "can't resolve editorFor in config "+err.Error(), http.StatusBadRequest)
 			}
 			for _, user := range userData {
 				newEditorForNames = append(newEditorForNames, user.Login)
@@ -100,14 +103,14 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 
 			managingUserConfig.Editors = []string{}
 			managingUserConfig.Protected.EditorFor = newEditorForNames
-
-			return c.JSON(http.StatusOK, managingUserConfig)
+			writeJSON(w, managingUserConfig, http.StatusOK)
+			return
 		} else {
 			newEditorNames := []string{}
 
 			userData, err := s.helixClient.GetUsersByUserIds(userConfig.Editors)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "can't resolve editorFor in config "+err.Error())
+				http.Error(w, "can't resolve editors in config "+err.Error(), http.StatusBadRequest)
 			}
 			for _, user := range userData {
 				newEditorNames = append(newEditorNames, user.Login)
@@ -119,47 +122,51 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 
 			userData, err = s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "can't resolve editorFor in config "+err.Error())
+				http.Error(w, "can't resolve editorFor in config "+err.Error(), http.StatusBadRequest)
 			}
 			for _, user := range userData {
 				newEditorForNames = append(newEditorForNames, user.Login)
 			}
 
 			userConfig.Protected.EditorFor = newEditorForNames
-			return c.JSON(http.StatusOK, userConfig)
+			writeJSON(w, userConfig, http.StatusOK)
+			return
 		}
 
-	} else if c.Request().Method == http.MethodPost {
-		body, err := ioutil.ReadAll(c.Request().Body)
+	} else if r.Method == http.MethodPost {
+		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Errorf("Failed reading update body: %s", err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving body "+err.Error())
+			http.Error(w, "Failure saving body: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		newConfig, err := s.processConfig(auth.Data.UserID, body, c)
+		newConfig, err := s.processConfig(auth.Data.UserID, body, r)
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
-			return echo.NewHTTPError(http.StatusBadRequest, "failed processing config: "+err.Error())
+			http.Error(w, "failed processing config: "+err.Error(), http.StatusBadRequest)
+			return
 		}
 
-		return c.JSON(http.StatusOK, newConfig)
-	} else if c.Request().Method == http.MethodDelete {
+		writeJSON(w, newConfig, http.StatusOK)
+	} else if r.Method == http.MethodDelete {
 		_, err := s.store.Client.HDel("userConfig", auth.Data.UserID).Result()
 		if err != nil {
 			log.Error(err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed deleting: "+err.Error())
+			http.Error(w, "Failed deleting: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		err = s.unsubscribeChannelPoints(auth.Data.UserID, "userDeleted")
 		if err != nil {
 			log.Error(err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to unsubscribe: "+err.Error())
+			http.Error(w, "Failed to unsubscribe"+err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		return c.NoContent(http.StatusOK)
+		writeJSON(w, nil, http.StatusOK)
 	}
 
-	return nil
 }
 
 func (s *Server) getUserConfig(userID string) (UserConfig, error, bool) {
@@ -183,8 +190,8 @@ func (s *Server) getUserConfig(userID string) (UserConfig, error, bool) {
 	return userConfig, nil, false
 }
 
-func (s *Server) checkEditor(c echo.Context, userConfig UserConfig) (string, error) {
-	managing := c.QueryParam("managing")
+func (s *Server) checkEditor(r *http.Request, userConfig UserConfig) (string, error) {
+	managing := r.URL.Query().Get("managing")
 
 	if managing == "" {
 		return "", nil
@@ -209,14 +216,14 @@ func (s *Server) checkEditor(c echo.Context, userConfig UserConfig) (string, err
 	return userData[managing].ID, nil
 }
 
-func (s *Server) processConfig(userID string, body []byte, c echo.Context) (UserConfig, error) {
+func (s *Server) processConfig(userID string, body []byte, r *http.Request) (UserConfig, error) {
 	oldConfig, err, isNew := s.getUserConfig(userID)
 	if err != nil {
 		return UserConfig{}, err
 	}
 	editorConfig := oldConfig
 
-	ownerUserID, err := s.checkEditor(c, oldConfig)
+	ownerUserID, err := s.checkEditor(r, oldConfig)
 	if err != nil {
 		return UserConfig{}, err
 	}
