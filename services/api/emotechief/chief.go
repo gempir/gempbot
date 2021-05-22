@@ -3,8 +3,8 @@ package emotechief
 import (
 	"net/http"
 
-	"github.com/gempir/spamchamp/pkg/config"
-	"github.com/gempir/spamchamp/pkg/store"
+	"github.com/gempir/bitraft/pkg/config"
+	"github.com/gempir/bitraft/pkg/store"
 )
 
 type EmoteChief struct {

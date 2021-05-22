@@ -1,4 +1,4 @@
-# Spamchamp
+# bitraft
 
 Use ngrok for local development
 

@@ -1,10 +1,10 @@
 package bot
 
 import (
+	"github.com/gempir/bitraft/pkg/config"
+	"github.com/gempir/bitraft/pkg/humanize"
+	"github.com/gempir/bitraft/pkg/store"
 	"github.com/gempir/go-twitch-irc/v2"
-	"github.com/gempir/spamchamp/pkg/config"
-	"github.com/gempir/spamchamp/pkg/humanize"
-	"github.com/gempir/spamchamp/pkg/store"
 	log "github.com/sirupsen/logrus"
 )
 

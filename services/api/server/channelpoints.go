@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gempir/spamchamp/pkg/helix"
-	"github.com/gempir/spamchamp/pkg/slice"
+	"github.com/gempir/bitraft/pkg/helix"
+	"github.com/gempir/bitraft/pkg/slice"
 	nickHelix "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
 )

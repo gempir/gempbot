@@ -3,11 +3,11 @@ package server
 import (
 	"net/http"
 
-	"github.com/gempir/spamchamp/services/api/emotechief"
+	"github.com/gempir/bitraft/services/api/emotechief"
 
-	"github.com/gempir/spamchamp/pkg/config"
-	"github.com/gempir/spamchamp/pkg/helix"
-	"github.com/gempir/spamchamp/pkg/store"
+	"github.com/gempir/bitraft/pkg/config"
+	"github.com/gempir/bitraft/pkg/helix"
+	"github.com/gempir/bitraft/pkg/store"
 	"github.com/rs/cors"
 
 	log "github.com/sirupsen/logrus"

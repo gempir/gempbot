@@ -1,4 +1,4 @@
-module github.com/gempir/spamchamp
+module github.com/gempir/bitraft
 
 go 1.16
 

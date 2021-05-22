@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"flag"
 
-	"github.com/gempir/spamchamp/pkg/config"
-	"github.com/gempir/spamchamp/pkg/store"
-	"github.com/gempir/spamchamp/services/speaker/bot"
+	"github.com/gempir/bitraft/pkg/config"
+	"github.com/gempir/bitraft/pkg/store"
+	"github.com/gempir/bitraft/services/speaker/bot"
 	log "github.com/sirupsen/logrus"
 )
 
