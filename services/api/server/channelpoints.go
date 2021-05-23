@@ -190,7 +190,7 @@ func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
 	// get active subscritions for this channel
 	val, err := s.store.Client.HGet("userConfig", redemption.Event.BroadcasterUserID).Result()
 	if err != nil {
-		log.Errorf("Won't handle redemption, no userConfig found %s", err)
+		log.Errorf("Won't handle redemption [%s], no userConfig found %s", redemption.Event.Reward.Title, err)
 		return err
 	}
 	var userCfg UserConfig
