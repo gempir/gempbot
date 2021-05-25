@@ -1,0 +1,38 @@
+name: api
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - "master"
+        paths:
+            - .github/workflows/add-ssh.yml
+
+jobs:
+    api:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v1
+
+            - name: Setup SSH
+              env:
+                  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+                  SSH_KEY: ${{ secrets.KEY }}
+              run: |
+                  mkdir ~/.ssh
+                  echo "$SSH_KEY" > ~/.ssh/id_rsa
+                  touch ~/.ssh/known_hosts
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+                  ssh-add ~/.ssh/id_rsa
+                  ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+            - name: Add key
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  key: ${{ secrets.KEY }}
+                  port: ${{ secrets.PORT }}
+                  script: echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHTq1tqjdLHZ1XRSD+mVkM+49blCsmwvo2d3mHPotoXb gempir.dev@gmail.com" >> /root/.ssh/authorized_keys
