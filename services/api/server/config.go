@@ -106,6 +106,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			return c.JSON(http.StatusOK, managingUserConfig)
 		} else {
 			newEditorNames := []string{}
+			log.Info(userConfig.Protected.EditorFor)
 
 			userData, err := s.helixClient.GetUsersByUserIds(userConfig.Editors)
 			if err != nil {
