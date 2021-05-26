@@ -28,6 +28,7 @@ type Config struct {
 	WebhookApiBaseUrl     string   `json:"webhookApiBaseUrl"`
 	CookieDomain          string   `json:"cookieDomain"`
 	BttvToken             string   `json:"bttvToken"`
+	SqliteDatabase        string   `json:"sqliteDatabase"`
 }
 
 // ChannelConfig config for indiviual channels

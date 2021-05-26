@@ -8,12 +8,12 @@ import (
 )
 
 type EmoteChief struct {
-	store      *store.Store
+	store      *store.Redis
 	cfg        *config.Config
 	httpClient *http.Client
 }
 
-func NewEmoteChief(store *store.Store, cfg *config.Config) *EmoteChief {
+func NewEmoteChief(store *store.Redis, cfg *config.Config) *EmoteChief {
 	return &EmoteChief{
 		store:      store,
 		cfg:        cfg,

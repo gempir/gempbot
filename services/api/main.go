@@ -15,14 +15,16 @@ func main() {
 	flag.Parse()
 
 	cfg := config.NewConfig(*configFile)
-	rStore := store.NewStore()
+	rStore := store.NewRedis()
+	db := store.NewDatabase(cfg.SqliteDatabase)
+
 	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, "")
 	helixUserClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, cfg.ApiBaseUrl+"/api/callback")
 	go helixUserClient.StartRefreshTokenRoutine()
 	go helixClient.StartRefreshTokenRoutine()
 
 	emoteChief := emotechief.NewEmoteChief(rStore, cfg)
-	server := server.NewServer(cfg, helixClient, helixUserClient, rStore, emoteChief)
+	server := server.NewServer(cfg, helixClient, helixUserClient, rStore, db, emoteChief)
 
 	server.Start()
 }

@@ -199,42 +199,48 @@ func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
 		return err
 	}
 
-	if userCfg.Rewards.BttvReward != nil && userCfg.Rewards.BttvReward.Enabled && userCfg.Rewards.BttvReward.ID == redemption.Event.Reward.ID {
-		success := false
+	s.handleRedemption(redemption, userCfg.Rewards)
 
-		matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
-		if len(matches) == 1 && len(matches[0]) == 2 {
-			emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
-			if err != nil {
-				log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
-				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
-			} else if emoteAdded != nil && emoteRemoved != nil {
-				success = true
-				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
-			} else if emoteAdded != nil {
-				success = true
-				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
+	return c.String(http.StatusOK, "success")
+}
+
+func (s *Server) handleRedemption(redemption channelPointRedemption, rewards []Reward) {
+	for _, reward := range rewards {
+		if reward.GetConfig().Enabled && redemption.Event.Reward.ID == redemption.Event.ID {
+			success := false
+
+			matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
+			if len(matches) == 1 && len(matches[0]) == 2 {
+				emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
+				if err != nil {
+					log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
+					s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
+				} else if emoteAdded != nil && emoteRemoved != nil {
+					success = true
+					s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
+				} else if emoteAdded != nil {
+					success = true
+					s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
+				} else {
+					success = true
+					s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
+				}
 			} else {
-				success = true
-				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
+				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
 			}
-		} else {
-			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
-		}
 
-		token, err := s.getUserAccessToken(redemption.Event.BroadcasterUserID)
-		if err != nil {
-			log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
-		} else {
-			log.Info(token)
-			err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
+			token, err := s.getUserAccessToken(redemption.Event.BroadcasterUserID)
 			if err != nil {
-				log.Errorf("Failed to update redemption status %s", err.Error())
+				log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
+			} else {
+				log.Info(token)
+				err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
+				if err != nil {
+					log.Errorf("Failed to update redemption status %s", err.Error())
+				}
 			}
 		}
 	}
-
-	return c.String(http.StatusOK, "success")
 }
 
 func (s *Server) handleChallenge(c echo.Context, body []byte) error {
@@ -250,18 +256,18 @@ func (s *Server) handleChallenge(c echo.Context, body []byte) error {
 	return c.String(http.StatusOK, event.Challenge)
 }
 
-func (s *Server) createOrUpdateChannelPointReward(userID string, request BttvReward, rewardID string) (BttvReward, error) {
+func (s *Server) createOrUpdateChannelPointReward(userID string, request Reward, rewardID string) (BttvReward, error) {
 	token, err := s.getUserAccessToken(userID)
 	if err != nil {
 		return BttvReward{}, err
 	}
 
 	req := helix.CreateCustomRewardRequest{
-		Title:                             request.Title,
+		Title:                             request.GetConfig().Title,
 		Prompt:                            bttvPrompt,
-		Cost:                              request.Cost,
-		IsEnabled:                         request.Enabled,
-		BackgroundColor:                   request.Backgroundcolor,
+		Cost:                              request.GetConfig().Cost,
+		IsEnabled:                         request.GetConfig().Enabled,
+		BackgroundColor:                   request.GetConfig().Backgroundcolor,
 		IsUserInputRequired:               true,
 		ShouldRedemptionsSkipRequestQueue: false,
 		IsMaxPerStreamEnabled:             false,
@@ -269,19 +275,19 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request BttvRew
 		IsGlobalCooldownEnabled:           false,
 	}
 
-	if request.MaxPerStream != 0 {
+	if request.GetConfig().MaxPerStream != 0 {
 		req.IsMaxPerStreamEnabled = true
-		req.MaxPerStream = request.MaxPerStream
+		req.MaxPerStream = request.GetConfig().MaxPerStream
 	}
 
-	if request.MaxPerUserPerStream != 0 {
+	if request.GetConfig().MaxPerUserPerStream != 0 {
 		req.IsMaxPerUserPerStreamEnabled = true
-		req.MaxPerUserPerStream = request.MaxPerUserPerStream
+		req.MaxPerUserPerStream = request.GetConfig().MaxPerUserPerStream
 	}
 
-	if request.GlobalCooldownSeconds != 0 {
+	if request.GetConfig().GlobalCooldownSeconds != 0 {
 		req.IsGlobalCooldownEnabled = true
-		req.GlobalCoolDownSeconds = request.GlobalCooldownSeconds
+		req.GlobalCoolDownSeconds = request.GetConfig().GlobalCooldownSeconds
 	}
 
 	resp, err := s.helixUserClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
@@ -290,19 +296,20 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request BttvRew
 	}
 
 	return BttvReward{
-		Title:                             resp.Title,
-		Prompt:                            resp.Prompt,
-		Cost:                              resp.Cost,
-		Backgroundcolor:                   resp.BackgroundColor,
-		IsMaxPerStreamEnabled:             resp.MaxPerStreamSetting.IsEnabled,
-		MaxPerStream:                      resp.MaxPerStreamSetting.MaxPerStream,
-		IsMaxPerUserPerStreamEnabled:      resp.MaxPerUserPerStreamSetting.IsEnabled,
-		MaxPerUserPerStream:               resp.MaxPerUserPerStreamSetting.MaxPerUserPerStream,
-		IsUserInputRequired:               resp.IsUserInputRequired,
-		IsGlobalCooldownEnabled:           resp.GlobalCooldownSetting.IsEnabled,
-		GlobalCooldownSeconds:             resp.GlobalCooldownSetting.GlobalCooldownSeconds,
-		ShouldRedemptionsSkipRequestQueue: resp.ShouldRedemptionsSkipRequestQueue,
-		Enabled:                           resp.IsEnabled,
-		ID:                                resp.ID,
-	}, nil
+		TwitchRewardConfig{
+			Title:                             resp.Title,
+			Prompt:                            resp.Prompt,
+			Cost:                              resp.Cost,
+			Backgroundcolor:                   resp.BackgroundColor,
+			IsMaxPerStreamEnabled:             resp.MaxPerStreamSetting.IsEnabled,
+			MaxPerStream:                      resp.MaxPerStreamSetting.MaxPerStream,
+			IsMaxPerUserPerStreamEnabled:      resp.MaxPerUserPerStreamSetting.IsEnabled,
+			MaxPerUserPerStream:               resp.MaxPerUserPerStreamSetting.MaxPerUserPerStream,
+			IsUserInputRequired:               resp.IsUserInputRequired,
+			IsGlobalCooldownEnabled:           resp.GlobalCooldownSetting.IsEnabled,
+			GlobalCooldownSeconds:             resp.GlobalCooldownSetting.GlobalCooldownSeconds,
+			ShouldRedemptionsSkipRequestQueue: resp.ShouldRedemptionsSkipRequestQueue,
+			Enabled:                           resp.IsEnabled,
+			ID:                                resp.ID,
+		}}, nil
 }

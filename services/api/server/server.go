@@ -4,6 +4,7 @@ import (
 	"github.com/gempir/bitraft/services/api/emotechief"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"gorm.io/gorm"
 
 	"github.com/gempir/bitraft/pkg/config"
 	"github.com/gempir/bitraft/pkg/helix"
@@ -15,14 +16,16 @@ type Server struct {
 	cfg             *config.Config
 	helixClient     *helix.Client
 	helixUserClient *helix.Client
-	store           *store.Store
+	store           *store.Redis
+	db              *gorm.DB
 	emotechief      *emotechief.EmoteChief
 }
 
 // NewServer create api Server
-func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Store, emotechief *emotechief.EmoteChief) Server {
+func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Redis, db *gorm.DB, emotechief *emotechief.EmoteChief) Server {
 	return Server{
 		cfg:             cfg,
+		db:              db,
 		helixClient:     helixClient,
 		helixUserClient: helixUserClient,
 		store:           store,

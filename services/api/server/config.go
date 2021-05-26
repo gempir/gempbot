@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/gempir/bitraft/pkg/store"
 	"github.com/go-redis/redis/v7"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -14,30 +15,8 @@ import (
 type UserConfig struct {
 	Editors       []string
 	Protected     Protected
-	Rewards       Rewards
+	Rewards       []Reward
 	CurrentUserID string
-}
-
-type Rewards struct {
-	*BttvReward `json:"Bttv"`
-}
-
-type BttvReward struct {
-	Title                             string `json:"title"`
-	Prompt                            string `json:"prompt"`
-	Cost                              int    `json:"cost"`
-	Backgroundcolor                   string `json:"backgroundColor"`
-	IsMaxPerStreamEnabled             bool   `json:"isMaxPerStreamEnabled"`
-	MaxPerStream                      int    `json:"maxPerStream"`
-	IsUserInputRequired               bool   `json:"isUserInputRequired"`
-	IsMaxPerUserPerStreamEnabled      bool   `json:"isMaxPerUserPerStreamEnabled"`
-	MaxPerUserPerStream               int    `json:"maxPerUserPerStream"`
-	IsGlobalCooldownEnabled           bool   `json:"isGlobalCooldownEnabled"`
-	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds"`
-	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue"`
-	Enabled                           bool   `json:"enabled"`
-	IsDefault                         bool   `json:"isDefault"`
-	ID                                string
 }
 
 type Protected struct {
@@ -50,19 +29,7 @@ func createDefaultUserConfig() UserConfig {
 		Protected: Protected{
 			EditorFor: []string{},
 		},
-		Rewards: Rewards{
-			BttvReward: createDefaultBttvReward(),
-		},
-	}
-}
-
-func createDefaultBttvReward() *BttvReward {
-	return &BttvReward{
-		IsDefault: true,
-		Title:     "BetterTTV Emote",
-		Prompt:    bttvPrompt,
-		Enabled:   false,
-		Cost:      10000,
+		Rewards: []Reward{},
 	}
 }
 
@@ -91,7 +58,15 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			}
 			newEditorForNames := []string{}
 
-			userData, err := s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
+			var editors []store.Editor
+			s.db.Where("editor_twitch_id = ?", auth.Data.UserID).Find(&editors)
+
+			editorForIds := []string{}
+			for _, editor := range editors {
+				editorForIds = append(editorForIds, editor.OwnerTwitchID)
+			}
+
+			userData, err := s.helixClient.GetUsersByUserIds(editorForIds)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "can't resolve editorFor in config "+err.Error())
 			}
@@ -107,7 +82,15 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 		} else {
 			newEditorNames := []string{}
 
-			userData, err := s.helixClient.GetUsersByUserIds(userConfig.Editors)
+			var editors []store.Editor
+			s.db.Where("owner_twitch_id = ?", auth.Data.UserID).Find(&editors)
+
+			editorIds := []string{}
+			for _, editor := range editors {
+				editorIds = append(editorIds, editor.EditorTwitchID)
+			}
+
+			userData, err := s.helixClient.GetUsersByUserIds(editorIds)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "can't resolve editorFor in config "+err.Error())
 			}
@@ -178,10 +161,6 @@ func (s *Server) getUserConfig(userID string) (UserConfig, error, bool) {
 	var userConfig UserConfig
 	if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
 		return createDefaultUserConfig(), errors.New("can't find config"), true
-	}
-
-	if userConfig.Rewards.BttvReward == nil {
-		userConfig.Rewards.BttvReward = createDefaultBttvReward()
 	}
 
 	return userConfig, nil, false
@@ -307,15 +286,21 @@ func (s *Server) processConfig(userID string, body []byte, c echo.Context) (User
 		saveTarget = ownerUserID
 	}
 
-	if !newConfig.Rewards.BttvReward.IsDefault {
-		reward, err := s.createOrUpdateChannelPointReward(saveTarget, *newConfig.Rewards.BttvReward, oldConfig.Rewards.BttvReward.ID)
-		if err != nil {
-			return UserConfig{}, err
-		}
+	for _, reward := range newConfig.Rewards {
+		if reward.GetType() == TYPE_BTTV {
+			oldRewardId := ""
+			for _, oldReward := range oldConfig.Rewards {
+				if oldReward.GetType() == TYPE_BTTV {
+					oldRewardId = oldReward.GetConfig().ID
+				}
+			}
 
-		configToSave.Rewards.BttvReward = &reward
-	} else {
-		configToSave.Rewards.BttvReward = createDefaultBttvReward()
+			_, err := s.createOrUpdateChannelPointReward(saveTarget, reward, oldRewardId)
+			if err != nil {
+				return UserConfig{}, err
+			}
+
+		}
 	}
 
 	err = s.saveConfig(saveTarget, configToSave)

@@ -10,11 +10,11 @@ import (
 
 type Bot struct {
 	cfg    *config.Config
-	store  *store.Store
+	store  *store.Redis
 	client *twitch.Client
 }
 
-func NewBot(cfg *config.Config, store *store.Store) *Bot {
+func NewBot(cfg *config.Config, store *store.Redis) *Bot {
 	return &Bot{
 		cfg:    cfg,
 		store:  store,
