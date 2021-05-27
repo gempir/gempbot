@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
@@ -99,4 +100,82 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, nil)
+}
+
+func (s *Server) handleRewardRead(c echo.Context) error {
+	auth, _, err := s.authenticate(c)
+	if err != nil {
+		return err
+	}
+
+	if c.QueryParam("userID") != auth.Data.UserID {
+		err := s.checkIsEditor(auth.Data.UserID, c.QueryParam("userID"))
+		if err != nil {
+			return err
+		}
+	}
+
+	rewards := s.db.GetChannelPointRewards(c.QueryParam("userID"))
+
+	return c.JSON(http.StatusOK, rewards)
+}
+
+func (s *Server) handleRewardSingleRead(c echo.Context) error {
+	auth, _, err := s.authenticate(c)
+	if err != nil {
+		return err
+	}
+
+	if c.QueryParam("userID") != auth.Data.UserID {
+		err := s.checkIsEditor(auth.Data.UserID, c.QueryParam("userID"))
+		if err != nil {
+			return err
+		}
+	}
+
+	reward := s.db.GetChannelPointReward(c.QueryParam("userID"), c.QueryParam("type"))
+
+	return c.JSON(http.StatusOK, reward)
+}
+
+func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
+	auth, _, err := s.authenticate(c)
+	if err != nil {
+		return err
+	}
+
+	if c.QueryParam("userID") != auth.Data.UserID {
+		err := s.checkIsEditor(auth.Data.UserID, c.QueryParam("userID"))
+		if err != nil {
+			return err
+		}
+	}
+
+	var newReward store.ChannelPointReward
+	if err := json.NewDecoder(c.Request().Body).Decode(&newReward); err != nil {
+		log.Errorf("Failed unmarshalling reward: %s", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failure unmarshalling reward")
+	}
+
+	newReward = setRewardDefaults(newReward, c.QueryParam("userID"))
+
+	err = s.db.SaveReward(newReward)
+	if err != nil {
+		log.Errorf("Failed saving reward: %s", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving reward")
+	}
+
+	return nil
+}
+
+func setRewardDefaults(reward store.ChannelPointReward, userID string) store.ChannelPointReward {
+	reward.OwnerTwitchID = userID
+	reward.IsUserInputRequired = true
+	reward.ShouldRedemptionsSkipRequestQueue = false
+
+	if reward.Type == TYPE_BTTV {
+		reward.Prompt = bttvPrompt
+	}
+
+	return reward
 }

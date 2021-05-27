@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/slice"
@@ -105,7 +104,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 
 func (s *Server) getUserConfig(userID string) UserConfig {
 	var editors []store.Editor
-	s.db.Where("owner_twitch_id = ? OR editor_twitch_id = ?", userID, userID).Find(&editors)
+	s.db.Client.Where("owner_twitch_id = ? OR editor_twitch_id = ?", userID, userID).Find(&editors)
 
 	uCfg := createDefaultUserConfig()
 	uCfg.Protected.CurrentUserID = userID
@@ -213,51 +212,13 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 	return echo.NewHTTPError(http.StatusForbidden, "user is not editor")
 }
 
-func (s *Server) addEditors(ownerId string, userIds []string) {
-	if len(userIds) == 0 {
-		return
-	}
-
-	var editors []store.Editor
-	for _, id := range userIds {
-		editors = append(editors, store.Editor{OwnerTwitchID: ownerId, EditorTwitchID: id})
-	}
-
-	s.db.Create(&editors)
-}
-
-func (s *Server) removeEditors(ownerId string, userIds []string) {
-	if len(userIds) == 0 {
-		return
-	}
-
-	s.db.Delete(store.Editor{}, "editor_twitch_id IN (?) AND owner_user_id = ?", strings.Join(userIds, ","), ownerId)
-}
-
 func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Context) error {
 	newUserIDConfig := s.convertUserConfig(newConfig, false)
 	oldConfig := s.getUserConfig(userID)
 	added, removed := oldConfig.getEditorDifference(newUserIDConfig.Editors)
 
-	s.addEditors(userID, added)
-	s.removeEditors(userID, removed)
-
-	// for _, reward := range newConfig.Rewards {
-	// 	if reward.GetType() == TYPE_BTTV {
-	// 		oldRewardId := ""
-	// 		for _, oldReward := range oldConfig.Rewards {
-	// 			if oldReward.GetType() == TYPE_BTTV {
-	// 				oldRewardId = oldReward.GetConfig().ID
-	// 			}
-	// 		}
-
-	// 		_, err := s.createOrUpdateChannelPointReward(saveTarget, reward, oldRewardId)
-	// 		if err != nil {
-	// 			return UserConfig{}, err
-	// 		}
-
-	// 	}
-	// }
+	s.db.AddEditors(userID, added)
+	s.db.RemoveEditors(userID, removed)
 
 	// if isNew {
 	// 	log.Infof("Created new config for: %s, subscribing webhooks", userID)

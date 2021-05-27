@@ -4,7 +4,6 @@ import (
 	"github.com/gempir/bitraft/services/api/emotechief"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"gorm.io/gorm"
 
 	"github.com/gempir/bitraft/pkg/config"
 	"github.com/gempir/bitraft/pkg/helix"
@@ -17,12 +16,12 @@ type Server struct {
 	helixClient     *helix.Client
 	helixUserClient *helix.Client
 	store           *store.Redis
-	db              *gorm.DB
+	db              *store.Database
 	emotechief      *emotechief.EmoteChief
 }
 
 // NewServer create api Server
-func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Redis, db *gorm.DB, emotechief *emotechief.EmoteChief) Server {
+func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Redis, db *store.Database, emotechief *emotechief.EmoteChief) Server {
 	return Server{
 		cfg:             cfg,
 		db:              db,
@@ -44,6 +43,10 @@ func (s *Server) Start() {
 	e.GET("/api/userConfig", s.handleUserConfig)
 	e.POST("/api/userConfig", s.handleUserConfig)
 	e.DELETE("/api/reward/:userID/:rewardID", s.handleRewardDeletion)
+
+	e.GET("/api/reward/:userID", s.handleRewardRead)
+	e.GET("/api/reward/:userID/type/:type", s.handleRewardSingleRead)
+	e.POST("/api/reward/:userID", s.handleRewardCreateOrUpdate)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{s.cfg.WebBaseUrl},

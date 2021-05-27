@@ -11,20 +11,23 @@ type Editor struct {
 	EditorTwitchID string `gorm:"index"`
 }
 
-func NewDatabase(sqliteDatabase string) *gorm.DB {
+type Database struct {
+	Client *gorm.DB
+}
+
+func NewDatabase(sqliteDatabase string) *Database {
 	db, err := gorm.Open(sqlite.Open(sqliteDatabase), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&Editor{})
+	err = db.AutoMigrate(&Editor{}, &ChannelPointReward{})
 	if err != nil {
 		panic(err)
 	}
 
-	return db
+	return &Database{
+		Client: db,
+	}
 }
-
-
-
