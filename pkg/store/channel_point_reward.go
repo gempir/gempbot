@@ -1,6 +1,9 @@
 package store
 
 import (
+	"errors"
+
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -32,20 +35,34 @@ func (db *Database) GetChannelPointRewards(userID string) []ChannelPointReward {
 	return rewards
 }
 
-func (db *Database) GetChannelPointReward(userID string, rewardType string) ChannelPointReward {
+func (db *Database) GetChannelPointReward(userID string, rewardType string) (ChannelPointReward, error) {
 	var reward ChannelPointReward
-	db.Client.Where("owner_twitch_id = ? AND type = ?", userID, rewardType).First(&reward)
+	result := db.Client.Where("owner_twitch_id = ? AND type = ?", userID, rewardType).First(&reward)
+	if result.RowsAffected == 0 {
+		return reward, errors.New("not found")
+	}
 
-	return reward
+	return reward, nil
+}
+
+func (db *Database) DeleteChannelPointReward(userID string, rewardType string) {
+	db.Client.Where("owner_twitch_id = ? AND type = ?", userID, rewardType).Delete(&ChannelPointReward{})
 }
 
 func (db *Database) SaveReward(reward ChannelPointReward) error {
+	log.Info(reward.DeletedAt)
 	update := db.Client.Model(&reward).Where("owner_twitch_id = ? AND type = ?", reward.OwnerTwitchID, reward.Type).Updates(&reward)
 	if update.Error != nil {
 		return update.Error
 	}
 
 	if update.RowsAffected > 0 {
+		updateMap := map[string]interface{}{"deleted_at": nil}
+		update := db.Client.Model(&reward).Where("owner_twitch_id = ? AND type = ?", reward.OwnerTwitchID, reward.Type).Updates(&updateMap)
+		if update.Error != nil {
+			return update.Error
+		}
+
 		return nil
 	}
 

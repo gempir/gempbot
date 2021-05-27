@@ -11,6 +11,7 @@ import (
 
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/slice"
+	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
@@ -206,7 +207,7 @@ func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
 
 func (s *Server) handleRedemption(redemption channelPointRedemption, rewards []Reward) {
 	for _, reward := range rewards {
-		if reward.GetConfig().Enabled && redemption.Event.Reward.ID == redemption.Event.ID {
+		if reward.GetConfig().Enabled && redemption.Event.Reward.ID == reward.GetConfig().ID {
 			success := false
 
 			matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
@@ -256,18 +257,18 @@ func (s *Server) handleChallenge(c echo.Context, body []byte) error {
 	return c.String(http.StatusOK, event.Challenge)
 }
 
-func (s *Server) createOrUpdateChannelPointReward(userID string, request Reward, rewardID string) (BttvReward, error) {
+func (s *Server) createOrUpdateChannelPointReward(userID string, request store.ChannelPointReward, rewardID string) (string, error) {
 	token, err := s.getUserAccessToken(userID)
 	if err != nil {
-		return BttvReward{}, err
+		return "", err
 	}
 
 	req := helix.CreateCustomRewardRequest{
-		Title:                             request.GetConfig().Title,
+		Title:                             request.Title,
 		Prompt:                            bttvPrompt,
-		Cost:                              request.GetConfig().Cost,
-		IsEnabled:                         request.GetConfig().Enabled,
-		BackgroundColor:                   request.GetConfig().Backgroundcolor,
+		Cost:                              request.Cost,
+		IsEnabled:                         request.Enabled,
+		BackgroundColor:                   request.BackgroundColor,
 		IsUserInputRequired:               true,
 		ShouldRedemptionsSkipRequestQueue: false,
 		IsMaxPerStreamEnabled:             false,
@@ -275,41 +276,25 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request Reward,
 		IsGlobalCooldownEnabled:           false,
 	}
 
-	if request.GetConfig().MaxPerStream != 0 {
+	if request.MaxPerStream != 0 {
 		req.IsMaxPerStreamEnabled = true
-		req.MaxPerStream = request.GetConfig().MaxPerStream
+		req.MaxPerStream = request.MaxPerStream
 	}
 
-	if request.GetConfig().MaxPerUserPerStream != 0 {
+	if request.MaxPerUserPerStream != 0 {
 		req.IsMaxPerUserPerStreamEnabled = true
-		req.MaxPerUserPerStream = request.GetConfig().MaxPerUserPerStream
+		req.MaxPerUserPerStream = request.MaxPerUserPerStream
 	}
 
-	if request.GetConfig().GlobalCooldownSeconds != 0 {
+	if request.GlobalCooldownSeconds != 0 {
 		req.IsGlobalCooldownEnabled = true
-		req.GlobalCoolDownSeconds = request.GetConfig().GlobalCooldownSeconds
+		req.GlobalCoolDownSeconds = request.GlobalCooldownSeconds
 	}
 
 	resp, err := s.helixUserClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
 	if err != nil {
-		return BttvReward{}, err
+		return "", err
 	}
 
-	return BttvReward{
-		TwitchRewardConfig{
-			Title:                             resp.Title,
-			Prompt:                            resp.Prompt,
-			Cost:                              resp.Cost,
-			Backgroundcolor:                   resp.BackgroundColor,
-			IsMaxPerStreamEnabled:             resp.MaxPerStreamSetting.IsEnabled,
-			MaxPerStream:                      resp.MaxPerStreamSetting.MaxPerStream,
-			IsMaxPerUserPerStreamEnabled:      resp.MaxPerUserPerStreamSetting.IsEnabled,
-			MaxPerUserPerStream:               resp.MaxPerUserPerStreamSetting.MaxPerUserPerStream,
-			IsUserInputRequired:               resp.IsUserInputRequired,
-			IsGlobalCooldownEnabled:           resp.GlobalCooldownSetting.IsEnabled,
-			GlobalCooldownSeconds:             resp.GlobalCooldownSetting.GlobalCooldownSeconds,
-			ShouldRedemptionsSkipRequestQueue: resp.ShouldRedemptionsSkipRequestQueue,
-			Enabled:                           resp.IsEnabled,
-			ID:                                resp.ID,
-		}}, nil
+	return resp.ID, nil
 }

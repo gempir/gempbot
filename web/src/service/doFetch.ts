@@ -8,6 +8,10 @@ export enum Method {
     PATCH = "PATCH"
 }
 
+export enum RejectReason {
+    NotFound = '{"message":"Not Found"}'
+}
+
 export async function doFetch(method: Method, path: string, body: any = undefined) {
     const { apiBaseUrl, scToken } = store.getRawState();
 
@@ -35,10 +39,15 @@ export async function doFetch(method: Method, path: string, body: any = undefine
                 return
             }
             if (response.ok) {
-                return await response.json()
+                const text = await response.text();
+                return text !== "" ? JSON.parse(text) : null
             } else {
+                if (response.status === 404) {
+                    return Promise.reject(RejectReason.NotFound);
+                }
+
                 const errorMessage = await response.text()
-                return Promise.reject(new Error(errorMessage))
+                return Promise.reject(errorMessage)
             }
         })
 }

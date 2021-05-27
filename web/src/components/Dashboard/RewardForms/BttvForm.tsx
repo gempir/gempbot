@@ -1,7 +1,7 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useChannelPointReward } from "../../../hooks/useChannelPointReward";
-import { SetUserConfig, UserConfig } from "../../../hooks/useUserConfig";
-import { doFetch, Method } from "../../../service/doFetch";
+import { UserConfig } from "../../../hooks/useUserConfig";
 import { ChannelPointReward, RewardTypes } from "../../../types/Rewards";
 
 interface BttvRewardForm {
@@ -20,7 +20,7 @@ const defaultReward = {
     Type: RewardTypes.Bttv,
     Title: "BetterTTV Emote",
     Cost: 10000,
-    Prompt: "",
+    Prompt: "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by bitraft.gempir.com",
     BackgroundColor: "",
     IsMaxPerStreamEnabled: false,
     MaxPerStream: 0,
@@ -34,13 +34,14 @@ const defaultReward = {
 }
 
 export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
-    const { register, handleSubmit, formState: { errors } } = useForm();
-    const [reward, setReward] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward);
-    const onSubmit = (data: BttvRewardForm) => () => {
+    const { register, handleSubmit, formState: { errors }, setValue } = useForm();
+    const [reward, setReward, deleteReward] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward);
+    const onSubmit = (data: BttvRewardForm) => {
         const rewardData: ChannelPointReward = {
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
             Type: RewardTypes.Bttv,
             Title: data.title,
+            Prompt: defaultReward.Prompt,
             Cost: Number(data.cost),
             BackgroundColor: data.backgroundColor,
             IsMaxPerStreamEnabled: Boolean(data.maxPerStream),
@@ -57,6 +58,16 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
         setReward(rewardData);
     }
 
+    useEffect(() => {
+        setValue("title", reward.Title);
+        setValue("prompt", reward.Prompt);
+        setValue("cost", reward.Cost);
+        setValue("backgroundColor", reward.BackgroundColor);
+        setValue("maxPerStream", reward.MaxPerStream);
+        setValue("maxPerUserPerStream", reward.MaxPerUserPerStream);
+        setValue("globalCooldownMinutes", reward.GlobalCooldownSeconds / 60);
+        setValue("enabled", reward.Enabled);
+    }, [reward, setValue]);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl m-4 p-4 bg-gray-800 rounded shadow">
@@ -67,11 +78,9 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
                 </div>
                 <div className="text-gray-600">
                     {reward?.RewardID &&
-                        <>{reward.RewardID}</>
-                        // <div className="bg-red-700 hover:bg-red-600 p-2 rounded shadow mt-3 text-gray-100 inline-block ml-3 cursor-pointer"
-                        //     onClick={() => doFetch(Method.DELETE, `/api/reward/${userConfig.Protected.CurrentUserID}/${reward.RewardID}`).then(fetchConfig)}>
-                        //     Delete
-                        // </div>
+                        <div className="bg-red-700 hover:bg-red-600 p-2 rounded shadow mt-3 text-gray-100 inline-block ml-3 cursor-pointer" onClick={deleteReward}>
+                            Delete
+                        </div>
                     }
                 </div>
             </div>
@@ -99,29 +108,29 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
 
             <label className="block mt-3">
                 Background Color
-                {/* <input defaultValue={reward.backgroundColor} placeholder="#FFFFFF" spellCheck={false} {...register("backgroundColor")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" /> */}
+                <input defaultValue={reward.BackgroundColor} placeholder="#FFFFFF" pattern="^#+([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$" spellCheck={false} {...register("backgroundColor")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
             <div className="mt-8 font-bold">Limits <span className="text-gray-500">(0 = unlimited)</span></div>
 
             <label className="flex items-center mt-3">
                 Max per Stream
-                {/* <input defaultValue={reward.maxPerStream} placeholder="0" type="number" spellCheck={false} {...register("maxPerStream")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" /> */}
+                <input defaultValue={reward.MaxPerStream} placeholder="0" type="number" spellCheck={false} {...register("maxPerStream")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
             <label className="flex items-center mt-3">
                 Max per User per Stream
-                {/* <input defaultValue={reward.maxPerUserPerStream} placeholder="0" type="number" spellCheck={false} {...register("maxPerUserPerStream")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" /> */}
+                <input defaultValue={reward.MaxPerUserPerStream} placeholder="0" type="number" spellCheck={false} {...register("maxPerUserPerStream")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
             <label className="flex items-center mt-3">
                 Global Cooldown in Minutes
-                {/* <input defaultValue={(reward.globalCooldownSeconds ?? 0) / 60} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" /> */}
+                <input defaultValue={(reward.GlobalCooldownSeconds ?? 0) / 60} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
 
             <div className="flex flex-row justify-between items-center select-none">
                 <label className="flex items-center">
-                    {/* <input defaultChecked={reward.enabled} type="checkbox" {...register("enabled")} className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" /> */}
+                    <input defaultChecked={reward.Enabled} type="checkbox" {...register("enabled")} className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" />
                     <span className="ml-2">Enabled</span>
                 </label>
                 <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3" value="save" />

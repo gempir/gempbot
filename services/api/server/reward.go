@@ -59,41 +59,26 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 		return err
 	}
 
-	cfgUserID := c.Param("userID")
-	rewardID := c.Param("rewardID")
-
-	err = s.checkIsEditor(auth.Data.UserID, cfgUserID)
-	if err != nil {
-		return err
+	if c.Param("userID") != auth.Data.UserID {
+		err := s.checkIsEditor(auth.Data.UserID, c.Param("userID"))
+		if err != nil {
+			return err
+		}
 	}
 
-	// // cfg, err, isNew := s.getUserConfig(cfgUserID)
-	// // if err != nil || isNew {
-	// // 	return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("no config found %s", err))
-	// }
+	reward, err := s.db.GetChannelPointReward(c.Param("userID"), c.Param("type"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "not found")
+	}
 
-	// updatedRewards := []Reward{}
-
-	// for _, reward := range cfg.Rewards {
-	// 	if reward.GetConfig().ID != rewardID {
-	// 		updatedRewards = append(updatedRewards, reward)
-	// 	}
-	// }
-
-	// cfg.Rewards = updatedRewards
-
-	token, err := s.getUserAccessToken(cfgUserID)
+	token, err := s.getUserAccessToken(c.Param("userID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "no accessToken to edit reward")
 	}
 
-	// err = s.saveConfig(cfgUserID, cfg)
-	// if err != nil {
-	// 	log.Error(err)
-	// 	return err
-	// }
+	s.db.DeleteChannelPointReward(c.Param("userID"), c.Param("type"))
 
-	err = s.helixUserClient.DeleteReward(cfgUserID, token.AccessToken, rewardID)
+	err = s.helixUserClient.DeleteReward(c.Param("userID"), token.AccessToken, reward.RewardID)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -108,14 +93,14 @@ func (s *Server) handleRewardRead(c echo.Context) error {
 		return err
 	}
 
-	if c.QueryParam("userID") != auth.Data.UserID {
-		err := s.checkIsEditor(auth.Data.UserID, c.QueryParam("userID"))
+	if c.Param("userID") != auth.Data.UserID {
+		err := s.checkIsEditor(auth.Data.UserID, c.Param("userID"))
 		if err != nil {
 			return err
 		}
 	}
 
-	rewards := s.db.GetChannelPointRewards(c.QueryParam("userID"))
+	rewards := s.db.GetChannelPointRewards(c.Param("userID"))
 
 	return c.JSON(http.StatusOK, rewards)
 }
@@ -126,14 +111,17 @@ func (s *Server) handleRewardSingleRead(c echo.Context) error {
 		return err
 	}
 
-	if c.QueryParam("userID") != auth.Data.UserID {
-		err := s.checkIsEditor(auth.Data.UserID, c.QueryParam("userID"))
+	if c.Param("userID") != auth.Data.UserID {
+		err := s.checkIsEditor(auth.Data.UserID, c.Param("userID"))
 		if err != nil {
 			return err
 		}
 	}
 
-	reward := s.db.GetChannelPointReward(c.QueryParam("userID"), c.QueryParam("type"))
+	reward, err := s.db.GetChannelPointReward(c.Param("userID"), c.Param("type"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound)
+	}
 
 	return c.JSON(http.StatusOK, reward)
 }
@@ -144,8 +132,8 @@ func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
 		return err
 	}
 
-	if c.QueryParam("userID") != auth.Data.UserID {
-		err := s.checkIsEditor(auth.Data.UserID, c.QueryParam("userID"))
+	if c.Param("userID") != auth.Data.UserID {
+		err := s.checkIsEditor(auth.Data.UserID, c.Param("userID"))
 		if err != nil {
 			return err
 		}
@@ -157,7 +145,13 @@ func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failure unmarshalling reward")
 	}
 
-	newReward = setRewardDefaults(newReward, c.QueryParam("userID"))
+	newReward = setRewardDefaults(newReward, c.Param("userID"))
+
+	newReward.RewardID, err = s.createOrUpdateChannelPointReward(c.Param("userID"), newReward, "")
+	if err != nil {
+		log.Errorf("Failed saving reward to twitch: %s", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving reward to twitch")
+	}
 
 	err = s.db.SaveReward(newReward)
 	if err != nil {

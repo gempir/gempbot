@@ -37,7 +37,7 @@ export interface Protected {
 
 export type SetUserConfig = (userConfig: UserConfig | null) => void;
 
-export function useUserConfig(onUserConfigChange: () => void = () => {}): [UserConfig | null | undefined, SetUserConfig, () => void] {
+export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, () => void] {
     const [userConfig, setUserConfig] = useState<UserConfig | null | undefined>(undefined);
     const [changeCounter, setChangeCounter] = useState(0);
     const managing = store.useState(s => s.managing);
@@ -52,8 +52,6 @@ export function useUserConfig(onUserConfigChange: () => void = () => {}): [UserC
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchConfig, [managing]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(onUserConfigChange, [userConfig]);
 
     useDebounce(() => {
         if (changeCounter && userConfig) {
