@@ -199,7 +199,7 @@ func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
 		return err
 	}
 
-	s.handleRedemption(redemption, userCfg.Rewards)
+	// s.handleRedemption(redemption, userCfg.Rewards)
 
 	return c.String(http.StatusOK, "success")
 }

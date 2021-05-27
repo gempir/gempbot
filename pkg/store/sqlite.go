@@ -25,3 +25,6 @@ func NewDatabase(sqliteDatabase string) *gorm.DB {
 
 	return db
 }
+
+
+

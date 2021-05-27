@@ -5,32 +5,47 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
+	"github.com/gempir/bitraft/pkg/helix"
+	"github.com/gempir/bitraft/pkg/slice"
 	"github.com/gempir/bitraft/pkg/store"
-	"github.com/go-redis/redis/v7"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
 
 type UserConfig struct {
-	Editors       []string
-	Protected     Protected
-	Rewards       []Reward
-	CurrentUserID string
+	Editors   []string
+	Protected Protected
 }
 
 type Protected struct {
-	EditorFor []string
+	EditorFor     []string
+	CurrentUserID string
 }
 
 func createDefaultUserConfig() UserConfig {
 	return UserConfig{
 		Editors: []string{},
 		Protected: Protected{
-			EditorFor: []string{},
+			EditorFor:     []string{},
+			CurrentUserID: "",
 		},
-		Rewards: []Reward{},
 	}
+}
+
+func (c *UserConfig) isEditorFor(user string) bool {
+	for _, editor := range c.Protected.EditorFor {
+		if editor == user {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c *UserConfig) getEditorDifference(newEditors []string) (removed []string, added []string) {
+	return slice.Diff(c.Editors, newEditors)
 }
 
 func (s *Server) handleUserConfig(c echo.Context) error {
@@ -40,81 +55,20 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 	}
 
 	if c.Request().Method == http.MethodGet {
-		userConfig, err, _ := s.getUserConfig(auth.Data.UserID)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "can't recover config"+err.Error())
-		}
+		userConfig := s.getUserConfig(auth.Data.UserID)
 
-		managing := c.QueryParam("managing")
-		if managing != "" {
+		if c.QueryParam("managing") != "" {
 			ownerUserID, err := s.checkEditor(c, userConfig)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 
-			managingUserConfig, err, _ := s.getUserConfig(ownerUserID)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "can't recover config"+err.Error())
-			}
-			newEditorForNames := []string{}
-
-			var editors []store.Editor
-			s.db.Where("editor_twitch_id = ?", auth.Data.UserID).Find(&editors)
-
-			editorForIds := []string{}
-			for _, editor := range editors {
-				editorForIds = append(editorForIds, editor.OwnerTwitchID)
-			}
-
-			userData, err := s.helixClient.GetUsersByUserIds(editorForIds)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "can't resolve editorFor in config "+err.Error())
-			}
-			for _, user := range userData {
-				newEditorForNames = append(newEditorForNames, user.Login)
-			}
-
-			managingUserConfig.Editors = []string{}
-			managingUserConfig.Protected.EditorFor = newEditorForNames
-			managingUserConfig.CurrentUserID = ownerUserID
-
-			return c.JSON(http.StatusOK, managingUserConfig)
-		} else {
-			newEditorNames := []string{}
-
-			var editors []store.Editor
-			s.db.Where("owner_twitch_id = ?", auth.Data.UserID).Find(&editors)
-
-			editorIds := []string{}
-			for _, editor := range editors {
-				editorIds = append(editorIds, editor.EditorTwitchID)
-			}
-
-			userData, err := s.helixClient.GetUsersByUserIds(editorIds)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "can't resolve editorFor in config "+err.Error())
-			}
-			for _, user := range userData {
-				newEditorNames = append(newEditorNames, user.Login)
-			}
-
-			userConfig.Editors = newEditorNames
-
-			newEditorForNames := []string{}
-
-			userData, err = s.helixClient.GetUsersByUserIds(userConfig.Protected.EditorFor)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "can't resolve editorFor in config "+err.Error())
-			}
-			for _, user := range userData {
-				newEditorForNames = append(newEditorForNames, user.Login)
-			}
-
-			userConfig.CurrentUserID = auth.Data.UserID
-
-			userConfig.Protected.EditorFor = newEditorForNames
-			return c.JSON(http.StatusOK, userConfig)
+			userConfig = s.getUserConfig(ownerUserID)
 		}
+
+		userConfig = s.convertUserConfig(userConfig, true)
+
+		return c.JSON(http.StatusOK, userConfig)
 
 	} else if c.Request().Method == http.MethodPost {
 		body, err := ioutil.ReadAll(c.Request().Body)
@@ -123,24 +77,20 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving body "+err.Error())
 		}
 
-		_, err = s.processConfig(auth.Data.UserID, body, c)
+		var newConfig UserConfig
+		if err := json.Unmarshal(body, &newConfig); err != nil {
+			log.Errorf("Failed unmarshalling userConfig: %s", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failure unmarshalling config "+err.Error())
+		}
+
+		if c.QueryParam("managing") != "" {
+			return echo.NewHTTPError(http.StatusForbidden, "editors are not allowed to edit userConfig yet")
+		}
+
+		err = s.processConfig(auth.Data.UserID, newConfig, c)
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
 			return echo.NewHTTPError(http.StatusBadRequest, "failed processing config: "+err.Error())
-		}
-
-		return c.JSON(http.StatusOK, nil)
-	} else if c.Request().Method == http.MethodDelete {
-		_, err := s.store.Client.HDel("userConfig", auth.Data.UserID).Result()
-		if err != nil {
-			log.Error(err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed deleting: "+err.Error())
-		}
-
-		err = s.unsubscribeChannelPoints(auth.Data.UserID, "userDeleted")
-		if err != nil {
-			log.Error(err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to unsubscribe: "+err.Error())
 		}
 
 		return c.JSON(http.StatusOK, nil)
@@ -149,21 +99,72 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 	return nil
 }
 
-func (s *Server) getUserConfig(userID string) (UserConfig, error, bool) {
-	val, err := s.store.Client.HGet("userConfig", userID).Result()
-	if err == redis.Nil || val == "" {
-		return createDefaultUserConfig(), nil, true
+func (s *Server) getUserConfig(userID string) UserConfig {
+	var editors []store.Editor
+	s.db.Where("owner_twitch_id = ? OR editor_twitch_id = ?", userID, userID).Find(&editors)
+
+	uCfg := createDefaultUserConfig()
+	uCfg.Protected.CurrentUserID = userID
+
+	for _, editor := range editors {
+		if editor.OwnerTwitchID == userID {
+			uCfg.Editors = append(uCfg.Editors, editor.EditorTwitchID)
+		}
+		if editor.EditorTwitchID == userID {
+			uCfg.Protected.EditorFor = append(uCfg.Protected.EditorFor, editor.OwnerTwitchID)
+		}
+	}
+
+	return uCfg
+}
+
+func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
+	all := uCfg.Editors
+	all = append(all, uCfg.Protected.EditorFor...)
+
+	var err error
+	var userData map[string]helix.UserData
+	if toNames {
+		userData, err = s.helixClient.GetUsersByUserIds(all)
+	} else {
+		userData, err = s.helixClient.GetUsersByUsernames(all)
 	}
 	if err != nil {
-		return createDefaultUserConfig(), err, true
+		log.Errorf("Failed to get editors %s", err)
+		return UserConfig{}
 	}
 
-	var userConfig UserConfig
-	if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
-		return createDefaultUserConfig(), errors.New("can't find config"), true
-	}
+	editors := []string{}
+	for _, editor := range uCfg.Editors {
+		data, ok := userData[editor]
+		if !ok {
+			continue
+		}
 
-	return userConfig, nil, false
+		if toNames {
+			editors = append(editors, data.Login)
+		} else {
+			editors = append(editors, data.ID)
+		}
+	}
+	uCfg.Editors = editors
+
+	editorFor := []string{}
+	for _, editor := range uCfg.Protected.EditorFor {
+		data, ok := userData[editor]
+		if !ok {
+			continue
+		}
+
+		if toNames {
+			editorFor = append(editorFor, data.Login)
+		} else {
+			editorFor = append(editorFor, data.ID)
+		}
+	}
+	uCfg.Protected.EditorFor = editorFor
+
+	return uCfg
 }
 
 func (s *Server) checkEditor(c echo.Context, userConfig UserConfig) (string, error) {
@@ -197,10 +198,7 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 		return nil
 	}
 
-	userConfig, err, _ := s.getUserConfig(ownerUserID)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusForbidden, "no config found for owner")
-	}
+	userConfig := s.getUserConfig(ownerUserID)
 
 	for _, editor := range userConfig.Editors {
 		if editor == editorUserID {
@@ -211,218 +209,56 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 	return echo.NewHTTPError(http.StatusForbidden, "user is not editor")
 }
 
-func (s *Server) processConfig(userID string, body []byte, c echo.Context) (UserConfig, error) {
-	oldConfig, err, isNew := s.getUserConfig(userID)
-	if err != nil {
-		return UserConfig{}, err
-	}
-	editorConfig := oldConfig
-
-	ownerUserID, err := s.checkEditor(c, oldConfig)
-	if err != nil {
-		return UserConfig{}, err
+func (s *Server) addEditors(ownerId string, userIds []string) {
+	if len(userIds) == 0 {
+		return
 	}
 
-	if ownerUserID != "" {
-		oldConfig, err, isNew = s.getUserConfig(ownerUserID)
-		if err != nil {
-			return UserConfig{}, err
-		}
+	var editors []store.Editor
+	for _, id := range userIds {
+		editors = append(editors, store.Editor{OwnerTwitchID: ownerId, EditorTwitchID: id})
 	}
 
-	var newConfig UserConfig
-	if err := json.Unmarshal(body, &newConfig); err != nil {
-		return UserConfig{}, err
-	}
-
-	protected := oldConfig.Protected
-	if protected.EditorFor == nil {
-		protected.EditorFor = []string{}
-	}
-
-	configToSave := UserConfig{
-		Editors:   oldConfig.Editors,
-		Protected: protected,
-	}
-
-	if ownerUserID == "" {
-		newEditorIds := []string{}
-
-		userData, err := s.helixClient.GetUsersByUsernames(newConfig.Editors)
-		if err != nil {
-			return UserConfig{}, err
-		}
-		if len(newConfig.Editors) != len(userData) {
-			return UserConfig{}, errors.New("Failed to find all editors")
-		}
-
-		for _, user := range userData {
-			if user.ID == userID {
-				return UserConfig{}, errors.New("You can't be your own editor")
-			}
-
-			newEditorIds = append(newEditorIds, user.ID)
-		}
-
-		configToSave.Editors = newEditorIds
-
-		for _, editor := range oldConfig.Editors {
-			err := s.removeEditorFor(editor, userID)
-			if err != nil {
-				return UserConfig{}, err
-			}
-		}
-
-		for _, user := range userData {
-			err := s.addEditorFor(user.ID, userID)
-			if err != nil {
-				return UserConfig{}, err
-			}
-		}
-	}
-
-	saveTarget := userID
-	if ownerUserID != "" {
-		saveTarget = ownerUserID
-	}
-
-	for _, reward := range newConfig.Rewards {
-		if reward.GetType() == TYPE_BTTV {
-			oldRewardId := ""
-			for _, oldReward := range oldConfig.Rewards {
-				if oldReward.GetType() == TYPE_BTTV {
-					oldRewardId = oldReward.GetConfig().ID
-				}
-			}
-
-			_, err := s.createOrUpdateChannelPointReward(saveTarget, reward, oldRewardId)
-			if err != nil {
-				return UserConfig{}, err
-			}
-
-		}
-	}
-
-	err = s.saveConfig(saveTarget, configToSave)
-	if err != nil {
-		return UserConfig{}, err
-	}
-
-	if isNew {
-		log.Infof("Created new config for: %s, subscribing webhooks", userID)
-		s.subscribeChannelPoints(userID)
-	}
-
-	configToSave.Editors = []string{}
-	if ownerUserID == "" {
-		configToSave.Editors = newConfig.Editors
-	}
-
-	configToSave.Protected = editorConfig.Protected
-
-	newEditorForNames := []string{}
-
-	userData, err := s.helixClient.GetUsersByUserIds(editorConfig.Protected.EditorFor)
-	if err != nil {
-		return UserConfig{}, errors.New("can't resolve editorFor in config " + err.Error())
-	}
-	for _, user := range userData {
-		newEditorForNames = append(newEditorForNames, user.Login)
-	}
-
-	configToSave.Protected.EditorFor = newEditorForNames
-
-	return configToSave, nil
+	s.db.Create(&editors)
 }
 
-func (s *Server) saveConfig(userID string, userConfig UserConfig) error {
-	js, err := json.Marshal(userConfig)
-	if err != nil {
-		return err
+func (s *Server) removeEditors(ownerId string, userIds []string) {
+	if len(userIds) == 0 {
+		return
 	}
 
-	_, err = s.store.Client.HSet("userConfig", userID, js).Result()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	s.db.Delete(store.Editor{}, "editor_twitch_id IN (?) AND owner_user_id = ?", strings.Join(userIds, ","), ownerId)
 }
 
-func (s *Server) addEditorFor(editorID, userID string) error {
-	isNew := false
+func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Context) error {
+	newUserIDConfig := s.convertUserConfig(newConfig, false)
+	oldConfig := s.getUserConfig(userID)
+	added, removed := oldConfig.getEditorDifference(newUserIDConfig.Editors)
 
-	val, err := s.store.Client.HGet("userConfig", editorID).Result()
-	if err == redis.Nil {
-		isNew = true
-	} else if err != nil {
-		return err
-	}
+	s.addEditors(userID, added)
+	s.removeEditors(userID, removed)
 
-	var userConfig UserConfig
-	if !isNew {
-		if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
-			return err
-		}
-	} else {
-		userConfig = createDefaultUserConfig()
-	}
+	// for _, reward := range newConfig.Rewards {
+	// 	if reward.GetType() == TYPE_BTTV {
+	// 		oldRewardId := ""
+	// 		for _, oldReward := range oldConfig.Rewards {
+	// 			if oldReward.GetType() == TYPE_BTTV {
+	// 				oldRewardId = oldReward.GetConfig().ID
+	// 			}
+	// 		}
 
-	userConfig.Protected.EditorFor = append(userConfig.Protected.EditorFor, userID)
+	// 		_, err := s.createOrUpdateChannelPointReward(saveTarget, reward, oldRewardId)
+	// 		if err != nil {
+	// 			return UserConfig{}, err
+	// 		}
 
-	js, err := json.Marshal(userConfig)
-	if err != nil {
-		return err
-	}
+	// 	}
+	// }
 
-	log.Infof("New Editor %s for user %s", editorID, userID)
-	_, err = s.store.Client.HSet("userConfig", editorID, js).Result()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *Server) removeEditorFor(editorID, userID string) error {
-	isNew := true
-
-	val, err := s.store.Client.HGet("userConfig", editorID).Result()
-	if err == redis.Nil {
-		isNew = true
-	} else if err != nil {
-		return err
-	}
-
-	var userConfig UserConfig
-	if !isNew {
-		if err := json.Unmarshal([]byte(val), &userConfig); err != nil {
-			return err
-		}
-	} else {
-		userConfig = createDefaultUserConfig()
-	}
-
-	newEditorFor := []string{}
-
-	for _, editor := range userConfig.Protected.EditorFor {
-		if userID != editor {
-			newEditorFor = append(newEditorFor, editor)
-		}
-	}
-
-	userConfig.Protected.EditorFor = newEditorFor
-
-	js, err := json.Marshal(userConfig)
-	if err != nil {
-		return err
-	}
-
-	log.Infof("New Editor %s for user %s", editorID, userID)
-	_, err = s.store.Client.HSet("userConfig", editorID, js).Result()
-	if err != nil {
-		return err
-	}
+	// if isNew {
+	// 	log.Infof("Created new config for: %s, subscribing webhooks", userID)
+	// 	s.subscribeChannelPoints(userID)
+	// }
 
 	return nil
 }

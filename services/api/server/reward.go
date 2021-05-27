@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -67,31 +66,31 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 		return err
 	}
 
-	cfg, err, isNew := s.getUserConfig(cfgUserID)
-	if err != nil || isNew {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("no config found %s", err))
-	}
+	// // cfg, err, isNew := s.getUserConfig(cfgUserID)
+	// // if err != nil || isNew {
+	// // 	return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("no config found %s", err))
+	// }
 
-	updatedRewards := []Reward{}
+	// updatedRewards := []Reward{}
 
-	for _, reward := range cfg.Rewards {
-		if reward.GetConfig().ID != rewardID {
-			updatedRewards = append(updatedRewards, reward)
-		}
-	}
+	// for _, reward := range cfg.Rewards {
+	// 	if reward.GetConfig().ID != rewardID {
+	// 		updatedRewards = append(updatedRewards, reward)
+	// 	}
+	// }
 
-	cfg.Rewards = updatedRewards
+	// cfg.Rewards = updatedRewards
 
 	token, err := s.getUserAccessToken(cfgUserID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "no accessToken to edit reward")
 	}
 
-	err = s.saveConfig(cfgUserID, cfg)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
+	// err = s.saveConfig(cfgUserID, cfg)
+	// if err != nil {
+	// 	log.Error(err)
+	// 	return err
+	// }
 
 	err = s.helixUserClient.DeleteReward(cfgUserID, token.AccessToken, rewardID)
 	if err != nil {

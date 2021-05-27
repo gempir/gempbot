@@ -202,3 +202,21 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 
 	return result, nil
 }
+
+func (c *Client) GetUserByUsername(username string) (UserData, error) {
+	result, err := c.GetUsersByUsernames([]string{username})
+	if err != nil || len(result) != 1 {
+		return UserData{}, err
+	}
+
+	return result[username], nil
+}
+
+func (c *Client) GetUserByUserID(userID string) (UserData, error) {
+	result, err := c.GetUsersByUserIds([]string{userID})
+	if err != nil || len(result) != 1 {
+		return UserData{}, err
+	}
+
+	return result[userID], nil
+}

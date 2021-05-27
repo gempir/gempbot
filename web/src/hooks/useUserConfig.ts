@@ -6,8 +6,6 @@ import { store } from "../store";
 export interface UserConfig {
     Editors: Array<string>;
     Protected: Protected;
-    Rewards: Rewards;
-    CurrentUserID?: string;
 }
 
 export interface Rewards {
@@ -34,6 +32,7 @@ export interface BttvReward {
 
 export interface Protected {
     EditorFor: Array<string>;
+    CurrentUserID: string;
 }
 
 export type SetUserConfig = (userConfig: UserConfig | null) => void;
