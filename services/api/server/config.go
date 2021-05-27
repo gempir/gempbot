@@ -63,7 +63,11 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 
+			editorFor := userConfig.Protected.EditorFor
 			userConfig = s.getUserConfig(ownerUserID)
+
+			userConfig.Editors = []string{}
+			userConfig.Protected.EditorFor = editorFor
 		}
 
 		userConfig = s.convertUserConfig(userConfig, true)
