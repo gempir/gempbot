@@ -31,11 +31,11 @@ func Debug(args ...interface{}) {
 }
 
 // Debug logs a message at level Debug on the standard logrusLogger.
-func Debugf(args ...interface{}) {
+func Debugf(format string, args ...interface{}) {
 	if logrusLogger.Level >= logrus.DebugLevel {
 		entry := logrusLogger.WithFields(logrus.Fields{})
 		entry.Data["file"] = fileInfo(2)
-		entry.Debug(args...)
+		entry.Debugf(format, args...)
 	}
 }
 
@@ -67,11 +67,11 @@ func Warn(args ...interface{}) {
 }
 
 // Warn logs a message at level Warn on the standard logrusLogger.
-func Warnf(args ...interface{}) {
+func Warnf(format string, args ...interface{}) {
 	if logrusLogger.Level >= logrus.WarnLevel {
 		entry := logrusLogger.WithFields(logrus.Fields{})
 		entry.Data["file"] = fileInfo(2)
-		entry.Warn(args...)
+		entry.Warnf(format, args...)
 	}
 }
 
@@ -85,11 +85,11 @@ func Error(args ...interface{}) {
 }
 
 // Error logs a message at level Error on the standard logrusLogger.
-func Errorf(args ...interface{}) {
+func Errorf(format string, args ...interface{}) {
 	if logrusLogger.Level >= logrus.ErrorLevel {
 		entry := logrusLogger.WithFields(logrus.Fields{})
 		entry.Data["file"] = fileInfo(2)
-		entry.Error(args...)
+		entry.Errorf(format, args...)
 	}
 }
 
@@ -103,11 +103,11 @@ func Fatal(args ...interface{}) {
 }
 
 // Fatal logs a message at level Fatal on the standard logrusLogger.
-func Fatalf(args ...interface{}) {
+func Fatalf(format string, args ...interface{}) {
 	if logrusLogger.Level >= logrus.FatalLevel {
 		entry := logrusLogger.WithFields(logrus.Fields{})
 		entry.Data["file"] = fileInfo(2)
-		entry.Fatal(args...)
+		entry.Fatalf(format, args...)
 	}
 }
 
@@ -121,11 +121,11 @@ func Panic(args ...interface{}) {
 }
 
 // Panic logs a message at level Panic on the standard logrusLogger.
-func Panicf(args ...interface{}) {
+func Panicf(format string, args ...interface{}) {
 	if logrusLogger.Level >= logrus.PanicLevel {
 		entry := logrusLogger.WithFields(logrus.Fields{})
 		entry.Data["file"] = fileInfo(2)
-		entry.Panic(args...)
+		entry.Panicf(format, args...)
 	}
 }
 
