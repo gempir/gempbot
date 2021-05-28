@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gempir/bitraft/pkg/helix"
+	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -72,7 +72,7 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "not found")
 	}
 
-	token, err := s.getUserAccessToken(c.Param("userID"))
+	token, err := s.db.GetUserAccessToken(c.Param("userID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "no accessToken to edit reward")
 	}
@@ -148,7 +148,13 @@ func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
 
 	newReward = setRewardDefaults(newReward, c.Param("userID"))
 
-	newReward.RewardID, err = s.createOrUpdateChannelPointReward(c.Param("userID"), newReward, "")
+	rewardID := ""
+	reward, err := s.db.GetChannelPointReward(c.Param("userID"), TYPE_BTTV)
+	if err == nil {
+		rewardID = reward.RewardID
+	}
+
+	newReward.RewardID, err = s.createOrUpdateChannelPointReward(c.Param("userID"), newReward, rewardID)
 	if err != nil {
 		log.Errorf("Failed saving reward to twitch: %s", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving reward to twitch")
@@ -176,7 +182,7 @@ func setRewardDefaults(reward store.ChannelPointReward, userID string) store.Cha
 }
 
 func (s *Server) createOrUpdateChannelPointReward(userID string, request store.ChannelPointReward, rewardID string) (string, error) {
-	token, err := s.getUserAccessToken(userID)
+	token, err := s.db.GetUserAccessToken(userID)
 	if err != nil {
 		return "", err
 	}

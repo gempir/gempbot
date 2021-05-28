@@ -6,8 +6,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gempir/bitraft/pkg/log"
 	twitch "github.com/gempir/go-twitch-irc/v2"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Config application configuratin
@@ -120,19 +121,18 @@ func loadConfiguration(filePath string) *Config {
 }
 
 func (cfg *Config) setupLogger() {
-	// log.SetReportCaller(true)
 	switch cfg.LogLevel {
 	case "fatal":
-		log.SetLevel(log.FatalLevel)
+		log.SetLogLevel(logrus.FatalLevel)
 	case "panic":
-		log.SetLevel(log.PanicLevel)
+		log.SetLogLevel(logrus.PanicLevel)
 	case "error":
-		log.SetLevel(log.ErrorLevel)
+		log.SetLogLevel(logrus.ErrorLevel)
 	case "warn":
-		log.SetLevel(log.WarnLevel)
+		log.SetLogLevel(logrus.WarnLevel)
 	case "info":
-		log.SetLevel(log.InfoLevel)
+		log.SetLogLevel(logrus.InfoLevel)
 	case "debug":
-		log.SetLevel(log.DebugLevel)
+		log.SetLogLevel(logrus.DebugLevel)
 	}
 }

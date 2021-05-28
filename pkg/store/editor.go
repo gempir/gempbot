@@ -30,7 +30,7 @@ func (db *Database) RemoveEditors(ownerId string, userIds []string) {
 		return
 	}
 
-	db.Client.Delete(Editor{}, "editor_twitch_id IN (?) AND owner_twitch_id = ?", strings.Join(userIds, ","), ownerId)
+	db.Client.Delete(&Editor{}, "editor_twitch_id IN (?) AND owner_twitch_id = ?", strings.Join(userIds, ","), ownerId)
 }
 
 func (db *Database) GetEditors(userID string) []Editor {

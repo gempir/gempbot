@@ -8,19 +8,19 @@ import (
 
 type EventSubSubscription struct {
 	gorm.Model
-	OwnerTwitchID  string `gorm:"index"`
+	TargetTwitchID string `gorm:"index"`
 	SubscriptionID string `gorm:"index"`
 }
 
-func (db *Database) AddEventSubSubscription(ownerId string, subscriptionID string) {
-	sub := EventSubSubscription{OwnerTwitchID: ownerId, SubscriptionID: subscriptionID}
+func (db *Database) AddEventSubSubscription(targetTwitchID string, subscriptionID string) {
+	sub := EventSubSubscription{TargetTwitchID: targetTwitchID, SubscriptionID: subscriptionID}
 
 	db.Client.Create(&sub)
 }
 
-func (db *Database) GetEventSubSubscription(ownerId string, subscriptionID string) (EventSubSubscription, error) {
+func (db *Database) GetEventSubSubscription(targetTwitchID string, subscriptionID string) (EventSubSubscription, error) {
 	var sub EventSubSubscription
-	result := db.Client.Where("owner_twitch_id = ? AND subscription_id = ?", ownerId, subscriptionID).First(&sub)
+	result := db.Client.Where("owner_twitch_id = ? AND subscription_id = ?", targetTwitchID, subscriptionID).First(&sub)
 	if result.RowsAffected == 0 {
 		return sub, errors.New("not found")
 	}
@@ -28,6 +28,6 @@ func (db *Database) GetEventSubSubscription(ownerId string, subscriptionID strin
 	return sub, nil
 }
 
-func (db *Database) RemoveEventSubSubscription(ownerId string, subscriptionID string) {
-	db.Client.Delete(Editor{}, "owner_twitch_id = ? AND subscription_id = ?", ownerId, subscriptionID)
+func (db *Database) RemoveEventSubSubscription(targetTwitchID string, subscriptionID string) {
+	db.Client.Delete(&EventSubSubscription{}, "owner_twitch_id = ? AND subscription_id = ?", targetTwitchID, subscriptionID)
 }

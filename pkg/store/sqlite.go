@@ -1,7 +1,7 @@
 package store
 
 import (
-	gorm_logger "github.com/gempir/bitraft/pkg/logger"
+	"github.com/gempir/bitraft/pkg/log"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -11,13 +11,13 @@ type Database struct {
 }
 
 func NewDatabase(sqliteDatabase string) *Database {
-	db, err := gorm.Open(sqlite.Open(sqliteDatabase), &gorm.Config{Logger: gorm_logger.New()})
+	db, err := gorm.Open(sqlite.Open(sqliteDatabase), &gorm.Config{Logger: log.NewGormLogger()})
 	if err != nil {
 		panic("failed to connect database")
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&Editor{}, &ChannelPointReward{}, &EventSubSubscription{})
+	err = db.AutoMigrate(&Editor{}, &ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{})
 	if err != nil {
 		panic(err)
 	}

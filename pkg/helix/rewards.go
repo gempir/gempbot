@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/gempir/bitraft/pkg/log"
 )
 
 type GetRewardsResponse struct {

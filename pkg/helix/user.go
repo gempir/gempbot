@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/log"
 	helixClient "github.com/nicklaw5/helix"
-	log "github.com/sirupsen/logrus"
 )
 
 // Client wrapper for helix

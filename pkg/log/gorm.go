@@ -1,4 +1,4 @@
-package gorm_logger
+package log
 
 import (
 	"context"
@@ -17,7 +17,7 @@ type logger struct {
 	SkipErrRecordNotFound bool
 }
 
-func New() *logger {
+func NewGormLogger() *logger {
 	return &logger{
 		SkipErrRecordNotFound: false,
 	}

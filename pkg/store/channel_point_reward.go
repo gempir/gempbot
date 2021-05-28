@@ -3,7 +3,6 @@ package store
 import (
 	"errors"
 
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -67,7 +66,6 @@ func (db *Database) GetDistinctRewardsPerUser() []ChannelPointReward {
 }
 
 func (db *Database) SaveReward(reward ChannelPointReward) error {
-	log.Info(reward.DeletedAt)
 	update := db.Client.Model(&reward).Where("owner_twitch_id = ? AND type = ?", reward.OwnerTwitchID, reward.Type).Updates(&reward)
 	if update.Error != nil {
 		return update.Error

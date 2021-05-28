@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/slice"
 	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
-	log "github.com/sirupsen/logrus"
 )
 
 type Redemptions struct {
@@ -113,8 +113,8 @@ func (s *Server) syncSubscriptions() {
 	subscribed := []string{}
 
 	for _, sub := range resp.Data.EventSubSubscriptions {
-		if !strings.Contains(sub.Transport.Callback, s.cfg.WebhookApiBaseUrl) {
-			err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "unknown transport, unsubscribing")
+		if !strings.Contains(sub.Transport.Callback, s.cfg.WebhookApiBaseUrl) || sub.Status == nickHelix.EventSubStatusFailed {
+			err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "bad EventSub subscription, unsubscribing")
 			if err != nil {
 				log.Errorf("Failed to unsubscribe %s error: %s", sub.Condition.BroadcasterUserID, err.Error())
 			}
@@ -212,7 +212,7 @@ func (s *Server) handleBttvRedemption(redemption channelPointRedemption) error {
 		s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
 	}
 
-	token, err := s.getUserAccessToken(redemption.Event.BroadcasterUserID)
+	token, err := s.db.GetUserAccessToken(redemption.Event.BroadcasterUserID)
 	if err != nil {
 		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
 		return nil

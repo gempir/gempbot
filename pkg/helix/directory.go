@@ -1,8 +1,8 @@
 package helix
 
 import (
+	"github.com/gempir/bitraft/pkg/log"
 	"github.com/nicklaw5/helix"
-	log "github.com/sirupsen/logrus"
 )
 
 func (c *Client) GetTopChannels() []string {

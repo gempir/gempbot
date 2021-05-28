@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/gempir/bitraft/pkg/log"
 )
 
 type bttvDashboardResponse struct {

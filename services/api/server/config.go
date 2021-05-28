@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/gempir/bitraft/pkg/helix"
+	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/slice"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 )
 
 type UserConfig struct {
