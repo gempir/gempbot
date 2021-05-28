@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -172,4 +173,46 @@ func setRewardDefaults(reward store.ChannelPointReward, userID string) store.Cha
 	}
 
 	return reward
+}
+
+func (s *Server) createOrUpdateChannelPointReward(userID string, request store.ChannelPointReward, rewardID string) (string, error) {
+	token, err := s.getUserAccessToken(userID)
+	if err != nil {
+		return "", err
+	}
+
+	req := helix.CreateCustomRewardRequest{
+		Title:                             request.Title,
+		Prompt:                            bttvPrompt,
+		Cost:                              request.Cost,
+		IsEnabled:                         request.Enabled,
+		BackgroundColor:                   request.BackgroundColor,
+		IsUserInputRequired:               true,
+		ShouldRedemptionsSkipRequestQueue: false,
+		IsMaxPerStreamEnabled:             false,
+		IsMaxPerUserPerStreamEnabled:      false,
+		IsGlobalCooldownEnabled:           false,
+	}
+
+	if request.MaxPerStream != 0 {
+		req.IsMaxPerStreamEnabled = true
+		req.MaxPerStream = request.MaxPerStream
+	}
+
+	if request.MaxPerUserPerStream != 0 {
+		req.IsMaxPerUserPerStreamEnabled = true
+		req.MaxPerUserPerStream = request.MaxPerUserPerStream
+	}
+
+	if request.GlobalCooldownSeconds != 0 {
+		req.IsGlobalCooldownEnabled = true
+		req.GlobalCoolDownSeconds = request.GlobalCooldownSeconds
+	}
+
+	resp, err := s.helixUserClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
+	if err != nil {
+		return "", err
+	}
+
+	return resp.ID, nil
 }

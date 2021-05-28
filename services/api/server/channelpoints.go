@@ -9,9 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/slice"
-	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 	log "github.com/sirupsen/logrus"
@@ -88,17 +86,8 @@ func (s *Server) subscribeChannelPoints(userID string) {
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
-		s.store.Client.HSet("subscriptions", userID, sub.ID)
+		s.db.AddEventSubSubscription(userID, sub.ID)
 	}
-}
-
-func (s *Server) unsubscribeChannelPoints(userID string, reason string) error {
-	subId, err := s.store.Client.HGet("subscriptions", userID).Result()
-	if err != nil {
-		return err
-	}
-
-	return s.removeEventSubSubscription(userID, subId, reason)
 }
 
 func (s *Server) removeEventSubSubscription(userID string, subscriptionID string, reason string) error {
@@ -108,11 +97,7 @@ func (s *Server) removeEventSubSubscription(userID string, subscriptionID string
 	}
 
 	log.Infof("[%d] removed EventSubSubscription for %s reason: %s", response.StatusCode, userID, reason)
-
-	_, err = s.store.Client.HDel("subscriptions", userID).Result()
-	if err != nil {
-		return err
-	}
+	s.db.RemoveEventSubSubscription(userID, subscriptionID)
 
 	return nil
 }
@@ -124,23 +109,10 @@ func (s *Server) syncSubscriptions() {
 		return
 	}
 
-	log.Infof("Found %d total subscriptions, syncing to Redis", resp.Data.Total)
+	log.Infof("Found %d total subscriptions, syncing to DB", resp.Data.Total)
 	subscribed := []string{}
 
 	for _, sub := range resp.Data.EventSubSubscriptions {
-		exists, err := s.store.Client.HExists("userConfig", sub.Condition.BroadcasterUserID).Result()
-		if err != nil {
-			log.Errorf("Failed to get userConfig while syncing %s", err.Error())
-			continue
-		}
-		if !exists {
-			err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "no userConfig found")
-			if err != nil {
-				log.Errorf("Failed to unsubscribe %s error: %s", sub.Condition.BroadcasterUserID, err.Error())
-			}
-			continue
-		}
-
 		if !strings.Contains(sub.Transport.Callback, s.cfg.WebhookApiBaseUrl) {
 			err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "unknown transport, unsubscribing")
 			if err != nil {
@@ -149,20 +121,22 @@ func (s *Server) syncSubscriptions() {
 			continue
 		}
 
+		_, err := s.db.GetEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
+		if err != nil {
+			log.Infof("Found unknown subscription, adding %s", sub.Condition.BroadcasterUserID)
+			s.db.AddEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
+		}
+
 		subscribed = append(subscribed, sub.Condition.BroadcasterUserID)
-		s.store.Client.HSet("subscriptions", sub.Condition.BroadcasterUserID, sub.ID)
 	}
 
-	userConfigs, err := s.store.Client.HGetAll("userConfig").Result()
-	if err != nil {
-		log.Errorf("Failed to sync subscriptions with userConfig: %s", err)
-		return
-	}
+	rewards := s.db.GetDistinctRewardsPerUser()
+	log.Infof("Found %d total distinct rewards, checking missing subscriptions", len(rewards))
 
-	for userID := range userConfigs {
-		if !slice.Contains(subscribed, userID) {
-			log.Info("Found no subscription for existing userConfig, creating subscription")
-			s.subscribeChannelPoints(userID)
+	for _, dbReward := range rewards {
+		if !slice.Contains(subscribed, dbReward.OwnerTwitchID) {
+			log.Infof("Found no subscription for existing reward, creating subscription %s", dbReward.OwnerTwitchID)
+			s.subscribeChannelPoints(dbReward.OwnerTwitchID)
 		}
 	}
 }
@@ -188,60 +162,70 @@ func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed decoding body: "+err.Error())
 	}
 
-	// get active subscritions for this channel
-	val, err := s.store.Client.HGet("userConfig", redemption.Event.BroadcasterUserID).Result()
+	err = s.handleRedemption(redemption)
 	if err != nil {
-		log.Errorf("Won't handle redemption [%s], no userConfig found %s", redemption.Event.Reward.Title, err)
-		return err
+		return c.NoContent(http.StatusInternalServerError)
 	}
-	var userCfg UserConfig
-	if err := json.Unmarshal([]byte(val), &userCfg); err != nil {
-		log.Error(err)
-		return err
-	}
-
-	// s.handleRedemption(redemption, userCfg.Rewards)
 
 	return c.String(http.StatusOK, "success")
 }
 
-func (s *Server) handleRedemption(redemption channelPointRedemption, rewards []Reward) {
-	for _, reward := range rewards {
-		if reward.GetConfig().Enabled && redemption.Event.Reward.ID == reward.GetConfig().ID {
-			success := false
+func (s *Server) handleRedemption(redemption channelPointRedemption) error {
+	reward, err := s.db.GetEnabledChannelPointRewardByID(redemption.Event.Reward.ID)
+	if err != nil {
+		// no redemption found
+		return nil
+	}
 
-			matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
-			if len(matches) == 1 && len(matches[0]) == 2 {
-				emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
-				if err != nil {
-					log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
-					s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
-				} else if emoteAdded != nil && emoteRemoved != nil {
-					success = true
-					s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
-				} else if emoteAdded != nil {
-					success = true
-					s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
-				} else {
-					success = true
-					s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
-				}
-			} else {
-				s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
-			}
+	// Err is only returned when it's worth responding with a bad response code
+	if reward.Type == TYPE_BTTV {
+		err = s.handleBttvRedemption(redemption)
+	}
 
-			token, err := s.getUserAccessToken(redemption.Event.BroadcasterUserID)
-			if err != nil {
-				log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
-			} else {
-				log.Info(token)
-				err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
-				if err != nil {
-					log.Errorf("Failed to update redemption status %s", err.Error())
-				}
-			}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) handleBttvRedemption(redemption channelPointRedemption) error {
+	success := false
+
+	matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
+	if len(matches) == 1 && len(matches[0]) == 2 {
+		emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
+		if err != nil {
+			log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
+		} else if emoteAdded != nil && emoteRemoved != nil {
+			success = true
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
+		} else if emoteAdded != nil {
+			success = true
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
+		} else {
+			success = true
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
+		}
+	} else {
+		s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
+	}
+
+	token, err := s.getUserAccessToken(redemption.Event.BroadcasterUserID)
+	if err != nil {
+		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
+		return nil
+	} else {
+		log.Info(token)
+		err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
+		if err != nil {
+			log.Errorf("Failed to update redemption status %s", err.Error())
+			return nil
 		}
 	}
+
+	return nil
 }
 
 func (s *Server) handleChallenge(c echo.Context, body []byte) error {
@@ -255,46 +239,4 @@ func (s *Server) handleChallenge(c echo.Context, body []byte) error {
 
 	log.Infof("Challenge success: %s", event.Challenge)
 	return c.String(http.StatusOK, event.Challenge)
-}
-
-func (s *Server) createOrUpdateChannelPointReward(userID string, request store.ChannelPointReward, rewardID string) (string, error) {
-	token, err := s.getUserAccessToken(userID)
-	if err != nil {
-		return "", err
-	}
-
-	req := helix.CreateCustomRewardRequest{
-		Title:                             request.Title,
-		Prompt:                            bttvPrompt,
-		Cost:                              request.Cost,
-		IsEnabled:                         request.Enabled,
-		BackgroundColor:                   request.BackgroundColor,
-		IsUserInputRequired:               true,
-		ShouldRedemptionsSkipRequestQueue: false,
-		IsMaxPerStreamEnabled:             false,
-		IsMaxPerUserPerStreamEnabled:      false,
-		IsGlobalCooldownEnabled:           false,
-	}
-
-	if request.MaxPerStream != 0 {
-		req.IsMaxPerStreamEnabled = true
-		req.MaxPerStream = request.MaxPerStream
-	}
-
-	if request.MaxPerUserPerStream != 0 {
-		req.IsMaxPerUserPerStreamEnabled = true
-		req.MaxPerUserPerStream = request.MaxPerUserPerStream
-	}
-
-	if request.GlobalCooldownSeconds != 0 {
-		req.IsGlobalCooldownEnabled = true
-		req.GlobalCoolDownSeconds = request.GlobalCooldownSeconds
-	}
-
-	resp, err := s.helixUserClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
-	if err != nil {
-		return "", err
-	}
-
-	return resp.ID, nil
 }

@@ -6,12 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Editor struct {
-	gorm.Model
-	OwnerTwitchID  string `gorm:"index"`
-	EditorTwitchID string `gorm:"index"`
-}
-
 type Database struct {
 	Client *gorm.DB
 }
@@ -23,7 +17,7 @@ func NewDatabase(sqliteDatabase string) *Database {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&Editor{}, &ChannelPointReward{})
+	err = db.AutoMigrate(&Editor{}, &ChannelPointReward{}, &EventSubSubscription{})
 	if err != nil {
 		panic(err)
 	}

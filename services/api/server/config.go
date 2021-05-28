@@ -8,7 +8,6 @@ import (
 
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/slice"
-	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
@@ -31,16 +30,6 @@ func createDefaultUserConfig() UserConfig {
 			CurrentUserID: "",
 		},
 	}
-}
-
-func (c *UserConfig) isEditorFor(user string) bool {
-	for _, editor := range c.Protected.EditorFor {
-		if editor == user {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (c *UserConfig) getEditorDifference(newEditors []string) (removed []string, added []string) {
@@ -103,8 +92,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 }
 
 func (s *Server) getUserConfig(userID string) UserConfig {
-	var editors []store.Editor
-	s.db.Client.Where("owner_twitch_id = ? OR editor_twitch_id = ?", userID, userID).Find(&editors)
+	editors := s.db.GetEditors(userID)
 
 	uCfg := createDefaultUserConfig()
 	uCfg.Protected.CurrentUserID = userID
@@ -220,10 +208,7 @@ func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Conte
 	s.db.AddEditors(userID, added)
 	s.db.RemoveEditors(userID, removed)
 
-	// if isNew {
-	// 	log.Infof("Created new config for: %s, subscribing webhooks", userID)
-	// 	s.subscribeChannelPoints(userID)
-	// }
+	s.subscribeChannelPoints(userID)
 
 	return nil
 }

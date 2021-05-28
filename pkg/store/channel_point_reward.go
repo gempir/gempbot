@@ -24,7 +24,7 @@ type ChannelPointReward struct {
 	GlobalCooldownSeconds             int
 	ShouldRedemptionsSkipRequestQueue bool
 	Enabled                           bool
-	RewardID                          string
+	RewardID                          string `gorm:"index"`
 }
 
 func (db *Database) GetChannelPointRewards(userID string) []ChannelPointReward {
@@ -33,6 +33,16 @@ func (db *Database) GetChannelPointRewards(userID string) []ChannelPointReward {
 	db.Client.Where("owner_twitch_id = ?", userID).Find(&rewards)
 
 	return rewards
+}
+
+func (db *Database) GetEnabledChannelPointRewardByID(rewardID string) (ChannelPointReward, error) {
+	var reward ChannelPointReward
+	result := db.Client.Where("reward_id = ? AND enabled = ?", rewardID, true).First(&reward)
+	if result.RowsAffected == 0 {
+		return reward, errors.New("not found")
+	}
+
+	return reward, nil
 }
 
 func (db *Database) GetChannelPointReward(userID string, rewardType string) (ChannelPointReward, error) {
@@ -47,6 +57,13 @@ func (db *Database) GetChannelPointReward(userID string, rewardType string) (Cha
 
 func (db *Database) DeleteChannelPointReward(userID string, rewardType string) {
 	db.Client.Where("owner_twitch_id = ? AND type = ?", userID, rewardType).Delete(&ChannelPointReward{})
+}
+
+func (db *Database) GetDistinctRewardsPerUser() []ChannelPointReward {
+	var rewards []ChannelPointReward
+	db.Client.Distinct("owner_twitch_id").Find(&rewards)
+
+	return rewards
 }
 
 func (db *Database) SaveReward(reward ChannelPointReward) error {
