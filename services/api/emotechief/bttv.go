@@ -177,18 +177,24 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 
 	var currentEmoteId string
 	log.Debugf("Current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
+
+	emoteAdd, notFoundErr := e.db.GetOldestEmoteAdded(channelUserID)
+	if notFoundErr == nil {
+		currentEmoteId = emoteAdd.EmoteID
+	}
+
+	historicEmoteIsSharedEmote := false
+	for _, sharedEmote := range dashboard.Sharedemotes {
+		historicEmoteIsSharedEmote = currentEmoteId == sharedEmote.ID
+	}
+
+	if currentEmoteId == "" {
+		log.Infof("Didn't find previous slot chosing random in %s", channelUserID)
+		currentEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
+	}
+
 	// figure out the current emote
-	if len(dashboard.Sharedemotes) >= sharedEmotesLimit {
-		emoteAdd, notFoundErr := e.db.GetOldestEmoteAdded(channelUserID)
-		if notFoundErr != nil {
-			log.Infof("Didn't find previous slot chosing random in %s", channelUserID)
-			currentEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
-		} else {
-			currentEmoteId = emoteAdd.EmoteID
-		}
-
-		e.db.RemoveOldestEmoteAdd(channelUserID)
-
+	if historicEmoteIsSharedEmote || len(dashboard.Sharedemotes) >= sharedEmotesLimit {
 		// Delete the current emote
 		req, err = http.NewRequest("DELETE", "https://api.betterttv.net/3/emotes/"+currentEmoteId+"/shared/"+bttvUserId, nil)
 		req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
@@ -222,6 +228,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 
 	if resp.StatusCode < http.StatusBadRequest {
 		e.db.CreateEmoteAdd(channelUserID, emoteId)
+		e.db.RemoveOldestEmoteAdd(channelUserID)
 	}
 
 	removedEmote, err = getBttvEmote(currentEmoteId)

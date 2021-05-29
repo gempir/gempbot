@@ -133,7 +133,7 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
                     <input defaultChecked={reward.Enabled} type="checkbox" {...register("enabled")} className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" />
                     <span className="ml-2">Enabled</span>
                 </label>
-                <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3" value="save" />
+                <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3 cursor-pointer" value="save" />
             </div>
         </form>
     );
