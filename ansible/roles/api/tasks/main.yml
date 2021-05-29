@@ -7,6 +7,14 @@
         - bitraft
       append: yes
 
+  - name: Creates directory
+    file:
+      path: /var/bitraft
+      state: directory
+      owner: root
+      group: bitraft
+      mode: 0750
+
   - name: Install Api Service
     template: 
       src: templates/service.j2 

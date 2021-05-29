@@ -10,6 +10,7 @@
     "webhookApiBaseUrl": "https://123.ngrok.io",
     "apiBaseUrl": "http://localhost:8035",
     "webBaseUrl": "http://localhost:3000",
+    "sqliteDatabase": "../../data.db",
     "cookieDomain": "localhost",
     "channels": ["77829817", "11148817", "114745759"]
 }

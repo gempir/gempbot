@@ -1,24 +1,18 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 
 	"github.com/dgrijalva/jwt-go"
-	log "github.com/sirupsen/logrus"
+	"github.com/gempir/bitraft/pkg/log"
 )
-
-type userAcessTokenData struct {
-	AccessToken  string
-	RefreshToken string
-	Scope        string
-}
 
 type tokenClaims struct {
 	UserID         string
@@ -50,12 +44,7 @@ func (s *Server) handleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to create jwt token in callback %s", err)
 	}
 
-	marshalled, err := json.Marshal(userAcessTokenData{resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " ")})
-	if err != nil {
-		return fmt.Errorf("failed to marshal userAcessToken in callback %s", err)
-	}
-
-	err = s.store.Client.HSet("userAccessTokensData", validateResp.Data.UserID, marshalled).Err()
+	err = s.db.SaveUserAccessToken(validateResp.Data.UserID, resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " "))
 	if err != nil {
 		return fmt.Errorf("failed to set userAccessToken in callback: %s", err)
 	}
@@ -98,21 +87,7 @@ func (s *Server) dashboardRedirect(c echo.Context, scToken string) error {
 	return nil
 }
 
-func (s *Server) getUserAccessToken(userID string) (userAcessTokenData, error) {
-	val, err := s.store.Client.HGet("userAccessTokensData", userID).Result()
-	if err != nil {
-		return userAcessTokenData{}, err
-	}
-
-	var token userAcessTokenData
-	if err := json.Unmarshal([]byte(val), &token); err != nil {
-		return userAcessTokenData{}, err
-	}
-
-	return token, nil
-}
-
-func (s *Server) authenticate(c echo.Context) (*nickHelix.ValidateTokenResponse, *userAcessTokenData, error) {
+func (s *Server) authenticate(c echo.Context) (nickHelix.ValidateTokenResponse, store.UserAccessToken, error) {
 	scToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 
 	// Initialize a new instance of `Claims`
@@ -127,13 +102,13 @@ func (s *Server) authenticate(c echo.Context) (*nickHelix.ValidateTokenResponse,
 	})
 	if err != nil || !tkn.Valid {
 		log.Errorf("found to validate jwt: %s", err)
-		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "bad authentication")
+		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, echo.NewHTTPError(http.StatusUnauthorized, "bad authentication")
 	}
 
-	token, err := s.getUserAccessToken(claims.UserID)
+	token, err := s.db.GetUserAccessToken(claims.UserID)
 	if err != nil {
 		log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
-		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to get userAccessTokenData: %s", err.Error())
+		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, echo.NewHTTPError(http.StatusUnauthorized, "Failed to get userAccessTokenData: %s", err.Error())
 	}
 
 	success, resp, err := s.helixClient.Client.ValidateToken(token.AccessToken)
@@ -144,70 +119,62 @@ func (s *Server) authenticate(c echo.Context) (*nickHelix.ValidateTokenResponse,
 
 		// Token might be expired, let's try refreshing
 		if resp.Error == "Unauthorized" {
-			success, refreshResp := s.refreshToken(scToken, token)
-			if !success {
-				return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "failed to refresh token")
+			err := s.refreshToken(token)
+			if err != nil {
+				return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, echo.NewHTTPError(http.StatusUnauthorized, "failed to refresh token")
 			}
 
-			success, resp, err = s.helixClient.Client.ValidateToken(refreshResp.AccessToken)
+			refreshedToken, err := s.db.GetUserAccessToken(claims.UserID)
+			if err != nil {
+				log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
+				return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, echo.NewHTTPError(http.StatusUnauthorized, "Failed to get userAccessTokenData: %s", err.Error())
+			}
+
+			success, resp, err = s.helixClient.Client.ValidateToken(refreshedToken.AccessToken)
 			if !success || err != nil {
 				if err != nil {
 					log.Errorf("refreshed Token did not validate: %s", err)
 				}
 
-				return resp, refreshResp, echo.NewHTTPError(http.StatusUnauthorized, "refreshed token did not validate")
+				return nickHelix.ValidateTokenResponse{}, refreshedToken, echo.NewHTTPError(http.StatusUnauthorized, "refreshed token did not validate")
 			}
+
+			return *resp, refreshedToken, nil
 		}
 
-		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "token not valid")
+		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, echo.NewHTTPError(http.StatusUnauthorized, "token not valid")
 	}
 
-	return resp, &token, nil
+	return *resp, token, nil
 }
 
-func (s *Server) refreshToken(userID string, token userAcessTokenData) (bool, *userAcessTokenData) {
+func (s *Server) refreshToken(token store.UserAccessToken) error {
 	resp, err := s.helixClient.Client.RefreshUserAccessToken(token.RefreshToken)
 	if err != nil {
-		log.Errorf("failed refresh userAcessToken: %s", err)
-		return false, nil
+		return err
 	}
 
-	newToken := userAcessTokenData{resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " ")}
-	marshalled, err := json.Marshal(newToken)
+	err = s.db.SaveUserAccessToken(token.OwnerTwitchID, resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " "))
 	if err != nil {
-		log.Errorf("failed marshal refreshed userAcessToken: %s", err)
-		return false, nil
+		return err
 	}
 
-	err = s.store.Client.HSet("userAccessTokensData", userID, marshalled).Err()
-	if err != nil {
-		log.Errorf("failed to set userAccessTokenData to redis: %s", err)
-		return false, nil
-	}
-
-	return true, &newToken
+	return nil
 }
 
 func (s *Server) tokenRefreshRoutine() {
 	for {
 		time.Sleep(time.Hour)
 
-		tokens, err := s.store.Client.HGetAll("userAccessTokensData").Result()
-		if err != nil {
-			log.Errorf("tried refreshing tokens: %s", err)
-			continue
-		}
+		tokens := s.db.GetAllUserAccessToken()
 
 		log.Infof("starting refresh of %d tokens", len(tokens))
 
-		for userID, tokenDataString := range tokens {
-			var userToken userAcessTokenData
-			if err := json.Unmarshal([]byte(tokenDataString), &userToken); err != nil {
-				log.Errorf("failed unmarshal userAccessTokenData in tokenRefreshRoutine %s", err)
-				continue
+		for _, token := range tokens {
+			err := s.refreshToken(token)
+			if err != nil {
+				log.Errorf("failed to refresh token %s", err)
 			}
-
-			s.refreshToken(userID, userToken)
 			time.Sleep(time.Millisecond * 500)
 		}
 

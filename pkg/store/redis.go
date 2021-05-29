@@ -7,11 +7,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Store struct {
+type Redis struct {
 	Client *redis.Client
 }
 
-func NewStore() *Store {
+func NewRedis() *Redis {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
@@ -24,11 +24,11 @@ func NewStore() *Store {
 	}
 	log.Info("connection to redis established")
 
-	return &Store{
+	return &Redis{
 		Client: client,
 	}
 }
-func (s *Store) SubscribeSpeakerMessage() *redis.PubSub {
+func (s *Redis) SubscribeSpeakerMessage() *redis.PubSub {
 	return s.Client.Subscribe("SPEAKERMESSAGE")
 }
 
@@ -37,7 +37,7 @@ type SpeakerMessage struct {
 	Message string
 }
 
-func (s *Store) PublishSpeakerMessage(channel, message string) {
+func (s *Redis) PublishSpeakerMessage(channel, message string) {
 	data, err := json.Marshal(&SpeakerMessage{channel, message})
 	if err != nil {
 		log.Error(err)

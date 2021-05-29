@@ -6,4 +6,6 @@ services/api/api
 services/ingester/ingester
 services/speaker/speaker
 
+data.db
+
 web/node_modules/

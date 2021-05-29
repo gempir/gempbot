@@ -15,7 +15,7 @@ func main() {
 	flag.Parse()
 
 	cfg := config.NewConfig(*configFile)
-	rStore := store.NewStore()
+	rStore := store.NewRedis()
 
 	bot := bot.NewBot(cfg, rStore)
 

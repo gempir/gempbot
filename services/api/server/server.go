@@ -15,14 +15,16 @@ type Server struct {
 	cfg             *config.Config
 	helixClient     *helix.Client
 	helixUserClient *helix.Client
-	store           *store.Store
+	store           *store.Redis
+	db              *store.Database
 	emotechief      *emotechief.EmoteChief
 }
 
 // NewServer create api Server
-func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Store, emotechief *emotechief.EmoteChief) Server {
+func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *helix.Client, store *store.Redis, db *store.Database, emotechief *emotechief.EmoteChief) Server {
 	return Server{
 		cfg:             cfg,
+		db:              db,
 		helixClient:     helixClient,
 		helixUserClient: helixUserClient,
 		store:           store,
@@ -31,6 +33,8 @@ func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *h
 }
 
 func (s *Server) Start() {
+	s.migrateData()
+
 	go s.syncSubscriptions()
 	go s.tokenRefreshRoutine()
 
@@ -40,7 +44,13 @@ func (s *Server) Start() {
 	e.POST("/api/redemption", s.handleChannelPointsRedemption)
 	e.GET("/api/userConfig", s.handleUserConfig)
 	e.POST("/api/userConfig", s.handleUserConfig)
-	e.DELETE("/api/reward/:userID/:rewardID", s.handleRewardDeletion)
+
+	e.GET("/api/reward/:userID", s.handleRewardRead)
+	e.GET("/api/reward/:userID/type/:type", s.handleRewardSingleRead)
+
+	e.DELETE("/api/reward/:userID/type/:type", s.handleRewardDeletion)
+
+	e.POST("/api/reward/:userID", s.handleRewardCreateOrUpdate)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{s.cfg.WebBaseUrl},

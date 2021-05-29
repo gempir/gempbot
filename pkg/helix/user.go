@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/log"
 	helixClient "github.com/nicklaw5/helix"
-	log "github.com/sirupsen/logrus"
 )
 
 // Client wrapper for helix
@@ -201,4 +201,22 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	}
 
 	return result, nil
+}
+
+func (c *Client) GetUserByUsername(username string) (UserData, error) {
+	result, err := c.GetUsersByUsernames([]string{username})
+	if err != nil || len(result) != 1 {
+		return UserData{}, err
+	}
+
+	return result[username], nil
+}
+
+func (c *Client) GetUserByUserID(userID string) (UserData, error) {
+	result, err := c.GetUsersByUserIds([]string{userID})
+	if err != nil || len(result) != 1 {
+		return UserData{}, err
+	}
+
+	return result[userID], nil
 }
