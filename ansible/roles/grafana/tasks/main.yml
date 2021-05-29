@@ -22,8 +22,25 @@
     name: grafana
     state: present
 
+- name: Creates directory
+  file:
+    path: /usr/share/grafana
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: 0750
+
 - name: Install Config
   template: 
     src: templates/grafana.ini.j2 
     dest: /etc/grafana/grafana.ini
   notify: Restart grafana
+
+- name: install sqlite plugin
+  shell: grafana-cli --pluginsDir /usr/share/grafana/data/plugins plugins install frser-sqlite-datasource
+
+- name: add grafana to bitraft
+  user:
+    name: grafana
+    groups: bitraft
+    append: yes
