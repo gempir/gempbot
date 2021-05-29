@@ -33,6 +33,8 @@ func NewServer(cfg *config.Config, helixClient *helix.Client, helixUserClient *h
 }
 
 func (s *Server) Start() {
+	s.migrateData()
+
 	go s.syncSubscriptions()
 	go s.tokenRefreshRoutine()
 
