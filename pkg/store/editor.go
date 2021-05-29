@@ -2,14 +2,11 @@ package store
 
 import (
 	"strings"
-
-	"gorm.io/gorm"
 )
 
 type Editor struct {
-	gorm.Model
-	OwnerTwitchID  string `gorm:"index"`
-	EditorTwitchID string `gorm:"index"`
+	OwnerTwitchID  string `gorm:"primaryKey"`
+	EditorTwitchID string `gorm:"primaryKey"`
 }
 
 func (db *Database) AddEditors(ownerId string, userIds []string) {

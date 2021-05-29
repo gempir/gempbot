@@ -2,14 +2,15 @@ package store
 
 import (
 	"errors"
-
-	"gorm.io/gorm"
+	"time"
 )
 
 type ChannelPointReward struct {
-	gorm.Model
-	OwnerTwitchID                     string `gorm:"index"`
-	Type                              string `gorm:"index"`
+	OwnerTwitchID                     string `gorm:"primaryKey"`
+	Type                              string `gorm:"primaryKey"`
+	RewardID                          string `gorm:"index"`
+	CreatedAt                         time.Time
+	UpdatedAt                         time.Time
 	Title                             string
 	Prompt                            string
 	Cost                              int
@@ -23,7 +24,6 @@ type ChannelPointReward struct {
 	GlobalCooldownSeconds             int
 	ShouldRedemptionsSkipRequestQueue bool
 	Enabled                           bool
-	RewardID                          string `gorm:"index"`
 }
 
 func (db *Database) GetChannelPointRewards(userID string) []ChannelPointReward {
@@ -72,12 +72,6 @@ func (db *Database) SaveReward(reward ChannelPointReward) error {
 	}
 
 	if update.RowsAffected > 0 {
-		updateMap := map[string]interface{}{"deleted_at": nil}
-		update := db.Client.Model(&reward).Where("owner_twitch_id = ? AND type = ?", reward.OwnerTwitchID, reward.Type).Updates(&updateMap)
-		if update.Error != nil {
-			return update.Error
-		}
-
 		return nil
 	}
 

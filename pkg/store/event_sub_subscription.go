@@ -2,14 +2,14 @@ package store
 
 import (
 	"errors"
-
-	"gorm.io/gorm"
+	"time"
 )
 
 type EventSubSubscription struct {
-	gorm.Model
-	TargetTwitchID string `gorm:"index"`
-	SubscriptionID string `gorm:"index"`
+	TargetTwitchID string `gorm:"primaryKey"`
+	SubscriptionID string `gorm:"primaryKey"`
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 func (db *Database) AddEventSubSubscription(targetTwitchID string, subscriptionID string) {

@@ -2,16 +2,16 @@ package store
 
 import (
 	"errors"
-
-	"gorm.io/gorm"
+	"time"
 )
 
 type UserAccessToken struct {
-	gorm.Model
-	OwnerTwitchID string `gorm:"index"`
+	OwnerTwitchID string `gorm:"primaryKey"`
 	AccessToken   string
 	RefreshToken  string
 	Scopes        string
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 func (db *Database) SaveUserAccessToken(ownerId string, accessToken string, refreshToken string, scopes string) error {
@@ -23,12 +23,6 @@ func (db *Database) SaveUserAccessToken(ownerId string, accessToken string, refr
 	}
 
 	if update.RowsAffected > 0 {
-		updateMap := map[string]interface{}{"deleted_at": nil}
-		update := db.Client.Model(&token).Where("owner_twitch_id = ?", ownerId).Updates(&updateMap)
-		if update.Error != nil {
-			return update.Error
-		}
-
 		return nil
 	}
 
