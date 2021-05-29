@@ -17,7 +17,7 @@ func NewDatabase(sqliteDatabase string) *Database {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&Editor{}, &ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{})
+	err = db.AutoMigrate(&Editor{}, &ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{}, &EmoteAdd{})
 	if err != nil {
 		panic(err)
 	}

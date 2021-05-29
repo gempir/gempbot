@@ -217,7 +217,6 @@ func (s *Server) handleBttvRedemption(redemption channelPointRedemption) error {
 		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
 		return nil
 	} else {
-		log.Info(token)
 		err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
 		if err != nil {
 			log.Errorf("Failed to update redemption status %s", err.Error())

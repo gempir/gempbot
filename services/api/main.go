@@ -23,7 +23,7 @@ func main() {
 	go helixUserClient.StartRefreshTokenRoutine()
 	go helixClient.StartRefreshTokenRoutine()
 
-	emoteChief := emotechief.NewEmoteChief(rStore, cfg)
+	emoteChief := emotechief.NewEmoteChief(rStore, cfg, db)
 	server := server.NewServer(cfg, helixClient, helixUserClient, rStore, db, emoteChief)
 
 	server.Start()
