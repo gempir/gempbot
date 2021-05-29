@@ -11,7 +11,7 @@
     file:
       path: /var/bitraft
       state: directory
-      owner: bitraft
+      owner: root
       group: bitraft
       mode: 0750
 
