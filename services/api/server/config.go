@@ -9,7 +9,6 @@ import (
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/slice"
-	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 )
 
@@ -212,110 +211,4 @@ func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Conte
 	s.subscribeChannelPoints(userID)
 
 	return nil
-}
-
-type MigrateUserConfig struct {
-	Editors []string
-	Rewards MigrateRewards
-}
-
-type MigrateRewards struct {
-	*MigrateBttvReward `json:"Bttv"`
-}
-
-type MigrateBttvReward struct {
-	Title                             string `json:"title"`
-	Prompt                            string `json:"prompt"`
-	Cost                              int    `json:"cost"`
-	Backgroundcolor                   string `json:"backgroundColor"`
-	IsMaxPerStreamEnabled             bool   `json:"isMaxPerStreamEnabled"`
-	MaxPerStream                      int    `json:"maxPerStream"`
-	IsUserInputRequired               bool   `json:"isUserInputRequired"`
-	IsMaxPerUserPerStreamEnabled      bool   `json:"isMaxPerUserPerStreamEnabled"`
-	MaxPerUserPerStream               int    `json:"maxPerUserPerStream"`
-	IsGlobalCooldownEnabled           bool   `json:"isGlobalCooldownEnabled"`
-	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds"`
-	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue"`
-	Enabled                           bool   `json:"enabled"`
-	ID                                string
-}
-
-type MigrateUserAcessTokenData struct {
-	AccessToken  string
-	RefreshToken string
-	Scope        string
-}
-
-func (s *Server) migrateData() {
-	configs, err := s.store.Client.HGetAll("userConfig").Result()
-	if err != nil {
-		log.Info(err)
-	}
-
-	for userID, dataString := range configs {
-		var uCfg MigrateUserConfig
-		err := json.Unmarshal([]byte(dataString), &uCfg)
-		if err != nil {
-			log.Error(err)
-		}
-
-		s.db.AddEditors(userID, uCfg.Editors)
-
-		if uCfg.Rewards.MigrateBttvReward != nil && uCfg.Rewards.MigrateBttvReward.ID != "" {
-			log.Infof("bttv reward created for %s", userID)
-			rew := uCfg.Rewards.MigrateBttvReward
-			err := s.db.SaveReward(store.ChannelPointReward{
-				OwnerTwitchID:                     userID,
-				Type:                              TYPE_BTTV,
-				Title:                             rew.Title,
-				Prompt:                            rew.Prompt,
-				Cost:                              rew.Cost,
-				BackgroundColor:                   rew.Backgroundcolor,
-				IsMaxPerStreamEnabled:             rew.IsMaxPerStreamEnabled,
-				MaxPerStream:                      rew.MaxPerStream,
-				IsUserInputRequired:               rew.IsUserInputRequired,
-				IsMaxPerUserPerStreamEnabled:      rew.IsMaxPerUserPerStreamEnabled,
-				MaxPerUserPerStream:               rew.MaxPerUserPerStream,
-				IsGlobalCooldownEnabled:           rew.IsGlobalCooldownEnabled,
-				GlobalCooldownSeconds:             rew.GlobalCooldownSeconds,
-				ShouldRedemptionsSkipRequestQueue: rew.ShouldRedemptionsSkipRequestQueue,
-				Enabled:                           rew.Enabled,
-				RewardID:                          rew.ID,
-			})
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
-
-	tokens, err := s.store.Client.HGetAll("userAccessTokensData").Result()
-	if err != nil {
-		log.Info(err)
-	}
-
-	for userID, dataString := range tokens {
-		var tokenData MigrateUserAcessTokenData
-		err := json.Unmarshal([]byte(dataString), &tokenData)
-		if err != nil {
-			log.Error(err)
-		}
-
-		if tokenData.AccessToken != "" {
-			log.Infof("token created for %s", userID)
-			err := s.db.SaveUserAccessToken(userID, tokenData.AccessToken, tokenData.RefreshToken, tokenData.Scope)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
-
-	bttvs, err := s.store.Client.HGetAll("bttv_emote").Result()
-	if err != nil {
-		log.Info(err)
-	}
-
-	for userID, emoteID := range bttvs {
-		log.Infof("bttv emote created for %s %s", userID, emoteID)
-		s.db.CreateEmoteAdd(userID, emoteID)
-	}
 }
