@@ -2,3 +2,4 @@
 web_host: bitraft.gempir.com
 cookie_domain: gempir.com
 api_host: bitraft-api.gempir.com
+grafana_host: grafana.gempir.com

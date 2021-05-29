@@ -9,3 +9,4 @@
     - {role: 'speaker', tags: ['speaker']}
     - {role: 'caddy-ansible', tags: ['caddy']}
     - {role: 'api', tags: ['api']}
+    - {role: 'grafana', tags: ['grafana']}
