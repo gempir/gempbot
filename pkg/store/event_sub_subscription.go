@@ -20,7 +20,7 @@ func (db *Database) AddEventSubSubscription(targetTwitchID string, subscriptionI
 
 func (db *Database) GetEventSubSubscription(targetTwitchID string, subscriptionID string) (EventSubSubscription, error) {
 	var sub EventSubSubscription
-	result := db.Client.Where("owner_twitch_id = ? AND subscription_id = ?", targetTwitchID, subscriptionID).First(&sub)
+	result := db.Client.Where("target_twitch_id = ? AND subscription_id = ?", targetTwitchID, subscriptionID).First(&sub)
 	if result.RowsAffected == 0 {
 		return sub, errors.New("not found")
 	}
@@ -29,5 +29,5 @@ func (db *Database) GetEventSubSubscription(targetTwitchID string, subscriptionI
 }
 
 func (db *Database) RemoveEventSubSubscription(targetTwitchID string, subscriptionID string) {
-	db.Client.Delete(&EventSubSubscription{}, "owner_twitch_id = ? AND subscription_id = ?", targetTwitchID, subscriptionID)
+	db.Client.Delete(&EventSubSubscription{}, "target_twitch_id = ? AND subscription_id = ?", targetTwitchID, subscriptionID)
 }
