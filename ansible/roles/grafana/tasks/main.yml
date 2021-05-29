@@ -36,8 +36,14 @@
     dest: /etc/grafana/grafana.ini
   notify: Restart grafana
 
+- name: stop grafana
+  shell: service grafana-server stop
+
 - name: install sqlite plugin
   shell: grafana-cli --pluginsDir /usr/share/grafana/data/plugins plugins install frser-sqlite-datasource
+
+- name: stop grafana
+  shell: service grafana-server start
 
 - name: add grafana to bitraft
   user:
