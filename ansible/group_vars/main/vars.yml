@@ -8,4 +8,4 @@ postgresql_databases:
   - name: bitraft
 postgresql_users:
   - name: bitraft
-    password: {{ bitraft_postgres_password }}
+    password: "{{ bitraft_postgres_password }}"
