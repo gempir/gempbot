@@ -4,6 +4,8 @@ cookie_domain: gempir.com
 api_host: bitraft-api.gempir.com
 grafana_host: grafana.gempir.com
 
+ansible_python_interpreter: /usr/bin/python3
+
 postgresql_databases:
   - name: bitraft
 postgresql_users:

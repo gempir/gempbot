@@ -1,5 +1,7 @@
 .idea
 
+.ansible-vault-password
+
 config.json
 
 services/api/api
