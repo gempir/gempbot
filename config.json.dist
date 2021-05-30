@@ -10,7 +10,6 @@
     "webhookApiBaseUrl": "https://123.ngrok.io",
     "apiBaseUrl": "http://localhost:8035",
     "webBaseUrl": "http://localhost:3000",
-    "sqliteDatabase": "../../data.db",
     "cookieDomain": "localhost",
     "postgresUsername": "bitraft",
     "postgresPassword": "somefancypassword",
