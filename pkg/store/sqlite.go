@@ -38,6 +38,26 @@ func NewDatabase(cfg *config.Config) *Database {
 		panic(err)
 	}
 
+	var editors []Editor
+	db.Find(&editors)
+	pdb.Create(editors)
+
+	var rewards []ChannelPointReward
+	db.Find(&rewards)
+	pdb.Create(rewards)
+
+	var subs []EventSubSubscription
+	db.Find(&subs)
+	pdb.Create(subs)
+
+	var tokens []UserAccessToken
+	db.Find(&tokens)
+	pdb.Create(tokens)
+
+	var adds []EmoteAdd
+	db.Find(&adds)
+	pdb.Create(adds)
+
 	return &Database{
 		Client: db,
 	}
