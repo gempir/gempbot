@@ -8,6 +8,7 @@ import (
 
 type EmoteAdd struct {
 	gorm.Model
+	ID              uint   `gorm:"primarykey,autoIncrement"`
 	ChannelTwitchID string `gorm:"index"`
 	EmoteID         string
 }
