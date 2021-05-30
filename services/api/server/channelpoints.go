@@ -121,13 +121,6 @@ func (s *Server) syncSubscriptions() {
 			continue
 		}
 
-		log.Infof("renewing subscription for %s", sub.Condition.BroadcasterUserID)
-		err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "refreshing secret")
-		if err != nil {
-			log.Errorf("Failed to unsubscribe %s error: %s", sub.Condition.BroadcasterUserID, err.Error())
-		}
-		s.subscribeChannelPoints(sub.Condition.BroadcasterUserID)
-
 		_, err = s.db.GetEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
 		if err != nil {
 			log.Infof("Found unknown subscription, adding %s", sub.Condition.BroadcasterUserID)
