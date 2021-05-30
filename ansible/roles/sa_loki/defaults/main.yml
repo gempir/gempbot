@@ -1,0 +1,13 @@
+---
+# defaults file for sa_loki
+
+loki_user:   loki
+loki_group:  loki
+
+loki_base_dir: /opt/loki
+loki_dir: "{{ loki_base_dir }}"
+loki_config_dir: /etc/loki
+loki_version: "2.0.0"
+
+loki_dist_url: "https://github.com/grafana/loki/releases/download/v{{ loki_version }}/loki-linux-amd64.zip"
+loki_dist_location: "{{ loki_base_dir }}/loki-linux-amd64.zip"

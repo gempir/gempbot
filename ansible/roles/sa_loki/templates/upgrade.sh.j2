@@ -1,0 +1,12 @@
+#!/bin/bash
+
+LOKI_VERSION="{{ loki_version }}"
+cd {{ loki_base_dir }}
+wget  https://github.com/grafana/loki/releases/download/${LOKI_VERSION}/loki-linux-amd64.zip
+sudo service loki stop
+unzip loki-linux-amd64.zip
+sudo chown -R {{ loki_user }}:root {{ loki_base_dir }}/loki-linux-amd64
+sudo chmod +x {{ loki_base_dir }}/loki-linux-amd64
+#             Source                                  Link
+sudo ln -f -s {{ loki_base_dir }}/loki-linux-amd64 {{ loki_base_dir }}/loki
+sudo service loki start

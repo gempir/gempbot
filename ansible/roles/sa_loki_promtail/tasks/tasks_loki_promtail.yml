@@ -1,0 +1,134 @@
+---
+  - name: Loki Promtail | Dependencies
+    package:
+      name: unzip
+      state: present
+    become: yes
+    tags:
+      - promtail
+
+  - name: Loki Promtail | create group
+    group:
+      name: "{{ loki_group }}"
+      state: present
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki Promtail | create user
+    user:
+      name: "{{ loki_user }}"
+      group: "{{ loki_group }}"
+      createhome: yes
+      shell: /sbin/nologin
+      comment: "Loki User"
+      state: present
+      groups: "{{ promtail_additional_groups }}"
+      append: yes
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki Promtail | Ensure service folder
+    file:
+      path: "{{ loki_base_dir }}"
+      state: "directory"
+      owner: "{{ loki_user }}"
+      group: "{{ loki_group }}"
+      mode: '0755'
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki Promtail | Ensure config folder
+    file:
+      path: "{{ loki_config_dir }}"
+      state: "directory"
+      owner: "root"
+      group: "{{ loki_group }}"
+      mode: '0755'
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki Promtail | Download distribution
+    get_url:
+      url: "{{ loki_dist_url }}"
+      dest: "{{ loki_dist_location }}"
+    become: yes
+    become_user: "{{ loki_user }}"
+    tags:
+      - loki
+
+  - name: Loki Promtail | unpack distribution
+    unarchive:
+      src: "{{ loki_dist_location }}"
+      dest: "{{ loki_base_dir }}"
+      remote_src: yes
+      mode: u+rw,g-wx,o-rwx
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki | Specify permissions
+    file:
+      dest: "{{ loki_base_dir }}/promtail-linux-amd64"
+      mode: "u=rwx,g=rx,o=rx"
+      owner: "root"
+      group: "{{ loki_group }}"
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki | link distrution
+    file:
+      src: "{{ loki_base_dir }}/promtail-linux-amd64"
+      dest: "{{ loki_base_dir }}/promtail"
+      owner: "root"
+      group: "{{ loki_group }}"
+      state: link
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki | Configuring settings file
+    template:
+      src: "templates/config-promtail.yml.j2"
+      dest: "{{ loki_config_dir }}/config.yml"
+      owner: "root"
+      group: "{{ loki_group }}"
+      mode: "u=rw,g=r,o="
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki | Template upgrade script
+    template:
+       src: templates/upgrade.sh.j2
+       dest: "{{ loki_base_dir }}/upgrade.sh"
+       owner: root
+       group: root
+       mode: "u=rwx,g=rwx"
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki | Configuring systemd file
+    template:
+      src: "templates/systemd_promtail.service.j2"
+      dest: /etc/systemd/system/promtail.service
+      mode: 0644
+    when: docker_test is not defined
+    become: yes
+    tags:
+      - loki
+
+  - name: Loki  | Configuring startup
+    service:
+      name: promtail
+      state: started
+      enabled: yes
+    when: docker_test is not defined
+    become: yes
+    tags:
+      - loki

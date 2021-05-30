@@ -1,0 +1,2 @@
+- src: softasap.sa_loki_promtail
+  name: sa_loki_promtail

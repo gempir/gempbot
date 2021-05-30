@@ -75,6 +75,14 @@
     group: bitraft
     mode: 0750
 
+- name: Creates log directory
+  file:
+    path: /var/log/journal
+    state: directory
+    owner: root
+    group: loki
+    mode: 0750
+
 - name: Install Config
   template: 
     src: templates/config.json.j2 

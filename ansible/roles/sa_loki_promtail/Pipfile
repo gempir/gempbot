@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+ansible = "==2.9.6"
+molecule = "==3.2.0"
+molecule-vagrant = "*"
+molecule-docker = "*"
+molecule-digitalocean = "*"
+pytest-molecule = "*"
+molecule-ec2 = "*"
+flake8 = "*"
+
+[requires]
+python_version = "3.6"
