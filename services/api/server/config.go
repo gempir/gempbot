@@ -208,7 +208,5 @@ func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Conte
 	s.db.AddEditors(userID, added)
 	s.db.RemoveEditors(userID, removed)
 
-	s.subscribeChannelPoints(userID)
-
 	return nil
 }
