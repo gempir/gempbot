@@ -121,7 +121,14 @@ func (s *Server) syncSubscriptions() {
 			continue
 		}
 
-		_, err := s.db.GetEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
+		log.Infof("renewing subscription for %s", sub.Condition.BroadcasterUserID)
+		err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "refreshing secret")
+		if err != nil {
+			log.Errorf("Failed to unsubscribe %s error: %s", sub.Condition.BroadcasterUserID, err.Error())
+		}
+		s.subscribeChannelPoints(sub.Condition.BroadcasterUserID)
+
+		_, err = s.db.GetEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
 		if err != nil {
 			log.Infof("Found unknown subscription, adding %s", sub.Condition.BroadcasterUserID)
 			s.db.AddEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
@@ -149,11 +156,11 @@ func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed reading body")
 	}
 
-	// verified := nickHelix.VerifyEventSubNotification(s.cfg.Secret, c.Request().Header, string(body))
-	// if !verified {
-	// 	log.Error(verified)
-	// 	return echo.NewHTTPError(http.StatusPreconditionFailed, "failed verfication")
-	// }
+	verified := nickHelix.VerifyEventSubNotification(s.cfg.Secret, c.Request().Header, string(body))
+	if !verified {
+		log.Errorf("Failed verification %s", c.Request().Header.Get("Twitch-Eventsub-Message-Id"))
+		return echo.NewHTTPError(http.StatusPreconditionFailed, "failed verfication")
+	}
 
 	if c.Request().Header.Get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification" {
 		return s.handleChallenge(c, body)
