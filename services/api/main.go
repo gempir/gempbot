@@ -16,7 +16,7 @@ func main() {
 
 	cfg := config.NewConfig(*configFile)
 	rStore := store.NewRedis()
-	db := store.NewDatabase(cfg.SqliteDatabase)
+	db := store.NewDatabase(cfg)
 
 	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, "")
 	helixUserClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, cfg.ApiBaseUrl+"/api/callback")

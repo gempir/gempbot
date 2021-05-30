@@ -12,5 +12,7 @@
     "webBaseUrl": "http://localhost:3000",
     "sqliteDatabase": "../../data.db",
     "cookieDomain": "localhost",
+    "postgresUsername": "bitraft",
+    "postgresPassword": "somefancypassword",
     "channels": ["77829817", "11148817", "114745759"]
 }
