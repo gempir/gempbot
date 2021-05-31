@@ -19,7 +19,7 @@ type logger struct {
 
 func NewGormLogger() *logger {
 	return &logger{
-		SkipErrRecordNotFound: false,
+		SkipErrRecordNotFound: true,
 	}
 }
 

@@ -142,7 +142,6 @@ func (s *Server) syncSubscriptions() {
 }
 
 func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
-	log.Info("Incoming redemption webhook")
 	body, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
 		log.Error(err)
