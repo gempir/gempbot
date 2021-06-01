@@ -66,7 +66,12 @@ func (db *Database) GetDistinctRewardsPerUser() []ChannelPointReward {
 }
 
 func (db *Database) SaveReward(reward ChannelPointReward) error {
-	update := db.Client.Model(&reward).Where("owner_twitch_id = ? AND type = ?", reward.OwnerTwitchID, reward.Type).Updates(&reward)
+	updateMap, err := StructToMap(reward)
+	if err != nil {
+		return err
+	}
+
+	update := db.Client.Model(&reward).Where("owner_twitch_id = ? AND type = ?", reward.OwnerTwitchID, reward.Type).Updates(&updateMap)
 	if update.Error != nil {
 		return update.Error
 	}

@@ -154,13 +154,13 @@ func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
 		rewardID = reward.RewardID
 	}
 
-	newReward.RewardID, err = s.createOrUpdateChannelPointReward(c.Param("userID"), newReward, rewardID)
+	item, err := s.createOrUpdateChannelPointReward(c.Param("userID"), newReward, rewardID)
 	if err != nil {
 		log.Errorf("Failed saving reward to twitch: %s", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving reward to twitch")
 	}
 
-	err = s.db.SaveReward(newReward)
+	err = s.db.SaveReward(createRewardFromCustomRewardResponseDataItem(item, TYPE_BTTV))
 	if err != nil {
 		log.Errorf("Failed saving reward: %s", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving reward")
@@ -169,6 +169,27 @@ func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
 	s.subscribeChannelPoints(c.Param("userID"))
 
 	return nil
+}
+
+func createRewardFromCustomRewardResponseDataItem(item helix.CreateCustomRewardResponseDataItem, rewardType string) store.ChannelPointReward {
+	return store.ChannelPointReward{
+		OwnerTwitchID:                     item.BroadcasterID,
+		Type:                              rewardType,
+		RewardID:                          item.ID,
+		Title:                             item.Title,
+		Prompt:                            item.Prompt,
+		Cost:                              item.Cost,
+		BackgroundColor:                   item.BackgroundColor,
+		IsMaxPerStreamEnabled:             item.MaxPerStreamSetting.IsEnabled,
+		MaxPerStream:                      item.MaxPerStreamSetting.MaxPerStream,
+		IsUserInputRequired:               item.IsUserInputRequired,
+		IsMaxPerUserPerStreamEnabled:      item.MaxPerStreamSetting.IsEnabled,
+		MaxPerUserPerStream:               item.MaxPerStreamSetting.MaxPerStream,
+		IsGlobalCooldownEnabled:           item.GlobalCooldownSetting.IsEnabled,
+		GlobalCooldownSeconds:             item.GlobalCooldownSetting.GlobalCooldownSeconds,
+		ShouldRedemptionsSkipRequestQueue: item.ShouldRedemptionsSkipRequestQueue,
+		Enabled:                           item.IsEnabled,
+	}
 }
 
 func setRewardDefaults(reward store.ChannelPointReward, userID string) store.ChannelPointReward {
@@ -183,10 +204,10 @@ func setRewardDefaults(reward store.ChannelPointReward, userID string) store.Cha
 	return reward
 }
 
-func (s *Server) createOrUpdateChannelPointReward(userID string, request store.ChannelPointReward, rewardID string) (string, error) {
+func (s *Server) createOrUpdateChannelPointReward(userID string, request store.ChannelPointReward, rewardID string) (helix.CreateCustomRewardResponseDataItem, error) {
 	token, err := s.db.GetUserAccessToken(userID)
 	if err != nil {
-		return "", err
+		return helix.CreateCustomRewardResponseDataItem{}, err
 	}
 
 	req := helix.CreateCustomRewardRequest{
@@ -219,8 +240,8 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request store.C
 
 	resp, err := s.helixUserClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
 	if err != nil {
-		return "", err
+		return helix.CreateCustomRewardResponseDataItem{}, err
 	}
 
-	return resp.ID, nil
+	return resp, nil
 }

@@ -188,7 +188,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 		historicEmoteIsSharedEmote = currentEmoteId == sharedEmote.ID
 	}
 
-	if currentEmoteId == "" {
+	if currentEmoteId == "" || !historicEmoteIsSharedEmote {
 		log.Infof("Didn't find previous slot chosing random in %s", channelUserID)
 		currentEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
 	}
