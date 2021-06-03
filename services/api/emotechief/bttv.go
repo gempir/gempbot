@@ -227,7 +227,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 	log.Infof("[%d] Added channelId: %s emoteId: %s", resp.StatusCode, channelUserID, emoteId)
 
 	if resp.StatusCode < http.StatusBadRequest {
-		e.db.RemoveOldestEmoteAdd(channelUserID)
+		// e.db.RemoveOldestEmoteAdd(channelUserID)
 		e.db.CreateEmoteAdd(channelUserID, emoteId)
 	}
 
