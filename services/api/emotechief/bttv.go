@@ -180,12 +180,16 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string) (addedEmot
 
 	emoteAdd, notFoundErr := e.db.GetOldestEmoteAdded(channelUserID)
 	if notFoundErr == nil {
+		log.Infof("Previous emote %s in %s", emoteAdd.EmoteID, channelUserID)
 		currentEmoteId = emoteAdd.EmoteID
 	}
 
 	historicEmoteIsSharedEmote := false
 	for _, sharedEmote := range dashboard.Sharedemotes {
-		historicEmoteIsSharedEmote = currentEmoteId == sharedEmote.ID
+		if currentEmoteId == sharedEmote.ID {
+			historicEmoteIsSharedEmote = true
+			break
+		}
 	}
 
 	if currentEmoteId == "" || !historicEmoteIsSharedEmote {
