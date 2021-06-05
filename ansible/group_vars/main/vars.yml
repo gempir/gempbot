@@ -19,6 +19,7 @@ prometheus_targets:
   node:
     - targets:
         - localhost:9100
+        - localhost:2019
       labels:
         env: bitraft
 
