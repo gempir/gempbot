@@ -11,3 +11,10 @@ postgresql_databases:
 postgresql_users:
   - name: bitraft
     password: "{{ bitraft_postgres_password }}"
+
+prometheus_targets:
+  node:
+    - targets:
+        - localhost:9100
+      labels:
+        env: bitraft

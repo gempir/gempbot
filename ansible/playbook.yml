@@ -10,6 +10,7 @@
     - {role: 'speaker', tags: ['speaker']}
     - {role: 'caddy-ansible', tags: ['caddy']}
     - {role: 'api', tags: ['api']}
+    - {role: 'prometheus', tags: ['prometheus']}
     - {role: 'grafana', tags: ['grafana']}
     - {role: 'sa_loki_promtail', tags: ['promtail']}
     - {role: 'sa_loki', tags: ['loki']}
