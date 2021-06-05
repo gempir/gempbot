@@ -18,3 +18,10 @@ prometheus_targets:
         - localhost:9100
       labels:
         env: bitraft
+
+prometheus_scrape_jobs:
+  - job_name: "node"
+    metrics_path: /metrics
+    static_configs:
+    - targets:
+      - "localhost:9100"
