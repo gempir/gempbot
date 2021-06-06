@@ -15,22 +15,26 @@ postgresql_users:
 prometheus_global:
   scrape_interval: 15s
 
-prometheus_targets:
-  node:
-    - targets:
-        - localhost:9100
-        - localhost:2019
-      labels:
-        env: bitraft
-
-prometheus_scrape_jobs:
+prometheus_scrape_configs:
+  - job_name: "prometheus"
+    metrics_path: "{{ prometheus_metrics_path }}"
+    static_configs:
+      - targets:
+          - "{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9090"
   - job_name: "node"
-    metrics_path: /metrics
+    metrics_path: "/metrics"
     static_configs:
       - targets:
           - "localhost:9100"
-  - job_name: caddy
+  - job_name: "caddy"
+    metrics_path: "/metrics"
     static_configs:
       - targets:
           - "localhost:2019"
+  - job_name: "postgres"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets:
+          - "localhost:9187"
 
+prometheus_postgres_dbname: bitraft
