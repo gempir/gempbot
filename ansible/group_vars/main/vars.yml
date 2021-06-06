@@ -36,5 +36,10 @@ prometheus_scrape_configs:
     static_configs:
       - targets:
           - "localhost:9187"
+  - job_name: "api"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets:
+          - "localhost:8035"
 
 prometheus_postgres_dbname: bitraft

@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gempir/bitraft/services/api/emotechief"
+	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -38,6 +39,9 @@ func (s *Server) Start() {
 
 	e := echo.New()
 	e.HideBanner = true
+	p := prometheus.NewPrometheus("api", nil)
+	p.Use(e)
+
 	e.GET("/api/callback", s.handleCallback)
 	e.POST("/api/redemption", s.handleChannelPointsRedemption)
 	e.GET("/api/userConfig", s.handleUserConfig)
