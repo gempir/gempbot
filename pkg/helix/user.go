@@ -4,71 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gempir/bitraft/pkg/log"
 	helixClient "github.com/nicklaw5/helix"
 )
-
-// Client wrapper for helix
-type Client struct {
-	clientID     string
-	clientSecret string
-	Client       *helixClient.Client
-	httpClient   *http.Client
-}
-
-var (
-	userCacheByID       map[string]*UserData
-	userCacheByUsername map[string]*UserData
-)
-
-func init() {
-	userCacheByID = map[string]*UserData{}
-	userCacheByUsername = map[string]*UserData{}
-}
-
-// NewClient Create helix client
-func NewClient(clientID, clientSecret, redirectURI string) *Client {
-	client, err := helixClient.NewClient(&helixClient.Options{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		RedirectURI:  redirectURI,
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	resp, err := client.RequestAppAccessToken([]string{"channel:read:redemptions"})
-	if err != nil {
-		panic(err)
-	}
-	log.Infof("Requested access token, response: %d, expires in: %d", resp.StatusCode, resp.Data.ExpiresIn)
-	client.SetAppAccessToken(resp.Data.AccessToken)
-
-	return &Client{
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		Client:       client,
-		httpClient:   &http.Client{},
-	}
-}
-
-// StartRefreshTokenRoutine refresh our token
-func (c *Client) StartRefreshTokenRoutine() {
-	ticker := time.NewTicker(24 * time.Hour)
-
-	for range ticker.C {
-		resp, err := c.Client.RequestAppAccessToken([]string{})
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		log.Infof("Requested access token from routine, response: %d, expires in: %d", resp.StatusCode, resp.Data.ExpiresIn)
-
-		c.Client.SetAppAccessToken(resp.Data.AccessToken)
-	}
-}
 
 // UserData exported data from twitch
 type UserData struct {
@@ -113,6 +52,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 				return map[string]UserData{}, err
 			}
 
+			c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(resp.StatusCode), "GetUsersByUserIds").Inc()
 			log.Debugf("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
 
 			for _, user := range resp.Data.Users {
@@ -166,6 +106,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 			return map[string]UserData{}, err
 		}
 
+		c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(resp.StatusCode), "GetUsersByUsernames").Inc()
 		log.Infof("[helix] %d GetUsersByUsernames %v", resp.StatusCode, filteredUsernames)
 		if resp.StatusCode > http.StatusMultipleChoices {
 			return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)

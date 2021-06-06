@@ -79,7 +79,7 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 
 	s.db.DeleteChannelPointReward(c.Param("userID"), c.Param("type"))
 
-	err = s.helixUserClient.DeleteReward(c.Param("userID"), token.AccessToken, reward.RewardID)
+	err = s.helixClient.DeleteReward(c.Param("userID"), token.AccessToken, reward.RewardID)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -238,7 +238,7 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request store.C
 		req.GlobalCoolDownSeconds = request.GlobalCooldownSeconds
 	}
 
-	resp, err := s.helixUserClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
+	resp, err := s.helixClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
 	if err != nil {
 		return helix.CreateCustomRewardResponseDataItem{}, err
 	}

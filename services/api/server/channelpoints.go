@@ -70,7 +70,7 @@ var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 func (s *Server) subscribeChannelPoints(userID string) {
 	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
 	// Internally they check if the app token has authenticated users
-	response, err := s.helixUserClient.Client.CreateEventSubSubscription(
+	response, err := s.helixClient.Client.CreateEventSubSubscription(
 		&nickHelix.EventSubSubscription{
 			Condition: nickHelix.EventSubCondition{BroadcasterUserID: userID},
 			Transport: nickHelix.EventSubTransport{Method: "webhook", Callback: s.cfg.WebhookApiBaseUrl + "/api/redemption", Secret: s.cfg.Secret},
@@ -91,7 +91,7 @@ func (s *Server) subscribeChannelPoints(userID string) {
 }
 
 func (s *Server) removeEventSubSubscription(userID string, subscriptionID string, reason string) error {
-	response, err := s.helixUserClient.Client.RemoveEventSubSubscription(subscriptionID)
+	response, err := s.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (s *Server) removeEventSubSubscription(userID string, subscriptionID string
 }
 
 func (s *Server) syncSubscriptions() {
-	resp, err := s.helixUserClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{})
+	resp, err := s.helixClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{})
 	if err != nil {
 		log.Errorf("Failed to get subscriptions: %s", err)
 		return
@@ -219,7 +219,7 @@ func (s *Server) handleBttvRedemption(redemption channelPointRedemption) error {
 		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
 		return nil
 	} else {
-		err := s.helixUserClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
+		err := s.helixClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
 		if err != nil {
 			log.Errorf("Failed to update redemption status %s", err.Error())
 			return nil

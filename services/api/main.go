@@ -19,12 +19,10 @@ func main() {
 	db := store.NewDatabase(cfg)
 
 	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, "")
-	helixUserClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, cfg.ApiBaseUrl+"/api/callback")
-	go helixUserClient.StartRefreshTokenRoutine()
 	go helixClient.StartRefreshTokenRoutine()
 
 	emoteChief := emotechief.NewEmoteChief(rStore, cfg, db)
-	server := server.NewServer(cfg, helixClient, helixUserClient, rStore, db, emoteChief)
+	server := server.NewServer(cfg, helixClient, rStore, db, emoteChief)
 
 	server.Start()
 }

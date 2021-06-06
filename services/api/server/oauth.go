@@ -26,7 +26,7 @@ func (t *tokenClaims) Valid() error {
 func (s *Server) handleCallback(c echo.Context) error {
 	code := c.QueryParam("code")
 
-	resp, err := s.helixUserClient.Client.RequestUserAccessToken(code)
+	resp, err := s.helixClient.Client.RequestUserAccessToken(code)
 	if err != nil || resp.StatusCode >= 400 {
 		log.Errorf("failed to request userAccessToken: %s %s", err, resp.ErrorMessage)
 		// @TODO redirect to somewhere better

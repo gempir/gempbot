@@ -9,6 +9,7 @@ require (
 	github.com/labstack/echo-contrib v0.11.0
 	github.com/labstack/echo/v4 v4.3.0
 	github.com/nicklaw5/helix v1.13.1
+	github.com/prometheus/client_golang v1.10.0
 	github.com/sirupsen/logrus v1.8.1
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.10
