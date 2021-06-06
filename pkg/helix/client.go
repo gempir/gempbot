@@ -14,6 +14,7 @@ import (
 type Client struct {
 	clientID               string
 	clientSecret           string
+	eventSubSecret         string
 	Client                 *helixClient.Client
 	httpClient             *http.Client
 	helixApiResponseStatus *prometheus.CounterVec
@@ -30,7 +31,7 @@ func init() {
 }
 
 // NewClient Create helix client
-func NewClient(clientID, clientSecret, redirectURI string) *Client {
+func NewClient(clientID, clientSecret, redirectURI string, eventSubSecret string) *Client {
 	client, err := helixClient.NewClient(&helixClient.Options{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
@@ -48,10 +49,11 @@ func NewClient(clientID, clientSecret, redirectURI string) *Client {
 	client.SetAppAccessToken(resp.Data.AccessToken)
 
 	return &Client{
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		Client:       client,
-		httpClient:   &http.Client{},
+		clientID:       clientID,
+		clientSecret:   clientSecret,
+		eventSubSecret: eventSubSecret,
+		Client:         client,
+		httpClient:     &http.Client{},
 		helixApiResponseStatus: promauto.NewCounterVec(
 			prometheus.CounterOpts{
 				Name: "helix_responses",

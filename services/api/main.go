@@ -18,7 +18,7 @@ func main() {
 	rStore := store.NewRedis()
 	db := store.NewDatabase(cfg)
 
-	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, "")
+	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, cfg.ApiBaseUrl+"/api/callback", cfg.Secret)
 	go helixClient.StartRefreshTokenRoutine()
 
 	emoteChief := emotechief.NewEmoteChief(rStore, cfg, db)

@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -67,20 +68,15 @@ type channelPointRedemption struct {
 
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
-func (s *Server) subscribeChannelPoints(userID string) {
-	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
-	// Internally they check if the app token has authenticated users
-	response, err := s.helixClient.Client.CreateEventSubSubscription(
-		&nickHelix.EventSubSubscription{
-			Condition: nickHelix.EventSubCondition{BroadcasterUserID: userID},
-			Transport: nickHelix.EventSubTransport{Method: "webhook", Callback: s.cfg.WebhookApiBaseUrl + "/api/redemption", Secret: s.cfg.Secret},
-			Type:      "channel.channel_points_custom_reward_redemption.add",
-			Version:   "1",
-		},
-	)
+func (s *Server) subscribeChannelPoints(userID string) error {
+	response, err := s.helixClient.CreateChannelPointsRewardAdd(userID, s.cfg.WebhookApiBaseUrl+"/api/redemption")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
-		return
+		return nil
+	}
+
+	if response.StatusCode == http.StatusForbidden {
+		return errors.New("forbidden")
 	}
 
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
@@ -88,6 +84,8 @@ func (s *Server) subscribeChannelPoints(userID string) {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
 		s.db.AddEventSubSubscription(userID, sub.ID)
 	}
+
+	return nil
 }
 
 func (s *Server) removeEventSubSubscription(userID string, subscriptionID string, reason string) error {
@@ -136,7 +134,11 @@ func (s *Server) syncSubscriptions() {
 	for _, dbReward := range rewards {
 		if !slice.Contains(subscribed, dbReward.OwnerTwitchID) {
 			log.Infof("Found no subscription for existing reward, creating subscription %s", dbReward.OwnerTwitchID)
-			s.subscribeChannelPoints(dbReward.OwnerTwitchID)
+			err := s.subscribeChannelPoints(dbReward.OwnerTwitchID)
+			if err != nil {
+				log.Infof("Removing reward for user %s because we didn't get permission to subscribe eventsub", dbReward.OwnerTwitchID)
+				s.db.DeleteChannelPointReward(dbReward.OwnerTwitchID, dbReward.Type)
+			}
 		}
 	}
 }
