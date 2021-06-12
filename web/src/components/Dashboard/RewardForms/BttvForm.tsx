@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useChannelPointReward } from "../../../hooks/useChannelPointReward";
 import { UserConfig } from "../../../hooks/useUserConfig";
@@ -35,7 +35,13 @@ const defaultReward = {
 
 export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
-    const [reward, setReward, deleteReward] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward);
+    const [loading, setLoading] = useState(false);
+
+    const onUpdate = () => {
+        setLoading(false);
+    }
+
+    const [reward, setReward, deleteReward] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward, onUpdate);
     const onSubmit = (data: BttvRewardForm) => {
         const rewardData: ChannelPointReward = {
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
@@ -56,6 +62,7 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
         };
 
         setReward(rewardData);
+        setLoading(true);
     }
 
     useEffect(() => {
@@ -133,7 +140,13 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
                     <input defaultChecked={reward.Enabled} type="checkbox" {...register("enabled")} className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" />
                     <span className="ml-2">Enabled</span>
                 </label>
-                <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3 cursor-pointer" value="save" />
+                {loading && <span className="bg-blue-700 p-2 rounded shadow block mt-3">
+                    <svg className="animate-spin mx-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>}
+                {!loading && <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3 cursor-pointer" value="save" />}
             </div>
         </form>
     );

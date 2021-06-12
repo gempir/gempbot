@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { doFetch, Method, RejectReason } from "../service/doFetch";
 import { ChannelPointReward, RewardTypes } from "../types/Rewards";
 
-export function useChannelPointReward(userID: string, type: RewardTypes, defaultReward: ChannelPointReward): [ChannelPointReward, (reward: ChannelPointReward) => void, () => void] {
+export function useChannelPointReward(userID: string, type: RewardTypes, defaultReward: ChannelPointReward, onUpdate: () => void): [ChannelPointReward, (reward: ChannelPointReward) => void, () => void] {
     const [reward, setReward] = useState<ChannelPointReward>(defaultReward);
 
     const fetchReward = () => {
@@ -11,9 +11,10 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
                 throw new Error(reason);
             }
             setReward(defaultReward);
-        })
+        }).then(onUpdate)
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchReward, [userID, type, defaultReward]);
 
     const updateReward = (reward: ChannelPointReward) => {
