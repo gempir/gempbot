@@ -82,7 +82,7 @@ func (s *Server) subscribeChannelPoints(userID string) error {
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
-		s.db.AddEventSubSubscription(userID, sub.ID)
+		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version)
 	}
 
 	return nil
@@ -122,7 +122,7 @@ func (s *Server) syncSubscriptions() {
 		_, err = s.db.GetEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
 		if err != nil {
 			log.Infof("Found unknown subscription, adding %s", sub.Condition.BroadcasterUserID)
-			s.db.AddEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
+			s.db.AddEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, sub.Version)
 		}
 
 		subscribed = append(subscribed, sub.Condition.BroadcasterUserID)
@@ -175,6 +175,23 @@ func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
 }
 
 func (s *Server) handleRedemption(redemption channelPointRedemption) error {
+	exists, err := s.store.Client.Exists("redemption:" + redemption.Event.ID).Result()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if exists == 1 {
+		log.Infof("Redemption already handled before, ignoring retry %s", redemption.Event.ID)
+		return nil
+	}
+
+	s.store.Client.SetNX("redemption:"+redemption.Event.ID, "1", time.Minute*10)
+
+	if redemption.Subscription.Version != "1" {
+		log.Errorf("Unknown subscription version found %s %s", redemption.Subscription.Version, redemption.Subscription.ID)
+		return nil
+	}
+
 	reward, err := s.db.GetEnabledChannelPointRewardByID(redemption.Event.Reward.ID)
 	if err != nil {
 		// no redemption found

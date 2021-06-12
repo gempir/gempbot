@@ -8,12 +8,13 @@ import (
 type EventSubSubscription struct {
 	TargetTwitchID string `gorm:"primaryKey"`
 	SubscriptionID string `gorm:"primaryKey"`
+	Version        string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
 
-func (db *Database) AddEventSubSubscription(targetTwitchID string, subscriptionID string) {
-	sub := EventSubSubscription{TargetTwitchID: targetTwitchID, SubscriptionID: subscriptionID}
+func (db *Database) AddEventSubSubscription(targetTwitchID string, subscriptionID string, version string) {
+	sub := EventSubSubscription{TargetTwitchID: targetTwitchID, SubscriptionID: subscriptionID, Version: version}
 
 	db.Client.Create(&sub)
 }
