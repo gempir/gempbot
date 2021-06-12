@@ -166,7 +166,7 @@ func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving reward")
 	}
 
-	s.subscribeChannelPoints(c.Param("userID"))
+	_ = s.subscribeChannelPoints(c.Param("userID"))
 
 	return nil
 }
