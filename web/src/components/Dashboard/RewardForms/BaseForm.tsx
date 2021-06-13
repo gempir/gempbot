@@ -33,7 +33,7 @@ const defaultReward = {
     Enabled: false
 }
 
-export function BaseForm({ userConfig, type, header, description }: { userConfig: UserConfig, type: RewardTypes, header?: JSX.Element, description?: JSX.Element }) {
+export function BaseForm({ userConfig, type, header, description, children }: { userConfig: UserConfig, type: RewardTypes, header?: JSX.Element, description?: JSX.Element, children?: JSX.Element }) {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
     const [loading, setLoading] = useState(false);
 
@@ -130,6 +130,8 @@ export function BaseForm({ userConfig, type, header, description }: { userConfig
                 Global Cooldown in Minutes
                 <input defaultValue={(reward.GlobalCooldownSeconds ?? 0) / 60} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
+
+            {children}
 
             <div className="flex flex-row justify-between items-center select-none">
                 <label className="flex items-center">
