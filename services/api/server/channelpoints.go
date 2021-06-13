@@ -187,7 +187,7 @@ func (s *Server) handleRedemption(redemption channelPointRedemption) error {
 
 	s.store.Client.SetNX("redemption:"+redemption.Event.ID, "1", time.Minute*10)
 
-	if redemption.Subscription.Version != "1" {
+	if redemption.Subscription.Version != "1" && redemption.Subscription.Version != "" {
 		log.Errorf("Unknown subscription version found %s %s", redemption.Subscription.Version, redemption.Subscription.ID)
 		return nil
 	}
