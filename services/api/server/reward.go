@@ -2,7 +2,10 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
+	"time"
 
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/log"
@@ -11,19 +14,22 @@ import (
 )
 
 const (
-	TYPE_BTTV = "bttv"
+	TYPE_BTTV    = "bttv"
+	TYPE_TIMEOUT = "timeout"
 )
 
 type Reward interface {
 	GetType() string
 	GetConfig() TwitchRewardConfig
+	SetConfig(config TwitchRewardConfig)
+	GetAdditionalOptions() interface{}
 }
 
 type TwitchRewardConfig struct {
 	Title                             string `json:"title"`
 	Prompt                            string `json:"prompt"`
 	Cost                              int    `json:"cost"`
-	Backgroundcolor                   string `json:"backgroundColor"`
+	BackgroundColor                   string `json:"backgroundColor"`
 	IsMaxPerStreamEnabled             bool   `json:"isMaxPerStreamEnabled"`
 	MaxPerStream                      int    `json:"maxPerStream"`
 	IsUserInputRequired               bool   `json:"isUserInputRequired"`
@@ -42,6 +48,43 @@ type BttvReward struct {
 
 func (r *BttvReward) GetType() string {
 	return TYPE_BTTV
+}
+
+func (r *BttvReward) GetAdditionalOptions() interface{} {
+	return &struct{}{}
+}
+
+func (r *BttvReward) GetConfig() TwitchRewardConfig {
+	return r.TwitchRewardConfig
+}
+
+func (r *BttvReward) SetConfig(config TwitchRewardConfig) {
+	r.TwitchRewardConfig = config
+}
+
+type TimeoutReward struct {
+	TwitchRewardConfig
+	TimeoutAdditionalOptions
+}
+
+func (r *TimeoutReward) GetType() string {
+	return TYPE_TIMEOUT
+}
+
+func (r *TimeoutReward) GetConfig() TwitchRewardConfig {
+	return r.TwitchRewardConfig
+}
+
+func (r *TimeoutReward) SetConfig(config TwitchRewardConfig) {
+	r.TwitchRewardConfig = config
+}
+
+type TimeoutAdditionalOptions struct {
+	Length int
+}
+
+func (r *TimeoutReward) GetAdditionalOptions() interface{} {
+	return r.TimeoutAdditionalOptions
 }
 
 func MarshallReward(reward Reward) string {
@@ -140,27 +183,27 @@ func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
 		}
 	}
 
-	var newReward store.ChannelPointReward
-	if err := json.NewDecoder(c.Request().Body).Decode(&newReward); err != nil {
-		log.Errorf("Failed unmarshalling reward: %s", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failure unmarshalling reward")
+	newReward, err := createRewardFromBody(c.Request().Body)
+	if err != nil {
+		log.Error(err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Failure reading body")
 	}
 
-	newReward = setRewardDefaults(newReward, c.Param("userID"))
-
 	rewardID := ""
-	reward, err := s.db.GetChannelPointReward(c.Param("userID"), TYPE_BTTV)
+	reward, err := s.db.GetChannelPointReward(c.Param("userID"), newReward.GetType())
 	if err == nil {
 		rewardID = reward.RewardID
 	}
 
-	item, err := s.createOrUpdateChannelPointReward(c.Param("userID"), newReward, rewardID)
+	config, err := s.createOrUpdateChannelPointReward(c.Param("userID"), newReward.GetConfig(), rewardID)
 	if err != nil {
 		log.Errorf("Failed saving reward to twitch: %s", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving reward to twitch")
 	}
 
-	err = s.db.SaveReward(createRewardFromCustomRewardResponseDataItem(item, TYPE_BTTV))
+	newReward.SetConfig(config)
+
+	err = s.db.SaveReward(createStoreRewardFromReward(c.Param("userID"), newReward))
 	if err != nil {
 		log.Errorf("Failed saving reward: %s", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failure saving reward")
@@ -171,11 +214,106 @@ func (s *Server) handleRewardCreateOrUpdate(c echo.Context) error {
 	return nil
 }
 
-func createRewardFromCustomRewardResponseDataItem(item helix.CreateCustomRewardResponseDataItem, rewardType string) store.ChannelPointReward {
+func createStoreRewardFromReward(userID string, reward Reward) store.ChannelPointReward {
+	addOpts, err := json.Marshal(reward.GetAdditionalOptions())
+	if err != nil {
+		log.Error(err)
+	}
+
 	return store.ChannelPointReward{
-		OwnerTwitchID:                     item.BroadcasterID,
-		Type:                              rewardType,
-		RewardID:                          item.ID,
+		OwnerTwitchID:                     userID,
+		Type:                              reward.GetType(),
+		RewardID:                          reward.GetConfig().ID,
+		Title:                             reward.GetConfig().Title,
+		Prompt:                            reward.GetConfig().Prompt,
+		Cost:                              reward.GetConfig().Cost,
+		BackgroundColor:                   reward.GetConfig().BackgroundColor,
+		IsMaxPerStreamEnabled:             reward.GetConfig().IsMaxPerStreamEnabled,
+		MaxPerStream:                      reward.GetConfig().MaxPerStream,
+		IsUserInputRequired:               reward.GetConfig().IsUserInputRequired,
+		IsMaxPerUserPerStreamEnabled:      reward.GetConfig().IsMaxPerUserPerStreamEnabled,
+		MaxPerUserPerStream:               reward.GetConfig().MaxPerUserPerStream,
+		IsGlobalCooldownEnabled:           reward.GetConfig().IsGlobalCooldownEnabled,
+		GlobalCooldownSeconds:             reward.GetConfig().GlobalCooldownSeconds,
+		ShouldRedemptionsSkipRequestQueue: reward.GetConfig().ShouldRedemptionsSkipRequestQueue,
+		Enabled:                           reward.GetConfig().Enabled,
+		AdditionalOptions:                 string(addOpts),
+	}
+}
+
+type rewardRequestBody struct {
+	ID                                string
+	OwnerTwitchID                     string
+	Type                              string
+	RewardID                          string
+	CreatedAt                         time.Time
+	UpdatedAt                         time.Time
+	Title                             string
+	Prompt                            string
+	Cost                              int
+	BackgroundColor                   string
+	IsMaxPerStreamEnabled             bool
+	MaxPerStream                      int
+	IsUserInputRequired               bool
+	IsMaxPerUserPerStreamEnabled      bool
+	MaxPerUserPerStream               int
+	IsGlobalCooldownEnabled           bool
+	GlobalCooldownSeconds             int
+	ShouldRedemptionsSkipRequestQueue bool
+	Enabled                           bool
+	AdditionalOptions                 string
+}
+
+func createRewardFromBody(body io.ReadCloser) (Reward, error) {
+	var data rewardRequestBody
+
+	if err := json.NewDecoder(body).Decode(&data); err != nil {
+		return nil, err
+	}
+
+	switch data.Type {
+	case TYPE_BTTV:
+		return &BttvReward{
+			TwitchRewardConfig: createTwitchRewardConfigFromRequestBody(data),
+		}, nil
+	case TYPE_TIMEOUT:
+		var addOpts TimeoutAdditionalOptions
+		err := json.Unmarshal([]byte(data.AdditionalOptions), &addOpts)
+		if err != nil {
+			return nil, err
+		}
+
+		return &TimeoutReward{
+			TwitchRewardConfig:       createTwitchRewardConfigFromRequestBody(data),
+			TimeoutAdditionalOptions: addOpts,
+		}, nil
+	}
+
+	return nil, errors.New("unknown reward")
+}
+
+func createTwitchRewardConfigFromRequestBody(body rewardRequestBody) TwitchRewardConfig {
+	return TwitchRewardConfig{
+		Title:                             body.Title,
+		Prompt:                            body.Prompt,
+		Cost:                              body.Cost,
+		BackgroundColor:                   body.BackgroundColor,
+		IsMaxPerStreamEnabled:             body.IsMaxPerStreamEnabled,
+		MaxPerStream:                      body.MaxPerStream,
+		IsUserInputRequired:               true,
+		IsMaxPerUserPerStreamEnabled:      body.IsMaxPerUserPerStreamEnabled,
+		MaxPerUserPerStream:               body.MaxPerUserPerStream,
+		IsGlobalCooldownEnabled:           body.IsGlobalCooldownEnabled,
+		GlobalCooldownSeconds:             body.GlobalCooldownSeconds,
+		ShouldRedemptionsSkipRequestQueue: false,
+		Enabled:                           body.Enabled,
+		ID:                                body.ID,
+	}
+}
+
+func createTwitchRewardConfigFromCustomRewardResponseDataItem(item helix.CreateCustomRewardResponseDataItem) TwitchRewardConfig {
+	return TwitchRewardConfig{
+		ID:                                item.ID,
 		Title:                             item.Title,
 		Prompt:                            item.Prompt,
 		Cost:                              item.Cost,
@@ -204,10 +342,10 @@ func setRewardDefaults(reward store.ChannelPointReward, userID string) store.Cha
 	return reward
 }
 
-func (s *Server) createOrUpdateChannelPointReward(userID string, request store.ChannelPointReward, rewardID string) (helix.CreateCustomRewardResponseDataItem, error) {
+func (s *Server) createOrUpdateChannelPointReward(userID string, request TwitchRewardConfig, rewardID string) (TwitchRewardConfig, error) {
 	token, err := s.db.GetUserAccessToken(userID)
 	if err != nil {
-		return helix.CreateCustomRewardResponseDataItem{}, err
+		return TwitchRewardConfig{}, err
 	}
 
 	req := helix.CreateCustomRewardRequest{
@@ -240,8 +378,23 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request store.C
 
 	resp, err := s.helixClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
 	if err != nil {
-		return helix.CreateCustomRewardResponseDataItem{}, err
+		return TwitchRewardConfig{}, err
 	}
 
-	return resp, nil
+	return TwitchRewardConfig{
+		Title:                             resp.Title,
+		Prompt:                            resp.Prompt,
+		Cost:                              resp.Cost,
+		BackgroundColor:                   resp.BackgroundColor,
+		IsMaxPerStreamEnabled:             resp.MaxPerStreamSetting.IsEnabled,
+		MaxPerStream:                      resp.MaxPerStreamSetting.MaxPerStream,
+		IsUserInputRequired:               resp.IsUserInputRequired,
+		IsMaxPerUserPerStreamEnabled:      resp.MaxPerUserPerStreamSetting.IsEnabled,
+		MaxPerUserPerStream:               resp.MaxPerUserPerStreamSetting.MaxPerUserPerStream,
+		IsGlobalCooldownEnabled:           resp.GlobalCooldownSetting.IsEnabled,
+		GlobalCooldownSeconds:             resp.GlobalCooldownSetting.GlobalCooldownSeconds,
+		ShouldRedemptionsSkipRequestQueue: resp.ShouldRedemptionsSkipRequestQueue,
+		Enabled:                           resp.IsEnabled,
+		ID:                                resp.ID,
+	}, nil
 }
