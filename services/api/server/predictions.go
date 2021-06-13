@@ -9,29 +9,29 @@ import (
 )
 
 func (s *Server) subscribePredictions(userID string) {
-	// response, err := s.helixClient.CreateEventSubSubscription(userID, s.cfg.WebhookApiBaseUrl+"/api/prediction/begin", "channel.prediction.begin")
-	// if err != nil {
-	// 	log.Errorf("Error subscribing: %s", err)
-	// 	return
-	// }
+	response, err := s.helixClient.CreateEventSubSubscription(userID, s.cfg.WebhookApiBaseUrl+"/api/prediction/begin", "channel.prediction.begin")
+	if err != nil {
+		log.Errorf("Error subscribing: %s", err)
+		return
+	}
 
-	// log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
-	// for _, sub := range response.Data.EventSubSubscriptions {
-	// 	s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
-	// }
+	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
+	for _, sub := range response.Data.EventSubSubscriptions {
+		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
+	}
 
-	// response, err = s.helixClient.CreateEventSubSubscription(userID, s.cfg.WebhookApiBaseUrl+"/api/prediction/lock", "channel.prediction.lock")
-	// if err != nil {
-	// 	log.Errorf("Error subscribing: %s", err)
-	// 	return
-	// }
+	response, err = s.helixClient.CreateEventSubSubscription(userID, s.cfg.WebhookApiBaseUrl+"/api/prediction/lock", "channel.prediction.lock")
+	if err != nil {
+		log.Errorf("Error subscribing: %s", err)
+		return
+	}
 
-	// log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
-	// for _, sub := range response.Data.EventSubSubscriptions {
-	// 	s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
-	// }
+	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
+	for _, sub := range response.Data.EventSubSubscriptions {
+		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
+	}
 
-	response, err := s.helixClient.CreateEventSubSubscription(userID, s.cfg.WebhookApiBaseUrl+"/api/prediction/end", "channel.prediction.end")
+	response, err = s.helixClient.CreateEventSubSubscription(userID, s.cfg.WebhookApiBaseUrl+"/api/prediction/end", "channel.prediction.end")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
 		return
