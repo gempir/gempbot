@@ -1,5 +1,6 @@
 export enum RewardTypes {
-    Bttv = "bttv"
+    Bttv = "bttv",
+    Timeout = "timeout"
 }
 
 export interface ChannelPointReward {

@@ -24,6 +24,7 @@ type ChannelPointReward struct {
 	GlobalCooldownSeconds             int
 	ShouldRedemptionsSkipRequestQueue bool
 	Enabled                           bool
+	AdditionalOptions                 string
 }
 
 func (db *Database) GetChannelPointRewards(userID string) []ChannelPointReward {
