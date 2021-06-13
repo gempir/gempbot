@@ -49,6 +49,8 @@ func (s *Server) handleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to set userAccessToken in callback: %s", err)
 	}
 
+	go s.subscribePredictions(validateResp.Data.UserID)
+
 	return s.dashboardRedirect(c, token)
 }
 

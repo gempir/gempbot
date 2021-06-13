@@ -311,37 +311,6 @@ func createTwitchRewardConfigFromRequestBody(body rewardRequestBody) TwitchRewar
 	}
 }
 
-func createTwitchRewardConfigFromCustomRewardResponseDataItem(item helix.CreateCustomRewardResponseDataItem) TwitchRewardConfig {
-	return TwitchRewardConfig{
-		ID:                                item.ID,
-		Title:                             item.Title,
-		Prompt:                            item.Prompt,
-		Cost:                              item.Cost,
-		BackgroundColor:                   item.BackgroundColor,
-		IsMaxPerStreamEnabled:             item.MaxPerStreamSetting.IsEnabled,
-		MaxPerStream:                      item.MaxPerStreamSetting.MaxPerStream,
-		IsUserInputRequired:               item.IsUserInputRequired,
-		IsMaxPerUserPerStreamEnabled:      item.MaxPerUserPerStreamSetting.IsEnabled,
-		MaxPerUserPerStream:               item.MaxPerUserPerStreamSetting.MaxPerUserPerStream,
-		IsGlobalCooldownEnabled:           item.GlobalCooldownSetting.IsEnabled,
-		GlobalCooldownSeconds:             item.GlobalCooldownSetting.GlobalCooldownSeconds,
-		ShouldRedemptionsSkipRequestQueue: item.ShouldRedemptionsSkipRequestQueue,
-		Enabled:                           item.IsEnabled,
-	}
-}
-
-func setRewardDefaults(reward store.ChannelPointReward, userID string) store.ChannelPointReward {
-	reward.OwnerTwitchID = userID
-	reward.IsUserInputRequired = true
-	reward.ShouldRedemptionsSkipRequestQueue = false
-
-	if reward.Type == TYPE_BTTV {
-		reward.Prompt = bttvPrompt
-	}
-
-	return reward
-}
-
 func (s *Server) createOrUpdateChannelPointReward(userID string, request TwitchRewardConfig, rewardID string) (TwitchRewardConfig, error) {
 	token, err := s.db.GetUserAccessToken(userID)
 	if err != nil {

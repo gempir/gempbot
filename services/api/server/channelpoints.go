@@ -1,17 +1,13 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/gempir/bitraft/pkg/log"
-	"github.com/gempir/bitraft/pkg/slice"
 	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 )
@@ -69,7 +65,7 @@ type channelPointRedemption struct {
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
 func (s *Server) subscribeChannelPoints(userID string) error {
-	response, err := s.helixClient.CreateChannelPointsRewardAdd(userID, s.cfg.WebhookApiBaseUrl+"/api/redemption")
+	response, err := s.helixClient.CreateEventSubSubscription(userID, s.cfg.WebhookApiBaseUrl+"/api/redemption", nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
 		return nil
@@ -82,88 +78,29 @@ func (s *Server) subscribeChannelPoints(userID string) error {
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
-		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version)
+		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
 	}
 
 	return nil
 }
 
-func (s *Server) removeEventSubSubscription(userID string, subscriptionID string, reason string) error {
+func (s *Server) removeEventSubSubscription(userID string, subscriptionID string, subType string, reason string) error {
 	response, err := s.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
 		return err
 	}
 
 	log.Infof("[%d] removed EventSubSubscription for %s reason: %s", response.StatusCode, userID, reason)
-	s.db.RemoveEventSubSubscription(userID, subscriptionID)
+	s.db.RemoveEventSubSubscription(userID, subscriptionID, subType)
 
 	return nil
 }
 
-func (s *Server) syncSubscriptions() {
-	resp, err := s.helixClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{})
-	if err != nil {
-		log.Errorf("Failed to get subscriptions: %s", err)
-		return
-	}
-
-	log.Infof("Found %d total subscriptions, syncing to DB", resp.Data.Total)
-	subscribed := []string{}
-
-	for _, sub := range resp.Data.EventSubSubscriptions {
-		if !strings.Contains(sub.Transport.Callback, s.cfg.WebhookApiBaseUrl) || sub.Status == nickHelix.EventSubStatusFailed {
-			err := s.removeEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, "bad EventSub subscription, unsubscribing")
-			if err != nil {
-				log.Errorf("Failed to unsubscribe %s error: %s", sub.Condition.BroadcasterUserID, err.Error())
-			}
-			continue
-		}
-
-		_, err = s.db.GetEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID)
-		if err != nil {
-			log.Infof("Found unknown subscription, adding %s", sub.Condition.BroadcasterUserID)
-			s.db.AddEventSubSubscription(sub.Condition.BroadcasterUserID, sub.ID, sub.Version)
-		}
-
-		subscribed = append(subscribed, sub.Condition.BroadcasterUserID)
-	}
-
-	rewards := s.db.GetDistinctRewardsPerUser()
-	log.Infof("Found %d total distinct rewards, checking missing subscriptions", len(rewards))
-
-	for _, dbReward := range rewards {
-		if !slice.Contains(subscribed, dbReward.OwnerTwitchID) {
-			log.Infof("Found no subscription for existing reward, creating subscription %s", dbReward.OwnerTwitchID)
-			err := s.subscribeChannelPoints(dbReward.OwnerTwitchID)
-			if err != nil {
-				log.Infof("Removing reward for user %s because we didn't get permission to subscribe eventsub", dbReward.OwnerTwitchID)
-				s.db.DeleteChannelPointReward(dbReward.OwnerTwitchID, dbReward.Type)
-			}
-		}
-	}
-}
-
 func (s *Server) handleChannelPointsRedemption(c echo.Context) error {
-	body, err := ioutil.ReadAll(c.Request().Body)
-	if err != nil {
-		log.Error(err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed reading body")
-	}
-
-	verified := nickHelix.VerifyEventSubNotification(s.cfg.Secret, c.Request().Header, string(body))
-	if !verified {
-		log.Errorf("Failed verification %s", c.Request().Header.Get("Twitch-Eventsub-Message-Id"))
-		return echo.NewHTTPError(http.StatusPreconditionFailed, "failed verfication")
-	}
-
-	if c.Request().Header.Get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification" {
-		return s.handleChallenge(c, body)
-	}
-
 	var redemption channelPointRedemption
-	err = json.Unmarshal(body, &redemption)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed decoding body: "+err.Error())
+	done, err := s.handleWebhook(c, &redemption)
+	if err != nil || done {
+		return err
 	}
 
 	err = s.handleRedemption(redemption)
@@ -180,6 +117,7 @@ func (s *Server) handleRedemption(redemption channelPointRedemption) error {
 		log.Error(err)
 		return err
 	}
+
 	if exists == 1 {
 		log.Infof("Redemption already handled before, ignoring retry %s", redemption.Event.ID)
 		return nil
@@ -246,17 +184,4 @@ func (s *Server) handleBttvRedemption(redemption channelPointRedemption) error {
 	}
 
 	return nil
-}
-
-func (s *Server) handleChallenge(c echo.Context, body []byte) error {
-	var event struct {
-		Challenge string `json:"challenge"`
-	}
-	err := json.Unmarshal(body, &event)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Failed to handle challenge: "+err.Error(), http.StatusBadRequest))
-	}
-
-	log.Infof("Challenge success: %s", event.Challenge)
-	return c.String(http.StatusOK, event.Challenge)
 }
