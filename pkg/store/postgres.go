@@ -21,7 +21,7 @@ func NewDatabase(cfg *config.Config) *Database {
 	}
 
 	// Migrate the schema
-	err = pdb.AutoMigrate(&Editor{}, &ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{}, &EmoteAdd{}, &PredictionLog{}, &PredictionLogOutcome{})
+	err = pdb.AutoMigrate(&Editor{}, &ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{}, &EmoteAdd{}, &PredictionLog{}, &PredictionLogOutcome{}, BotConfig{})
 	if err != nil {
 		panic(err)
 	}

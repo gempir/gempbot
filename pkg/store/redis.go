@@ -46,3 +46,11 @@ func (s *Redis) PublishSpeakerMessage(channel, message string) {
 
 	s.Client.Publish("SPEAKERMESSAGE", data)
 }
+
+func (s *Redis) PublishPrivateMessage(message string) {
+	s.Client.Publish("PRIVMSG", message)
+}
+
+func (s *Redis) SubscribePrivateMessages() *redis.PubSub {
+	return s.Client.Subscribe("PRIVMSG")
+}

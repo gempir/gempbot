@@ -1,0 +1,12 @@
+[Unit]
+Description=ingester
+After=network.target
+StartLimitBurst=10
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStart=/home/ingester/ingester --config /etc/bitraft/config.json
+
+[Install]
+WantedBy=multi-user.target
