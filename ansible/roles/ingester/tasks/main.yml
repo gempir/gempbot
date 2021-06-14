@@ -4,7 +4,7 @@
       name: ingester
       shell: /bin/bash
       groups: 
-        - spamchamp
+        - bitraft
       append: yes
 
   - name: Install Service
