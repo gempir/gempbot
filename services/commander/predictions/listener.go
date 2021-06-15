@@ -49,6 +49,11 @@ func (l *Listener) handleMessage(msg twitch.PrivateMessage) {
 	}
 }
 
-func (L *Listener) handlePrediction(msg twitch.PrivateMessage) {
+func (l *Listener) handlePrediction(msg twitch.PrivateMessage) {
+	perm := l.db.GetPermission(msg.User.ID, msg.RoomID)
+	if !perm.Prediction {
+		return
+	}
+
 	log.Info("handle prediction")
 }
