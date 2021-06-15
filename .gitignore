@@ -7,5 +7,6 @@ config.json
 services/api/api
 services/ingester/ingester
 services/speaker/speaker
+services/commander/commander
 
 web/node_modules/

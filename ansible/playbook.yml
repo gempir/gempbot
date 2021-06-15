@@ -11,6 +11,7 @@
     - {role: 'caddy-ansible', tags: ['caddy']}
     - {role: 'api', tags: ['api']}
     - {role: 'ingester', tags: ['ingester']}
+    - {role: 'commander', tags: ['commander']}
     - {role: 'geerlingguy.node_exporter', tags: ['node_exporter']}
     - {role: 'prometheus', tags: ['prometheus']}
     - {role: 'prometheus-postgres', tags: ['prometheus-postgres']}
