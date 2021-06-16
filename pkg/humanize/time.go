@@ -2,12 +2,51 @@ package humanize
 
 import (
 	"fmt"
+	"math"
+	"strconv"
 	"strings"
 	"time"
 )
 
 func TimeSince(a time.Time) string {
 	return formatDiff(diff(a, time.Now()))
+}
+
+func StringToSeconds(s string) (int, error) {
+	if strings.HasSuffix(s, "m") {
+		num := strings.TrimSuffix("m", s)
+		integer, err := strconv.Atoi(num)
+
+		return integer * 60, err
+	}
+
+	if strings.HasSuffix(s, "s") {
+		num := strings.TrimSuffix("s", s)
+		integer, err := strconv.Atoi(num)
+
+		return integer, err
+	}
+
+	integer, err := strconv.Atoi(s)
+
+	return integer, err
+}
+
+func SecondsToString(s int) string {
+	if s < 60 {
+		return fmt.Sprint(s)
+	}
+	if s == 60 {
+		return "1m"
+	}
+	if s%60 == 0 {
+		return fmt.Sprint(s / 60)
+	}
+
+	floored := math.Floor(float64(s) / 60)
+	rest := float64(s) - (floored * 60)
+
+	return fmt.Sprintf("%fm %fs", floored, rest)
 }
 
 func formatDiff(years, months, days, hours, mins, secs int) string {

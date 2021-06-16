@@ -1,25 +1,28 @@
-package predictions
+package reader
 
 import (
 	"strings"
 
-	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/store"
+	"github.com/gempir/bitraft/pkg/tmi"
+	"github.com/gempir/bitraft/services/commander/predictions"
 	"github.com/gempir/go-twitch-irc/v2"
 )
 
 type Listener struct {
-	db       *store.Database
-	redis    *store.Redis
-	commands map[string]func(twitch.PrivateMessage)
+	db                 *store.Database
+	redis              *store.Redis
+	predictionsHandler *predictions.Handler
+	commands           map[string]func(twitch.PrivateMessage)
 }
 
-func NewListener(db *store.Database, redis *store.Redis) *Listener {
+func NewListener(db *store.Database, redis *store.Redis, predictionsHandler *predictions.Handler) *Listener {
 
 	return &Listener{
-		db:       db,
-		redis:    redis,
-		commands: map[string]func(twitch.PrivateMessage){},
+		db:                 db,
+		redis:              redis,
+		predictionsHandler: predictionsHandler,
+		commands:           map[string]func(twitch.PrivateMessage){},
 	}
 }
 
@@ -51,9 +54,9 @@ func (l *Listener) handleMessage(msg twitch.PrivateMessage) {
 
 func (l *Listener) handlePrediction(msg twitch.PrivateMessage) {
 	perm := l.db.GetPermission(msg.User.ID, msg.RoomID)
-	if !perm.Prediction {
+	if !perm.Prediction && !tmi.IsModerator(msg.User) && !tmi.IsBroadcaster(msg.User) {
 		return
 	}
 
-	log.Info("handle prediction")
+	l.predictionsHandler.HandleMessage(msg)
 }

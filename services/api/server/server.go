@@ -77,7 +77,7 @@ func (s *Server) syncSubscriptions() {
 		return
 	}
 
-	log.Infof("Found %d total subscriptions, syncing to DB", resp.Data.Total)
+	log.Infof("Found %d/%d total cost subscriptions, syncing to DB", resp.Data.TotalCost, resp.Data.MaxTotalCost)
 	subscribed := []string{}
 
 	for _, sub := range resp.Data.EventSubSubscriptions {

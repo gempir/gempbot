@@ -7,6 +7,7 @@ import (
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/store"
 	"github.com/gempir/bitraft/services/commander/predictions"
+	"github.com/gempir/bitraft/services/commander/reader"
 )
 
 func main() {
@@ -20,7 +21,11 @@ func main() {
 	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, cfg.ApiBaseUrl+"/api/callback", cfg.Secret)
 	go helixClient.StartRefreshTokenRoutine()
 
-	predictionsListener := predictions.NewListener(db, rStore)
+	redis := store.NewRedis()
+
+	predictionHandler := predictions.NewHandler(helixClient, redis, db)
+
+	predictionsListener := reader.NewListener(db, rStore, predictionHandler)
 	predictionsListener.RegisterDefaultCommands()
 	predictionsListener.StartListener()
 }

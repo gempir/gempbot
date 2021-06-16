@@ -13,9 +13,9 @@ func main() {
 	flag.Parse()
 
 	cfg := config.NewConfig(*configFile)
-	rStore := store.NewRedis()
+	redis := store.NewRedis()
 	db := store.NewDatabase(cfg)
 
-	bot := collector.NewBot(cfg, rStore, db)
+	bot := collector.NewBot(cfg, redis, db)
 	bot.Connect()
 }
