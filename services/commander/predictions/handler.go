@@ -45,13 +45,13 @@ func (h *Handler) HandleMessage(msg twitch.PrivateMessage) {
 	outcome2 := "no"
 	predictionWindow := 60
 
-	if len(split) == 2 {
+	if len(split) >= 2 {
 		outcome1 = strings.TrimSpace(split[1])
 	}
-	if len(split) == 3 {
+	if len(split) >= 3 {
 		outcome2 = strings.TrimSpace(split[2])
 	}
-	if len(split) == 4 {
+	if len(split) >= 4 {
 		var err error
 		predictionWindow, err = humanize.StringToSeconds(strings.TrimSpace(split[3]))
 		if err != nil {
