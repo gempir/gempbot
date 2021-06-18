@@ -1,6 +1,11 @@
 package store
 
-import "time"
+import (
+	"errors"
+	"time"
+
+	"github.com/gempir/bitraft/pkg/dto"
+)
 
 const (
 	PREDICTION_RESOLVED = "resolved"
@@ -25,6 +30,31 @@ type PredictionLogOutcome struct {
 	Color         string
 	Users         int
 	ChannelPoints int
+}
+
+func (o *PredictionLogOutcome) GetColorEmoji() string {
+	if o.Color == dto.Outcome_First {
+		return "🟦"
+	}
+
+	return "🟪"
+}
+
+func (db *Database) GetActivePrediction(ownerTwitchID string) (PredictionLog, error) {
+	var reward PredictionLog
+	result := db.Client.Where("owner_twitch_id = ? AND winning_outcome_id = ''", ownerTwitchID).Order("started_at desc").First(&reward)
+	if result.RowsAffected == 0 {
+		return reward, errors.New("not found")
+	}
+
+	return reward, nil
+}
+
+func (db *Database) GetOutcomes(predictionID string) []PredictionLogOutcome {
+	var outcomes []PredictionLogOutcome
+	db.Client.Where("prediction_id = ?", predictionID).Find(&outcomes)
+
+	return outcomes
 }
 
 func (db *Database) SavePrediction(log PredictionLog) error {
