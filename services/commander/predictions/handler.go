@@ -183,7 +183,7 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 		}
 
 		for _, outcome := range prediction.Outcomes {
-			err := h.db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: prediction.ID, Title: outcome.Title, Color: outcome.Color, Users: outcome.Users, ChannelPoints: outcome.ChannelPoints})
+			err := h.db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: prediction.ID, Title: outcome.Title, Color: strings.ToLower(outcome.Color), Users: outcome.Users, ChannelPoints: outcome.ChannelPoints})
 			if err != nil {
 				log.Error(err)
 			}

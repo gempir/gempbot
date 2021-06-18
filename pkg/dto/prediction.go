@@ -1,8 +1,8 @@
 package dto
 
 const (
-	Outcome_First  = "BLUE"
-	Outcome_Second = "PINK"
+	Outcome_First  = "blue"
+	Outcome_Second = "pink"
 
 	PredictionStatusResolved = "RESOLVED"
 	PredictionStatusCanceled = "CANCELED"
