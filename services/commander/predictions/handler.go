@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gempir/bitraft/pkg/dto"
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/humanize"
 	"github.com/gempir/bitraft/pkg/log"
@@ -31,12 +32,12 @@ func NewHandler(helixClient *helix.Client, redis *store.Redis, db *store.Databas
 // !prediction Will nymn win this game?;yes;no;3m --> yes;no;3m
 // !prediction Will he win                        --> yes;no;1m
 // !prediction Will he win;maybe                  --> maybe;no;1m
-func (h *Handler) HandleMessage(msg twitch.PrivateMessage) {
-	prefixStripped := strings.TrimPrefix(msg.Message, "!prediction")
+func (h *Handler) HandleCommand(payload dto.CommandPayload) {
+	prefixStripped := strings.TrimPrefix(payload.Msg.Message, "!prediction")
 	split := strings.Split(prefixStripped, ";")
 
 	if len(split) <= 1 {
-		h.handleError(msg, errors.New("no title given"))
+		h.handleError(payload.Msg, errors.New("no title given"))
 		return
 	}
 
@@ -56,26 +57,26 @@ func (h *Handler) HandleMessage(msg twitch.PrivateMessage) {
 		predictionWindow, err = humanize.StringToSeconds(strings.TrimSpace(split[3]))
 		if err != nil {
 			log.Error(err)
-			h.handleError(msg, errors.New("failed to parse time"))
+			h.handleError(payload.Msg, errors.New("failed to parse time"))
 			return
 		}
 	}
 
 	if predictionWindow > 1800 {
-		h.handleError(msg, errors.New("max 30 minutes"))
+		h.handleError(payload.Msg, errors.New("max 30 minutes"))
 		return
 	}
 
 	prediction := &nickHelix.CreatePredictionParams{
-		BroadcasterID:    msg.RoomID,
+		BroadcasterID:    payload.Msg.RoomID,
 		Title:            title,
 		Outcomes:         []nickHelix.PredictionChoiceParam{{Title: outcome1}, {Title: outcome2}},
 		PredictionWindow: predictionWindow,
 	}
 
-	token, err := h.db.GetUserAccessToken(msg.RoomID)
+	token, err := h.db.GetUserAccessToken(payload.Msg.RoomID)
 	if err != nil {
-		h.handleError(msg, errors.New("no api token, broadcaster needs to login again in dashboard"))
+		h.handleError(payload.Msg, errors.New("no api token, broadcaster needs to login again in dashboard"))
 		return
 	}
 
@@ -85,16 +86,16 @@ func (h *Handler) HandleMessage(msg twitch.PrivateMessage) {
 
 	if err != nil {
 		log.Error(err)
-		h.handleError(msg, errors.New("bad twitch api response"))
+		h.handleError(payload.Msg, errors.New("bad twitch api response"))
 		return
 	}
-	log.Infof("[helix] %d CreatePrediction %s", resp.StatusCode, msg.RoomID)
+	log.Infof("[helix] %d CreatePrediction %s", resp.StatusCode, payload.Msg.RoomID)
 	if resp.StatusCode >= http.StatusBadRequest {
-		h.handleError(msg, fmt.Errorf("bad twitch api response %d", resp.StatusCode))
+		h.handleError(payload.Msg, fmt.Errorf("bad twitch api response %d", resp.StatusCode))
 		return
 	}
 
-	h.handleSuccess(msg, *prediction)
+	h.handleSuccess(payload.Msg, *prediction)
 }
 
 func (h *Handler) handleError(msg twitch.PrivateMessage, err error) {

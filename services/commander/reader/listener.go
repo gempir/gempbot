@@ -1,8 +1,10 @@
 package reader
 
 import (
+	"regexp"
 	"strings"
 
+	"github.com/gempir/bitraft/pkg/dto"
 	"github.com/gempir/bitraft/pkg/store"
 	"github.com/gempir/bitraft/pkg/tmi"
 	"github.com/gempir/bitraft/services/commander/predictions"
@@ -13,21 +15,25 @@ type Listener struct {
 	db                 *store.Database
 	redis              *store.Redis
 	predictionsHandler *predictions.Handler
-	commands           map[string]func(twitch.PrivateMessage)
+	commands           map[string]func(dto.CommandPayload)
 }
 
-func NewListener(db *store.Database, redis *store.Redis, predictionsHandler *predictions.Handler) *Listener {
+var (
+	commandRegex = regexp.MustCompile(`^\!(\w+)\ ?`)
+)
 
+func NewListener(db *store.Database, redis *store.Redis, predictionsHandler *predictions.Handler) *Listener {
 	return &Listener{
 		db:                 db,
 		redis:              redis,
 		predictionsHandler: predictionsHandler,
-		commands:           map[string]func(twitch.PrivateMessage){},
+		commands:           map[string]func(dto.CommandPayload){},
 	}
 }
 
 func (l *Listener) RegisterDefaultCommands() {
-	l.commands["!prediction"] = l.handlePrediction
+	l.commands["prediction"] = l.handlePrediction
+	l.commands["outcome"] = l.handlePrediction
 }
 
 func (l *Listener) StartListener() {
@@ -45,18 +51,21 @@ func (l *Listener) handleMessage(msg twitch.PrivateMessage) {
 		return
 	}
 
-	groups := strings.Split(msg.Message, " ")
-
-	if cmd, ok := l.commands[groups[0]]; ok {
-		cmd(msg)
-	}
-}
-
-func (l *Listener) handlePrediction(msg twitch.PrivateMessage) {
-	perm := l.db.GetPermission(msg.User.ID, msg.RoomID)
-	if !perm.Prediction && !tmi.IsModerator(msg.User) && !tmi.IsBroadcaster(msg.User) {
+	match := commandRegex.FindStringSubmatch(msg.Message)
+	if len(match) < 2 {
 		return
 	}
 
-	l.predictionsHandler.HandleMessage(msg)
+	if cmd, ok := l.commands[match[1]]; ok {
+		cmd(dto.CommandPayload{Msg: msg, Name: match[1], Query: strings.TrimSpace(strings.TrimPrefix(msg.Message, "!"+match[1]))})
+	}
+}
+
+func (l *Listener) handlePrediction(payload dto.CommandPayload) {
+	perm := l.db.GetPermission(payload.Msg.User.ID, payload.Msg.RoomID)
+	if !perm.Prediction && !tmi.IsModerator(payload.Msg.User) && !tmi.IsBroadcaster(payload.Msg.User) {
+		return
+	}
+
+	l.predictionsHandler.HandleCommand(payload)
 }
