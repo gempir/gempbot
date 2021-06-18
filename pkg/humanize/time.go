@@ -34,7 +34,7 @@ func StringToSeconds(s string) (int, error) {
 
 func SecondsToString(s int) string {
 	if s < 60 {
-		return fmt.Sprint(s)
+		return fmt.Sprintf("%ds", s)
 	}
 	if s%60 == 0 {
 		return fmt.Sprintf("%dm", s/60)
