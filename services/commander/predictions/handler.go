@@ -33,8 +33,16 @@ func NewHandler(helixClient *helix.Client, redis *store.Redis, db *store.Databas
 // !prediction Will he win                        --> yes;no;1m
 // !prediction Will he win;maybe                  --> maybe;no;1m
 func (h *Handler) HandleCommand(payload dto.CommandPayload) {
-	prefixStripped := strings.TrimPrefix(payload.Msg.Message, "!prediction")
-	split := strings.Split(prefixStripped, ";")
+	switch payload.Name {
+	case dto.CmdNameOutcome:
+		break
+	case dto.CmdNamePrediction:
+		h.startPrediction(payload)
+	}
+}
+
+func (h *Handler) startPrediction(payload dto.CommandPayload) {
+	split := strings.Split(payload.Query, ";")
 
 	if len(split) <= 1 {
 		h.handleError(payload.Msg, errors.New("no title given"))

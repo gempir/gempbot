@@ -32,8 +32,8 @@ func NewListener(db *store.Database, redis *store.Redis, predictionsHandler *pre
 }
 
 func (l *Listener) RegisterDefaultCommands() {
-	l.commands["prediction"] = l.handlePrediction
-	l.commands["outcome"] = l.handlePrediction
+	l.commands[dto.CmdNamePrediction] = l.handlePrediction
+	l.commands[dto.CmdNameOutcome] = l.handlePrediction
 }
 
 func (l *Listener) StartListener() {

@@ -7,3 +7,8 @@ type CommandPayload struct {
 	Name  string
 	Msg   twitch.PrivateMessage
 }
+
+const (
+	CmdNamePrediction = "prediction"
+	CmdNameOutcome    = "outcome"
+)
