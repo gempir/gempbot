@@ -54,3 +54,27 @@ func (s *Redis) PublishPrivateMessage(message string) {
 func (s *Redis) SubscribePrivateMessages() *redis.PubSub {
 	return s.Client.Subscribe("PRIVMSG")
 }
+
+const (
+	IngesterMsgJoin = "join"
+	IngesterMsgPart = "part"
+)
+
+type IngesterMessage struct {
+	Type     string
+	Argument string
+}
+
+func (s *Redis) PublishIngesterMessage(messageType string, argument string) {
+	data, err := json.Marshal(&IngesterMessage{Type: messageType, Argument: argument})
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	s.Client.Publish("INGESTERMESSAGE", data)
+}
+
+func (s *Redis) SubscribeIngesterMessage() *redis.PubSub {
+	return s.Client.Subscribe("PRIVMSG")
+}

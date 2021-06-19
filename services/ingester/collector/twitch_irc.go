@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"encoding/json"
 	"strings"
 	"sync"
 	"time"
@@ -24,7 +25,6 @@ type Bot struct {
 	channels    stringUserDataSyncMap
 	joined      stringBoolSyncMap
 	active      stringBoolSyncMap
-	exit        chan string
 }
 
 type stringUserDataSyncMap struct {
@@ -45,7 +45,6 @@ func NewBot(cfg *config.Config, store *store.Redis, db *store.Database, helixCli
 		store:       store,
 		db:          db,
 		helixClient: helixClient,
-		exit:        make(chan string),
 		channels:    channelsMap,
 		joined:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
 		active:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
@@ -63,7 +62,22 @@ func (b *Bot) Connect() {
 	}
 	b.joinBotConfigChannels()
 
-	<-b.exit
+	topic := b.store.SubscribeIngesterMessage()
+	channel := topic.Channel()
+	for msg := range channel {
+		var message store.IngesterMessage
+
+		if err := json.Unmarshal([]byte(msg.Payload), &message); err != nil {
+			log.Error(err)
+		}
+
+		switch message.Type {
+		case store.IngesterMsgJoin:
+			b.Join(message.Argument)
+		case store.IngesterMsgPart:
+			b.Part(message.Argument)
+		}
+	}
 }
 
 func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
@@ -85,12 +99,24 @@ func (b *Bot) joinBotConfigChannels() {
 
 		for _, user := range users {
 			if _, ok := b.joined.m[user.Login]; !ok {
-				b.joined.mutex.Lock()
-				b.joined.m[user.Login] = true
-				b.joined.mutex.Unlock()
-				b.scaler.Join(user.Login)
-				log.Infof("joined %s", user.Login)
+				b.Join(user.Login)
 			}
 		}
 	}()
+}
+
+func (b *Bot) Join(channel string) {
+	b.joined.mutex.Lock()
+	b.joined.m[channel] = true
+	b.joined.mutex.Unlock()
+	b.scaler.Join(channel)
+	log.Infof("joined %s", channel)
+}
+
+func (b *Bot) Part(channel string) {
+	b.joined.mutex.Lock()
+	delete(b.joined.m, channel)
+	b.joined.mutex.Unlock()
+	b.scaler.Part(channel)
+	log.Infof("part %s", channel)
 }

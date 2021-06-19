@@ -101,7 +101,7 @@ func (s *Server) getUserConfig(userID string) UserConfig {
 	if err != nil {
 		uCfg.BotJoin = false
 	} else {
-		uCfg.BotJoin = botConfig.Join
+		uCfg.BotJoin = botConfig.JoinBot
 	}
 
 	editors := s.db.GetEditors(userID)
@@ -219,7 +219,7 @@ func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Conte
 	s.db.AddEditors(userID, added)
 	s.db.RemoveEditors(userID, removed)
 
-	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: userID, Join: newConfig.BotJoin})
+	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: userID, JoinBot: newConfig.BotJoin})
 	if err != nil {
 		log.Error(err)
 	}

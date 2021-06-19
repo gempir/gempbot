@@ -4,7 +4,7 @@ import "errors"
 
 type BotConfig struct {
 	OwnerTwitchID string `gorm:"primaryKey"`
-	Join          bool   `gorm:"index"`
+	JoinBot       bool   `gorm:"index"`
 }
 
 func (db *Database) SaveBotConfig(botCfg BotConfig) error {
@@ -30,7 +30,7 @@ func (db *Database) SaveBotConfig(botCfg BotConfig) error {
 func (db *Database) GetAllJoinBotConfigs() []BotConfig {
 	var botConfigs []BotConfig
 
-	db.Client.Where("join = true").Find(&botConfigs)
+	db.Client.Where("join_bot = true").Find(&botConfigs)
 
 	return botConfigs
 }

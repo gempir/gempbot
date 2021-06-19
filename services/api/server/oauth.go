@@ -49,7 +49,7 @@ func (s *Server) handleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to set userAccessToken in callback: %s", err)
 	}
 
-	err = s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: validateResp.Data.UserID, Join: true})
+	err = s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: validateResp.Data.UserID, JoinBot: true})
 	if err != nil {
 		log.Error(err)
 	}

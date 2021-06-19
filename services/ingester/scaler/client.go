@@ -59,6 +59,14 @@ func (s *Scaler) Join(channelName string) {
 	s.Join(channelName)
 }
 
+func (s *Scaler) Part(channel string) {
+	for _, client := range s.clients {
+		if _, ok := client.joined[channel]; ok {
+			client.client.Depart(channel)
+		}
+	}
+}
+
 func (s *Scaler) Say(channel, message string) {
 	randomIndex := rand.Intn(len(s.clients))
 	s.clients[randomIndex].client.Say(channel, message)
