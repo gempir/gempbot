@@ -1,12 +1,19 @@
 package store
 
+import "errors"
+
 type BotConfig struct {
 	OwnerTwitchID string `gorm:"primaryKey"`
-	Login         string
+	Join          bool   `gorm:"index"`
 }
 
 func (db *Database) SaveBotConfig(botCfg BotConfig) error {
-	update := db.Client.Model(&botCfg).Where("owner_twitch_id = ?", botCfg.OwnerTwitchID).Updates(&botCfg)
+	updateMap, err := StructToMap(botCfg)
+	if err != nil {
+		return err
+	}
+
+	update := db.Client.Model(&botCfg).Where("owner_twitch_id = ?", botCfg.OwnerTwitchID).Updates(&updateMap)
 	if update.Error != nil {
 		return update.Error
 	}
@@ -20,10 +27,20 @@ func (db *Database) SaveBotConfig(botCfg BotConfig) error {
 	return update.Error
 }
 
-func (db *Database) GetAllBotConfigs() []BotConfig {
+func (db *Database) GetAllJoinBotConfigs() []BotConfig {
 	var botConfigs []BotConfig
 
-	db.Client.Find(&botConfigs)
+	db.Client.Where("join = true").Find(&botConfigs)
 
 	return botConfigs
+}
+
+func (db *Database) GetBotConfig(userID string) (BotConfig, error) {
+	var botConfig BotConfig
+	result := db.Client.Where("owner_twitch_id = ?", userID).First(&botConfig)
+	if result.RowsAffected == 0 {
+		return botConfig, errors.New("not found")
+	}
+
+	return botConfig, nil
 }

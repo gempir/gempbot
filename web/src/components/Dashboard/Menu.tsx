@@ -3,16 +3,28 @@ import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
 import { store } from "../../store";
 import { Managing } from "./Managing";
 
-export function Menu({ userConfig, setUserConfig }: { userConfig: UserConfig | null | undefined, setUserConfig: SetUserConfig }) {
+export function Menu({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
     return <div className="flex flex-row flex-wrap gap-4 ml-4">
+        <BotManager userConfig={userConfig} setUserConfig={setUserConfig} />
         <Managing userConfig={userConfig} />
         <EditorManager setUserConfig={setUserConfig} userConfig={userConfig} />
     </div>
 }
+function BotManager({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
+    const classes = "p-3 rounded shadow w-28 truncate text-center cursor-pointer".split(" ")
 
-function EditorManager({ setUserConfig, userConfig }: { setUserConfig: SetUserConfig, userConfig: UserConfig | null | undefined }) {
+    if (userConfig?.BotJoin) {
+        classes.push(..."bg-green-900 hover:bg-green-800 focus:bg-green:800".split(" "));
+    } else {
+        classes.push(..."bg-red-900 hover:bg-red-800 focus:bg-red:800".split(" "));
+    }
+
+    return <div className={classes.join(" ")} onClick={() => setUserConfig({ ...userConfig, BotJoin: !userConfig?.BotJoin })}>{userConfig?.BotJoin ? "Bot Joined" : "Join Bot"}</div>
+}
+
+function EditorManager({ setUserConfig, userConfig }: { setUserConfig: SetUserConfig, userConfig: UserConfig }) {
     const managing = store.useState(s => s.managing);
-    
+
     const loadedEditors: Record<string, string> = {};
     userConfig?.Editors.map(editor => {
         loadedEditors["e" + (Object.values(loadedEditors).length + 1)] = editor
@@ -32,7 +44,6 @@ function EditorManager({ setUserConfig, userConfig }: { setUserConfig: SetUserCo
             setEditors(newEditors);
         }
 
-        // @ts-ignore
         setUserConfig({ ...userConfig, Editors: Object.values(newEditors) })
     };
 

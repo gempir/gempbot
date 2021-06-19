@@ -9,10 +9,12 @@ import (
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/slice"
+	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 )
 
 type UserConfig struct {
+	BotJoin   bool
 	Editors   []string
 	Protected Protected
 }
@@ -24,6 +26,7 @@ type Protected struct {
 
 func createDefaultUserConfig() UserConfig {
 	return UserConfig{
+		BotJoin: false,
 		Editors: []string{},
 		Protected: Protected{
 			EditorFor:     []string{},
@@ -92,9 +95,17 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 }
 
 func (s *Server) getUserConfig(userID string) UserConfig {
+	uCfg := createDefaultUserConfig()
+
+	botConfig, err := s.db.GetBotConfig(userID)
+	if err != nil {
+		uCfg.BotJoin = false
+	} else {
+		uCfg.BotJoin = botConfig.Join
+	}
+
 	editors := s.db.GetEditors(userID)
 
-	uCfg := createDefaultUserConfig()
 	uCfg.Protected.CurrentUserID = userID
 
 	for _, editor := range editors {
@@ -207,6 +218,11 @@ func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Conte
 
 	s.db.AddEditors(userID, added)
 	s.db.RemoveEditors(userID, removed)
+
+	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: userID, Join: newConfig.BotJoin})
+	if err != nil {
+		log.Error(err)
+	}
 
 	return nil
 }

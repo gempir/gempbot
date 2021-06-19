@@ -4,6 +4,7 @@ import { doFetch, Method } from "../service/doFetch";
 import { store } from "../store";
 
 export interface UserConfig {
+    BotJoin: boolean,
     Editors: Array<string>;
     Protected: Protected;
 }

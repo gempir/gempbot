@@ -6,7 +6,6 @@ import { BttvForm } from "./RewardForms/BttvForm";
 export function Dashboard() {
     useTitle("bitraft - Dashboard");
     const [userCfg, setUserConfig] = useUserConfig();
-
     if (!userCfg) {
         return null;
     }

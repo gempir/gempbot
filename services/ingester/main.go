@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/gempir/bitraft/pkg/config"
+	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/store"
 	"github.com/gempir/bitraft/services/ingester/collector"
 )
@@ -16,6 +17,9 @@ func main() {
 	redis := store.NewRedis()
 	db := store.NewDatabase(cfg)
 
-	bot := collector.NewBot(cfg, redis, db)
+	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, cfg.ApiBaseUrl+"/api/callback", cfg.Secret)
+	go helixClient.StartRefreshTokenRoutine()
+
+	bot := collector.NewBot(cfg, redis, db, helixClient)
 	bot.Connect()
 }

@@ -15,15 +15,16 @@ import (
 
 // Bot basic logging bot
 type Bot struct {
-	startTime time.Time
-	cfg       *config.Config
-	scaler    *scaler.Scaler
-	store     *store.Redis
-	db        *store.Database
-	channels  stringUserDataSyncMap
-	joined    stringBoolSyncMap
-	active    stringBoolSyncMap
-	exit      chan string
+	startTime   time.Time
+	cfg         *config.Config
+	scaler      *scaler.Scaler
+	store       *store.Redis
+	db          *store.Database
+	helixClient *helix.Client
+	channels    stringUserDataSyncMap
+	joined      stringBoolSyncMap
+	active      stringBoolSyncMap
+	exit        chan string
 }
 
 type stringUserDataSyncMap struct {
@@ -36,17 +37,18 @@ type stringBoolSyncMap struct {
 	mutex *sync.Mutex
 }
 
-func NewBot(cfg *config.Config, store *store.Redis, db *store.Database) *Bot {
+func NewBot(cfg *config.Config, store *store.Redis, db *store.Database, helixClient *helix.Client) *Bot {
 	channelsMap := stringUserDataSyncMap{m: map[string]helix.UserData{}, mutex: &sync.Mutex{}}
 
 	return &Bot{
-		cfg:      cfg,
-		store:    store,
-		db:       db,
-		exit:     make(chan string),
-		channels: channelsMap,
-		joined:   stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
-		active:   stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
+		cfg:         cfg,
+		store:       store,
+		db:          db,
+		helixClient: helixClient,
+		exit:        make(chan string),
+		channels:    channelsMap,
+		joined:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
+		active:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
 	}
 }
 
@@ -70,15 +72,24 @@ func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
 
 func (b *Bot) joinBotConfigChannels() {
 	go func() {
-		botConfigs := b.db.GetAllBotConfigs()
+		botConfigs := b.db.GetAllJoinBotConfigs()
+		userIDs := []string{}
+		for _, botConfig := range botConfigs {
+			userIDs = append(userIDs, botConfig.OwnerTwitchID)
+		}
 
-		for _, cfg := range botConfigs {
-			if _, ok := b.joined.m[cfg.Login]; !ok {
+		users, err := b.helixClient.GetUsersByUserIds(userIDs)
+		if err != nil {
+			log.Error(err)
+		}
+
+		for _, user := range users {
+			if _, ok := b.joined.m[user.Login]; !ok {
 				b.joined.mutex.Lock()
-				b.joined.m[cfg.Login] = true
+				b.joined.m[user.Login] = true
 				b.joined.mutex.Unlock()
-				b.scaler.Join(cfg.Login)
-				log.Infof("joined %s", cfg.Login)
+				b.scaler.Join(user.Login)
+				log.Infof("joined %s", user.Login)
 			}
 		}
 	}()
