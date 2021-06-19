@@ -78,11 +78,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failure unmarshalling config "+err.Error())
 		}
 
-		if c.QueryParam("managing") != "" {
-			return echo.NewHTTPError(http.StatusForbidden, "editors are not allowed to edit userConfig yet")
-		}
-
-		err = s.processConfig(auth.Data.UserID, auth.Data.Login, newConfig, c)
+		err = s.processConfig(auth.Data.UserID, auth.Data.Login, newConfig, c.QueryParam("managing") != "")
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
 			return echo.NewHTTPError(http.StatusBadRequest, "failed processing config: "+err.Error())
@@ -96,8 +92,10 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 
 func (s *Server) getUserConfig(userID string) UserConfig {
 	uCfg := createDefaultUserConfig()
+	log.Info(uCfg)
 
 	botConfig, err := s.db.GetBotConfig(userID)
+	log.Info(botConfig)
 	if err != nil {
 		uCfg.BotJoin = false
 	} else {
@@ -211,13 +209,16 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 	return echo.NewHTTPError(http.StatusForbidden, "user is not editor")
 }
 
-func (s *Server) processConfig(userID string, login string, newConfig UserConfig, c echo.Context) error {
-	newUserIDConfig := s.convertUserConfig(newConfig, false)
-	oldConfig := s.getUserConfig(userID)
-	added, removed := oldConfig.getEditorDifference(newUserIDConfig.Editors)
+func (s *Server) processConfig(userID string, login string, newConfig UserConfig, managing bool) error {
+	// Editors are not allowed to edit Editors
+	if !managing {
+		newUserIDConfig := s.convertUserConfig(newConfig, false)
+		oldConfig := s.getUserConfig(userID)
+		added, removed := oldConfig.getEditorDifference(newUserIDConfig.Editors)
 
-	s.db.AddEditors(userID, added)
-	s.db.RemoveEditors(userID, removed)
+		s.db.AddEditors(userID, added)
+		s.db.RemoveEditors(userID, removed)
+	}
 
 	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: userID, JoinBot: newConfig.BotJoin})
 	if err != nil {
