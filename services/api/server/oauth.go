@@ -53,6 +53,7 @@ func (s *Server) handleCallback(c echo.Context) error {
 	if err != nil {
 		log.Error(err)
 	}
+	s.store.PublishIngesterMessage(store.IngesterMsgJoin, validateResp.Data.Login)
 
 	go s.subscribePredictions(validateResp.Data.UserID)
 
