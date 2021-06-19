@@ -76,5 +76,5 @@ func (s *Redis) PublishIngesterMessage(messageType string, argument string) {
 }
 
 func (s *Redis) SubscribeIngesterMessage() *redis.PubSub {
-	return s.Client.Subscribe("PRIVMSG")
+	return s.Client.Subscribe("INGESTERMESSAGE")
 }

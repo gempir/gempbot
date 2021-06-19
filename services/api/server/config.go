@@ -82,7 +82,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusForbidden, "editors are not allowed to edit userConfig yet")
 		}
 
-		err = s.processConfig(auth.Data.UserID, newConfig, c)
+		err = s.processConfig(auth.Data.UserID, auth.Data.Login, newConfig, c)
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
 			return echo.NewHTTPError(http.StatusBadRequest, "failed processing config: "+err.Error())
@@ -211,7 +211,7 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 	return echo.NewHTTPError(http.StatusForbidden, "user is not editor")
 }
 
-func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Context) error {
+func (s *Server) processConfig(userID string, login string, newConfig UserConfig, c echo.Context) error {
 	newUserIDConfig := s.convertUserConfig(newConfig, false)
 	oldConfig := s.getUserConfig(userID)
 	added, removed := oldConfig.getEditorDifference(newUserIDConfig.Editors)
@@ -222,6 +222,11 @@ func (s *Server) processConfig(userID string, newConfig UserConfig, c echo.Conte
 	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: userID, JoinBot: newConfig.BotJoin})
 	if err != nil {
 		log.Error(err)
+	}
+	if newConfig.BotJoin {
+		s.store.PublishIngesterMessage(store.IngesterMsgJoin, login)
+	} else {
+		s.store.PublishIngesterMessage(store.IngesterMsgPart, login)
 	}
 
 	return nil
