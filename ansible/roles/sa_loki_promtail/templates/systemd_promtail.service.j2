@@ -10,8 +10,8 @@ Requires=network.target
 #EnvironmentFile={{ loki_config_dir }}/promtail_configuration
 
 ExecStart={{ loki_dir }}/promtail -config.file {{loki_config_dir}}/config.yml $OPTIONS
-User={{loki_user|default('loki')}}
-Group={{loki_group|default('loki')}}
+#User={{loki_user|default('loki')}}
+#Group={{loki_group|default('loki')}}
 
 {% if loki_config.startup|default({}) %}
 
