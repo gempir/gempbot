@@ -11,11 +11,14 @@ clients:
 scrape_configs:
   - job_name: journal
     journal:
-      json: false
       max_age: 48h
       path: /var/log/journal
       labels:
         job: systemd-journal
+        hostname: {{ ansible_hostname }}
     relabel_configs:
+      - source_labels: [__journal__systemd_unit]
+        regex: session-*scope
+        action: drop
       - source_labels: ['__journal__systemd_unit']
         target_label: 'unit'
