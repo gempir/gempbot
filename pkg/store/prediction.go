@@ -21,6 +21,7 @@ type PredictionLog struct {
 	StartedAt        time.Time
 	LockedAt         time.Time
 	EndedAt          time.Time
+	Outcomes         []PredictionLogOutcome `gorm:"foreignKey:PredictionID;references:ID"`
 }
 
 type PredictionLogOutcome struct {
@@ -38,6 +39,13 @@ func (o *PredictionLogOutcome) GetColorEmoji() string {
 	}
 
 	return "🟪"
+}
+
+func (db *Database) GetPredictions(ownerTwitchID string) []PredictionLog {
+	var predictions []PredictionLog
+	db.Client.Preload("Outcomes").Where("owner_twitch_id = ?", ownerTwitchID).Order("started_at desc").Find(&predictions)
+
+	return predictions
 }
 
 func (db *Database) GetActivePrediction(ownerTwitchID string) (PredictionLog, error) {

@@ -1,6 +1,7 @@
 import { useTitle } from "react-use";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { Menu } from "./Menu";
+import { PredictionLog } from "./PredictionLog";
 import { BttvForm } from "./RewardForms/BttvForm";
 
 export function Dashboard() {
@@ -12,6 +13,9 @@ export function Dashboard() {
 
     return <div>
         <Menu userConfig={userCfg} setUserConfig={setUserConfig} />
-        <BttvForm userConfig={userCfg} />
+        <div className="flex">
+            <BttvForm userConfig={userCfg} />
+            <PredictionLog />
+        </div>
     </div>
 }

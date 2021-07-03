@@ -75,7 +75,7 @@ func (s *Server) subscribeChannelPoints(userID string) error {
 		return errors.New("forbidden")
 	}
 
-	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
+	log.Infof("[%d] subscription %s %s", response.StatusCode, response.Error, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
 		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)

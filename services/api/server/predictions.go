@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/gempir/bitraft/pkg/log"
@@ -238,4 +239,21 @@ func (s *Server) handlePredictionEnd(c echo.Context) error {
 	}
 
 	return nil
+}
+
+func (s *Server) handleGetPredictions(c echo.Context) error {
+	auth, _, err := s.authenticate(c)
+	if err != nil {
+		return err
+	}
+	userID := auth.Data.UserID
+
+	if c.QueryParam("managing") != "" {
+		userID, err = s.checkEditor(c, s.getUserConfig(userID))
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+	}
+
+	return c.JSON(http.StatusOK, s.db.GetPredictions(userID))
 }

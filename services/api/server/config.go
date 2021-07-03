@@ -92,10 +92,8 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 
 func (s *Server) getUserConfig(userID string) UserConfig {
 	uCfg := createDefaultUserConfig()
-	log.Info(uCfg)
 
 	botConfig, err := s.db.GetBotConfig(userID)
-	log.Info(botConfig)
 	if err != nil {
 		uCfg.BotJoin = false
 	} else {
