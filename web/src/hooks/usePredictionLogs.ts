@@ -1,18 +1,7 @@
 import { useEffect, useState } from "react";
+import { PredictionLog } from "../model/PredictionLog";
 import { doFetch, Method } from "../service/doFetch";
 import { store } from "../store";
-
-export interface PredictionLog {
-    ID: string;
-    OwnerTwitchID: string;
-    Title: string;
-    WinningOutcomeID: string;
-    Status: string;
-    StartedAt: Date;
-    LockedAt: Date;
-    EndedAt: Date;
-    Outcomes: Outcome[];
-}
 
 export interface Outcome {
     ID: string;
@@ -23,7 +12,7 @@ export interface Outcome {
     ChannelPoints: number;
 }
 
-interface RawPredictionLog {
+export interface RawPredictionLog {
     ID: string;
     OwnerTwitchID: string;
     Title: string;
@@ -44,12 +33,7 @@ export function usePredictionLogs(): [Array<PredictionLog>, () => void] {
         if (managing) {
             endPoint += `?managing=${managing}`;
         }
-        doFetch(Method.GET, endPoint).then((logs) => setLogs(logs.map((log: RawPredictionLog) => ({
-            ...log,
-            StartedAt: new Date(log.StartedAt),
-            LockedAt: new Date(log.LockedAt),
-            EndedAt: new Date(log.EndedAt)
-        }))))
+        doFetch(Method.GET, endPoint).then((logs) => setLogs(logs.map((log: RawPredictionLog) => PredictionLog.fromObject(log))))
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
