@@ -12,6 +12,10 @@ func TimeSince(a time.Time) string {
 	return formatDiff(diff(a, time.Now()))
 }
 
+func TimeUntil(a time.Time, until time.Time) string {
+	return formatDiff(diff(a, until))
+}
+
 func StringToSeconds(s string) (int, error) {
 	if strings.HasSuffix(s, "m") {
 		num := strings.TrimSuffix(s, "m")

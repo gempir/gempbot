@@ -1,9 +1,11 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/humanize"
 	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
@@ -99,6 +101,16 @@ func (s *Server) handlePredictionBegin(c echo.Context) error {
 			log.Error(err)
 		}
 	}
+
+	s.store.PublishSpeakerMessage(
+		data.Event.BroadcasterUserLogin,
+		fmt.Sprintf("PogChamp prediction: %s [ %s | %s ] ending in %s",
+			data.Event.Title,
+			data.Event.Outcomes[0].Title,
+			data.Event.Outcomes[1].Title,
+			humanize.TimeUntil(data.Event.StartedAt, data.Event.LocksAt),
+		),
+	)
 
 	return nil
 }
@@ -231,12 +243,29 @@ func (s *Server) handlePredictionEnd(c echo.Context) error {
 		log.Error(err)
 	}
 
+	var winningOutcome store.PredictionLogOutcome
+
 	for _, outcome := range data.Event.Outcomes {
-		err = s.db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: data.Event.ID, Title: outcome.Title, Color: outcome.Color, Users: outcome.Users, ChannelPoints: outcome.ChannelPoints})
+		outcomeModel := store.PredictionLogOutcome{ID: outcome.ID, PredictionID: data.Event.ID, Title: outcome.Title, Color: outcome.Color, Users: outcome.Users, ChannelPoints: outcome.ChannelPoints}
+
+		if data.Event.WinningOutcomeID == outcome.ID {
+			winningOutcome = outcomeModel
+		}
+
+		err = s.db.SaveOutcome(outcomeModel)
 		if err != nil {
 			log.Error(err)
 		}
 	}
+
+	s.store.PublishSpeakerMessage(
+		data.Event.BroadcasterUserLogin,
+		fmt.Sprintf("PogChamp ended prediction: %s Winner: %s %s",
+			data.Event.Title,
+			winningOutcome.GetColorEmoji(),
+			winningOutcome.Title,
+		),
+	)
 
 	return nil
 }

@@ -4,6 +4,8 @@
 
 config.json
 
+dump.rdb
+
 services/api/api
 services/ingester/ingester
 services/speaker/speaker

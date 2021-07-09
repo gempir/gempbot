@@ -103,15 +103,6 @@ func (h *Handler) setOutcomeForPrediction(payload dto.CommandPayload) {
 			}
 		}
 	}
-
-	h.redis.PublishSpeakerMessage(
-		payload.Msg.Channel,
-		fmt.Sprintf("PogChamp ended prediction: %s Winner: %s %s",
-			prediction.Title,
-			winningOutcome.GetColorEmoji(),
-			winningOutcome.Title,
-		),
-	)
 }
 
 func (h *Handler) startPrediction(payload dto.CommandPayload) {
@@ -189,16 +180,6 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 			}
 		}
 	}
-
-	h.redis.PublishSpeakerMessage(
-		payload.Msg.Channel,
-		fmt.Sprintf("PogChamp prediction: %s [ %s | %s ] ending in %s",
-			prediction.Title,
-			prediction.Outcomes[0].Title,
-			prediction.Outcomes[1].Title,
-			humanize.SecondsToString(prediction.PredictionWindow),
-		),
-	)
 }
 
 func (h *Handler) handleError(msg twitch.PrivateMessage, err error) {
