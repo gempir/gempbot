@@ -156,19 +156,19 @@ func (s *Server) handleBttvRedemption(redemption channelPointRedemption) error {
 		emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
 		if err != nil {
 			log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
-			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
 		} else if emoteAdded != nil && emoteRemoved != nil {
 			success = true
-			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
 		} else if emoteAdded != nil {
 			success = true
-			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
 		} else {
 			success = true
-			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
 		}
 	} else {
-		s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
+		s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
 	}
 
 	token, err := s.db.GetUserAccessToken(redemption.Event.BroadcasterUserID)

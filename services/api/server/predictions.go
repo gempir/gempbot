@@ -103,6 +103,7 @@ func (s *Server) handlePredictionBegin(c echo.Context) error {
 	}
 
 	s.store.PublishSpeakerMessage(
+		data.Event.BroadcasterUserID,
 		data.Event.BroadcasterUserLogin,
 		fmt.Sprintf("PogChamp prediction: %s [ %s | %s ] ending in %s",
 			data.Event.Title,
@@ -259,6 +260,7 @@ func (s *Server) handlePredictionEnd(c echo.Context) error {
 	}
 
 	s.store.PublishSpeakerMessage(
+		data.Event.BroadcasterUserID,
 		data.Event.BroadcasterUserLogin,
 		fmt.Sprintf("PogChamp ended prediction: %s Winner: %s %s",
 			data.Event.Title,

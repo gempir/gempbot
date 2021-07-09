@@ -183,5 +183,5 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 }
 
 func (h *Handler) handleError(msg twitch.PrivateMessage, err error) {
-	h.redis.PublishSpeakerMessage(msg.Channel, fmt.Sprintf("@%s %s", msg.User.DisplayName, err))
+	h.redis.PublishSpeakerMessage(msg.RoomID, msg.Channel, fmt.Sprintf("@%s %s", msg.User.DisplayName, err))
 }

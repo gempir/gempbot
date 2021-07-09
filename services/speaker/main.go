@@ -16,8 +16,9 @@ func main() {
 
 	cfg := config.NewConfig(*configFile)
 	rStore := store.NewRedis()
+	db := store.NewDatabase(cfg)
 
-	bot := bot.NewBot(cfg, rStore)
+	bot := bot.NewBot(cfg, rStore, db)
 
 	go func() {
 		topic := rStore.SubscribeSpeakerMessage()
@@ -29,7 +30,7 @@ func main() {
 				log.Error(err)
 			}
 
-			bot.Say(message.Channel, message.Message)
+			bot.Say(message.UserID, message.Channel, message.Message)
 		}
 	}()
 

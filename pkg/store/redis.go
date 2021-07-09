@@ -33,12 +33,13 @@ func (s *Redis) SubscribeSpeakerMessage() *redis.PubSub {
 }
 
 type SpeakerMessage struct {
+	UserID  string
 	Channel string
 	Message string
 }
 
-func (s *Redis) PublishSpeakerMessage(channel, message string) {
-	data, err := json.Marshal(&SpeakerMessage{channel, message})
+func (s *Redis) PublishSpeakerMessage(userid, channel, message string) {
+	data, err := json.Marshal(&SpeakerMessage{userid, channel, message})
 	if err != nil {
 		log.Error(err)
 		return
