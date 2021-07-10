@@ -9,18 +9,18 @@ interface PermissionForm {
 
 export function Permissions({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
     const [perms, setPerms] = useState(userConfig.Permissions);
-
-    const { register, handleSubmit, setValue } = useForm();
+    const { register, handleSubmit, setValue, reset } = useForm();
 
     useEffect(() => {
-        console.log("changing");
+        console.log("resetting");
+        reset({ permissions: userConfig.Permissions });
         setPerms(userConfig.Permissions);
 
         for (const [user, perm] of Object.entries(userConfig.Permissions)) {
             setValue(`permissions.${user}.User`, user)
             setValue(`permissions.${user}.Prediction`, perm.Prediction)
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(userConfig.Permissions)]);
 
     const onSubmit = (data: PermissionForm) => {
@@ -56,7 +56,7 @@ export function Permissions({ userConfig, setUserConfig }: { userConfig: UserCon
             </thead>
             <tbody>
                 {Object.keys(perms).map((user, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                    <th className="p-1"><input {...register(`permissions.${index}.User`)} className="p-1 bg-transparent leading-6" type="text" defaultValue={user} spellCheck={false} /> </th>
+                    <th className="p-1"><input {...register(`permissions.${index}.User`)} className="p-1 bg-transparent leading-6" type="text" defaultValue={user} autoComplete={"off"} spellCheck={false} /> </th>
                     <th className="p-1"><input {...register(`permissions.${index}.Prediction`)} className="p-1 bg-transparent leading-6" type="checkbox" defaultChecked={perms[user].Prediction} /></th>
                 </tr>)}
             </tbody>

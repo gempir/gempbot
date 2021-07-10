@@ -84,7 +84,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failure unmarshalling config "+err.Error())
 		}
 
-		err = s.processConfig(auth.Data.UserID, auth.Data.Login, newConfig, c.QueryParam("managing") != "")
+		err = s.processConfig(auth.Data.UserID, auth.Data.Login, newConfig, c.QueryParam("managing"))
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
 			return echo.NewHTTPError(http.StatusBadRequest, "failed processing config: "+err.Error())
@@ -242,11 +242,25 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 	return echo.NewHTTPError(http.StatusForbidden, "user is not editor")
 }
 
-func (s *Server) processConfig(userID string, login string, newConfig UserConfig, managing bool) error {
+func (s *Server) processConfig(userID string, login string, newConfig UserConfig, managing string) error {
+	ownerUserID := userID
 	newUserIDConfig := s.convertUserConfig(newConfig, false)
 
+	if managing != "" {
+		uData, err := s.helixClient.GetUserByUsername(managing)
+		if err != nil {
+			return err
+		}
+		ownerUserID = uData.ID
+		oldConfig := s.getUserConfig(uData.ID)
+
+		if !slice.Contains(oldConfig.Editors, userID) {
+			return errors.New("not an editor")
+		}
+	}
+
 	// Editors are not allowed to edit Editors
-	if !managing {
+	if managing == "" {
 		oldConfig := s.getUserConfig(userID)
 		added, removed := oldConfig.getEditorDifference(newUserIDConfig.Editors)
 
@@ -254,7 +268,7 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 		s.db.RemoveEditors(userID, removed)
 	}
 
-	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: userID, JoinBot: newConfig.BotJoin})
+	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: ownerUserID, JoinBot: newUserIDConfig.BotJoin})
 	if err != nil {
 		log.Error(err)
 	}
@@ -265,7 +279,7 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 	}
 
 	for permissionUserID, perm := range newUserIDConfig.Permissions {
-		err := s.db.SavePermission(store.Permission{ChannelTwitchId: userID, TwitchID: permissionUserID, Prediction: perm.Prediction})
+		err := s.db.SavePermission(store.Permission{ChannelTwitchId: ownerUserID, TwitchID: permissionUserID, Prediction: perm.Prediction})
 		if err != nil {
 			log.Error(err)
 		}
