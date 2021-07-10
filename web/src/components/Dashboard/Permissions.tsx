@@ -12,7 +12,6 @@ export function Permissions({ userConfig, setUserConfig }: { userConfig: UserCon
     const { register, handleSubmit, setValue, reset } = useForm();
 
     useEffect(() => {
-        console.log("resetting");
         reset({ permissions: userConfig.Permissions });
         setPerms(userConfig.Permissions);
 
