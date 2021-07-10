@@ -20,6 +20,7 @@ export function Permissions({ userConfig, setUserConfig }: { userConfig: UserCon
             setValue(`permissions.${user}.User`, user)
             setValue(`permissions.${user}.Prediction`, perm.Prediction)
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(userConfig.Permissions)]);
 
     const onSubmit = (data: PermissionForm) => {
