@@ -14,6 +14,14 @@ func (db *Database) GetPermission(userID string, channelID string) Permission {
 	return perm
 }
 
+func (db *Database) GetPermissions(channelID string) []Permission {
+	var perms []Permission
+
+	db.Client.Where("channel_twitch_id = ?", channelID).Find(&perms)
+
+	return perms
+}
+
 func (db *Database) SavePermission(perm Permission) error {
 	updateMap, err := StructToMap(perm)
 	if err != nil {

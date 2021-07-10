@@ -14,9 +14,10 @@ import (
 )
 
 type UserConfig struct {
-	BotJoin   bool
-	Editors   []string
-	Protected Protected
+	BotJoin     bool
+	Editors     []string
+	Permissions []Permission
+	Protected   Protected
 }
 
 type Protected struct {
@@ -24,10 +25,16 @@ type Protected struct {
 	CurrentUserID string
 }
 
+type Permission struct {
+	User       string
+	Prediction bool
+}
+
 func createDefaultUserConfig() UserConfig {
 	return UserConfig{
-		BotJoin: false,
-		Editors: []string{},
+		BotJoin:     false,
+		Editors:     []string{},
+		Permissions: []Permission{},
 		Protected: Protected{
 			EditorFor:     []string{},
 			CurrentUserID: "",
@@ -113,12 +120,22 @@ func (s *Server) getUserConfig(userID string) UserConfig {
 		}
 	}
 
+	perms := s.db.GetPermissions(userID)
+
+	for _, perm := range perms {
+		uCfg.Permissions = append(uCfg.Permissions, Permission{User: perm.TwitchID, Prediction: perm.Prediction})
+	}
+
 	return uCfg
 }
 
 func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
 	all := uCfg.Editors
 	all = append(all, uCfg.Protected.EditorFor...)
+
+	for _, perm := range uCfg.Permissions {
+		all = append(all, perm.User)
+	}
 
 	var err error
 	var userData map[string]helix.UserData
@@ -161,6 +178,23 @@ func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
 		}
 	}
 	uCfg.Protected.EditorFor = editorFor
+
+	perms := []Permission{}
+	for _, perm := range uCfg.Permissions {
+		data, ok := userData[perm.User]
+		if !ok {
+			continue
+		}
+
+		if toNames {
+			perm.User = data.Login
+		} else {
+			perm.User = data.ID
+		}
+
+		perms = append(perms, perm)
+	}
+	uCfg.Permissions = perms
 
 	return uCfg
 }

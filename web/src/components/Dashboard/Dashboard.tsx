@@ -3,6 +3,7 @@ import { useUserConfig } from "../../hooks/useUserConfig";
 import { Menu } from "./Menu";
 import { PredictionLog } from "./PredictionLog";
 import { BttvForm } from "./RewardForms/BttvForm";
+import { Permissions } from "./Permissions";
 
 export function Dashboard() {
     useTitle("bitraft - Dashboard");
@@ -16,6 +17,7 @@ export function Dashboard() {
         <div className="flex">
             <BttvForm userConfig={userCfg} />
             <PredictionLog />
+            <Permissions userConfig={userCfg} />
         </div>
     </div>
 }
