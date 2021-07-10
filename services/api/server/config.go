@@ -16,7 +16,7 @@ import (
 type UserConfig struct {
 	BotJoin     bool
 	Editors     []string
-	Permissions []Permission
+	Permissions map[string]Permission
 	Protected   Protected
 }
 
@@ -26,7 +26,6 @@ type Protected struct {
 }
 
 type Permission struct {
-	User       string
 	Prediction bool
 }
 
@@ -34,7 +33,7 @@ func createDefaultUserConfig() UserConfig {
 	return UserConfig{
 		BotJoin:     false,
 		Editors:     []string{},
-		Permissions: []Permission{},
+		Permissions: map[string]Permission{},
 		Protected: Protected{
 			EditorFor:     []string{},
 			CurrentUserID: "",
@@ -123,7 +122,7 @@ func (s *Server) getUserConfig(userID string) UserConfig {
 	perms := s.db.GetPermissions(userID)
 
 	for _, perm := range perms {
-		uCfg.Permissions = append(uCfg.Permissions, Permission{User: perm.TwitchID, Prediction: perm.Prediction})
+		uCfg.Permissions[perm.TwitchID] = Permission{perm.Prediction}
 	}
 
 	return uCfg
@@ -133,8 +132,8 @@ func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
 	all := uCfg.Editors
 	all = append(all, uCfg.Protected.EditorFor...)
 
-	for _, perm := range uCfg.Permissions {
-		all = append(all, perm.User)
+	for user := range uCfg.Permissions {
+		all = append(all, user)
 	}
 
 	var err error
@@ -179,20 +178,22 @@ func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
 	}
 	uCfg.Protected.EditorFor = editorFor
 
-	perms := []Permission{}
-	for _, perm := range uCfg.Permissions {
-		data, ok := userData[perm.User]
+	perms := map[string]Permission{}
+	for user, perm := range uCfg.Permissions {
+		data, ok := userData[user]
 		if !ok {
 			continue
 		}
 
+		var newUser string
+
 		if toNames {
-			perm.User = data.Login
+			newUser = data.Login
 		} else {
-			perm.User = data.ID
+			newUser = data.ID
 		}
 
-		perms = append(perms, perm)
+		perms[newUser] = perm
 	}
 	uCfg.Permissions = perms
 
@@ -242,9 +243,10 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 }
 
 func (s *Server) processConfig(userID string, login string, newConfig UserConfig, managing bool) error {
+	newUserIDConfig := s.convertUserConfig(newConfig, false)
+
 	// Editors are not allowed to edit Editors
 	if !managing {
-		newUserIDConfig := s.convertUserConfig(newConfig, false)
 		oldConfig := s.getUserConfig(userID)
 		added, removed := oldConfig.getEditorDifference(newUserIDConfig.Editors)
 
@@ -260,6 +262,13 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 		s.store.PublishIngesterMessage(store.IngesterMsgJoin, login)
 	} else {
 		s.store.PublishIngesterMessage(store.IngesterMsgPart, login)
+	}
+
+	for permissionUserID, perm := range newUserIDConfig.Permissions {
+		err := s.db.SavePermission(store.Permission{ChannelTwitchId: userID, TwitchID: permissionUserID, Prediction: perm.Prediction})
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	return nil

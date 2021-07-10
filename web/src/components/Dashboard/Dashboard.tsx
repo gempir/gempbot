@@ -17,7 +17,7 @@ export function Dashboard() {
         <div className="flex">
             <BttvForm userConfig={userCfg} />
             <PredictionLog />
-            <Permissions userConfig={userCfg} />
+            <Permissions userConfig={userCfg} setUserConfig={setUserConfig} />
         </div>
     </div>
 }
