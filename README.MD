@@ -1,9 +1,19 @@
-# bitraft
+# Development
 
-Use ngrok for local development
+Requires
+```
+redis
+postgres
+yarn
+go
+tmux
+teamocil
+```
+
+Run `ngrok http 8035` and save https url to config.json
 
 ```
-ngrok http 8035
+teamocil --layout bitraft.yml
 ```
 
 # Icons
