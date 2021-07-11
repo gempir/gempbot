@@ -55,7 +55,7 @@ export function UserPermissions({ userConfig, setUserConfig }: { userConfig: Use
     };
 
 
-    return <form onSubmit={handleSubmit(onSubmit)} className="p-4 mt-4 bg-gray-800 rounded shadow w-96 relative">
+    return <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-gray-800 rounded shadow w-96 relative">
         <h2 className="mb-4 text-xl">Elevated Users</h2>
         <table className="w-full">
             <thead>

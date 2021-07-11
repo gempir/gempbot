@@ -38,7 +38,7 @@ export function EditorManager({ setUserConfig, userConfig }: { setUserConfig: Se
         return null;
     }
 
-    return <div className="flex flex-row flex-wrap gap-4 items-center">
+    return <div className="flex mb-4 flex-row flex-wrap gap-4 items-center">
         Editors
         {editorInputs}
         {creatingNewEditor && <div className="bg-green-700 rounded shadow p-3 cursor-pointer hover:bg-green-600" onClick={() => {

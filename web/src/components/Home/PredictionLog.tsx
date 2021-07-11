@@ -5,8 +5,8 @@ import { Refresh } from "../../icons/Refresh";
 export function PredictionLog() {
     const [logs, fetch, loading] = usePredictionLogs();
 
-    return <div className="mt-4 p-4 bg-gray-800 rounded shadow w-full relative">
-        <div className="absolute top-4 left-4 cursor-pointer text-2xl" onClick={fetch}><Refresh className={"hover:text-gray-400 " + (loading ? "animate-spin" : "")} /></div>
+    return <div className="p-4 bg-gray-800 rounded shadow w-full relative">
+        <div className="absolute top-4 left-4 cursor-pointer text-2xl" onClick={fetch}><Refresh className={"hover:text-blue-500 " + (loading ? "animate-spin" : "")} /></div>
         <table className="w-full">
             <thead>
                 <tr>
