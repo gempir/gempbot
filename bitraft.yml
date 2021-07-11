@@ -1,0 +1,13 @@
+# teamocil --layout bitraft.yml
+windows:
+  - name: bitraft
+    root: ~/dev/bitraft
+    layout: tiled
+    panes:
+      - redis-server
+      - sudo systemctl start postgresql.service
+      - cd web && yarn start
+      - cd services/api && go build && ./api
+      - cd services/commander && go build && ./commander
+      - cd services/ingester && go build && ./ingester
+      - cd services/speaker && go build && ./speaker
