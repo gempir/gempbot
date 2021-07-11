@@ -1,8 +1,0 @@
----
-- hosts: all
-  become: true
-  tasks:
-    - name: Install curl
-      package: name=curl state=present
-  roles:
-    - caddy_ansible.caddy_ansible
