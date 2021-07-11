@@ -1,17 +1,19 @@
 import { useTitle } from "react-use";
-import { store } from "../../store";
-import { Dashboard } from "../Dashboard/Dashboard";
-import { Teaser } from "../Home/Teaser";
+import { useUserConfig } from "../../hooks/useUserConfig";
+import { Menu } from "./Menu";
+import { PredictionLog } from "./PredictionLog";
 
 export function Home() {
-    useTitle("bitraft");
-
-    const scToken = store.useState(store => store.scToken);
-    if (scToken) {
-        return <Dashboard />
+    useTitle("bitraft - Home");
+    const [userCfg, setUserConfig] = useUserConfig();
+    if (!userCfg) {
+        return null;
     }
 
-    return <div>
-        <Teaser />
+    return <div className="p-4 w-full max-h-screen overflow-y-scroll">
+        <Menu userConfig={userCfg} setUserConfig={setUserConfig} />
+        <div className="flex w-full">
+            <PredictionLog />
+        </div>
     </div>
 }

@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { Settings } from "../icons/Settings";
 import { Gift } from "../icons/Gift";
-import { Login } from "./Login";
 import { House } from "../icons/House";
+import { Settings } from "../icons/Settings";
+import { Login } from "./Login";
 
 export function Sidebar() {
     return <div className="p-4 bg-gray-800 w-48 rounded shadow flex flex-col relative h-screen">
