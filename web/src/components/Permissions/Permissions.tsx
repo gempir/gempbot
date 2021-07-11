@@ -1,5 +1,6 @@
 import { useTitle } from "react-use";
 import { useUserConfig } from "../../hooks/useUserConfig";
+import { EditorManager } from "./EditorManager";
 import { UserPermissions } from "./UserPermissions";
 
 export function Permissions() {
@@ -11,6 +12,7 @@ export function Permissions() {
     }
 
     return <div className="p-4">
+        <EditorManager userConfig={userCfg} setUserConfig={setUserConfig} />
         <UserPermissions userConfig={userCfg} setUserConfig={setUserConfig} />
     </div>;
 }
