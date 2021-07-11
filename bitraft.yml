@@ -7,7 +7,7 @@ windows:
       - redis-server
       - sudo systemctl start postgresql.service
       - cd web && yarn start
-      - cd services/api && go build && ./api
-      - cd services/commander && go build && ./commander
-      - cd services/ingester && go build && ./ingester
-      - cd services/speaker && go build && ./speaker
+      - go build -o ./services/api/api ./services/api && ./services/api/api -config ./config.json
+      - go build -o ./services/commander/commander ./services/commander && ./services/commander/commander -config ./config.json
+      - go build -o ./services/ingester/ingester ./services/ingester && ./services/ingester/ingester -config ./config.json
+      - go build -o ./services/speaker/speaker ./services/speaker && ./services/speaker/speaker -config ./config.json

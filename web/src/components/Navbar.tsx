@@ -19,12 +19,6 @@ export function Navbar() {
 
 function LoggedIn() {
     return <>
-        <Link to="/" className="p-4 rounded shadow bg-gray-800 hover:bg-gray-700">
-            Home
-        </Link>
-        <Link to="/dashboard" className="p-4 rounded shadow bg-blue-900 hover:bg-blue-800">
-            Dashboard
-        </Link>
         <Login className={`p-4 rounded shadow opacity-25 bg-purple-800 hover:bg-purple-600`} />
     </>;
 }

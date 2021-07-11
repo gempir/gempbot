@@ -29,7 +29,6 @@ func (s *Server) handleCallback(c echo.Context) error {
 	resp, err := s.helixClient.Client.RequestUserAccessToken(code)
 	if err != nil || resp.StatusCode >= 400 {
 		log.Errorf("failed to request userAccessToken: %s %s", err, resp.ErrorMessage)
-		// @TODO redirect to somewhere better
 		return s.dashboardRedirect(c, "")
 	}
 
@@ -86,7 +85,7 @@ func (s *Server) dashboardRedirect(c echo.Context, scToken string) error {
 	}
 
 	c.SetCookie(&cookie)
-	err := c.Redirect(http.StatusFound, s.cfg.WebBaseUrl+"/dashboard")
+	err := c.Redirect(http.StatusFound, s.cfg.WebBaseUrl)
 	if err != nil {
 		log.Error(err)
 		return err
