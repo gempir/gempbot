@@ -22,6 +22,10 @@ func (db *Database) GetPermissions(channelID string) []Permission {
 	return perms
 }
 
+func (db *Database) RemovePermissionsForChannel(channelTwitchID string) {
+	db.Client.Delete(&Permission{}, "channel_twitch_id = ?", channelTwitchID)
+}
+
 func (db *Database) SavePermission(perm Permission) error {
 	updateMap, err := StructToMap(perm)
 	if err != nil {

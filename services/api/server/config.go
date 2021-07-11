@@ -278,6 +278,8 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 		s.store.PublishIngesterMessage(store.IngesterMsgPart, login)
 	}
 
+	s.db.RemovePermissionsForChannel(ownerUserID)
+
 	for permissionUserID, perm := range newUserIDConfig.Permissions {
 		err := s.db.SavePermission(store.Permission{ChannelTwitchId: ownerUserID, TwitchID: permissionUserID, Prediction: perm.Prediction})
 		if err != nil {
