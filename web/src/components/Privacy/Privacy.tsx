@@ -1,4 +1,8 @@
+import { useTitle } from "react-use";
+
 export function Privacy() {
+    useTitle("bitraft - Privacy");
+
     return (
         <div className="container m-auto">
             <h1 className="text-5xl my-5">Privacy Policy</h1>

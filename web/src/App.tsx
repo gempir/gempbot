@@ -2,7 +2,6 @@ import {
     BrowserRouter as Router,
     Route, Switch
 } from "react-router-dom";
-import { useTitle } from "react-use";
 import { Home } from "./components/Home/Home";
 import { Permissions } from "./components/Permissions/Permissions";
 import { Privacy } from "./components/Privacy/Privacy";
@@ -13,8 +12,6 @@ import { store } from "./store";
 
 
 export function App() {
-    useTitle("bitraft");
-
     const scToken = store.useState(store => store.scToken);
     if (!scToken) {
         return <Teaser />

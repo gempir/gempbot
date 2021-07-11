@@ -5,6 +5,7 @@ import { PredictionLog } from "./PredictionLog";
 
 export function Home() {
     useTitle("bitraft - Home");
+
     const [userCfg, setUserConfig] = useUserConfig();
     if (!userCfg) {
         return null;
