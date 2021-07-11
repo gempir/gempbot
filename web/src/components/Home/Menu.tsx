@@ -1,12 +1,10 @@
 import React, { KeyboardEvent, useRef, useState } from "react";
 import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
 import { store } from "../../store";
-import { Managing } from "./Managing";
 
 export function Menu({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
     return <div className="flex flex-row flex-wrap gap-4">
         <BotManager userConfig={userConfig} setUserConfig={setUserConfig} />
-        <Managing userConfig={userConfig} />
         <EditorManager setUserConfig={setUserConfig} userConfig={userConfig} />
     </div>
 }

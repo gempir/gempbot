@@ -1,13 +1,17 @@
 import { Link } from "react-router-dom";
-import { Gift } from "../icons/Gift";
-import { House } from "../icons/House";
-import { Settings } from "../icons/Settings";
+import { useUserConfig } from "../../hooks/useUserConfig";
+import { Gift } from "../../icons/Gift";
+import { House } from "../../icons/House";
+import { Settings } from "../../icons/Settings";
 import { Login } from "./Login";
+import { Managing } from "./Managing"
 
 export function Sidebar() {
+    const [userConfig] = useUserConfig();
+
     return <div className="p-4 bg-gray-800 w-48 rounded shadow flex flex-col relative h-screen">
         <Login />
-        <div className="h-10" />
+        <Managing userConfig={userConfig} />
         <Link to="/" className="flex gap-2 items-center py-4 justify-start hover:text-gray-400">
             <House /> Home
         </Link>

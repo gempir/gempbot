@@ -6,7 +6,7 @@ import { Home } from "./components/Home/Home";
 import { Permissions } from "./components/Permissions/Permissions";
 import { Privacy } from "./components/Privacy/Privacy";
 import { Rewards } from "./components/Rewards/Rewards";
-import { Sidebar } from "./components/Sidebar";
+import { Sidebar } from "./components/Sidebar/Sidebar";
 import { Teaser } from "./components/Teaser";
 import { store } from "./store";
 

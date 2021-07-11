@@ -1,5 +1,6 @@
 import React from "react";
 import { UserConfig } from "../../hooks/useUserConfig";
+import { UserGroup } from "../../icons/UserGroup";
 import { store } from "../../store";
 
 export function Managing({ userConfig }: { userConfig: UserConfig | null | undefined }) {
@@ -12,8 +13,9 @@ export function Managing({ userConfig }: { userConfig: UserConfig | null | undef
         window.localStorage.setItem("managing", e.target.value);
     };
 
-    return <div className="Managing">
-        <select className="bg-gray-800 shadow rounded p-3" onChange={updateManaging} value={managing}>
+    return <div className="Managing flex items-center my-4">
+        <UserGroup />
+        <select className="block ml-2 p-1 rounded bg-gray-900 shadow focus:outline-none" onChange={updateManaging} value={managing}>
             {userConfig?.Protected.EditorFor.map(editorFor => <option key={editorFor} value={editorFor}>{editorFor}</option>)}
             <option value="">you</option>
         </select>
