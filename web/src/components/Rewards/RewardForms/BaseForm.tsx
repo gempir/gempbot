@@ -77,7 +77,7 @@ export function BaseForm({ userConfig, type, header, description, children }: { 
     }, [reward, setValue]);
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl m-4 p-4 bg-gray-800 rounded shadow">
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl p-4 bg-gray-800 rounded shadow">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-5">
                     {header}

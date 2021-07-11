@@ -2,8 +2,6 @@ import { useTitle } from "react-use";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { Menu } from "./Menu";
 import { PredictionLog } from "./PredictionLog";
-import { BttvForm } from "./RewardForms/BttvForm";
-import { Permissions } from "./Permissions";
 
 export function Dashboard() {
     useTitle("bitraft - Dashboard");
@@ -12,12 +10,10 @@ export function Dashboard() {
         return null;
     }
 
-    return <div>
+    return <div className="p-4 w-full max-h-screen overflow-y-scroll">
         <Menu userConfig={userCfg} setUserConfig={setUserConfig} />
-        <div className="flex">
-            <BttvForm userConfig={userCfg} />
+        <div className="flex w-full">
             <PredictionLog />
-            <Permissions userConfig={userCfg} setUserConfig={setUserConfig} />
         </div>
     </div>
 }

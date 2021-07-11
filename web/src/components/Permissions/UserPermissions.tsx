@@ -7,7 +7,7 @@ interface PermissionForm {
     permissions: Record<string | number, { User: string, Prediction: boolean }>
 }
 
-export function Permissions({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
+export function UserPermissions({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
     const [perms, setPerms] = useState(userConfig.Permissions);
     const { register, handleSubmit, setValue, reset } = useForm();
 
@@ -44,12 +44,12 @@ export function Permissions({ userConfig, setUserConfig }: { userConfig: UserCon
     }
 
 
-    return <form onSubmit={handleSubmit(onSubmit)} className="m-4 p-4 bg-gray-800 rounded shadow w-96 relative">
+    return <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-gray-800 rounded shadow w-96 relative">
         <h2 className="mb-4 text-xl">Permissions</h2>
         <table className="w-full">
             <thead>
                 <tr className="border-b-8 border-transparent">
-                    <th>User</th>
+                    <th className="text-left pl-8">User</th>
                     <th>Prediction</th>
                 </tr>
             </thead>
@@ -63,6 +63,6 @@ export function Permissions({ userConfig, setUserConfig }: { userConfig: UserCon
         <div className="hover:bg-gray-700 p-3 rounded cursor-pointer font-bold mt-4 w-full flex justify-center" onClick={addRow}>
             Add
         </div>
-        <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3 cursor-pointer absolute bottom-4 right-4" value="save" />
+        <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block mt-3 cursor-pointer mr-0 ml-auto" value="save" />
     </form>
 }

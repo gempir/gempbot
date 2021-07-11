@@ -14,5 +14,5 @@ export const store = new PStore<Store>({
     apiBaseUrl: process.env.REACT_APP_API_BASE_URL ?? "",
     baseUrl: process.env.REACT_APP_BASE_URL ?? "",
     scToken: getCookie("scToken"),
-    managing: "",
+    managing: window.localStorage.getItem("managing") ?? "",
 });

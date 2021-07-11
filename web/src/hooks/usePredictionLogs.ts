@@ -24,20 +24,22 @@ export interface RawPredictionLog {
     Outcomes: Outcome[];
 }
 
-export function usePredictionLogs(): [Array<PredictionLog>, () => void] {
+export function usePredictionLogs(): [Array<PredictionLog>, () => void, boolean] {
     const [logs, setLogs] = useState<Array<PredictionLog>>([]);
+    const [loading, setLoading] = useState(false);
     const managing = store.useState(s => s.managing);
 
-    const fetchConfig = () => {
+    const fetchPredictions = () => {
+        setLoading(true);
         let endPoint = "/api/prediction";
         if (managing) {
             endPoint += `?managing=${managing}`;
         }
-        doFetch(Method.GET, endPoint).then((logs) => setLogs(logs.map((log: RawPredictionLog) => PredictionLog.fromObject(log))))
+        doFetch(Method.GET, endPoint).then((logs) => setLogs(logs.map((log: RawPredictionLog) => PredictionLog.fromObject(log)))).then(() => setLoading(false));
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(fetchConfig, [managing]);
+    useEffect(fetchPredictions, [managing]);
 
-    return [logs, fetchConfig];
+    return [logs, fetchPredictions, loading];
 }
