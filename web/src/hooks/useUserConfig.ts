@@ -5,12 +5,12 @@ import { store } from "../store";
 
 export interface UserConfig {
     BotJoin: boolean,
-    Editors: Array<string>;
     Permissions: Record<string, Permission>;
     Protected: Protected;
 }
 
 export interface Permission {
+    Editor: boolean;
     Prediction: boolean;
 }
 

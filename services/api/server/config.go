@@ -15,9 +15,18 @@ import (
 
 type UserConfig struct {
 	BotJoin     bool
-	Editors     []string
 	Permissions map[string]Permission
 	Protected   Protected
+}
+
+func (u *UserConfig) isEditor(userID string) bool {
+	val, ok := u.Permissions[userID]
+
+	return ok && val.Editor
+}
+
+func (u *UserConfig) isEditorFor(userID string) bool {
+	return slice.Contains(u.Protected.EditorFor, userID)
 }
 
 type Protected struct {
@@ -26,23 +35,19 @@ type Protected struct {
 }
 
 type Permission struct {
+	Editor     bool
 	Prediction bool
 }
 
 func createDefaultUserConfig() UserConfig {
 	return UserConfig{
 		BotJoin:     false,
-		Editors:     []string{},
 		Permissions: map[string]Permission{},
 		Protected: Protected{
 			EditorFor:     []string{},
 			CurrentUserID: "",
 		},
 	}
-}
-
-func (c *UserConfig) getEditorDifference(newEditors []string) (removed []string, added []string) {
-	return slice.Diff(c.Editors, newEditors)
 }
 
 func (s *Server) handleUserConfig(c echo.Context) error {
@@ -57,13 +62,12 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 		if c.QueryParam("managing") != "" {
 			ownerUserID, err := s.checkEditor(c, userConfig)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+				return err
 			}
 
 			editorFor := userConfig.Protected.EditorFor
 			userConfig = s.getUserConfig(ownerUserID)
 
-			userConfig.Editors = []string{}
 			userConfig.Protected.EditorFor = editorFor
 		}
 
@@ -106,31 +110,22 @@ func (s *Server) getUserConfig(userID string) UserConfig {
 		uCfg.BotJoin = botConfig.JoinBot
 	}
 
-	editors := s.db.GetEditors(userID)
-
 	uCfg.Protected.CurrentUserID = userID
 
-	for _, editor := range editors {
-		if editor.OwnerTwitchID == userID {
-			uCfg.Editors = append(uCfg.Editors, editor.EditorTwitchID)
-		}
-		if editor.EditorTwitchID == userID {
-			uCfg.Protected.EditorFor = append(uCfg.Protected.EditorFor, editor.OwnerTwitchID)
-		}
+	perms := s.db.GetChannelPermissions(userID)
+	for _, perm := range perms {
+		uCfg.Permissions[perm.TwitchID] = Permission{perm.Editor, perm.Prediction}
 	}
 
-	perms := s.db.GetPermissions(userID)
-
-	for _, perm := range perms {
-		uCfg.Permissions[perm.TwitchID] = Permission{perm.Prediction}
+	for _, perm := range s.db.GetUserPermissions(userID) {
+		uCfg.Protected.EditorFor = append(uCfg.Protected.EditorFor, perm.ChannelTwitchId)
 	}
 
 	return uCfg
 }
 
 func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
-	all := uCfg.Editors
-	all = append(all, uCfg.Protected.EditorFor...)
+	all := uCfg.Protected.EditorFor
 
 	for user := range uCfg.Permissions {
 		all = append(all, user)
@@ -147,21 +142,6 @@ func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
 		log.Errorf("Failed to get editors %s", err)
 		return UserConfig{}
 	}
-
-	editors := []string{}
-	for _, editor := range uCfg.Editors {
-		data, ok := userData[editor]
-		if !ok {
-			continue
-		}
-
-		if toNames {
-			editors = append(editors, data.Login)
-		} else {
-			editors = append(editors, data.ID)
-		}
-	}
-	uCfg.Editors = editors
 
 	editorFor := []string{}
 	for _, editor := range uCfg.Protected.EditorFor {
@@ -203,24 +183,13 @@ func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
 func (s *Server) checkEditor(c echo.Context, userConfig UserConfig) (string, error) {
 	managing := c.QueryParam("managing")
 
-	if managing == "" {
-		return "", nil
-	}
-
 	userData, err := s.helixClient.GetUsersByUsernames([]string{managing})
 	if err != nil || len(userData) == 0 {
-		return "", errors.New("can't find editor")
+		return "", echo.NewHTTPError(http.StatusForbidden, "could not find managing")
 	}
 
-	isEditor := false
-	for _, editor := range userConfig.Protected.EditorFor {
-		if editor == userData[managing].ID {
-			isEditor = true
-		}
-	}
-
-	if !isEditor {
-		return "", errors.New("User is not editor")
+	if !userConfig.isEditorFor(userData[managing].ID) {
+		return "", echo.NewHTTPError(http.StatusForbidden, "user is not editor")
 	}
 
 	return userData[managing].ID, nil
@@ -233,21 +202,20 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 
 	userConfig := s.getUserConfig(ownerUserID)
 
-	for _, editor := range userConfig.Editors {
-		if editor == editorUserID {
-			return nil
-		}
+	if userConfig.isEditor(editorUserID) {
+		return nil
 	}
 
 	return echo.NewHTTPError(http.StatusForbidden, "user is not editor")
 }
 
 func (s *Server) processConfig(userID string, login string, newConfig UserConfig, managing string) error {
+	isManaging := managing != ""
 	ownerUserID := userID
 	ownerLogin := login
 	newUserIDConfig := s.convertUserConfig(newConfig, false)
 
-	if managing != "" {
+	if isManaging {
 		uData, err := s.helixClient.GetUserByUsername(managing)
 		if err != nil {
 			return err
@@ -256,18 +224,9 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 		ownerLogin = uData.Login
 		oldConfig := s.getUserConfig(uData.ID)
 
-		if !slice.Contains(oldConfig.Editors, userID) {
+		if !oldConfig.isEditor(userID) {
 			return errors.New("not an editor")
 		}
-	}
-
-	// Editors are not allowed to edit Editors
-	if managing == "" {
-		oldConfig := s.getUserConfig(userID)
-		added, removed := oldConfig.getEditorDifference(newUserIDConfig.Editors)
-
-		s.db.AddEditors(userID, added)
-		s.db.RemoveEditors(userID, removed)
 	}
 
 	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: ownerUserID, JoinBot: newUserIDConfig.BotJoin})
@@ -280,10 +239,28 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 		s.store.PublishIngesterMessage(store.IngesterMsgPart, ownerLogin)
 	}
 
-	s.db.RemovePermissionsForChannel(ownerUserID)
+	previousPerms := s.db.GetChannelPermissions(ownerUserID)
+	previousPermIds := []string{}
+	for _, perm := range previousPerms {
+		previousPermIds = append(previousPermIds, perm.TwitchID)
+	}
+	newPermIds := []string{}
+	for user := range newUserIDConfig.Permissions {
+		newPermIds = append(newPermIds, user)
+	}
+	_, deleted := slice.Diff(previousPermIds, newPermIds)
+
+	for _, deletedUserID := range deleted {
+		s.db.DeletePermission(ownerUserID, deletedUserID)
+	}
 
 	for permissionUserID, perm := range newUserIDConfig.Permissions {
-		err := s.db.SavePermission(store.Permission{ChannelTwitchId: ownerUserID, TwitchID: permissionUserID, Prediction: perm.Prediction})
+		newPerms := map[string]interface{}{"ChannelTwitchId": ownerUserID, "TwitchID": permissionUserID, "Prediction": perm.Prediction}
+		if !isManaging {
+			newPerms["Editor"] = perm.Editor
+		}
+
+		err := s.db.SavePermission(newPerms)
 		if err != nil {
 			log.Error(err)
 		}

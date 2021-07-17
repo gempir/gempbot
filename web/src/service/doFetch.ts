@@ -38,6 +38,11 @@ export async function doFetch(method: Method, path: string, body: any = undefine
                 window.location.assign("/")
                 return
             }
+            if (response.status === 403) {
+                window.localStorage.removeItem("managing");
+                window.location.reload();
+                return
+            }
             if (response.ok) {
                 const text = await response.text();
                 return text !== "" ? JSON.parse(text) : null

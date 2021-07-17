@@ -62,7 +62,7 @@ func (l *Listener) handleMessage(msg twitch.PrivateMessage) {
 }
 
 func (l *Listener) handlePrediction(payload dto.CommandPayload) {
-	perm := l.db.GetPermission(payload.Msg.User.ID, payload.Msg.RoomID)
+	perm := l.db.GetChannelUserPermissions(payload.Msg.User.ID, payload.Msg.RoomID)
 	if !perm.Prediction && !tmi.IsModerator(payload.Msg.User) && !tmi.IsBroadcaster(payload.Msg.User) {
 		return
 	}
