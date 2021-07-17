@@ -7,6 +7,7 @@ import { ChannelPointReward, RewardTypes } from "../../../types/Rewards";
 interface BttvRewardForm {
     title: string;
     cost: string;
+    prompt: string;
     backgroundColor: string;
     maxPerStream: string;
     maxPerUserPerStream: string;
@@ -47,7 +48,7 @@ export function BaseForm({ userConfig, type, header, description, children }: { 
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
             Type: type,
             Title: data.title,
-            Prompt: defaultReward.Prompt,
+            Prompt: data.prompt,
             Cost: Number(data.cost),
             BackgroundColor: data.backgroundColor,
             IsMaxPerStreamEnabled: Boolean(data.maxPerStream),
@@ -106,7 +107,7 @@ export function BaseForm({ userConfig, type, header, description, children }: { 
 
             <label className="block mt-3">
                 Prompt
-                <input defaultValue={reward.Prompt} spellCheck={false} disabled {...register("prompt")} className="block cursor-not-allowed truncate form-input w-full opacity-25 border-none bg-gray-700 mt-2 p-2 rounded shadow" />
+                <input defaultValue={reward.Prompt} spellCheck={false} {...register("prompt")} className="block truncate form-input w-full border-none bg-gray-700 mt-2 p-2 rounded shadow" />
             </label>
 
             <label className="block mt-3">

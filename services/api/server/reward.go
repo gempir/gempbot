@@ -319,7 +319,7 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request TwitchR
 
 	req := helix.CreateCustomRewardRequest{
 		Title:                             request.Title,
-		Prompt:                            bttvPrompt,
+		Prompt:                            request.Prompt,
 		Cost:                              request.Cost,
 		IsEnabled:                         request.Enabled,
 		BackgroundColor:                   request.BackgroundColor,
