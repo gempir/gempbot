@@ -244,6 +244,7 @@ func (s *Server) checkIsEditor(editorUserID string, ownerUserID string) error {
 
 func (s *Server) processConfig(userID string, login string, newConfig UserConfig, managing string) error {
 	ownerUserID := userID
+	ownerLogin := login
 	newUserIDConfig := s.convertUserConfig(newConfig, false)
 
 	if managing != "" {
@@ -252,6 +253,7 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 			return err
 		}
 		ownerUserID = uData.ID
+		ownerLogin = uData.Login
 		oldConfig := s.getUserConfig(uData.ID)
 
 		if !slice.Contains(oldConfig.Editors, userID) {
@@ -273,9 +275,9 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 		log.Error(err)
 	}
 	if newConfig.BotJoin {
-		s.store.PublishIngesterMessage(store.IngesterMsgJoin, login)
+		s.store.PublishIngesterMessage(store.IngesterMsgJoin, ownerLogin)
 	} else {
-		s.store.PublishIngesterMessage(store.IngesterMsgPart, login)
+		s.store.PublishIngesterMessage(store.IngesterMsgPart, ownerLogin)
 	}
 
 	s.db.RemovePermissionsForChannel(ownerUserID)
