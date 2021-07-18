@@ -71,7 +71,10 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 			userConfig.Protected.EditorFor = editorFor
 		}
 
-		userConfig = s.convertUserConfig(userConfig, true)
+		userConfig, err = s.convertUserConfig(userConfig, true)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
 
 		return c.JSON(http.StatusOK, userConfig)
 
@@ -91,7 +94,7 @@ func (s *Server) handleUserConfig(c echo.Context) error {
 		err = s.processConfig(auth.Data.UserID, auth.Data.Login, newConfig, c.QueryParam("managing"))
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
-			return echo.NewHTTPError(http.StatusBadRequest, "failed processing config: "+err.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 
 		return c.JSON(http.StatusOK, nil)
@@ -124,23 +127,29 @@ func (s *Server) getUserConfig(userID string) UserConfig {
 	return uCfg
 }
 
-func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
-	all := uCfg.Protected.EditorFor
+func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) (UserConfig, error) {
+	all := map[string]string{}
+
+	for _, user := range uCfg.Protected.EditorFor {
+		all[user] = user
+	}
 
 	for user := range uCfg.Permissions {
-		all = append(all, user)
+		all[user] = user
 	}
+
+	allSlice := slice.MapToSlice(all)
 
 	var err error
 	var userData map[string]helix.UserData
 	if toNames {
-		userData, err = s.helixClient.GetUsersByUserIds(all)
+		userData, err = s.helixClient.GetUsersByUserIds(allSlice)
 	} else {
-		userData, err = s.helixClient.GetUsersByUsernames(all)
+		userData, err = s.helixClient.GetUsersByUsernames(allSlice)
 	}
-	if err != nil {
-		log.Errorf("Failed to get editors %s", err)
-		return UserConfig{}
+	if err != nil || len(userData) != len(all) {
+		log.Errorf("Failed to get users %s", err)
+		return UserConfig{}, errors.New("Invalid username(s)")
 	}
 
 	editorFor := []string{}
@@ -177,7 +186,7 @@ func (s *Server) convertUserConfig(uCfg UserConfig, toNames bool) UserConfig {
 	}
 	uCfg.Permissions = perms
 
-	return uCfg
+	return uCfg, err
 }
 
 func (s *Server) checkEditor(c echo.Context, userConfig UserConfig) (string, error) {
@@ -213,7 +222,10 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 	isManaging := managing != ""
 	ownerUserID := userID
 	ownerLogin := login
-	newUserIDConfig := s.convertUserConfig(newConfig, false)
+	newUserIDConfig, err := s.convertUserConfig(newConfig, false)
+	if err != nil {
+		return err
+	}
 
 	if isManaging {
 		uData, err := s.helixClient.GetUserByUsername(managing)
@@ -229,7 +241,7 @@ func (s *Server) processConfig(userID string, login string, newConfig UserConfig
 		}
 	}
 
-	err := s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: ownerUserID, JoinBot: newUserIDConfig.BotJoin})
+	err = s.db.SaveBotConfig(store.BotConfig{OwnerTwitchID: ownerUserID, JoinBot: newUserIDConfig.BotJoin})
 	if err != nil {
 		log.Error(err)
 	}

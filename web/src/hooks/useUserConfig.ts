@@ -43,8 +43,10 @@ export interface Protected {
 
 export type SetUserConfig = (userConfig: UserConfig | null) => void;
 
-export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, () => void] {
+export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, () => void, boolean, string | undefined] {
     const [userConfig, setUserConfig] = useState<UserConfig | null | undefined>(undefined);
+    const [errorMessage, setError] = useState<string | undefined>();
+    const [loading, setLoading] = useState(false);
     const [changeCounter, setChangeCounter] = useState(0);
     const managing = store.useState(s => s.managing);
 
@@ -65,16 +67,18 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
             if (managing) {
                 endPoint += `?managing=${managing}`;
             }
-            doFetch(Method.POST, endPoint, userConfig).then(fetchConfig);
+            setLoading(true);
+            doFetch(Method.POST, endPoint, userConfig).then(fetchConfig).then(() => setError(undefined)).catch(error => setError(JSON.parse(error).message)).finally(() =>setLoading(false));
         } else if (changeCounter && userConfig === null) {
-            doFetch(Method.DELETE, "/api/userConfig");
+            setLoading(true);
+            doFetch(Method.DELETE, "/api/userConfig").finally(() =>setLoading(false));
         }
-    }, 500, [changeCounter]);
+    }, 100, [changeCounter]);
 
     const setCfg = (config: UserConfig | null) => {
         setUserConfig(config);
         setChangeCounter(changeCounter + 1);
     };
 
-    return [userConfig, setCfg, fetchConfig]
+    return [userConfig, setCfg, fetchConfig, loading, errorMessage]
 }

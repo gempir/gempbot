@@ -37,3 +37,12 @@ func Diff(s1, s2 []string) (added, deleted []string) {
 	}
 	return
 }
+
+func MapToSlice(m map[string]string) []string {
+	a := make([]string, 0, len(m))
+	for _, v := range m {
+		a = append(a, v)
+	}
+
+	return a
+}
