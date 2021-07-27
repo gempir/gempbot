@@ -37,7 +37,48 @@ func (h *Handler) HandleCommand(payload dto.CommandPayload) {
 	case dto.CmdNameOutcome:
 		h.setOutcomeForPrediction(payload)
 	case dto.CmdNamePrediction:
-		h.startPrediction(payload)
+		h.handlePrediction(payload)
+	}
+}
+
+func (h *Handler) handlePrediction(payload dto.CommandPayload) {
+	if strings.ToLower(payload.Query) == "lock" {
+		h.lockOrCancelPrediction(payload, dto.PredictionStatusLocked)
+		return
+	}
+	if strings.ToLower(payload.Query) == "cancel" {
+		h.lockOrCancelPrediction(payload, dto.PredictionStatusCanceled)
+		return
+	}
+
+	h.startPrediction(payload)
+}
+
+func (h *Handler) lockOrCancelPrediction(payload dto.CommandPayload, status string) {
+	prediction, err := h.db.GetActivePrediction(payload.Msg.RoomID)
+	if err != nil {
+		h.handleError(payload.Msg, errors.New("no active prediction found"))
+		return
+	}
+
+	token, err := h.db.GetUserAccessToken(payload.Msg.RoomID)
+	if err != nil {
+		h.handleError(payload.Msg, errors.New("no api token, broadcaster needs to login again in dashboard"))
+		return
+	}
+	h.helixClient.Client.SetUserAccessToken(token.AccessToken)
+	resp, err := h.helixClient.Client.EndPrediction(&nickHelix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: status})
+	h.helixClient.Client.SetUserAccessToken("")
+
+	if err != nil {
+		log.Error(err)
+		h.handleError(payload.Msg, errors.New("bad twitch api response"))
+		return
+	}
+	log.Infof("[helix] %d CancelOrLockPrediction %s", resp.StatusCode, payload.Msg.RoomID)
+	if resp.StatusCode >= http.StatusBadRequest {
+		h.handleError(payload.Msg, fmt.Errorf("bad twitch api response %s", resp.ErrorMessage))
+		return
 	}
 }
 
