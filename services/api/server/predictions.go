@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/dto"
 	"github.com/gempir/bitraft/pkg/humanize"
 	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/store"
@@ -20,6 +21,7 @@ func (s *Server) subscribePredictions(userID string) {
 
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
 	for _, sub := range response.Data.EventSubSubscriptions {
+		log.Infof("new sub in %s %s", userID, sub.Type)
 		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
 	}
 
@@ -31,6 +33,7 @@ func (s *Server) subscribePredictions(userID string) {
 
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
 	for _, sub := range response.Data.EventSubSubscriptions {
+		log.Infof("new sub in %s %s", userID, sub.Type)
 		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
 	}
 
@@ -42,6 +45,7 @@ func (s *Server) subscribePredictions(userID string) {
 
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
 	for _, sub := range response.Data.EventSubSubscriptions {
+		log.Infof("new sub in %s %s", userID, sub.Type)
 		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
 	}
 }
@@ -181,6 +185,14 @@ func (s *Server) handlePredictionLock(c echo.Context) error {
 		}
 	}
 
+	s.store.PublishSpeakerMessage(
+		data.Event.BroadcasterUserID,
+		data.Event.BroadcasterUserLogin,
+		fmt.Sprintf("FBtouchdown locked submissions for: %s",
+			data.Event.Title,
+		),
+	)
+
 	return nil
 }
 
@@ -259,15 +271,25 @@ func (s *Server) handlePredictionEnd(c echo.Context) error {
 		}
 	}
 
-	s.store.PublishSpeakerMessage(
-		data.Event.BroadcasterUserID,
-		data.Event.BroadcasterUserLogin,
-		fmt.Sprintf("PogChamp ended prediction: %s Winner: %s %s",
-			data.Event.Title,
-			winningOutcome.GetColorEmoji(),
-			winningOutcome.Title,
-		),
-	)
+	if data.Event.Status == dto.PredictionStatusCanceled {
+		s.store.PublishSpeakerMessage(
+			data.Event.BroadcasterUserID,
+			data.Event.BroadcasterUserLogin,
+			fmt.Sprintf("NinjaGrumpy canceled prediction: %s",
+				data.Event.Title,
+			),
+		)
+	} else {
+		s.store.PublishSpeakerMessage(
+			data.Event.BroadcasterUserID,
+			data.Event.BroadcasterUserLogin,
+			fmt.Sprintf("PogChamp ended prediction: %s Winner: %s %s",
+				data.Event.Title,
+				winningOutcome.GetColorEmoji(),
+				winningOutcome.Title,
+			),
+		)
+	}
 
 	return nil
 }

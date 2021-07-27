@@ -21,10 +21,6 @@ type Redemption struct {
 	Active bool
 }
 
-const (
-	bttvPrompt = "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by bitraft.gempir.com"
-)
-
 type channelPointRedemption struct {
 	Subscription struct {
 		ID        string `json:"id"`
