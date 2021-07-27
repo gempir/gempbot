@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gempir/bitraft/pkg/dto"
@@ -19,7 +20,7 @@ func (s *Server) subscribePredictions(userID string) {
 		return
 	}
 
-	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
+	log.Infof("[%d] created subscription %s", response.StatusCode, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new sub in %s %s", userID, sub.Type)
 		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
@@ -31,7 +32,7 @@ func (s *Server) subscribePredictions(userID string) {
 		return
 	}
 
-	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
+	log.Infof("[%d] created subscription %s", response.StatusCode, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new sub in %s %s", userID, sub.Type)
 		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
@@ -43,7 +44,7 @@ func (s *Server) subscribePredictions(userID string) {
 		return
 	}
 
-	log.Infof("[%d] created subscription %s", response.StatusCode, response.Error)
+	log.Infof("[%d] created subscription %s", response.StatusCode, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new sub in %s %s", userID, sub.Type)
 		s.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
@@ -271,7 +272,7 @@ func (s *Server) handlePredictionEnd(c echo.Context) error {
 		}
 	}
 
-	if data.Event.Status == dto.PredictionStatusCanceled {
+	if strings.ToUpper(data.Event.Status) == dto.PredictionStatusCanceled {
 		s.store.PublishSpeakerMessage(
 			data.Event.BroadcasterUserID,
 			data.Event.BroadcasterUserLogin,
