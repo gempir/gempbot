@@ -110,6 +110,17 @@ func (s *Server) syncSubscriptions() {
 			}
 		}
 	}
+
+	botConfigs := s.db.GetAllJoinBotConfigs()
+	log.Infof("Found %d total active bot configs, checking missing subscriptions", len(botConfigs))
+
+	for _, botConfig := range botConfigs {
+		if !slice.Contains(subscribed, botConfig.OwnerTwitchID+nickHelix.EventSubTypeChannelPredictionBegin) ||
+			!slice.Contains(subscribed, botConfig.OwnerTwitchID+nickHelix.EventSubTypeChannelPredictionLock) ||
+			!slice.Contains(subscribed, botConfig.OwnerTwitchID+nickHelix.EventSubTypeChannelPredictionEnd) {
+			s.subscribePredictions(botConfig.OwnerTwitchID)
+		}
+	}
 }
 
 func (s *Server) handleWebhook(c echo.Context, response interface{}) (bool, error) {
