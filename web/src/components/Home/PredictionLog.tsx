@@ -8,8 +8,7 @@ export function PredictionLog() {
     const [logs, fetch, loading, page, increasePage, decreasePage] = usePredictionLogs();
 
     return <div className="p-4 bg-gray-800 rounded shadow w-full relative select-none">
-        <div className="text-2xl flex justify-between w-full" onClick={fetch}>
-            <Refresh className={"hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+        <div className="text-2xl flex gap-5 w-full" onClick={fetch}>
             <div className="flex gap-2 items-center">
                 <div onClick={decreasePage} className="cursor-pointer hover:text-blue-500">
                     <ChevronLeft />
@@ -21,6 +20,7 @@ export function PredictionLog() {
                     <ChevronRight />
                 </div>
             </div>
+            <Refresh className={"hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
         </div>
         <table className="w-full">
             <thead>
