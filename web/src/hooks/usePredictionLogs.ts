@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useEffect, useState } from "react";
 import { PredictionLog } from "../model/PredictionLog";
 import { doFetch, Method } from "../service/doFetch";
@@ -24,22 +25,38 @@ export interface RawPredictionLog {
     Outcomes: Outcome[];
 }
 
-export function usePredictionLogs(): [Array<PredictionLog>, () => void, boolean] {
+export function usePredictionLogs(): [Array<PredictionLog>, () => void, boolean, number, () => void, () => void] {
+    const [page, setPage] = useState(1);
+    const pageRef = useRef(page);
+    pageRef.current = page;
+
     const [logs, setLogs] = useState<Array<PredictionLog>>([]);
     const [loading, setLoading] = useState(false);
     const managing = store.useState(s => s.managing);
 
     const fetchPredictions = () => {
         setLoading(true);
+
+        const currentPage = pageRef.current;
+        
         let endPoint = "/api/prediction";
-        if (managing) {
-            endPoint += `?managing=${managing}`;
-        }
-        doFetch(Method.GET, endPoint).then((logs) => setLogs(logs.map((log: RawPredictionLog) => PredictionLog.fromObject(log)))).then(() => setLoading(false));
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        doFetch(Method.GET, endPoint, searchParams).then((resp) => {
+            if (currentPage !== pageRef.current) {
+                throw new Error("Page changed");
+            }
+
+            return resp
+        }).then((logs: Array<RawPredictionLog>) => setLogs(logs.map((log: RawPredictionLog) => PredictionLog.fromObject(log)))).then(() => setLoading(false)).catch(err => {
+            if (err.message !== "Page changed") {
+                throw err;
+            }
+        });
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(fetchPredictions, [managing]);
+    useEffect(fetchPredictions, [managing, page]);
 
-    return [logs, fetchPredictions, loading];
+    return [logs, fetchPredictions, loading, page, () => setPage(page + 1), () => page > 1 ? setPage(page - 1) : undefined];
 }

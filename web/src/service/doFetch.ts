@@ -12,8 +12,8 @@ export enum RejectReason {
     NotFound = '{"message":"Not Found"}'
 }
 
-export async function doFetch(method: Method, path: string, body: any = undefined) {
-    const { apiBaseUrl, scToken } = store.getRawState();
+export async function doFetch(method: Method, path: string, params: URLSearchParams = new URLSearchParams(), body: any = undefined) {
+    const { apiBaseUrl, scToken, managing } = store.getRawState();
 
     const headers: Record<string, string> = { 'content-type': 'application/json' }
     if (scToken) {
@@ -31,7 +31,12 @@ export async function doFetch(method: Method, path: string, body: any = undefine
         config.body = JSON.stringify(body)
     }
 
-    return window.fetch(`${apiBaseUrl}${path}`, config)
+    const url = new URL(path, apiBaseUrl);
+    url.searchParams.append('managing', managing);
+
+    params.forEach((value, key) => url.searchParams.append(key, value));
+
+    return window.fetch(url.toString(), config)
         .then(async response => {
             if (response.status === 401) {
                 deleteCookie("scToken");

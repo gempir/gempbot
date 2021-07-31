@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -295,6 +296,8 @@ func (s *Server) handlePredictionEnd(c echo.Context) error {
 	return nil
 }
 
+const PAGE_SIZE = 20
+
 func (s *Server) handleGetPredictions(c echo.Context) error {
 	auth, _, err := s.authenticate(c)
 	if err != nil {
@@ -309,5 +312,15 @@ func (s *Server) handleGetPredictions(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(http.StatusOK, s.db.GetPredictions(userID))
+	page := c.QueryParam("page")
+	if page == "" {
+		page = "1"
+	}
+
+	pageNumber, err := strconv.Atoi(page)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, s.db.GetPredictions(userID, pageNumber, PAGE_SIZE))
 }

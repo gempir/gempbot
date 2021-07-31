@@ -52,9 +52,6 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
 
     const fetchConfig = () => {
         let endPoint = "/api/userConfig";
-        if (managing) {
-            endPoint += `?managing=${managing}`;
-        }
         doFetch(Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig))
     };
 
@@ -64,11 +61,8 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
     useDebounce(() => {
         if (changeCounter && userConfig) {
             let endPoint = "/api/userConfig";
-            if (managing) {
-                endPoint += `?managing=${managing}`;
-            }
             setLoading(true);
-            doFetch(Method.POST, endPoint, userConfig).then(fetchConfig).then(() => setError(undefined)).catch(error => setError(JSON.parse(error).message)).finally(() =>setLoading(false));
+            doFetch(Method.POST, endPoint, undefined, userConfig).then(fetchConfig).then(() => setError(undefined)).catch(error => setError(JSON.parse(error).message)).finally(() =>setLoading(false));
         } else if (changeCounter && userConfig === null) {
             setLoading(true);
             doFetch(Method.DELETE, "/api/userConfig").finally(() =>setLoading(false));

@@ -18,11 +18,11 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
     useEffect(fetchReward, [userID, type, defaultReward]);
 
     const updateReward = (reward: ChannelPointReward) => {
-        doFetch(Method.POST, `/api/reward/${userID}`, reward).then(fetchReward);
+        doFetch(Method.POST, `/api/reward/${userID}`, undefined, reward).then(fetchReward);
     }
 
     const deleteReward = () => {
-        doFetch(Method.DELETE, `/api/reward/${userID}/type/${type}`, reward).then(fetchReward);
+        doFetch(Method.DELETE, `/api/reward/${userID}/type/${type}`, undefined, reward).then(fetchReward);
     }
 
     return [reward, updateReward, deleteReward];
