@@ -25,6 +25,8 @@ export interface RawPredictionLog {
     Outcomes: Outcome[];
 }
 
+const PAGE_SIZE = 20;
+
 export function usePredictionLogs(): [Array<PredictionLog>, () => void, boolean, number, () => void, () => void] {
     const [page, setPage] = useState(1);
     const pageRef = useRef(page);
@@ -58,5 +60,5 @@ export function usePredictionLogs(): [Array<PredictionLog>, () => void, boolean,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchPredictions, [managing, page]);
 
-    return [logs, fetchPredictions, loading, page, () => setPage(page + 1), () => page > 1 ? setPage(page - 1) : undefined];
+    return [logs, fetchPredictions, loading, page, () => logs.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined];
 }
