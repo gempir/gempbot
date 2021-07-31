@@ -10,7 +10,7 @@ import { Managing } from "./Managing";
 export function Sidebar() {
     const [userConfig, setUserConfig] = useUserConfig();
 
-    return <div className="p-4 bg-gray-800 w-48 shadow flex flex-col relative h-screen">
+    return <div className="p-4 bg-gray-800 px-6 shadow flex flex-col relative h-screen">
         <Login />
         <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} />
         <Managing userConfig={userConfig} />

@@ -3,7 +3,7 @@ import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
 import { Chat } from "../../icons/Chat";
 
 export function BotManager({ userConfig, setUserConfig }: { userConfig: UserConfig, setUserConfig: SetUserConfig }) {
-    const classes = "p-3 flex justify-center rounded shadow cursor-pointer mt-2 w-full hover:opacity-100".split(" ")
+    const classes = "p-3 flex justify-center rounded shadow cursor-pointer mt-2 w-full hover:opacity-100 whitespace-nowrap w-36".split(" ")
     const [hovering, setHovering] = useState(false);
 
     if (userConfig?.BotJoin) {

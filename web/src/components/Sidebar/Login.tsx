@@ -12,7 +12,7 @@ export function Login() {
     return <a
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
-        className={"p-3 flex justify-center rounded shadow opacity-25 bg-purple-800 hover:bg-purple-600 hover:opacity-100"}
+        className={"p-3 flex justify-center rounded shadow opacity-25 bg-purple-800 hover:bg-purple-600 hover:opacity-100 whitespace-nowrap w-36"}
         href={url.toString()}>
         {hovering ? <><User />&nbsp;&nbsp;Login again</> : <><User />&nbsp;&nbsp;Logged in</>}
     </a>
