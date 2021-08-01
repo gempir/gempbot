@@ -6,7 +6,7 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
     const [reward, setReward] = useState<ChannelPointReward>(defaultReward);
 
     const fetchReward = () => {
-        doFetch(Method.GET, `/api/reward/${userID}/type/${type}`).then((response: RawBttvChannelPointReward) => ({...response, AdditionalOptionsParsed: JSON.parse(response.AdditionalOptions)})).then(setReward).catch(reason => {
+        doFetch(Method.GET, `/api/reward/${userID}/type/${type}`).then((response: RawBttvChannelPointReward) => ({...response, AdditionalOptionsParsed: response.AdditionalOptions !== "" ? JSON.parse(response.AdditionalOptions) : defaultReward.AdditionalOptionsParsed})).then(setReward).catch(reason => {
             if (reason !== RejectReason.NotFound) {
                 throw new Error(reason);
             }
