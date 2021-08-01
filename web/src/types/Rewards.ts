@@ -20,4 +20,13 @@ export interface ChannelPointReward {
     ShouldRedemptionsSkipRequestQueue: boolean
     Enabled: boolean
     RewardID?: string
+    AdditionalOptionsParsed: BttvAdditionalOptions
+}
+
+export interface RawBttvChannelPointReward extends ChannelPointReward {
+    AdditionalOptions: string
+}
+
+export interface BttvAdditionalOptions {
+    Slots: number
 }

@@ -8,7 +8,7 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
 
         description={<p className="my-2 mb-4 text-gray-400">
             <strong>Make sure <span className="text-green-600">gempbot</span> is BetterTTV editor</strong><br />
-                This will swap out 1 emote constantly. If the previous emote is not found it will use a free slot or remove a random emote.
+                This will swap out emotes constantly. The amount of slots it manages is configurable and the oldest added emote by the bot will be removed first.
             </p>}
     />
 }

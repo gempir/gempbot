@@ -7,15 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/dto"
 	"github.com/gempir/bitraft/pkg/helix"
 	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
-)
-
-const (
-	TYPE_BTTV    = "bttv"
-	TYPE_TIMEOUT = "timeout"
 )
 
 type Reward interface {
@@ -44,14 +40,19 @@ type TwitchRewardConfig struct {
 
 type BttvReward struct {
 	TwitchRewardConfig
+	BttvAdditionalOptions
+}
+
+type BttvAdditionalOptions struct {
+	Slots int
 }
 
 func (r *BttvReward) GetType() string {
-	return TYPE_BTTV
+	return dto.REWARD_BTTV
 }
 
 func (r *BttvReward) GetAdditionalOptions() interface{} {
-	return &struct{}{}
+	return r.BttvAdditionalOptions
 }
 
 func (r *BttvReward) GetConfig() TwitchRewardConfig {
@@ -67,8 +68,12 @@ type TimeoutReward struct {
 	TimeoutAdditionalOptions
 }
 
+type TimeoutAdditionalOptions struct {
+	Length int
+}
+
 func (r *TimeoutReward) GetType() string {
-	return TYPE_TIMEOUT
+	return dto.REWARD_TIMEOUT
 }
 
 func (r *TimeoutReward) GetConfig() TwitchRewardConfig {
@@ -77,10 +82,6 @@ func (r *TimeoutReward) GetConfig() TwitchRewardConfig {
 
 func (r *TimeoutReward) SetConfig(config TwitchRewardConfig) {
 	r.TwitchRewardConfig = config
-}
-
-type TimeoutAdditionalOptions struct {
-	Length int
 }
 
 func (r *TimeoutReward) GetAdditionalOptions() interface{} {
@@ -261,7 +262,7 @@ type rewardRequestBody struct {
 	GlobalCooldownSeconds             int
 	ShouldRedemptionsSkipRequestQueue bool
 	Enabled                           bool
-	AdditionalOptions                 string
+	AdditionalOptionsParsed           BttvAdditionalOptions
 }
 
 func createRewardFromBody(body io.ReadCloser) (Reward, error) {
@@ -271,21 +272,21 @@ func createRewardFromBody(body io.ReadCloser) (Reward, error) {
 		return nil, err
 	}
 
-	switch data.Type {
-	case TYPE_BTTV:
-		return &BttvReward{
-			TwitchRewardConfig: createTwitchRewardConfigFromRequestBody(data),
-		}, nil
-	case TYPE_TIMEOUT:
-		var addOpts TimeoutAdditionalOptions
-		err := json.Unmarshal([]byte(data.AdditionalOptions), &addOpts)
-		if err != nil {
-			return nil, err
-		}
+	rewardConfig := createTwitchRewardConfigFromRequestBody(data)
 
+	if data.AdditionalOptionsParsed.Slots < 1 {
+		data.AdditionalOptionsParsed.Slots = 1
+	}
+
+	switch data.Type {
+	case dto.REWARD_BTTV:
+		return &BttvReward{
+			TwitchRewardConfig:    rewardConfig,
+			BttvAdditionalOptions: data.AdditionalOptionsParsed,
+		}, nil
+	case dto.REWARD_TIMEOUT:
 		return &TimeoutReward{
-			TwitchRewardConfig:       createTwitchRewardConfigFromRequestBody(data),
-			TimeoutAdditionalOptions: addOpts,
+			TwitchRewardConfig: createTwitchRewardConfigFromRequestBody(data),
 		}, nil
 	}
 
@@ -366,4 +367,29 @@ func (s *Server) createOrUpdateChannelPointReward(userID string, request TwitchR
 		Enabled:                           resp.IsEnabled,
 		ID:                                resp.ID,
 	}, nil
+}
+
+func UnmarshallTimeoutAdditionalOptions(data string) (TimeoutAdditionalOptions, error) {
+	var addOpts TimeoutAdditionalOptions
+	err := json.Unmarshal([]byte(data), &addOpts)
+	if err != nil {
+		return TimeoutAdditionalOptions{}, err
+	}
+
+	return addOpts, nil
+}
+
+func UnmarshallBttvAdditionalOptions(jsonString string) BttvAdditionalOptions {
+	if jsonString == "{}" {
+		return BttvAdditionalOptions{Slots: 1}
+	}
+
+	var additionalOptions BttvAdditionalOptions
+
+	if err := json.Unmarshal([]byte(jsonString), &additionalOptions); err != nil {
+		log.Error(err)
+		return BttvAdditionalOptions{Slots: 1}
+	}
+
+	return additionalOptions
 }

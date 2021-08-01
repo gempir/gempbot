@@ -32,7 +32,9 @@ export async function doFetch(method: Method, path: string, params: URLSearchPar
     }
 
     const url = new URL(path, apiBaseUrl);
-    url.searchParams.append('managing', managing);
+    if (managing) {
+        url.searchParams.append('managing', managing);
+    }
 
     params.forEach((value, key) => url.searchParams.append(key, value));
 

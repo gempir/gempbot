@@ -13,7 +13,8 @@ interface BttvRewardForm {
     maxPerUserPerStream: string;
     globalCooldownMinutes: string;
     enabled: boolean;
-    isDefault: boolean
+    isDefault: boolean;
+    slots: number;
 }
 
 const defaultReward = {
@@ -31,7 +32,8 @@ const defaultReward = {
     IsGlobalCooldownEnabled: false,
     GlobalCooldownSeconds: 0,
     ShouldRedemptionsSkipRequestQueue: false,
-    Enabled: false
+    Enabled: false,
+    AdditionalOptionsParsed: { Slots: 1 }
 }
 
 export function BaseForm({ userConfig, type, header, description, children }: { userConfig: UserConfig, type: RewardTypes, header?: JSX.Element, description?: JSX.Element, children?: JSX.Element }) {
@@ -59,7 +61,10 @@ export function BaseForm({ userConfig, type, header, description, children }: { 
             IsGlobalCooldownEnabled: Boolean(data.globalCooldownMinutes),
             GlobalCooldownSeconds: Number(data.globalCooldownMinutes) * 60,
             ShouldRedemptionsSkipRequestQueue: false,
-            Enabled: data.enabled
+            Enabled: data.enabled,
+            AdditionalOptionsParsed: {
+                Slots: Number(data.slots)
+            }
         };
 
         setReward(rewardData);
@@ -70,6 +75,7 @@ export function BaseForm({ userConfig, type, header, description, children }: { 
         setValue("title", reward.Title);
         setValue("prompt", reward.Prompt);
         setValue("cost", reward.Cost);
+        setValue("slots", reward.AdditionalOptionsParsed.Slots);
         setValue("backgroundColor", reward.BackgroundColor);
         setValue("maxPerStream", reward.MaxPerStream);
         setValue("maxPerUserPerStream", reward.MaxPerUserPerStream);
@@ -92,6 +98,11 @@ export function BaseForm({ userConfig, type, header, description, children }: { 
                 </div>
             </div>
             {description}
+            <label className="block my-3">
+                Slots
+                <input defaultValue={reward.AdditionalOptionsParsed.Slots} type="number" spellCheck={false} {...register("slots", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+                {errors.cost && <span className="text-red-700">required</span>}
+            </label>
 
             <label className="block">
                 Title

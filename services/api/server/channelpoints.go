@@ -7,7 +7,9 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/dto"
 	"github.com/gempir/bitraft/pkg/log"
+	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 )
@@ -133,8 +135,8 @@ func (s *Server) handleRedemption(redemption channelPointRedemption) error {
 	}
 
 	// Err is only returned when it's worth responding with a bad response code
-	if reward.Type == TYPE_BTTV {
-		err = s.handleBttvRedemption(redemption)
+	if reward.Type == dto.REWARD_BTTV {
+		err = s.handleBttvRedemption(reward, redemption)
 	}
 
 	if err != nil {
@@ -144,12 +146,13 @@ func (s *Server) handleRedemption(redemption channelPointRedemption) error {
 	return nil
 }
 
-func (s *Server) handleBttvRedemption(redemption channelPointRedemption) error {
+func (s *Server) handleBttvRedemption(reward store.ChannelPointReward, redemption channelPointRedemption) error {
+	opts := UnmarshallBttvAdditionalOptions(reward.AdditionalOptions)
 	success := false
 
 	matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
-		emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin)
+		emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
 			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))

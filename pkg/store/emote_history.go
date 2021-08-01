@@ -1,8 +1,6 @@
 package store
 
 import (
-	"errors"
-
 	"gorm.io/gorm"
 )
 
@@ -18,16 +16,10 @@ func (db *Database) CreateEmoteAdd(channelTwitchID string, emoteID string) {
 	db.Client.Create(&add)
 }
 
-func (db *Database) GetOldestEmoteAdded(channelTwitchID string) (EmoteAdd, error) {
-	var emote EmoteAdd
-	result := db.Client.Where("channel_twitch_id = ?", channelTwitchID).Order("updated_at asc").First(&emote)
-	if result.RowsAffected == 0 {
-		return emote, errors.New("not found")
-	}
+func (db *Database) GetEmoteAdded(channelTwitchID string, limit int) []EmoteAdd {
+	var emotes []EmoteAdd
 
-	return emote, nil
-}
+	db.Client.Where("channel_twitch_id = ?", channelTwitchID).Limit(limit).Order("updated_at desc").Find(&emotes)
 
-func (db *Database) RemoveOldestEmoteAdd(channelTwitchID string) {
-	db.Client.Where("channel_twitch_id = ?", channelTwitchID).Order("updated_at asc").Limit(1).Unscoped().Delete(&EmoteAdd{})
+	return emotes
 }
