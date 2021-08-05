@@ -11,6 +11,7 @@ import (
 	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/store"
 	"github.com/labstack/echo/v4"
+	"github.com/mitchellh/mapstructure"
 	nickHelix "github.com/nicklaw5/helix"
 )
 
@@ -147,7 +148,13 @@ func (s *Server) handleRedemption(redemption channelPointRedemption) error {
 }
 
 func (s *Server) handleBttvRedemption(reward store.ChannelPointReward, redemption channelPointRedemption) error {
-	opts := UnmarshallBttvAdditionalOptions(reward.AdditionalOptions)
+	var opts BttvAdditionalOptions
+	err := mapstructure.Decode(reward.AdditionalOptions, &opts)
+	if err != nil {
+		log.Errorf("Error decoding additional options: %s", err)
+		s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, "failed to read reward options from broadcaster"))
+		return nil
+	}
 	success := false
 
 	matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)

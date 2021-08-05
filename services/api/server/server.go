@@ -58,7 +58,6 @@ func (s *Server) Start() {
 	e.GET("/api/userConfig", s.handleUserConfig)
 	e.POST("/api/userConfig", s.handleUserConfig)
 
-	e.GET("/api/reward/:userID", s.handleRewardRead)
 	e.GET("/api/reward/:userID/type/:type", s.handleRewardSingleRead)
 
 	e.DELETE("/api/reward/:userID/type/:type", s.handleRewardDeletion)

@@ -157,24 +157,6 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 	return c.JSON(http.StatusOK, nil)
 }
 
-func (s *Server) handleRewardRead(c echo.Context) error {
-	auth, _, err := s.authenticate(c)
-	if err != nil {
-		return err
-	}
-
-	if c.Param("userID") != auth.Data.UserID {
-		err := s.checkIsEditor(auth.Data.UserID, c.Param("userID"))
-		if err != nil {
-			return err
-		}
-	}
-
-	rewards := s.db.GetChannelPointRewards(c.Param("userID"))
-
-	return c.JSON(http.StatusOK, rewards)
-}
-
 func (s *Server) handleRewardSingleRead(c echo.Context) error {
 	auth, _, err := s.authenticate(c)
 	if err != nil {
