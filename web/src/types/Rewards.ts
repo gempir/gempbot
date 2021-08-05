@@ -1,5 +1,6 @@
 export enum RewardTypes {
     Bttv = "bttv",
+    SevenTv = "seventv",
     Timeout = "timeout"
 }
 

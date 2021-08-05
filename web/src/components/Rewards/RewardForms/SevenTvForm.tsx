@@ -20,7 +20,7 @@ interface BttvRewardForm {
 
 const defaultReward = {
     OwnerTwitchID: "",
-    Type: RewardTypes.Bttv,
+    Type: RewardTypes.SevenTv,
     Title: "7tv Emote",
     Cost: 10000,
     Prompt: "Add a 7tv emote! In the text field, send a link to the 7tv emote. powered by bitraft.gempir.com",
@@ -45,11 +45,11 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
         setLoading(false);
     }
 
-    const [reward, setReward, deleteReward] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward, onUpdate);
+    const [reward, setReward, deleteReward] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.SevenTv, defaultReward, onUpdate);
     const onSubmit = (data: BttvRewardForm) => {
         const rewardData: ChannelPointReward = {
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
-            Type: RewardTypes.Bttv,
+            Type: RewardTypes.SevenTv,
             Title: data.title,
             Prompt: data.prompt,
             Cost: Number(data.cost),

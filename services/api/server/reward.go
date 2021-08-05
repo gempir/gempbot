@@ -63,6 +63,31 @@ func (r *BttvReward) SetConfig(config TwitchRewardConfig) {
 	r.TwitchRewardConfig = config
 }
 
+type SevenTvReward struct {
+	TwitchRewardConfig
+	SevenTvAdditionalOptions
+}
+
+type SevenTvAdditionalOptions struct {
+	Slots int
+}
+
+func (r *SevenTvReward) GetType() string {
+	return dto.REWARD_SEVENTV
+}
+
+func (r *SevenTvReward) GetAdditionalOptions() interface{} {
+	return r.TwitchRewardConfig
+}
+
+func (r *SevenTvReward) GetConfig() TwitchRewardConfig {
+	return r.TwitchRewardConfig
+}
+
+func (r *SevenTvReward) SetConfig(config TwitchRewardConfig) {
+	r.TwitchRewardConfig = config
+}
+
 type TimeoutReward struct {
 	TwitchRewardConfig
 	TimeoutAdditionalOptions
@@ -389,6 +414,21 @@ func UnmarshallBttvAdditionalOptions(jsonString string) BttvAdditionalOptions {
 	if err := json.Unmarshal([]byte(jsonString), &additionalOptions); err != nil {
 		log.Error(err)
 		return BttvAdditionalOptions{Slots: 1}
+	}
+
+	return additionalOptions
+}
+
+func UnmarshallSevenTvAdditionalOptions(jsonString string) SevenTvAdditionalOptions {
+	if jsonString == "{}" {
+		return SevenTvAdditionalOptions{Slots: 1}
+	}
+
+	var additionalOptions SevenTvAdditionalOptions
+
+	if err := json.Unmarshal([]byte(jsonString), &additionalOptions); err != nil {
+		log.Error(err)
+		return SevenTvAdditionalOptions{Slots: 1}
 	}
 
 	return additionalOptions
