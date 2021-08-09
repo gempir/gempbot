@@ -82,7 +82,7 @@ type dashboardCfg struct {
 	} `json:"limits"`
 }
 
-func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, removedEmote *bttvEmoteResponse, err error) {
+func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, removedEmote *bttvEmoteResponse, err error) {
 	addedEmote, err = getBttvEmote(emoteId)
 	if err != nil {
 		return

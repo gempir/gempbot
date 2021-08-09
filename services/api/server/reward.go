@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -77,7 +78,7 @@ func (r *SevenTvReward) GetType() string {
 }
 
 func (r *SevenTvReward) GetAdditionalOptions() interface{} {
-	return r.TwitchRewardConfig
+	return r.SevenTvAdditionalOptions
 }
 
 func (r *SevenTvReward) GetConfig() TwitchRewardConfig {
@@ -269,27 +270,57 @@ type rewardRequestBody struct {
 	GlobalCooldownSeconds             int
 	ShouldRedemptionsSkipRequestQueue bool
 	Enabled                           bool
-	AdditionalOptionsParsed           BttvAdditionalOptions
+}
+
+type bttvRewardRequestBody struct {
+	AdditionalOptionsParsed BttvAdditionalOptions
+}
+
+type sevenTvRewardRequestBody struct {
+	AdditionalOptionsParsed SevenTvAdditionalOptions
 }
 
 func createRewardFromBody(body io.ReadCloser) (Reward, error) {
-	var data rewardRequestBody
+	bodyBytes, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
 
-	if err := json.NewDecoder(body).Decode(&data); err != nil {
+	var data rewardRequestBody
+	if err := json.Unmarshal(bodyBytes, &data); err != nil {
 		return nil, err
 	}
 
 	rewardConfig := createTwitchRewardConfigFromRequestBody(data)
 
-	if data.AdditionalOptionsParsed.Slots < 1 {
-		data.AdditionalOptionsParsed.Slots = 1
-	}
-
 	switch data.Type {
 	case dto.REWARD_BTTV:
+		var addOpts bttvRewardRequestBody
+		if err := json.Unmarshal(bodyBytes, &addOpts); err != nil {
+			return nil, err
+		}
+
+		if addOpts.AdditionalOptionsParsed.Slots < 1 {
+			addOpts.AdditionalOptionsParsed.Slots = 1
+		}
+
 		return &BttvReward{
 			TwitchRewardConfig:    rewardConfig,
-			BttvAdditionalOptions: data.AdditionalOptionsParsed,
+			BttvAdditionalOptions: addOpts.AdditionalOptionsParsed,
+		}, nil
+	case dto.REWARD_SEVENTV:
+		var addOpts sevenTvRewardRequestBody
+		if err := json.Unmarshal(bodyBytes, &addOpts); err != nil {
+			return nil, err
+		}
+
+		if addOpts.AdditionalOptionsParsed.Slots < 1 {
+			addOpts.AdditionalOptionsParsed.Slots = 1
+		}
+
+		return &SevenTvReward{
+			TwitchRewardConfig:       rewardConfig,
+			SevenTvAdditionalOptions: addOpts.AdditionalOptionsParsed,
 		}, nil
 	case dto.REWARD_TIMEOUT:
 		return &TimeoutReward{

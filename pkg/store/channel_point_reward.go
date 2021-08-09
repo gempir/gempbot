@@ -24,7 +24,7 @@ type ChannelPointReward struct {
 	GlobalCooldownSeconds             int
 	ShouldRedemptionsSkipRequestQueue bool
 	Enabled                           bool
-	AdditionalOptions                 JSONB `gorm:"type:jsonb"`
+	AdditionalOptions                 string
 }
 
 func (db *Database) GetChannelPointRewards(userID string) []ChannelPointReward {
