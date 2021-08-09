@@ -195,7 +195,7 @@ func (e *EmoteChief) SetEmote(channelUserID, emoteId, channel string, slots int)
 		removalTargetEmoteId = confirmedEmotesAdded[len(confirmedEmotesAdded)-1].EmoteID
 		log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
 	} else if len(dashboard.Sharedemotes) >= sharedEmotesLimit {
-		log.Infof("Didn't find previous slot and limit reached, choosing random in %s", channelUserID)
+		log.Infof("Didn't find previous emote history of %d emotes and limit reached, choosing random in %s", slots, channelUserID)
 		removalTargetEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
 	}
 
