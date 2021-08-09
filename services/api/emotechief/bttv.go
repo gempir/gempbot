@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gempir/bitraft/pkg/dto"
 	"github.com/gempir/bitraft/pkg/log"
 	"github.com/gempir/bitraft/pkg/store"
 )
@@ -179,7 +180,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 
 	var removalTargetEmoteId string
 
-	emotesAdded := e.db.GetEmoteAdded(channelUserID, slots)
+	emotesAdded := e.db.GetEmoteAdded(channelUserID, dto.REWARD_BTTV, slots)
 	log.Infof("Total Previous emotes %d in %s", len(emotesAdded), channelUserID)
 
 	confirmedEmotesAdded := []store.EmoteAdd{}
@@ -233,7 +234,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 	log.Infof("[%d] Added channelId: %s emoteId: %s", resp.StatusCode, channelUserID, emoteId)
 
 	if resp.StatusCode < http.StatusBadRequest {
-		e.db.CreateEmoteAdd(channelUserID, emoteId)
+		e.db.CreateEmoteAdd(channelUserID, dto.REWARD_BTTV, emoteId)
 	}
 
 	if removalTargetEmoteId != "" {
