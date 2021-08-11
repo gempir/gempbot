@@ -20,7 +20,7 @@ func (db *Database) CreateEmoteAdd(channelTwitchID string, addType string, emote
 func (db *Database) GetEmoteAdded(channelTwitchID string, addType string, limit int) []EmoteAdd {
 	var emotes []EmoteAdd
 
-	db.Client.Where("channel_twitch_id = ? AND type = ?", channelTwitchID, addType).Limit(limit).Find(&emotes)
+	db.Client.Where("channel_twitch_id = ? AND type = ?", channelTwitchID, addType).Order("updated_at desc").Limit(limit).Find(&emotes)
 
 	return emotes
 }
