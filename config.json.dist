@@ -7,6 +7,7 @@
     "logLevel": "info",
     "secret": "api-secret-for-webhooks",
     "bttvToken": "",
+    "sevenTvToken": "",
     "webhookApiBaseUrl": "https://123.ngrok.io",
     "apiBaseUrl": "http://localhost:8035",
     "webBaseUrl": "http://localhost:3000",
