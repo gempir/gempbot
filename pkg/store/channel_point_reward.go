@@ -3,12 +3,14 @@ package store
 import (
 	"errors"
 	"time"
+
+	"github.com/gempir/bitraft/pkg/dto"
 )
 
 type ChannelPointReward struct {
-	OwnerTwitchID                     string `gorm:"primaryKey"`
-	Type                              string `gorm:"primaryKey"`
-	RewardID                          string `gorm:"index"`
+	OwnerTwitchID                     string         `gorm:"primaryKey"`
+	Type                              dto.RewardType `gorm:"primaryKey"`
+	RewardID                          string         `gorm:"index"`
 	CreatedAt                         time.Time
 	UpdatedAt                         time.Time
 	Title                             string
@@ -45,7 +47,7 @@ func (db *Database) GetEnabledChannelPointRewardByID(rewardID string) (ChannelPo
 	return reward, nil
 }
 
-func (db *Database) GetChannelPointReward(userID string, rewardType string) (ChannelPointReward, error) {
+func (db *Database) GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error) {
 	var reward ChannelPointReward
 	result := db.Client.Where("owner_twitch_id = ? AND type = ?", userID, rewardType).First(&reward)
 	if result.RowsAffected == 0 {
@@ -55,7 +57,7 @@ func (db *Database) GetChannelPointReward(userID string, rewardType string) (Cha
 	return reward, nil
 }
 
-func (db *Database) DeleteChannelPointReward(userID string, rewardType string) {
+func (db *Database) DeleteChannelPointReward(userID string, rewardType dto.RewardType) {
 	db.Client.Where("owner_twitch_id = ? AND type = ?", userID, rewardType).Delete(&ChannelPointReward{})
 }
 

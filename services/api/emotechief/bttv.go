@@ -192,10 +192,13 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 		}
 	}
 
+	emoteAddType := dto.EMOTE_ADD_REMOVED_PREVIOUS
+
 	if len(confirmedEmotesAdded) == slots {
 		removalTargetEmoteId = confirmedEmotesAdded[len(confirmedEmotesAdded)-1].EmoteID
 		log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
 	} else if len(dashboard.Sharedemotes) >= sharedEmotesLimit {
+		emoteAddType = dto.EMOTE_ADD_REMOVED_RANDOM
 		log.Infof("Didn't find previous emote history of %d emotes and limit reached, choosing random in %s", slots, channelUserID)
 		removalTargetEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
 	}
@@ -215,6 +218,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 			log.Error(err)
 			return
 		}
+		e.db.CreateEmoteAdd(channelUserID, dto.REWARD_BTTV, removalTargetEmoteId, emoteAddType)
 		log.Infof("[%d] Deleted channelId: %s emoteId: %s", resp.StatusCode, channelUserID, removalTargetEmoteId)
 	}
 
@@ -234,7 +238,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 	log.Infof("[%d] Added channelId: %s emoteId: %s", resp.StatusCode, channelUserID, emoteId)
 
 	if resp.StatusCode < http.StatusBadRequest {
-		e.db.CreateEmoteAdd(channelUserID, dto.REWARD_BTTV, emoteId)
+		e.db.CreateEmoteAdd(channelUserID, dto.REWARD_BTTV, emoteId, dto.EMOTE_ADD_ADD)
 	}
 
 	if removalTargetEmoteId != "" {

@@ -16,7 +16,7 @@ import (
 )
 
 type Reward interface {
-	GetType() string
+	GetType() dto.RewardType
 	GetConfig() TwitchRewardConfig
 	SetConfig(config TwitchRewardConfig)
 	GetAdditionalOptions() interface{}
@@ -48,7 +48,7 @@ type BttvAdditionalOptions struct {
 	Slots int
 }
 
-func (r *BttvReward) GetType() string {
+func (r *BttvReward) GetType() dto.RewardType {
 	return dto.REWARD_BTTV
 }
 
@@ -73,7 +73,7 @@ type SevenTvAdditionalOptions struct {
 	Slots int
 }
 
-func (r *SevenTvReward) GetType() string {
+func (r *SevenTvReward) GetType() dto.RewardType {
 	return dto.REWARD_SEVENTV
 }
 
@@ -98,7 +98,7 @@ type TimeoutAdditionalOptions struct {
 	Length int
 }
 
-func (r *TimeoutReward) GetType() string {
+func (r *TimeoutReward) GetType() dto.RewardType {
 	return dto.REWARD_TIMEOUT
 }
 
@@ -137,7 +137,7 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 		}
 	}
 
-	reward, err := s.db.GetChannelPointReward(c.Param("userID"), c.Param("type"))
+	reward, err := s.db.GetChannelPointReward(c.Param("userID"), dto.RewardType(c.Param("type")))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "not found")
 	}
@@ -147,7 +147,7 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "no accessToken to edit reward")
 	}
 
-	s.db.DeleteChannelPointReward(c.Param("userID"), c.Param("type"))
+	s.db.DeleteChannelPointReward(c.Param("userID"), dto.RewardType(c.Param("type")))
 
 	err = s.helixClient.DeleteReward(c.Param("userID"), token.AccessToken, reward.RewardID)
 	if err != nil {
@@ -171,7 +171,7 @@ func (s *Server) handleRewardSingleRead(c echo.Context) error {
 		}
 	}
 
-	reward, err := s.db.GetChannelPointReward(c.Param("userID"), c.Param("type"))
+	reward, err := s.db.GetChannelPointReward(c.Param("userID"), dto.RewardType(c.Param("type")))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound)
 	}
@@ -253,7 +253,7 @@ func createStoreRewardFromReward(userID string, reward Reward) store.ChannelPoin
 type rewardRequestBody struct {
 	ID                                string
 	OwnerTwitchID                     string
-	Type                              string
+	Type                              dto.RewardType
 	RewardID                          string
 	CreatedAt                         time.Time
 	UpdatedAt                         time.Time
