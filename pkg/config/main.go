@@ -29,6 +29,7 @@ type Config struct {
 	WebhookApiBaseUrl     string   `json:"webhookApiBaseUrl"`
 	CookieDomain          string   `json:"cookieDomain"`
 	BttvToken             string   `json:"bttvToken"`
+	SevenTvToken          string   `json:"sevenTvToken"`
 	PostgresUsername      string   `json:"postgresUsername"`
 	PostgresPassword      string   `json:"postgresPassword"`
 }

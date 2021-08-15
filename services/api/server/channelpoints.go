@@ -61,6 +61,7 @@ type channelPointRedemption struct {
 }
 
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
+var sevenTvRegex = regexp.MustCompile(`https?:\/\/7tv.app\/emotes\/(\w*)`)
 
 func (s *Server) subscribeChannelPoints(userID string) error {
 	response, err := s.helixClient.CreateEventSubSubscription(userID, s.cfg.WebhookApiBaseUrl+"/api/redemption", nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
@@ -139,6 +140,11 @@ func (s *Server) handleRedemption(redemption channelPointRedemption) error {
 		err = s.handleBttvRedemption(reward, redemption)
 	}
 
+	// Err is only returned when it's worth responding with a bad response code
+	if reward.Type == dto.REWARD_SEVENTV {
+		err = s.handleSeventvRedemption(reward, redemption)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -152,7 +158,7 @@ func (s *Server) handleBttvRedemption(reward store.ChannelPointReward, redemptio
 
 	matches := bttvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
-		emoteAdded, emoteRemoved, err := s.emotechief.SetEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin, opts.Slots)
+		emoteAdded, emoteRemoved, err := s.emotechief.SetBttvEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("Bttv error %s %s", redemption.Event.BroadcasterUserLogin, err)
 			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
@@ -168,6 +174,45 @@ func (s *Server) handleBttvRedemption(reward store.ChannelPointReward, redemptio
 		}
 	} else {
 		s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no bttv link found in message", redemption.Event.UserName))
+	}
+
+	token, err := s.db.GetUserAccessToken(redemption.Event.BroadcasterUserID)
+	if err != nil {
+		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.Event.BroadcasterUserID)
+		return nil
+	} else {
+		err := s.helixClient.UpdateRedemptionStatus(redemption.Event.BroadcasterUserID, token.AccessToken, redemption.Event.Reward.ID, redemption.Event.ID, success)
+		if err != nil {
+			log.Errorf("Failed to update redemption status %s", err.Error())
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func (s *Server) handleSeventvRedemption(reward store.ChannelPointReward, redemption channelPointRedemption) error {
+	opts := UnmarshallSevenTvAdditionalOptions(reward.AdditionalOptions)
+	success := false
+
+	matches := sevenTvRegex.FindAllStringSubmatch(redemption.Event.UserInput, -1)
+	if len(matches) == 1 && len(matches[0]) == 2 {
+		emoteAdded, emoteRemoved, err := s.emotechief.SetSevenTvEmote(redemption.Event.BroadcasterUserID, matches[0][1], redemption.Event.BroadcasterUserLogin, opts.Slots)
+		if err != nil {
+			log.Warnf("7tv error %s %s", redemption.Event.BroadcasterUserLogin, err)
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from: @%s error: %s", redemption.Event.UserName, err.Error()))
+		} else if emoteAdded != nil && emoteRemoved != nil {
+			success = true
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.Event.UserName, emoteRemoved.Code))
+		} else if emoteAdded != nil {
+			success = true
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: %s redeemed by @%s", emoteAdded.Code, redemption.Event.UserName))
+		} else {
+			success = true
+			s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("✅ Added new emote: [unknown] redeemed by @%s", redemption.Event.UserName))
+		}
+	} else {
+		s.store.PublishSpeakerMessage(redemption.Event.BroadcasterUserID, redemption.Event.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add emote from @%s error: no 7tv link found in message", redemption.Event.UserName))
 	}
 
 	token, err := s.db.GetUserAccessToken(redemption.Event.BroadcasterUserID)

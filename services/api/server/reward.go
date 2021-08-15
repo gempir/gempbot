@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -60,6 +61,31 @@ func (r *BttvReward) GetConfig() TwitchRewardConfig {
 }
 
 func (r *BttvReward) SetConfig(config TwitchRewardConfig) {
+	r.TwitchRewardConfig = config
+}
+
+type SevenTvReward struct {
+	TwitchRewardConfig
+	SevenTvAdditionalOptions
+}
+
+type SevenTvAdditionalOptions struct {
+	Slots int
+}
+
+func (r *SevenTvReward) GetType() string {
+	return dto.REWARD_SEVENTV
+}
+
+func (r *SevenTvReward) GetAdditionalOptions() interface{} {
+	return r.SevenTvAdditionalOptions
+}
+
+func (r *SevenTvReward) GetConfig() TwitchRewardConfig {
+	return r.TwitchRewardConfig
+}
+
+func (r *SevenTvReward) SetConfig(config TwitchRewardConfig) {
 	r.TwitchRewardConfig = config
 }
 
@@ -130,24 +156,6 @@ func (s *Server) handleRewardDeletion(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, nil)
-}
-
-func (s *Server) handleRewardRead(c echo.Context) error {
-	auth, _, err := s.authenticate(c)
-	if err != nil {
-		return err
-	}
-
-	if c.Param("userID") != auth.Data.UserID {
-		err := s.checkIsEditor(auth.Data.UserID, c.Param("userID"))
-		if err != nil {
-			return err
-		}
-	}
-
-	rewards := s.db.GetChannelPointRewards(c.Param("userID"))
-
-	return c.JSON(http.StatusOK, rewards)
 }
 
 func (s *Server) handleRewardSingleRead(c echo.Context) error {
@@ -262,27 +270,57 @@ type rewardRequestBody struct {
 	GlobalCooldownSeconds             int
 	ShouldRedemptionsSkipRequestQueue bool
 	Enabled                           bool
-	AdditionalOptionsParsed           BttvAdditionalOptions
+}
+
+type bttvRewardRequestBody struct {
+	AdditionalOptionsParsed BttvAdditionalOptions
+}
+
+type sevenTvRewardRequestBody struct {
+	AdditionalOptionsParsed SevenTvAdditionalOptions
 }
 
 func createRewardFromBody(body io.ReadCloser) (Reward, error) {
-	var data rewardRequestBody
+	bodyBytes, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
 
-	if err := json.NewDecoder(body).Decode(&data); err != nil {
+	var data rewardRequestBody
+	if err := json.Unmarshal(bodyBytes, &data); err != nil {
 		return nil, err
 	}
 
 	rewardConfig := createTwitchRewardConfigFromRequestBody(data)
 
-	if data.AdditionalOptionsParsed.Slots < 1 {
-		data.AdditionalOptionsParsed.Slots = 1
-	}
-
 	switch data.Type {
 	case dto.REWARD_BTTV:
+		var addOpts bttvRewardRequestBody
+		if err := json.Unmarshal(bodyBytes, &addOpts); err != nil {
+			return nil, err
+		}
+
+		if addOpts.AdditionalOptionsParsed.Slots < 1 {
+			addOpts.AdditionalOptionsParsed.Slots = 1
+		}
+
 		return &BttvReward{
 			TwitchRewardConfig:    rewardConfig,
-			BttvAdditionalOptions: data.AdditionalOptionsParsed,
+			BttvAdditionalOptions: addOpts.AdditionalOptionsParsed,
+		}, nil
+	case dto.REWARD_SEVENTV:
+		var addOpts sevenTvRewardRequestBody
+		if err := json.Unmarshal(bodyBytes, &addOpts); err != nil {
+			return nil, err
+		}
+
+		if addOpts.AdditionalOptionsParsed.Slots < 1 {
+			addOpts.AdditionalOptionsParsed.Slots = 1
+		}
+
+		return &SevenTvReward{
+			TwitchRewardConfig:       rewardConfig,
+			SevenTvAdditionalOptions: addOpts.AdditionalOptionsParsed,
 		}, nil
 	case dto.REWARD_TIMEOUT:
 		return &TimeoutReward{
@@ -389,6 +427,21 @@ func UnmarshallBttvAdditionalOptions(jsonString string) BttvAdditionalOptions {
 	if err := json.Unmarshal([]byte(jsonString), &additionalOptions); err != nil {
 		log.Error(err)
 		return BttvAdditionalOptions{Slots: 1}
+	}
+
+	return additionalOptions
+}
+
+func UnmarshallSevenTvAdditionalOptions(jsonString string) SevenTvAdditionalOptions {
+	if jsonString == "{}" {
+		return SevenTvAdditionalOptions{Slots: 1}
+	}
+
+	var additionalOptions SevenTvAdditionalOptions
+
+	if err := json.Unmarshal([]byte(jsonString), &additionalOptions); err != nil {
+		log.Error(err)
+		return SevenTvAdditionalOptions{Slots: 1}
 	}
 
 	return additionalOptions
