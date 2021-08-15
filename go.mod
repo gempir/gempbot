@@ -8,7 +8,6 @@ require (
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/labstack/echo-contrib v0.11.0
 	github.com/labstack/echo/v4 v4.3.0
-	github.com/mitchellh/mapstructure v1.4.1
 	github.com/nicklaw5/helix v1.20.0
 	github.com/prometheus/client_golang v1.10.0
 	github.com/sirupsen/logrus v1.8.1
