@@ -175,8 +175,6 @@ func (s *Server) tokenRefreshRoutine() {
 
 		tokens := s.db.GetAllUserAccessToken()
 
-		log.Infof("starting refresh of %d tokens", len(tokens))
-
 		for _, token := range tokens {
 			err := s.refreshToken(token)
 			if err != nil {
@@ -184,7 +182,5 @@ func (s *Server) tokenRefreshRoutine() {
 			}
 			time.Sleep(time.Millisecond * 500)
 		}
-
-		log.Infof("finished refresh of %d tokens", len(tokens))
 	}
 }
