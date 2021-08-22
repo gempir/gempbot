@@ -10,8 +10,8 @@ import (
 	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gempir/bitraft/pkg/log"
+	"github.com/golang-jwt/jwt"
 )
 
 type tokenClaims struct {
