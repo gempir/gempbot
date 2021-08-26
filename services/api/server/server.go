@@ -55,6 +55,7 @@ func (s *Server) Start() {
 	e.POST("/api/prediction/lock", s.handlePredictionLock)
 	e.POST("/api/prediction/end", s.handlePredictionEnd)
 	e.GET("/api/prediction", s.handleGetPredictions)
+	e.GET("/api/emoteHistory", s.handleGetEmoteHistory)
 	e.GET("/api/userConfig", s.handleUserConfig)
 	e.POST("/api/userConfig", s.handleUserConfig)
 

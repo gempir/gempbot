@@ -43,7 +43,7 @@ func (o *PredictionLogOutcome) GetColorEmoji() string {
 
 func (db *Database) GetPredictions(ownerTwitchID string, page int, pageSize int) []PredictionLog {
 	var predictions []PredictionLog
-	db.Client.Preload("Outcomes").Where("owner_twitch_id = ?", ownerTwitchID).Offset((page * pageSize) - pageSize).Limit(pageSize).Find(&predictions).Order("started_at desc").Find(&predictions)
+	db.Client.Preload("Outcomes").Where("owner_twitch_id = ?", ownerTwitchID).Offset((page * pageSize) - pageSize).Limit(pageSize).Order("started_at desc").Find(&predictions)
 
 	return predictions
 }

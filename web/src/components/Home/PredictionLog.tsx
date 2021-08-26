@@ -35,12 +35,12 @@ export function PredictionLog() {
             </thead>
             <tbody>
                 {logs.map((log, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                    <th className="p-3">{log.Title}</th>
-                    <th>{log.Status}</th>
-                    <th>{log.getWinningOutcome()?.Title}</th>
-                    <th>{log.StartedAt.toLocaleDateString()} {log.StartedAt.toLocaleTimeString()}</th>
-                    <th>{log.LockedAt.toLocaleDateString()} {log.LockedAt.toLocaleTimeString()}</th>
-                    <th>{log.EndedAt.toLocaleDateString()} {log.EndedAt.toLocaleTimeString()}</th>
+                    <td className="p-3">{log.Title}</td>
+                    <td className="text-center">{log.Status}</td>
+                    <td className="text-center">{log.getWinningOutcome()?.Title}</td>
+                    <td className="text-center">{log.StartedAt.toLocaleDateString()} {log.StartedAt.toLocaleTimeString()}</td>
+                    <td className="text-center">{log.LockedAt.toLocaleDateString()} {log.LockedAt.toLocaleTimeString()}</td>
+                    <td className="text-center">{log.EndedAt.toLocaleDateString()} {log.EndedAt.toLocaleTimeString()}</td>
                 </tr>)}
             </tbody>
         </table>
