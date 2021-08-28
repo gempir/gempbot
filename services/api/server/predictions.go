@@ -299,17 +299,29 @@ func (s *Server) handlePredictionEnd(c echo.Context) error {
 const PAGE_SIZE = 20
 
 func (s *Server) handleGetPredictions(c echo.Context) error {
-	auth, _, err := s.authenticate(c)
-	if err != nil {
-		return err
-	}
-	userID := auth.Data.UserID
+	username := c.Param("username")
+	userID := ""
 
-	if c.QueryParam("managing") != "" {
-		userID, err = s.checkEditor(c, s.getUserConfig(userID))
+	if username == "" {
+		auth, _, err := s.authenticate(c)
+		if err != nil {
+			return err
+		}
+		userID = auth.Data.UserID
+
+		if c.QueryParam("managing") != "" {
+			userID, err = s.checkEditor(c, s.getUserConfig(userID))
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			}
+		}
+	} else {
+		user, err := s.helixClient.GetUserByUsername(username)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+
+		userID = user.ID
 	}
 
 	page := c.QueryParam("page")
