@@ -19,6 +19,7 @@ func NewDatabase(cfg *config.Config) *Database {
 	if err != nil {
 		panic("failed to connect postgres database")
 	}
+	log.Info("connected postgres on localhost:5432")
 
 	// Migrate the schema
 	err = pdb.AutoMigrate(&ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{}, &EmoteAdd{}, &PredictionLog{}, &PredictionLogOutcome{}, &BotConfig{}, &Permission{})
