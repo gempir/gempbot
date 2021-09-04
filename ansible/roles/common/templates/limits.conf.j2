@@ -1,3 +1,5 @@
 # {{ ansible_managed }}
-* soft nofile 16384
-* hard nofile 16384
+*         hard    nofile      500000
+*         soft    nofile      500000
+*         hard    nproc       500000
+*         soft    nproc       500000
