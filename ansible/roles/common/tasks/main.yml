@@ -47,6 +47,11 @@
     src: templates/logrotate.j2 
     dest: /etc/logrotate.d/rsyslog
 
+- name: Install security limits
+  template: 
+    src: templates/limits.conf.j2 
+    dest: /etc/security/limits.conf
+
 - name: Install htop
   apt: 
     name: htop
