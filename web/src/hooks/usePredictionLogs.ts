@@ -27,7 +27,7 @@ export interface RawPredictionLog {
 
 const PAGE_SIZE = 20;
 
-export function usePredictionLogs(): [Array<PredictionLog>, () => void, boolean, number, () => void, () => void] {
+export function usePredictionLogs(channel?: string): [Array<PredictionLog>, () => void, boolean, number, () => void, () => void] {
     const [page, setPage] = useState(1);
     const pageRef = useRef(page);
     pageRef.current = page;
@@ -42,6 +42,10 @@ export function usePredictionLogs(): [Array<PredictionLog>, () => void, boolean,
         const currentPage = pageRef.current;
         
         let endPoint = "/api/prediction";
+        if (channel) {
+            endPoint += `/${channel}`;
+        }
+
         const searchParams = new URLSearchParams();
         searchParams.append("page", page.toString());
         doFetch(Method.GET, endPoint, searchParams).then((resp) => {

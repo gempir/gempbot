@@ -54,7 +54,7 @@ export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () 
 
         let endPoint = "/api/emotehistory";
         if (channel) {
-            endPoint = `/api/emotehistory/${channel}`
+            endPoint += `/${channel}`
         }
 
         const searchParams = new URLSearchParams();

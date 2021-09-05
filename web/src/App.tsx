@@ -5,6 +5,7 @@ import {
 import { EmotehistoryPage } from "./components/Emotehistory/EmotehistoryPage";
 import { Home } from "./components/Home/Home";
 import { Permissions } from "./components/Permissions/Permissions";
+import { PredictionhistoryPage } from "./components/Predictionhistory/PredictionhistoryPage";
 import { Privacy } from "./components/Privacy/Privacy";
 import { Rewards } from "./components/Rewards/Rewards";
 import { Sidebar } from "./components/Sidebar/Sidebar";
@@ -24,6 +25,9 @@ export function App() {
                 </Route>
                 <Route path="/emotehistory/:channel">
                     <EmotehistoryPage />
+                </Route>
+                <Route path="/predictionhistory/:channel">
+                    <PredictionhistoryPage />
                 </Route>
                 <Route path="/rewards">
                     <Rewards />

@@ -4,8 +4,8 @@ import { ChevronRight } from "../../icons/ChevronRight";
 import { Refresh } from "../../icons/Refresh";
 
 
-export function PredictionLog() {
-    const [logs, fetch, loading, page, increasePage, decreasePage] = usePredictionLogs();
+export function PredictionLog({channel}: {channel?: string}) {
+    const [logs, fetch, loading, page, increasePage, decreasePage] = usePredictionLogs(channel);
 
     return <div className="p-4 bg-gray-800 rounded shadow w-full relative select-none">
         <div className="text-2xl flex gap-5 w-full" onClick={fetch}>
