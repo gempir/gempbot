@@ -56,8 +56,8 @@ func (s *Server) Start() {
 	e.POST("/api/prediction/end", s.handlePredictionEnd)
 	e.GET("/api/prediction/:username", s.handleGetPredictions)
 	e.GET("/api/prediction", s.handleGetPredictions)
-	e.GET("/api/emoteHistory/:username", s.handleGetEmoteHistory)
-	e.GET("/api/emoteHistory", s.handleGetEmoteHistory)
+	e.GET("/api/emotehistory/:username", s.handleGetEmoteHistory)
+	e.GET("/api/emotehistory", s.handleGetEmoteHistory)
 	e.GET("/api/userConfig", s.handleUserConfig)
 	e.POST("/api/userConfig", s.handleUserConfig)
 

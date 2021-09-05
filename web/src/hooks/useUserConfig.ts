@@ -51,6 +51,10 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
     const managing = store.useState(s => s.managing);
 
     const fetchConfig = () => {
+        if (!store.getRawState().scToken) {
+            return;
+        }
+
         let endPoint = "/api/userConfig";
         doFetch(Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig))
     };

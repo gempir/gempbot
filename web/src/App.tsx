@@ -2,6 +2,7 @@ import {
     BrowserRouter as Router,
     Route, Switch
 } from "react-router-dom";
+import { EmotehistoryPage } from "./components/Emotehistory/EmotehistoryPage";
 import { Home } from "./components/Home/Home";
 import { Permissions } from "./components/Permissions/Permissions";
 import { Privacy } from "./components/Privacy/Privacy";
@@ -13,9 +14,6 @@ import { store } from "./store";
 
 export function App() {
     const scToken = store.useState(store => store.scToken);
-    if (!scToken) {
-        return <Teaser />
-    }
 
     return <Router>
         <div className="flex">
@@ -24,6 +22,9 @@ export function App() {
                 <Route path="/privacy">
                     <Privacy />
                 </Route>
+                <Route path="/emotehistory/:channel">
+                    <EmotehistoryPage />
+                </Route>
                 <Route path="/rewards">
                     <Rewards />
                 </Route>
@@ -31,7 +32,8 @@ export function App() {
                     <Permissions />
                 </Route>
                 <Route path="/">
-                    <Home />
+                    {scToken && <Home />}
+                    {!scToken && <Teaser />}
                 </Route>
             </Switch>
         </div>

@@ -13,7 +13,7 @@ export enum EmoteType {
     SEVENTV = "seventv",
 }
 
-export interface RawEmoteHistoryItem {
+export interface RawEmotehistoryItem {
     CreatedAt: string;
     UpdatedAt: string;
     DeletedAt: string | null;
@@ -24,7 +24,7 @@ export interface RawEmoteHistoryItem {
     EmoteID: string;
 }
 
-export interface EmoteHistoryItem {
+export interface EmotehistoryItem {
     CreatedAt: Date;
     UpdatedAt: Date;
     DeletedAt: Date | null;
@@ -38,12 +38,12 @@ export interface EmoteHistoryItem {
 
 const PAGE_SIZE = 20;
 
-export function useEmoteHistory(): [Array<EmoteHistoryItem>, () => void, boolean, number, () => void, () => void] {
+export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void] {
     const [page, setPage] = useState(1);
     const pageRef = useRef(page);
     pageRef.current = page;
 
-    const [emoteHistory, setEmoteHistory] = useState<Array<EmoteHistoryItem>>([]);
+    const [emotehistory, setEmotehistory] = useState<Array<EmotehistoryItem>>([]);
     const [loading, setLoading] = useState(false);
     const managing = store.useState(s => s.managing);
 
@@ -52,7 +52,11 @@ export function useEmoteHistory(): [Array<EmoteHistoryItem>, () => void, boolean
 
         const currentPage = pageRef.current;
 
-        let endPoint = "/api/emoteHistory";
+        let endPoint = "/api/emotehistory";
+        if (channel) {
+            endPoint = `/api/emotehistory/${channel}`
+        }
+
         const searchParams = new URLSearchParams();
         searchParams.append("page", page.toString());
         doFetch(Method.GET, endPoint, searchParams).then((resp) => {
@@ -61,10 +65,10 @@ export function useEmoteHistory(): [Array<EmoteHistoryItem>, () => void, boolean
             }
 
             return resp
-        }).then((items: Array<RawEmoteHistoryItem>) =>
-            setEmoteHistory(
+        }).then((items: Array<RawEmotehistoryItem>) =>
+            setEmotehistory(
                 items.map(
-                    (item: RawEmoteHistoryItem) => (
+                    (item: RawEmotehistoryItem) => (
                         {
                             ...item,
                             CreatedAt: new Date(item.CreatedAt),
@@ -84,5 +88,5 @@ export function useEmoteHistory(): [Array<EmoteHistoryItem>, () => void, boolean
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchPredictions, [managing, page]);
 
-    return [emoteHistory, fetchPredictions, loading, page, () => emoteHistory.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined];
+    return [emotehistory, fetchPredictions, loading, page, () => emotehistory.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined];
 }

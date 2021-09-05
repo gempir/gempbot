@@ -12,3 +12,4 @@ windows:
       - go build -o ./services/ingester/ingester ./services/ingester && ./services/ingester/ingester -config ./config.json
       - go build -o ./services/speaker/speaker ./services/speaker && ./services/speaker/speaker -config ./config.json
       - ngrok http 8035
+      - echo "extra terminal"
