@@ -1,4 +1,4 @@
-package handler
+package emotehistory
 
 import (
 	"net/http"
@@ -12,9 +12,9 @@ import (
 )
 
 func Emotehistory(w http.ResponseWriter, r *http.Request) {
-	cfg = config.FromEnv()
-	db = store.NewDatabase(cfg)
-	helixClient = helix.NewClient(cfg)
+	cfg := config.FromEnv()
+	db := store.NewDatabase(cfg)
+	helixClient := helix.NewClient(cfg)
 	auth := auth.NewAuth(cfg, db, helixClient)
 
 	username := r.URL.Query().Get("username")
