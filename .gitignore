@@ -16,3 +16,4 @@ services/api/api
 services/ingester/ingester
 services/speaker/speaker
 services/commander/commander
+.vercel
