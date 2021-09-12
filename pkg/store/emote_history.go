@@ -1,6 +1,8 @@
 package store
 
 import (
+	"context"
+
 	"github.com/gempir/bot/pkg/dto"
 	"gorm.io/gorm"
 )
@@ -27,9 +29,9 @@ func (db *Database) GetEmoteAdded(channelTwitchID string, addType dto.RewardType
 	return emotes
 }
 
-func (db *Database) GetEmoteHistory(ownerTwitchID string, page int, pageSize int) []EmoteAdd {
+func (db *Database) GetEmoteHistory(ctx context.Context, ownerTwitchID string, page int, pageSize int) []EmoteAdd {
 	var emoteHistory []EmoteAdd
-	db.Client.Where("channel_twitch_id = ?", ownerTwitchID).Offset((page * pageSize) - pageSize).Limit(pageSize).Order("updated_at desc").Find(&emoteHistory)
+	db.Client.WithContext(ctx).Where("channel_twitch_id = ?", ownerTwitchID).Offset((page * pageSize) - pageSize).Limit(pageSize).Order("updated_at desc").Find(&emoteHistory)
 
 	return emoteHistory
 }

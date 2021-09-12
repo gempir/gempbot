@@ -20,7 +20,7 @@ var (
 	helixClient *helix.Client
 )
 
-func Callback(w http.ResponseWriter, r *http.Request) {
+func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg = config.FromEnv()
 	db = store.NewDatabase(cfg)
 	helixClient = helix.NewClient(cfg)

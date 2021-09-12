@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -41,9 +42,9 @@ func (o *PredictionLogOutcome) GetColorEmoji() string {
 	return "🟪"
 }
 
-func (db *Database) GetPredictions(ownerTwitchID string, page int, pageSize int) []PredictionLog {
+func (db *Database) GetPredictions(ctx context.Context, ownerTwitchID string, page int, pageSize int) []PredictionLog {
 	var predictions []PredictionLog
-	db.Client.Preload("Outcomes").Where("owner_twitch_id = ?", ownerTwitchID).Offset((page * pageSize) - pageSize).Limit(pageSize).Order("started_at desc").Find(&predictions)
+	db.Client.WithContext(ctx).Preload("Outcomes").Where("owner_twitch_id = ?", ownerTwitchID).Offset((page * pageSize) - pageSize).Limit(pageSize).Order("started_at desc").Find(&predictions)
 
 	return predictions
 }

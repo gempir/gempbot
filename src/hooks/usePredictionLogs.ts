@@ -41,12 +41,11 @@ export function usePredictionLogs(channel?: string): [Array<PredictionLog>, () =
 
         const currentPage = pageRef.current;
         
-        let endPoint = "/api/prediction";
-        if (channel) {
-            endPoint += `/${channel}`;
-        }
-
+        const endPoint = "/api/predictionhistory";
         const searchParams = new URLSearchParams();
+        if (channel) {
+            searchParams.append("channel", channel);
+        }
         searchParams.append("page", page.toString());
         doFetch(Method.GET, endPoint, searchParams).then((resp) => {
             if (currentPage !== pageRef.current) {

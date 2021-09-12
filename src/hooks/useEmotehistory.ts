@@ -52,12 +52,12 @@ export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () 
 
         const currentPage = pageRef.current;
 
-        let endPoint = "/api/emotehistory";
-        if (channel) {
-            endPoint += `/${channel}`
-        }
 
+        const endPoint = "/api/emotehistory";
         const searchParams = new URLSearchParams();
+        if (channel) {
+            searchParams.append("channel", channel);
+        }
         searchParams.append("page", page.toString());
         doFetch(Method.GET, endPoint, searchParams).then((resp) => {
             if (currentPage !== pageRef.current) {
