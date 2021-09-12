@@ -46,13 +46,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.SaveUserAccessToken(validateResp.Data.UserID, resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " "))
+	err = db.SaveUserAccessToken(r.Context(), validateResp.Data.UserID, resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " "))
 	if err != nil {
 		fmt.Fprintf(w, "failed to set userAccessToken in callback: %s", err)
 		return
 	}
 
-	err = db.SaveBotConfig(store.BotConfig{OwnerTwitchID: validateResp.Data.UserID, JoinBot: true})
+	err = db.SaveBotConfig(r.Context(), store.BotConfig{OwnerTwitchID: validateResp.Data.UserID, JoinBot: true})
 	if err != nil {
 		log.Error(err)
 	}

@@ -1,19 +1,22 @@
 package store
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type BotConfig struct {
 	OwnerTwitchID string `gorm:"primaryKey"`
 	JoinBot       bool   `gorm:"index"`
 }
 
-func (db *Database) SaveBotConfig(botCfg BotConfig) error {
+func (db *Database) SaveBotConfig(ctx context.Context, botCfg BotConfig) error {
 	updateMap, err := StructToMap(botCfg)
 	if err != nil {
 		return err
 	}
 
-	update := db.Client.Model(&botCfg).Where("owner_twitch_id = ?", botCfg.OwnerTwitchID).Updates(&updateMap)
+	update := db.Client.WithContext(ctx).Model(&botCfg).Where("owner_twitch_id = ?", botCfg.OwnerTwitchID).Updates(&updateMap)
 	if update.Error != nil {
 		return update.Error
 	}

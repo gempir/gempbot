@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -14,10 +15,10 @@ type UserAccessToken struct {
 	UpdatedAt     time.Time
 }
 
-func (db *Database) SaveUserAccessToken(ownerId string, accessToken string, refreshToken string, scopes string) error {
+func (db *Database) SaveUserAccessToken(ctx context.Context, ownerId string, accessToken string, refreshToken string, scopes string) error {
 	token := UserAccessToken{OwnerTwitchID: ownerId, AccessToken: accessToken, RefreshToken: refreshToken, Scopes: scopes}
 
-	update := db.Client.Model(&UserAccessToken{}).Where("owner_twitch_id = ?", ownerId).Updates(&token)
+	update := db.Client.WithContext(ctx).Model(&UserAccessToken{}).Where("owner_twitch_id = ?", ownerId).Updates(&token)
 	if update.Error != nil {
 		return update.Error
 	}
