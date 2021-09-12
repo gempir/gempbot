@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gempir/bitraft/pkg/log"
+	"github.com/gempir/bot/pkg/log"
 	helixClient "github.com/nicklaw5/helix"
 )
 

@@ -1,11 +1,12 @@
 package store
 
 import (
-	"fmt"
+	"time"
 
-	"github.com/gempir/bitraft/pkg/config"
-	"github.com/gempir/bitraft/pkg/log"
-	"gorm.io/driver/postgres"
+	"github.com/gempir/bot/pkg/config"
+	"github.com/gempir/bot/pkg/log"
+	"github.com/go-sql-driver/mysql"
+	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -14,20 +15,36 @@ type Database struct {
 }
 
 func NewDatabase(cfg *config.Config) *Database {
-	dsn := fmt.Sprintf("host=localhost user=%s password=%s dbname=bitraft port=5432 sslmode=disable TimeZone=Europe/Berlin", cfg.PostgresUsername, cfg.PostgresPassword)
-	pdb, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: log.NewGormLogger()})
-	if err != nil {
-		panic("failed to connect postgres database")
+	mysqlConfig := mysql.Config{
+		User:                 cfg.DbUsername,
+		Passwd:               cfg.DbPassword,
+		Addr:                 cfg.DbHost + ":3306",
+		Net:                  "tcp",
+		DBName:               cfg.DbName,
+		Loc:                  time.Local,
+		AllowNativePasswords: true,
+		TLSConfig:            "true",
 	}
-	log.Info("connected postgres on localhost:5432")
 
-	// Migrate the schema
-	err = pdb.AutoMigrate(&ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{}, &EmoteAdd{}, &PredictionLog{}, &PredictionLogOutcome{}, &BotConfig{}, &Permission{})
+	pdb, err := gorm.Open(gormMysql.Open(mysqlConfig.FormatDSN()), &gorm.Config{
+		Logger:                                   log.NewGormLogger(),
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
-		panic(err)
+		panic("failed to connect database")
 	}
+	log.Infof("connected on %s:3306 to %s", cfg.DbHost, cfg.DbName)
 
 	return &Database{
 		Client: pdb,
 	}
+}
+
+func (db *Database) Migrate() {
+	log.Info("Migrating schema")
+	err := db.Client.AutoMigrate(&ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{}, &EmoteAdd{}, &PredictionLog{}, &PredictionLogOutcome{}, &BotConfig{}, &Permission{})
+	if err != nil {
+		panic(err)
+	}
+	log.Info("Finished migrating schema")
 }

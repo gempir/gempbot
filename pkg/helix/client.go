@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gempir/bitraft/pkg/log"
+	"github.com/gempir/bot/pkg/config"
+	"github.com/gempir/bot/pkg/log"
 	helixClient "github.com/nicklaw5/helix"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -31,11 +32,11 @@ func init() {
 }
 
 // NewClient Create helix client
-func NewClient(clientID, clientSecret, redirectURI string, eventSubSecret string) *Client {
+func NewClient(cfg *config.Config) *Client {
 	client, err := helixClient.NewClient(&helixClient.Options{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		RedirectURI:  redirectURI,
+		ClientID:     cfg.ClientID,
+		ClientSecret: cfg.ClientSecret,
+		RedirectURI:  cfg.ApiBaseUrl + "/api/callback",
 	})
 	if err != nil {
 		panic(err)
@@ -49,9 +50,9 @@ func NewClient(clientID, clientSecret, redirectURI string, eventSubSecret string
 	client.SetAppAccessToken(resp.Data.AccessToken)
 
 	return &Client{
-		clientID:       clientID,
-		clientSecret:   clientSecret,
-		eventSubSecret: eventSubSecret,
+		clientID:       cfg.ClientID,
+		clientSecret:   cfg.ClientSecret,
+		eventSubSecret: cfg.Secret,
 		Client:         client,
 		httpClient:     &http.Client{},
 		helixApiResponseStatus: promauto.NewCounterVec(

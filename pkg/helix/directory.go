@@ -3,7 +3,7 @@ package helix
 import (
 	"fmt"
 
-	"github.com/gempir/bitraft/pkg/log"
+	"github.com/gempir/bot/pkg/log"
 	"github.com/nicklaw5/helix"
 )
 

@@ -1,0 +1,7 @@
+#!make
+include .env
+
+.PHONY: migrate
+
+migrate:
+	export PLANETSCALE_DB=${PLANETSCALE_DB}; export PLANETSCALE_DB_USERNAME=${PLANETSCALE_DB_USERNAME}; export PLANETSCALE_DB_PASSWORD=${PLANETSCALE_DB_PASSWORD}; export PLANETSCALE_DB_HOST=${PLANETSCALE_DB_HOST};  go run cmd/migrate/main.go

@@ -1,7 +1,7 @@
 package store
 
 import (
-	"github.com/gempir/bitraft/pkg/dto"
+	"github.com/gempir/bot/pkg/dto"
 	"gorm.io/gorm"
 )
 

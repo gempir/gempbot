@@ -3,7 +3,7 @@ import { createLoginUrl } from "../factory/createLoginUrl";
 import { store } from "../store";
 
 export function Teaser() {
-    useTitle("bitraft - netlify");
+    useTitle("gempbot");
 
     const { apiBaseUrl, twitchClientId } = store.useState(s => ({ apiBaseUrl: s.apiBaseUrl, twitchClientId: s.twitchClientId }));
     const url = createLoginUrl(apiBaseUrl, twitchClientId);

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gempir/bitraft/pkg/log"
+	"github.com/gempir/bot/pkg/log"
 	twitch "github.com/gempir/go-twitch-irc/v2"
 	"github.com/sirupsen/logrus"
 )
@@ -30,8 +30,10 @@ type Config struct {
 	CookieDomain          string   `json:"cookieDomain"`
 	BttvToken             string   `json:"bttvToken"`
 	SevenTvToken          string   `json:"sevenTvToken"`
-	PostgresUsername      string   `json:"postgresUsername"`
-	PostgresPassword      string   `json:"postgresPassword"`
+	DbHost                string   `json:"DbHost"`
+	DbUsername            string   `json:"DbUsername"`
+	DbPassword            string   `json:"DbPassword"`
+	DbName                string   `json:"DbName"`
 }
 
 // ChannelConfig config for indiviual channels
@@ -81,9 +83,22 @@ func (cfg *Config) persistConfig() {
 }
 
 func FromEnv() *Config {
+	protocoll := "https://"
+	if os.Getenv("VERCEL_ENV") == "development" {
+		protocoll = "http://"
+	}
+
 	return &Config{
-		ClientID:     os.Getenv("TWITCH_CLIENT_ID"),
-		ClientSecret: os.Getenv("TWITCH_CLIENT_SECRET"),
+		ClientID:          os.Getenv("TWITCH_CLIENT_ID"),
+		ClientSecret:      os.Getenv("TWITCH_CLIENT_SECRET"),
+		Secret:            os.Getenv("SECRET"),
+		ApiBaseUrl:        protocoll + os.Getenv("VERCEL_URL"),
+		WebBaseUrl:        protocoll + os.Getenv("VERCEL_URL"),
+		WebhookApiBaseUrl: protocoll + os.Getenv("VERCEL_URL"),
+		DbHost:            os.Getenv("PLANETSCALE_DB_HOST"),
+		DbUsername:        os.Getenv("PLANETSCALE_DB_USERNAME"),
+		DbPassword:        os.Getenv("PLANETSCALE_DB_PASSWORD"),
+		DbName:            os.Getenv("PLANETSCALE_DB"),
 	}
 }
 

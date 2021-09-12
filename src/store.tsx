@@ -13,8 +13,8 @@ const url = new URL(window.location.href);
 
 export const store = new PStore<Store>({
     twitchClientId: process.env.REACT_APP_TWITCH_CLIENT_ID ?? "",
-    apiBaseUrl: url.protocol + url.host ?? "",
-    baseUrl: url.protocol + url.host ?? "",
+    apiBaseUrl: `${url.protocol}//${url.host}` ?? "",
+    baseUrl: `${url.protocol}//${url.host}` ?? "",
     scToken: getCookie("scToken"),
     managing: window.localStorage.getItem("managing") ?? "",
 });

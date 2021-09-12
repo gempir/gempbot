@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gempir/bitraft/pkg/dto"
+	"github.com/gempir/bot/pkg/dto"
 )
 
 type ChannelPointReward struct {
