@@ -12,3 +12,5 @@ services/speaker/speaker
 services/commander/commander
 
 web/node_modules/
+# Local Netlify folder
+.netlify
