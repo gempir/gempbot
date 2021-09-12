@@ -9,10 +9,12 @@ export interface Store {
     managing: string,
 }
 
+const url = new URL(window.location.href);
+
 export const store = new PStore<Store>({
     twitchClientId: process.env.REACT_APP_TWITCH_CLIENT_ID ?? "",
-    apiBaseUrl: process.env.REACT_APP_API_BASE_URL ?? "",
-    baseUrl: process.env.REACT_APP_BASE_URL ?? "",
+    apiBaseUrl: url.protocol + url.host ?? "",
+    baseUrl: url.protocol + url.host ?? "",
     scToken: getCookie("scToken"),
     managing: window.localStorage.getItem("managing") ?? "",
 });

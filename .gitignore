@@ -3,7 +3,7 @@
 node_modules
 build
 
-api/.env
+.env
 
 src/react-app-env.d.ts
 
