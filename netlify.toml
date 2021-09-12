@@ -1,5 +1,5 @@
 [build]
   base = ""
   publish = "build/"
-  command = "yarn build"
+  command = "make build"
   functions = "netlify-functions"
