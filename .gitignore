@@ -21,6 +21,7 @@ build/
 .env.production.local
 
 netlify-functions/
+functions/.env
 
 npm-debug.log*
 yarn-debug.log*

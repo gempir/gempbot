@@ -80,6 +80,13 @@ func (cfg *Config) persistConfig() {
 	}
 }
 
+func FromEnv() *Config {
+	return &Config{
+		ClientID:     os.Getenv("TWITCH_CLIENT_ID"),
+		ClientSecret: os.Getenv("TWITCH_CLIENT_SECRET"),
+	}
+}
+
 func loadConfiguration(filePath string) *Config {
 	// setup defaults
 	cfg := Config{
