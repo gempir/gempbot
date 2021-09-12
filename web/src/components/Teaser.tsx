@@ -8,7 +8,6 @@ export function Teaser() {
     const { apiBaseUrl, twitchClientId } = store.useState(s => ({ apiBaseUrl: s.apiBaseUrl, twitchClientId: s.twitchClientId }));
     const url = createLoginUrl(apiBaseUrl, twitchClientId);
 
-
     return <section className="text-gray-600 body-font w-full">
         <div className="container px-5 py-24 mx-auto">
             <div className="flex flex-col text-center w-full mb-20">
