@@ -1,0 +1,7 @@
+[build]
+  base = "web/"
+  publish = "build/"
+  command = "yarn build"
+
+[functions]
+  directory = "../functions/"
