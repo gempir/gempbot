@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gempir/bot/internal/user"
 	"github.com/gempir/bot/pkg/api"
 	"github.com/gempir/bot/pkg/auth"
 	"github.com/gempir/bot/pkg/config"
@@ -16,6 +17,8 @@ func Emotehistory(w http.ResponseWriter, r *http.Request) {
 	db := store.NewDatabase(cfg)
 	helixClient := helix.NewClient(cfg)
 	auth := auth.NewAuth(cfg, db, helixClient)
+	userAdmin := user.NewUserAdmin(db, helixClient)
+
 
 	username := r.URL.Query().Get("username")
 	userID := ""
@@ -29,11 +32,11 @@ func Emotehistory(w http.ResponseWriter, r *http.Request) {
 		userID = auth.Data.UserID
 
 		if r.URL.Query().Get("managing") != "" {
-			// userID, err = s.checkEditor(c, s.getUserConfig(userID))
-			// if err != nil {
-			// 	http.Error(w, err.Error(), err.Status())
-			// 	return
-			// }
+			userID, err = userAdmin.CheckEditor(r, userAdmin.GetUserConfig(userID))
+			if err != nil {
+				http.Error(w, err.Error(), err.Status())
+				return
+			}
 		}
 	} else {
 		user, err := helixClient.GetUserByUsername(username)
