@@ -83,23 +83,24 @@ func (cfg *Config) persistConfig() {
 }
 
 func FromEnv() *Config {
-	protocoll := "https://"
+	protocol := "https://"
 	if os.Getenv("VERCEL_ENV") == "development" {
-		protocoll = "http://"
+		protocol = "http://"
 	}
 
-	url := protocoll + os.Getenv("REACT_APP_BASE_URL")
-	if url == "" {
-		url = protocoll + os.Getenv("VERCEL_URL")
+	domain := os.Getenv("REACT_APP_BASE_URL")
+	if domain == "" {
+		domain = os.Getenv("VERCEL_URL")
 	}
 
 	return &Config{
 		ClientID:          os.Getenv("TWITCH_CLIENT_ID"),
 		ClientSecret:      os.Getenv("TWITCH_CLIENT_SECRET"),
 		Secret:            os.Getenv("SECRET"),
-		ApiBaseUrl:        url,
-		WebBaseUrl:        url,
-		WebhookApiBaseUrl: url,
+		ApiBaseUrl:        protocol + domain,
+		WebBaseUrl:        protocol + domain,
+		WebhookApiBaseUrl: protocol + domain,
+		CookieDomain:      domain,
 		DbHost:            os.Getenv("PLANETSCALE_DB_HOST"),
 		DbUsername:        os.Getenv("PLANETSCALE_DB_USERNAME"),
 		DbPassword:        os.Getenv("PLANETSCALE_DB_PASSWORD"),
