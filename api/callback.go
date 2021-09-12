@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gempir/bot/pkg/auth"
 	"github.com/gempir/bot/pkg/config"
 	"github.com/gempir/bot/pkg/helix"
 	"github.com/gempir/bot/pkg/log"
@@ -19,7 +20,7 @@ var (
 	helixClient *helix.Client
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func Callback(w http.ResponseWriter, r *http.Request) {
 	cfg = config.FromEnv()
 	db = store.NewDatabase(cfg)
 	helixClient = helix.NewClient(cfg)
@@ -60,18 +61,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	dashboardRedirect(w, r, token)
 }
 
-type tokenClaims struct {
-	UserID         string
-	StandardClaims jwt.StandardClaims
-}
-
-func (t *tokenClaims) Valid() error {
-	return nil
-}
-
 func createApiToken(userID string) (string, error) {
 	expirationTime := time.Now().Add(365 * 24 * time.Hour)
-	claims := &tokenClaims{
+	claims := &auth.TokenClaims{
 		UserID: userID,
 		StandardClaims: jwt.StandardClaims{
 			// In JWT, the expiry time is expressed as unix milliseconds
