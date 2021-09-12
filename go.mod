@@ -3,6 +3,7 @@ module github.com/gempir/bitraft
 go 1.16
 
 require (
+	github.com/aws/aws-lambda-go v1.26.0
 	github.com/gempir/go-twitch-irc/v2 v2.6.0
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
