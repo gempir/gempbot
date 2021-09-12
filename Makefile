@@ -1,0 +1,3 @@
+build:
+	yarn build
+	GOBIN=${PWD}/functions go install ./...

@@ -2,6 +2,4 @@
   base = ""
   publish = "build/"
   command = "yarn build"
-
-[functions]
-  directory = "functions/"
+  functions = "functions"

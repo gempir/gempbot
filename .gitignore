@@ -20,6 +20,10 @@ build/
 .env.test.local
 .env.production.local
 
+# Ignore all binaries in functions
+functions/*
+!functions/*.*
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
