@@ -1,5 +1,9 @@
-.PHONY: build
+.PHONY: frontend functions
 
-build:
+build: frontend functions
+
+frontend:
 	yarn build
+
+functions:
 	GOBIN=${PWD}/netlify-functions go install ./functions/...

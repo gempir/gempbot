@@ -1,7 +1,7 @@
 [build]
   base = ""
   publish = "build/"
-  command = "make build"
+  command = "make"
 
 [functions]
   directory = "netlify-functions"
