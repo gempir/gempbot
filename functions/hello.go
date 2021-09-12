@@ -9,7 +9,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	return &events.APIGatewayProxyResponse{
 		StatusCode:      200,
 		Headers:         map[string]string{"Content-Type": "text/plain"},
-		Body:            "Hello, World!",
+		Body:            "Hello, World! :)",
 		IsBase64Encoded: false,
 	}, nil
 }
