@@ -88,13 +88,18 @@ func FromEnv() *Config {
 		protocoll = "http://"
 	}
 
+	url := protocoll + os.Getenv("REACT_APP_BASE_URL")
+	if url == "" {
+		url = protocoll + os.Getenv("VERCEL_URL")
+	}
+
 	return &Config{
 		ClientID:          os.Getenv("TWITCH_CLIENT_ID"),
 		ClientSecret:      os.Getenv("TWITCH_CLIENT_SECRET"),
 		Secret:            os.Getenv("SECRET"),
-		ApiBaseUrl:        protocoll + os.Getenv("VERCEL_URL"),
-		WebBaseUrl:        protocoll + os.Getenv("VERCEL_URL"),
-		WebhookApiBaseUrl: protocoll + os.Getenv("VERCEL_URL"),
+		ApiBaseUrl:        url,
+		WebBaseUrl:        url,
+		WebhookApiBaseUrl: url,
 		DbHost:            os.Getenv("PLANETSCALE_DB_HOST"),
 		DbUsername:        os.Getenv("PLANETSCALE_DB_USERNAME"),
 		DbPassword:        os.Getenv("PLANETSCALE_DB_PASSWORD"),
