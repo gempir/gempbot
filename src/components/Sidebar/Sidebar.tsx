@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { Gift } from "../../icons/Gift";
 import { House } from "../../icons/House";
@@ -18,7 +17,7 @@ export function Sidebar() {
         {scToken && <>
             <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} />
             <Managing userConfig={userConfig} />
-            <Link to="/" className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
+            {/* <Link to="/" className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
                 <House /> Home
             </Link>
             <Link to="/rewards" className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
@@ -29,7 +28,7 @@ export function Sidebar() {
             </Link>
             <Link to="/privacy" className="absolute bottom-3 text-center left-0 right-0 mx-auto hover:text-blue-500">
                 Privacy
-            </Link>
+            </Link> */}
         </>}
     </div>;
 }

@@ -20,7 +20,8 @@ export const store = new PStore<Store>({
     apiBaseUrl: makeUrl(env.REACT_APP_BASE_URL ?? env.REACT_APP_VERCEL_URL ?? ""),
     baseUrl: makeUrl(env.REACT_APP_BASE_URL ?? env.REACT_APP_VERCEL_URL ?? ""),
     scToken: getCookie("scToken"),
-    managing: window.localStorage.getItem("managing") ?? "",
+    managing: "",
+    // managing: window.localStorage.getItem("managing") ?? "",
 });
 
 function makeUrl(domain: string): string {
