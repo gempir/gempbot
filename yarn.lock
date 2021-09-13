@@ -1526,6 +1526,11 @@ native-url@0.3.4:
   dependencies:
     querystring "^0.2.0"
 
+next-redux-wrapper@^7.0.4:
+  version "7.0.4"
+  resolved "https://registry.yarnpkg.com/next-redux-wrapper/-/next-redux-wrapper-7.0.4.tgz#df10b03077c03dc2bb17986c45d528ebdfcffed0"
+  integrity sha512-AYMS3mZCsdqRP1TpKxzPmwCSKOe1Koq/bklUZG6inLUGQQWsbHRogr0N8BHGms6Bh3HTCsic53ztAnbwopQagg==
+
 next@latest:
   version "11.1.2"
   resolved "https://registry.yarnpkg.com/next/-/next-11.1.2.tgz#527475787a9a362f1bc916962b0c0655cc05bc91"
