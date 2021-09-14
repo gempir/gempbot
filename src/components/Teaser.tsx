@@ -1,11 +1,9 @@
-import { useTitle } from "react-use";
 import { createLoginUrl } from "../factory/createLoginUrl";
-import { store } from "../store";
+import { useStore } from "../store";
 
 export function Teaser() {
-    useTitle("gempbot - vercel");
-
-    const { apiBaseUrl, twitchClientId } = store.useState(s => ({ apiBaseUrl: s.apiBaseUrl, twitchClientId: s.twitchClientId }));
+    const apiBaseUrl = useStore(state => state.apiBaseUrl);
+    const twitchClientId = useStore(state => state.twitchClientId);
     const url = createLoginUrl(apiBaseUrl, twitchClientId);
 
     return <section className="text-gray-600 body-font w-full">

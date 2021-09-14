@@ -1,7 +1,7 @@
 import Head from "next/head";
 import React from "react";
-import 'tailwindcss/tailwind.css';
 import { Sidebar } from "../components/Sidebar/Sidebar";
+import 'tailwindcss/tailwind.css';
 
 export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
     return <>
