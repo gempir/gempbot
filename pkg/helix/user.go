@@ -52,7 +52,6 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 				return map[string]UserData{}, err
 			}
 
-			c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(resp.StatusCode), "GetUsersByUserIds").Inc()
 			log.Debugf("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
 
 			for _, user := range resp.Data.Users {
@@ -106,7 +105,6 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 			return map[string]UserData{}, err
 		}
 
-		c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(resp.StatusCode), "GetUsersByUsernames").Inc()
 		log.Infof("[helix] %d GetUsersByUsernames %v", resp.StatusCode, filteredUsernames)
 		if resp.StatusCode > http.StatusMultipleChoices {
 			return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)

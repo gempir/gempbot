@@ -64,8 +64,6 @@ func (c *Client) GetRewards(userID, userAccessToken string) (*GetRewardsResponse
 		return nil, err
 	}
 
-	c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(resp.StatusCode), "GetRewards").Inc()
-
 	var getRewardsResponse GetRewardsResponse
 	err = json.NewDecoder(resp.Body).Decode(&getRewardsResponse)
 	if err != nil {
@@ -175,7 +173,6 @@ func (c *Client) CreateOrUpdateReward(userID, userAccessToken string, reward Cre
 		return CreateCustomRewardResponseDataItem{}, err
 	}
 
-	c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(resp.StatusCode), "CreateOrUpdateReward").Inc()
 	log.Infof("[%d][%s] %s", resp.StatusCode, method, reqUrl.String())
 
 	if resp.StatusCode >= 400 {
@@ -269,7 +266,6 @@ func (c *Client) UpdateRedemptionStatus(broadcasterID, userAccessToken string, r
 		return err
 	}
 
-	c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(resp.StatusCode), "UpdateRedemptionStatus").Inc()
 	log.Infof("[%d][%s] %s %s", resp.StatusCode, method, reqUrl, marshalled)
 
 	if resp.StatusCode >= 400 {
@@ -323,7 +319,6 @@ func (c *Client) DeleteReward(userID string, userAccessToken string, rewardID st
 		return err
 	}
 
-	c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(resp.StatusCode), "DeleteReward").Inc()
 	log.Infof("[%d][%s] %s", resp.StatusCode, method, reqUrl.String())
 
 	if resp.StatusCode >= 400 {

@@ -1,8 +1,6 @@
 package helix
 
 import (
-	"fmt"
-
 	"github.com/gempir/bot/pkg/log"
 	"github.com/nicklaw5/helix"
 )
@@ -17,8 +15,6 @@ func (c *Client) GetTopChannels() []string {
 	for _, stream := range response.Data.Streams {
 		ids = append(ids, stream.UserID)
 	}
-
-	c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(response.StatusCode), "GetTopChannels").Inc()
 
 	return ids
 }

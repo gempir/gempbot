@@ -1,8 +1,6 @@
 package helix
 
 import (
-	"fmt"
-
 	nickHelix "github.com/nicklaw5/helix"
 )
 
@@ -17,8 +15,6 @@ func (c *Client) CreateEventSubSubscription(userID string, webHookUrl string, su
 			Version:   "1",
 		},
 	)
-
-	c.helixApiResponseStatus.WithLabelValues(fmt.Sprint(response.StatusCode), "CreateEventSubSubscription").Inc()
 
 	return response, err
 }

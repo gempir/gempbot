@@ -7,18 +7,15 @@ import (
 	"github.com/gempir/bot/pkg/config"
 	"github.com/gempir/bot/pkg/log"
 	helixClient "github.com/nicklaw5/helix"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 // Client wrapper for helix
 type Client struct {
-	clientID               string
-	clientSecret           string
-	eventSubSecret         string
-	Client                 *helixClient.Client
-	httpClient             *http.Client
-	helixApiResponseStatus *prometheus.CounterVec
+	clientID       string
+	clientSecret   string
+	eventSubSecret string
+	Client         *helixClient.Client
+	httpClient     *http.Client
 }
 
 var (
@@ -55,15 +52,6 @@ func NewClient(cfg *config.Config) *Client {
 		eventSubSecret: cfg.Secret,
 		Client:         client,
 		httpClient:     &http.Client{},
-		helixApiResponseStatus: promauto.NewCounterVec(
-			prometheus.CounterOpts{
-				Name: "helix_responses",
-				Help: "The status codes of all twitch api responses",
-			}, []string{
-				"code",
-				"function",
-			},
-		),
 	}
 }
 
