@@ -10,16 +10,16 @@ export interface Store {
 }
 
 export const useStore = create<Store>(set => ({
-    twitchClientId: process.env.REACT_APP_TWITCH_CLIENT_ID ?? "",
-    apiBaseUrl: makeUrl(process.env.REACT_APP_BASE_URL ?? process.env.REACT_APP_VERCEL_URL ?? ""),
-    baseUrl: makeUrl(process.env.REACT_APP_BASE_URL ?? process.env.REACT_APP_VERCEL_URL ?? ""),
+    twitchClientId: process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ?? "",
+    apiBaseUrl: makeUrl(process.env.NEXT_PUBLIC_BASE_URL ?? process.env.NEXT_PUBLIC_VERCEL_URL ?? ""),
+    baseUrl: makeUrl(process.env.NEXT_PUBLIC_BASE_URL ?? process.env.NEXT_PUBLIC_VERCEL_URL ?? ""),
     scToken: undefined,
     setScToken: (token: string) => set(state => ({ scToken: token })),
     managing: undefined,
 }));
 
 function isDev() {
-    return process.env.REACT_APP_VERCEL_ENV === "development";
+    return process.env.NEXT_PUBLIC_VERCEL_ENV === "development";
 }
 
 function makeUrl(domain: string): string {

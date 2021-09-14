@@ -1,4 +1,4 @@
-import { store } from "../store";
+import { useStore } from "../store";
 import { deleteCookie } from "./cookie";
 
 export enum Method {
@@ -13,7 +13,7 @@ export enum RejectReason {
 }
 
 export async function doFetch(method: Method, path: string, params: URLSearchParams = new URLSearchParams(), body: any = undefined) {
-    const { apiBaseUrl, scToken, managing } = store.getRawState();
+    const { apiBaseUrl, scToken, managing } = useStore.getState();
 
     const headers: Record<string, string> = { 'content-type': 'application/json' }
     if (scToken) {

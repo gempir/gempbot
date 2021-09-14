@@ -11,32 +11,31 @@ import { Settings } from "../../icons/Settings";
 
 export function Sidebar() {
     const [userConfig, setUserConfig] = useUserConfig();
-    const scToken = useStore(state => state.scToken);
-
+    const loggedIn = useStore(state => Boolean(state.scToken));
 
     return <div className="p-4 bg-gray-800 px-6 shadow flex flex-col relative h-screen">
         <Login />
-        {scToken && <>
+        {loggedIn && <>
             <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} />
             <Managing userConfig={userConfig} />
             <div className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
                 <Link href="/">
-                    <House /> Home
+                    <><House /> Home</>
                 </Link>
             </div>
             <div className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
                 <Link href="/rewards" >
-                    <Gift /> Rewards
+                    <><Gift /> Rewards</>
                 </Link>
             </div>
             <div className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
                 <Link href="/permissions" >
-                    <Settings /> Permissions
+                    <><Settings /> Permissions</>
                 </Link>
             </div>
             <div className="absolute bottom-3 text-center left-0 right-0 mx-auto hover:text-blue-500">
                 <Link href="/privacy">
-                    Privacy
+                    <>Privacy</>
                 </Link>
             </div>
         </>}
