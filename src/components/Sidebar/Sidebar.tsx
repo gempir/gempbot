@@ -1,15 +1,12 @@
 import { useUserConfig } from "../../hooks/useUserConfig";
-import { Gift } from "../../icons/Gift";
-import { House } from "../../icons/House";
-import { Settings } from "../../icons/Settings";
-import { store } from "../../store";
+import { useStore } from "../../store";
 import { BotManager } from "./BotManager";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
 
 export function Sidebar() {
     const [userConfig, setUserConfig] = useUserConfig();
-    const scToken = store.useState(store => store.scToken);
+    const scToken = useStore(state => state.scToken);
 
 
     return <div className="p-4 bg-gray-800 px-6 shadow flex flex-col relative h-screen">

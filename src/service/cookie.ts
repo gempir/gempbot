@@ -1,8 +1,6 @@
 export function getCookie(name: string): string | null {
-    return null;
-
-    // const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-    // return v ? v[2] : null;
+    const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    return v ? v[2] : null;
 }
 
 export function setCookie(name: string, value: string, days: number) {
@@ -13,4 +11,18 @@ export function setCookie(name: string, value: string, days: number) {
 
 export function deleteCookie(name: string) {
     setCookie(name, '', -1);
+}
+
+export function parseCookie(str: string): Record<string, string> {
+    if (str.trim() === '') {
+        return {};
+    }
+
+    return str
+        .split(';')
+        .map(v => v.split('='))
+        .reduce((acc: any, v) => {
+            acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+            return acc;
+        }, {});
 }

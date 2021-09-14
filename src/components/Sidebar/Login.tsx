@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { User } from "../../icons/User";
-import { store } from "../../store";
+import { useStore } from "../../store";
 
 export function Login() {
-    const apiBaseUrl = store.useState(state => state.apiBaseUrl);
-    const twitchClientId = store.useState(state => state.twitchClientId);
-    const isLoggedIn = store.useState(state => Boolean(state.scToken));
+    const apiBaseUrl = useStore(state => state.apiBaseUrl);
+    const twitchClientId = useStore(state => state.twitchClientId);
+    const isLoggedIn = useStore(state => Boolean(state.scToken));
     const url = createLoginUrl(apiBaseUrl, twitchClientId);
 
     const [hovering, setHovering] = useState(false);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDebounce } from "react-use";
 import { doFetch, Method } from "../service/doFetch";
-import { store } from "../store";
+import { useStore } from "../store";
 
 export interface UserConfig {
     BotJoin: boolean,
@@ -48,10 +48,10 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
     const [errorMessage, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
     const [changeCounter, setChangeCounter] = useState(0);
-    const managing = store.useState(s => s.managing);
+    const managing = useStore(state => state.managing);
 
     const fetchConfig = () => {
-        if (!store.getRawState().scToken) {
+        if (!useStore.getState().scToken) {
             return;
         }
 

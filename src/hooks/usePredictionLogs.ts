@@ -1,8 +1,7 @@
-import { useRef } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PredictionLog } from "../model/PredictionLog";
 import { doFetch, Method } from "../service/doFetch";
-import { store } from "../store";
+import { useStore } from "../store";
 
 export interface Outcome {
     ID: string;
@@ -34,7 +33,7 @@ export function usePredictionLogs(channel?: string): [Array<PredictionLog>, () =
 
     const [logs, setLogs] = useState<Array<PredictionLog>>([]);
     const [loading, setLoading] = useState(false);
-    const managing = store.useState(s => s.managing);
+    const managing = useStore(state => state.managing);
 
     const fetchPredictions = () => {
         setLoading(true);

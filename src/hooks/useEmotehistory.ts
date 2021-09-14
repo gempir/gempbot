@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
-import { store } from "../store";
+import { useStore } from "../store";
 
 export enum ChangeType {
     ADD = "add",
@@ -45,7 +45,7 @@ export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () 
 
     const [emotehistory, setEmotehistory] = useState<Array<EmotehistoryItem>>([]);
     const [loading, setLoading] = useState(false);
-    const managing = store.useState(s => s.managing);
+    const managing = useStore(state => state.managing);
 
     const fetchPredictions = () => {
         setLoading(true);

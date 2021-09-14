@@ -1,16 +1,16 @@
 import React from "react";
 import { UserConfig } from "../../hooks/useUserConfig";
 import { UserGroup } from "../../icons/UserGroup";
-import { store } from "../../store";
+import { useStore } from "../../store";
 
 export function Managing({ userConfig }: { userConfig: UserConfig | null | undefined }) {
     if (userConfig?.Protected.EditorFor.length === 0) {
         return null;
     }
-    const managing = store.useState(s => s.managing);
+    const managing = useStore(state => state.managing);
     const updateManaging = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        store.update(s => { s.managing = e.target.value });
-        window.localStorage.setItem("managing", e.target.value);
+        // store.update(s => { s.managing = e.target.value });
+        // window.localStorage.setItem("managing", e.target.value);
     };
 
     return <div className="Managing flex items-center my-4">

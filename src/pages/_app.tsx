@@ -2,9 +2,8 @@ import Head from "next/head";
 import React from "react";
 import 'tailwindcss/tailwind.css';
 import { Sidebar } from "../components/Sidebar/Sidebar";
-import { wrapper } from "../redux/store";
 
-function App({ Component, pageProps }: { Component: any; pageProps: any }) {
+export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
     return <>
         <Head>
             <title>gempbot</title>
@@ -27,5 +26,3 @@ function App({ Component, pageProps }: { Component: any; pageProps: any }) {
         </main>
     </>
 }
-
-export default wrapper.withRedux(App);

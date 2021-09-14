@@ -1,6 +1,7 @@
 import { NextPageContext } from "next";
 import React from "react";
-// import { parseCookie } from "../service/parseCookie";
+import { parseCookie } from "../service/cookie";
+import { useStore } from "../store";
 
 export default function Home() {
     return <div className="p-4 w-full max-h-screen flex gap-4">
@@ -10,8 +11,8 @@ export default function Home() {
 }
 
 export async function getServerSideProps(ctx: NextPageContext) {
-    // const cookies = parseCookie(ctx.req?.headers.cookie ?? "");
-    const cookies = { scToken: "" };
+    const cookies = parseCookie(ctx.req?.headers.cookie ?? "");
+    useStore.setState({ scToken: cookies.scToken });
 
     return {
         props: {
