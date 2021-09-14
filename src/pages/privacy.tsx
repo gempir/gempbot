@@ -1,8 +1,6 @@
-import { useTitle } from "react-use";
+import { initializeStore } from "../service/initializeStore";
 
-export function Privacy() {
-    useTitle("bitraft - Privacy");
-
+export default function Privacy() {
     return (
         <div className="container m-auto">
             <h1 className="text-5xl my-5">Privacy Policy</h1>
@@ -181,3 +179,5 @@ export function Privacy() {
         </div>
     );
 }
+
+Privacy.getInitialProps = initializeStore;

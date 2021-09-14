@@ -6,7 +6,7 @@ import { EmotehistoryPage } from "./components/Emotehistory/EmotehistoryPage";
 import { Home } from "./components/Home/Home";
 import { Permissions } from "./components/Permissions/Permissions";
 import { PredictionhistoryPage } from "./components/Predictionhistory/PredictionhistoryPage";
-import { Privacy } from "./components/Privacy/Privacy";
+import { Privacy } from "./pages/privacy";
 import { Rewards } from "./components/Rewards/Rewards";
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { Teaser } from "./components/Teaser";

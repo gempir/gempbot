@@ -18,24 +18,18 @@ export function Sidebar() {
         {loggedIn && <>
             <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} />
             <Managing userConfig={userConfig} />
-            <div className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                <Link href="/">
-                    <><House /> Home</>
-                </Link>
-            </div>
-            <div className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                <Link href="/rewards" >
-                    <><Gift /> Rewards</>
-                </Link>
-            </div>
-            <div className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                <Link href="/permissions" >
-                    <><Settings /> Permissions</>
-                </Link>
-            </div>
+            <Link href="/">
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 "><House /> Home</a>
+            </Link>
+            <Link href="/rewards" >
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><Gift /> Rewards</a>
+            </Link>
+            <Link href="/permissions" >
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><Settings /> Permissions</a>
+            </Link>
             <div className="absolute bottom-3 text-center left-0 right-0 mx-auto hover:text-blue-500">
                 <Link href="/privacy">
-                    <>Privacy</>
+                    <a>Privacy</a>
                 </Link>
             </div>
         </>}

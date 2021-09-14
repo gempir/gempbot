@@ -1,9 +1,14 @@
 import Head from "next/head";
-import React from "react";
+import React, { useEffect } from "react";
 import { Sidebar } from "../components/Sidebar/Sidebar";
 import 'tailwindcss/tailwind.css';
+import { useStore } from "../store";
 
 export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
+    useEffect(() => {
+        useStore.setState(pageProps.store);
+    }, []);
+
     return <>
         <Head>
             <title>gempbot</title>
