@@ -41,8 +41,8 @@ export async function doFetch(method: Method, path: string, params: URLSearchPar
     return window.fetch(url.toString(), config)
         .then(async response => {
             if (response.status === 401) {
-                deleteCookie("scToken");
-                window.location.assign("/")
+                // deleteCookie("scToken");
+                // window.location.assign("/")
                 return
             }
             if (response.status === 403) {
