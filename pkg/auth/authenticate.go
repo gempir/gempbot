@@ -38,6 +38,16 @@ type Auth struct {
 	cfg         *config.Config
 }
 
+func (a *Auth) AttemptAuth(r *http.Request, w http.ResponseWriter) (nickHelix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
+	resp, token, err := a.Authenticate(r)
+	if err != nil {
+		a.WriteDeleteCookieResponse(w, err)
+		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, err
+	}
+
+	return resp, token, nil
+}
+
 func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
 	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 
@@ -111,6 +121,19 @@ func (a *Auth) refreshToken(ctx context.Context, token store.UserAccessToken) er
 	}
 
 	return nil
+}
+
+func (a *Auth) WriteDeleteCookieResponse(w http.ResponseWriter, err api.Error) {
+	cookie := &http.Cookie{
+		Name:     "scToken",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, cookie)
+	http.Error(w, err.Error(), err.Status())
 }
 
 // func (a *Auth) getUserConfig(userID string) UserConfig {

@@ -23,9 +23,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	userID := ""
 
 	if username == "" {
-		auth, _, err := auth.Authenticate(r)
+		auth, _, err := auth.AttemptAuth(r, w)
 		if err != nil {
-			http.Error(w, err.Error(), err.Status())
 			return
 		}
 		userID = auth.Data.UserID

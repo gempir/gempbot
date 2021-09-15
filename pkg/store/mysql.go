@@ -22,6 +22,7 @@ func NewDatabase(cfg *config.Config) *Database {
 		Net:                  "tcp",
 		DBName:               cfg.DbName,
 		Loc:                  time.Local,
+		ParseTime:            true,
 		AllowNativePasswords: true,
 		TLSConfig:            "true",
 	}
