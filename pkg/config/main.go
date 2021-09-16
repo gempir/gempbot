@@ -88,7 +88,7 @@ func FromEnv() *Config {
 		protocol = "http://"
 	}
 
-	domain := os.Getenv("REACT_APP_BASE_URL")
+	domain := os.Getenv("NEXT_PUBLIC_BASE_URL")
 	if domain == "" {
 		domain = os.Getenv("VERCEL_URL")
 	}
