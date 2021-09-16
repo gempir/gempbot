@@ -40,6 +40,9 @@ export async function doFetch(method: Method, path: string, params: URLSearchPar
 
     return window.fetch(url.toString(), config)
         .then(async response => {
+            if (response.status === 401) {
+                useStore.setState({ scToken: undefined });
+            }
             if (response.ok) {
                 const text = await response.text();
                 return text !== "" ? JSON.parse(text) : null
