@@ -1,10 +1,7 @@
-import { useTitle } from "react-use";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { UserPermissions } from "./UserPermissions";
 
 export function Permissions() {
-    useTitle("bitraft - Permissions");
-
     const [userCfg, setUserConfig, , loading, errorMessage] = useUserConfig();
     if (!userCfg) {
         return null;

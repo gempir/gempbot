@@ -197,11 +197,11 @@ func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login stri
 		}
 	}
 
-	dbErr := u.db.SaveBotConfig(ctx, store.BotConfig{OwnerTwitchID: ownerUserID, JoinBot: newUserIDConfig.BotJoin})
-	if dbErr != nil {
-		log.Error(dbErr)
-		return api.NewApiError(http.StatusInternalServerError, fmt.Errorf("failed to save bot config"))
-	}
+	// dbErr := u.db.SaveBotConfig(ctx, store.BotConfig{OwnerTwitchID: ownerUserID, JoinBot: newUserIDConfig.BotJoin})
+	// if dbErr != nil {
+	// 	log.Error(dbErr)
+	// 	return api.NewApiError(http.StatusInternalServerError, fmt.Errorf("failed to save bot config"))
+	// }
 	// if newConfig.BotJoin {
 	// 	u.store.PublishIngesterMessage(store.IngesterMsgJoin, ownerLogin)
 	// } else {
