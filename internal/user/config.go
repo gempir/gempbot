@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -82,7 +83,7 @@ func (u *UserAdmin) GetUserConfig(userID string) UserConfig {
 	return uCfg
 }
 
-func (u *UserAdmin) convertUserConfig(uCfg UserConfig, toNames bool) (UserConfig, error) {
+func (u *UserAdmin) ConvertUserConfig(uCfg UserConfig, toNames bool) (UserConfig, api.Error) {
 	all := map[string]string{}
 
 	for _, user := range uCfg.Protected.EditorFor {
@@ -104,7 +105,7 @@ func (u *UserAdmin) convertUserConfig(uCfg UserConfig, toNames bool) (UserConfig
 	}
 	if err != nil || len(userData) != len(all) {
 		log.Errorf("Failed to get users %s", err)
-		return UserConfig{}, errors.New("Invalid username(s)")
+		return UserConfig{}, api.NewApiError(http.StatusBadRequest, errors.New("failed to get users"))
 	}
 
 	editorFor := []string{}
@@ -141,7 +142,7 @@ func (u *UserAdmin) convertUserConfig(uCfg UserConfig, toNames bool) (UserConfig
 	}
 	uCfg.Permissions = perms
 
-	return uCfg, err
+	return uCfg, nil
 }
 
 func (u *UserAdmin) CheckEditor(r *http.Request, userConfig UserConfig) (string, api.Error) {
@@ -159,16 +160,80 @@ func (u *UserAdmin) CheckEditor(r *http.Request, userConfig UserConfig) (string,
 	return userData[managing].ID, nil
 }
 
-func (u *UserAdmin) checkIsEditor(editorUserID string, ownerUserID string) api.Error {
-	if editorUserID == ownerUserID {
-		return nil
+// func (u *UserAdmin) checkIsEditor(editorUserID string, ownerUserID string) api.Error {
+// 	if editorUserID == ownerUserID {
+// 		return nil
+// 	}
+
+// 	userConfig := u.GetUserConfig(ownerUserID)
+
+// 	if userConfig.isEditor(editorUserID) {
+// 		return nil
+// 	}
+
+// 	return api.NewApiError(http.StatusForbidden, fmt.Errorf("user is not editor"))
+// }
+
+func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login string, newConfig UserConfig, managing string) api.Error {
+	isManaging := managing != ""
+	ownerUserID := userID
+	// ownerLogin := login
+	newUserIDConfig, err := u.ConvertUserConfig(newConfig, false)
+	if err != nil {
+		return err
 	}
 
-	userConfig := u.GetUserConfig(ownerUserID)
+	if isManaging {
+		uData, err := u.helixClient.GetUserByUsername(managing)
+		if err != nil {
+			return api.NewApiError(http.StatusBadRequest, fmt.Errorf("could not find managing"))
+		}
+		ownerUserID = uData.ID
+		// ownerLogin = uData.Login
+		oldConfig := u.GetUserConfig(uData.ID)
 
-	if userConfig.isEditor(editorUserID) {
-		return nil
+		if !oldConfig.isEditor(userID) {
+			return api.NewApiError(http.StatusForbidden, fmt.Errorf("user is not editor"))
+		}
 	}
 
-	return api.NewApiError(http.StatusForbidden, fmt.Errorf("user is not editor"))
+	dbErr := u.db.SaveBotConfig(ctx, store.BotConfig{OwnerTwitchID: ownerUserID, JoinBot: newUserIDConfig.BotJoin})
+	if dbErr != nil {
+		log.Error(dbErr)
+		return api.NewApiError(http.StatusInternalServerError, fmt.Errorf("failed to save bot config"))
+	}
+	// if newConfig.BotJoin {
+	// 	u.store.PublishIngesterMessage(store.IngesterMsgJoin, ownerLogin)
+	// } else {
+	// 	u.store.PublishIngesterMessage(store.IngesterMsgPart, ownerLogin)
+	// }
+
+	previousPerms := u.db.GetChannelPermissions(ownerUserID)
+	previousPermIds := []string{}
+	for _, perm := range previousPerms {
+		previousPermIds = append(previousPermIds, perm.TwitchID)
+	}
+	newPermIds := []string{}
+	for user := range newUserIDConfig.Permissions {
+		newPermIds = append(newPermIds, user)
+	}
+	_, deleted := slice.Diff(previousPermIds, newPermIds)
+
+	for _, deletedUserID := range deleted {
+		u.db.DeletePermission(ownerUserID, deletedUserID)
+	}
+
+	for permissionUserID, perm := range newUserIDConfig.Permissions {
+		newPerms := map[string]interface{}{"ChannelTwitchId": ownerUserID, "TwitchID": permissionUserID, "Prediction": perm.Prediction}
+		if !isManaging {
+			newPerms["Editor"] = perm.Editor
+		}
+
+		err := u.db.SavePermission(newPerms)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return nil
 }

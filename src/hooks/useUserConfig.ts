@@ -55,7 +55,7 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
             return;
         }
 
-        let endPoint = "/api/userConfig";
+        let endPoint = "/api/userconfig";
         doFetch(Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig))
     };
 
@@ -64,12 +64,12 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
 
     useDebounce(() => {
         if (changeCounter && userConfig) {
-            let endPoint = "/api/userConfig";
+            let endPoint = "/api/userconfig";
             setLoading(true);
             doFetch(Method.POST, endPoint, undefined, userConfig).then(fetchConfig).then(() => setError(undefined)).catch(error => setError(JSON.parse(error).message)).finally(() =>setLoading(false));
         } else if (changeCounter && userConfig === null) {
             setLoading(true);
-            doFetch(Method.DELETE, "/api/userConfig").finally(() =>setLoading(false));
+            doFetch(Method.DELETE, "/api/userconfig").finally(() =>setLoading(false));
         }
     }, 100, [changeCounter]);
 

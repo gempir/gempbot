@@ -1,11 +1,8 @@
-import { useTitle } from "react-use";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { BttvForm } from "./RewardForms/BttvForm";
 import { SevenTvForm } from "./RewardForms/SevenTvForm";
 
 export function Rewards() {
-    useTitle("bitraft - Rewards");
-
     const [userCfg] = useUserConfig();
     if (!userCfg) {
         return null;
