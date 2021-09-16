@@ -9,8 +9,9 @@ export function Managing({ userConfig }: { userConfig: UserConfig | null | undef
     }
     const managing = useStore(state => state.managing);
     const updateManaging = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        // store.update(s => { s.managing = e.target.value });
-        // window.localStorage.setItem("managing", e.target.value);
+        const setManaging = useStore(state => state.setManaging);
+        setManaging(e.target.value);
+        window.localStorage.setItem("managing", e.target.value);
     };
 
     return <div className="Managing flex items-center my-4">
