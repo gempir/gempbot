@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 
-	"github.com/gempir/gempbot/cmd/speaker/bot"
+	"github.com/gempir/gempbot/cmd/bot/speaker/bot"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/store"
 	log "github.com/sirupsen/logrus"

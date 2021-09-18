@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gempir/gempbot/cmd/commander/predictions"
+	"github.com/gempir/gempbot/cmd/bot/commander/predictions"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/tmi"

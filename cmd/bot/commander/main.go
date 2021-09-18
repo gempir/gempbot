@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"github.com/gempir/gempbot/cmd/commander/predictions"
-	"github.com/gempir/gempbot/cmd/commander/reader"
+	"github.com/gempir/gempbot/cmd/bot/commander/predictions"
+	"github.com/gempir/gempbot/cmd/bot/commander/reader"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/store"
@@ -18,7 +18,7 @@ func main() {
 	rStore := store.NewRedis()
 	db := store.NewDatabase(cfg)
 
-	helixClient := helix.NewClient(cfg.ClientID, cfg.ClientSecret, cfg.ApiBaseUrl+"/api/callback", cfg.Secret)
+	helixClient := helix.NewClient(cfg)
 	go helixClient.StartRefreshTokenRoutine()
 
 	redis := store.NewRedis()
