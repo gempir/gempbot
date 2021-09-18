@@ -1,4 +1,4 @@
-module github.com/gempir/bot
+module github.com/gempir/gempbot
 
 go 1.16
 

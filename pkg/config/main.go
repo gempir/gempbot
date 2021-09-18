@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gempir/bot/pkg/log"
-	twitch "github.com/gempir/go-twitch-irc/v2"
+	"github.com/gempir/gempbot/pkg/log"
+	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/sirupsen/logrus"
 )
 
@@ -84,28 +84,34 @@ func (cfg *Config) persistConfig() {
 
 func FromEnv() *Config {
 	protocol := "https://"
-	if os.Getenv("VERCEL_ENV") == "development" {
+	if Getenv("VERCEL_ENV") == "development" {
 		protocol = "http://"
 	}
 
-	domain := os.Getenv("NEXT_PUBLIC_BASE_URL")
+	domain := Getenv("NEXT_PUBLIC_BASE_URL")
 	if domain == "" {
-		domain = os.Getenv("VERCEL_URL")
+		domain = Getenv("VERCEL_URL")
 	}
 
 	return &Config{
-		ClientID:          os.Getenv("TWITCH_CLIENT_ID"),
-		ClientSecret:      os.Getenv("TWITCH_CLIENT_SECRET"),
-		Secret:            os.Getenv("SECRET"),
+		ClientID:          Getenv("TWITCH_CLIENT_ID"),
+		ClientSecret:      Getenv("TWITCH_CLIENT_SECRET"),
+		Secret:            Getenv("SECRET"),
 		ApiBaseUrl:        protocol + domain,
 		WebBaseUrl:        protocol + domain,
 		WebhookApiBaseUrl: protocol + domain,
 		CookieDomain:      domain,
-		DbHost:            os.Getenv("PLANETSCALE_DB_HOST"),
-		DbUsername:        os.Getenv("PLANETSCALE_DB_USERNAME"),
-		DbPassword:        os.Getenv("PLANETSCALE_DB_PASSWORD"),
-		DbName:            os.Getenv("PLANETSCALE_DB"),
+		DbHost:            Getenv("PLANETSCALE_DB_HOST"),
+		DbUsername:        Getenv("PLANETSCALE_DB_USERNAME"),
+		DbPassword:        Getenv("PLANETSCALE_DB_PASSWORD"),
+		DbName:            Getenv("PLANETSCALE_DB"),
 	}
+}
+
+func Getenv(key string) string {
+	variable := os.Getenv(key)
+
+	return strings.TrimSuffix(strings.TrimPrefix(variable, "\""), "\"")
 }
 
 func loadConfiguration(filePath string) *Config {

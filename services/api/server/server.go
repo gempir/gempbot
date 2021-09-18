@@ -7,16 +7,16 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gempir/bitraft/services/api/emotechief"
+	"github.com/gempir/gempbot/services/api/emotechief"
 	echoPrometheus "github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/gempir/bitraft/pkg/config"
-	"github.com/gempir/bitraft/pkg/helix"
-	"github.com/gempir/bitraft/pkg/log"
-	"github.com/gempir/bitraft/pkg/slice"
-	"github.com/gempir/bitraft/pkg/store"
+	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/log"
+	"github.com/gempir/gempbot/pkg/slice"
+	"github.com/gempir/gempbot/pkg/store"
 	nickHelix "github.com/nicklaw5/helix"
 )
 

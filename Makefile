@@ -1,7 +1,17 @@
 #!make
 include .env
 
-.PHONY: migrate
+export PLANETSCALE_DB
+export PLANETSCALE_DB_USERNAME
+export PLANETSCALE_DB_PASSWORD
+export PLANETSCALE_DB_HOST
+export TWITCH_CLIENT_ID
+export TWITCH_CLIENT_SECRET
 
 migrate:
-	export PLANETSCALE_DB=${PLANETSCALE_DB}; export PLANETSCALE_DB_USERNAME=${PLANETSCALE_DB_USERNAME}; export PLANETSCALE_DB_PASSWORD=${PLANETSCALE_DB_PASSWORD}; export PLANETSCALE_DB_HOST=${PLANETSCALE_DB_HOST};  go run cmd/migrate/main.go
+	go run cmd/migrate/main.go
+
+bot:
+	go run cmd/bot/main.go
+
+.PHONY: migrate bot

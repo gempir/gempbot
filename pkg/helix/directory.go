@@ -1,7 +1,7 @@
 package helix
 
 import (
-	"github.com/gempir/bot/pkg/log"
+	"github.com/gempir/gempbot/pkg/log"
 	"github.com/nicklaw5/helix"
 )
 

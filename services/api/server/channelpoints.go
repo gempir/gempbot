@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/gempir/bitraft/pkg/dto"
-	"github.com/gempir/bitraft/pkg/log"
-	"github.com/gempir/bitraft/pkg/store"
+	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/log"
+	"github.com/gempir/gempbot/pkg/store"
 	"github.com/labstack/echo/v4"
 	nickHelix "github.com/nicklaw5/helix"
 )

@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 
-	"github.com/gempir/bitraft/pkg/config"
-	"github.com/gempir/bitraft/pkg/helix"
-	"github.com/gempir/bitraft/pkg/store"
-	"github.com/gempir/bitraft/services/api/emotechief"
-	"github.com/gempir/bitraft/services/api/server"
+	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/store"
+	"github.com/gempir/gempbot/services/api/emotechief"
+	"github.com/gempir/gempbot/services/api/server"
 )
 
 func main() {

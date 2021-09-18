@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gempir/bot/pkg/config"
-	"github.com/gempir/bot/pkg/log"
+	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/log"
 	helixClient "github.com/nicklaw5/helix"
 )
 

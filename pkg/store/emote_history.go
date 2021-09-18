@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 
-	"github.com/gempir/bot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/dto"
 	"gorm.io/gorm"
 )
 

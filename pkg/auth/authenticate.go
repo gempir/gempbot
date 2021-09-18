@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gempir/bot/pkg/api"
-	"github.com/gempir/bot/pkg/config"
-	"github.com/gempir/bot/pkg/helix"
-	"github.com/gempir/bot/pkg/log"
-	"github.com/gempir/bot/pkg/store"
+	"github.com/gempir/gempbot/pkg/api"
+	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/log"
+	"github.com/gempir/gempbot/pkg/store"
 	"github.com/golang-jwt/jwt"
 	nickHelix "github.com/nicklaw5/helix"
 )

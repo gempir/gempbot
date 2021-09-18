@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gempir/bitraft/pkg/dto"
-	"github.com/gempir/bitraft/pkg/helix"
-	"github.com/gempir/bitraft/pkg/log"
-	"github.com/gempir/bitraft/pkg/store"
+	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/log"
+	"github.com/gempir/gempbot/pkg/store"
 	"github.com/labstack/echo/v4"
 )
 

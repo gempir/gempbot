@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/gempir/bitraft/pkg/helix"
-	"github.com/gempir/bitraft/pkg/log"
-	"github.com/gempir/bitraft/pkg/slice"
-	"github.com/gempir/bitraft/pkg/store"
+	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/log"
+	"github.com/gempir/gempbot/pkg/slice"
+	"github.com/gempir/gempbot/pkg/store"
 	"github.com/labstack/echo/v4"
 )
 

@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gempir/bot/pkg/auth"
-	"github.com/gempir/bot/pkg/config"
-	"github.com/gempir/bot/pkg/helix"
-	"github.com/gempir/bot/pkg/log"
-	"github.com/gempir/bot/pkg/store"
+	"github.com/gempir/gempbot/pkg/auth"
+	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/log"
+	"github.com/gempir/gempbot/pkg/store"
 	"github.com/golang-jwt/jwt"
 )
 

@@ -23,7 +23,7 @@ const defaultReward = {
     Type: RewardTypes.SevenTv,
     Title: "7tv Emote",
     Cost: 10000,
-    Prompt: "Add a 7tv emote! In the text field, send a link to the 7tv emote. powered by bitraft.gempir.com",
+    Prompt: "Add a 7tv emote! In the text field, send a link to the 7tv emote. powered by bot.gempir.com",
     BackgroundColor: "",
     IsMaxPerStreamEnabled: false,
     MaxPerStream: 0,

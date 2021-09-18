@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gempir/bot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/dto"
 )
 
 const (

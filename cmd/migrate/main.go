@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/gempir/bot/pkg/config"
-	"github.com/gempir/bot/pkg/store"
+	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/store"
 )
 
 func main() {

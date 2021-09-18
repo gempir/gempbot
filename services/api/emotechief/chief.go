@@ -3,8 +3,8 @@ package emotechief
 import (
 	"net/http"
 
-	"github.com/gempir/bitraft/pkg/config"
-	"github.com/gempir/bitraft/pkg/store"
+	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/store"
 )
 
 type EmoteChief struct {
