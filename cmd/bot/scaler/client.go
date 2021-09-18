@@ -45,9 +45,9 @@ func (s *Scaler) Join(channelName string) {
 		time.Sleep(time.Second * 10)
 	}
 
-	log.Infof("Creating new client, previous total: %d", len(s.clients))
+	log.Infof("Creating new client, total: %d", len(s.clients)+1)
 
-	newClient := twitch.NewAnonymousClient()
+	newClient := twitch.NewClient(s.cfg.Username, s.cfg.OAuth)
 	newClient.OnPrivateMessage(s.onPrivateMessage)
 	go func() {
 		err := newClient.Connect()

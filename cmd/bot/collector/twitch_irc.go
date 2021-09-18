@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gempir/gempbot/cmd/bot/commander"
 	"github.com/gempir/gempbot/cmd/bot/scaler"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helix"
@@ -15,14 +16,17 @@ import (
 
 // Bot basic logging bot
 type Bot struct {
-	startTime   time.Time
-	cfg         *config.Config
-	scaler      *scaler.Scaler
-	db          *store.Database
-	helixClient *helix.Client
-	channels    stringUserDataSyncMap
-	joined      stringBoolSyncMap
-	active      stringBoolSyncMap
+	startTime      time.Time
+	cfg            *config.Config
+	scaler         *scaler.Scaler
+	db             *store.Database
+	helixClient    *helix.Client
+	readerListener *commander.Listener
+	channels       stringUserDataSyncMap
+	write          chan store.SpeakerMessage
+	joined         stringBoolSyncMap
+	active         stringBoolSyncMap
+	Done           chan bool
 }
 
 type stringUserDataSyncMap struct {
@@ -35,16 +39,19 @@ type stringBoolSyncMap struct {
 	mutex *sync.Mutex
 }
 
-func NewBot(cfg *config.Config, db *store.Database, helixClient *helix.Client) *Bot {
+func NewBot(cfg *config.Config, db *store.Database, helixClient *helix.Client, readerListener *commander.Listener) *Bot {
 	channelsMap := stringUserDataSyncMap{m: map[string]helix.UserData{}, mutex: &sync.Mutex{}}
 
 	return &Bot{
-		cfg:         cfg,
-		db:          db,
-		helixClient: helixClient,
-		channels:    channelsMap,
-		joined:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
-		active:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
+		Done:           make(chan bool),
+		cfg:            cfg,
+		db:             db,
+		readerListener: readerListener,
+		helixClient:    helixClient,
+		channels:       channelsMap,
+		write:          make(chan store.SpeakerMessage),
+		joined:         stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
+		active:         stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
 	}
 }
 
@@ -61,7 +68,7 @@ func (b *Bot) Connect() {
 }
 
 func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
-	// b.store.PublishPrivateMessage(message.Raw)
+	b.readerListener.HandlePrivateMessage(message)
 }
 
 func (b *Bot) joinBotConfigChannels() {

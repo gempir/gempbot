@@ -1,10 +1,9 @@
-package reader
+package commander
 
 import (
 	"regexp"
 	"strings"
 
-	"github.com/gempir/gempbot/cmd/bot/commander/predictions"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/tmi"
@@ -13,8 +12,7 @@ import (
 
 type Listener struct {
 	db                 *store.Database
-	redis              *store.Redis
-	predictionsHandler *predictions.Handler
+	predictionsHandler *Handler
 	commands           map[string]func(dto.CommandPayload)
 }
 
@@ -22,10 +20,9 @@ var (
 	commandRegex = regexp.MustCompile(`^\!(\w+)\ ?`)
 )
 
-func NewListener(db *store.Database, redis *store.Redis, predictionsHandler *predictions.Handler) *Listener {
+func NewListener(db *store.Database, predictionsHandler *Handler) *Listener {
 	return &Listener{
 		db:                 db,
-		redis:              redis,
 		predictionsHandler: predictionsHandler,
 		commands:           map[string]func(dto.CommandPayload){},
 	}
@@ -36,17 +33,7 @@ func (l *Listener) RegisterDefaultCommands() {
 	l.commands[dto.CmdNameOutcome] = l.handlePrediction
 }
 
-func (l *Listener) StartListener() {
-	topic := l.redis.SubscribePrivateMessages()
-	channel := topic.Channel()
-	for msg := range channel {
-		parsedMsg := twitch.ParseMessage(msg.Payload).(*twitch.PrivateMessage)
-
-		l.handleMessage(*parsedMsg)
-	}
-}
-
-func (l *Listener) handleMessage(msg twitch.PrivateMessage) {
+func (l *Listener) HandlePrivateMessage(msg twitch.PrivateMessage) {
 	if !strings.HasPrefix(msg.Message, "!") {
 		return
 	}
