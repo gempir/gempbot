@@ -17,3 +17,6 @@ migrate:
 bot:
 	go run cmd/bot/main.go
 
+refresh:
+	go run cmd/refresh/main.go
+

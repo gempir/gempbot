@@ -82,24 +82,22 @@ func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
 }
 
 func (b *Bot) joinBotConfigChannels() {
-	go func() {
-		botConfigs := b.db.GetAllJoinBotConfigs()
-		userIDs := []string{}
-		for _, botConfig := range botConfigs {
-			userIDs = append(userIDs, botConfig.OwnerTwitchID)
-		}
+	botConfigs := b.db.GetAllJoinBotConfigs()
+	userIDs := []string{}
+	for _, botConfig := range botConfigs {
+		userIDs = append(userIDs, botConfig.OwnerTwitchID)
+	}
 
-		users, err := b.helixClient.GetUsersByUserIds(userIDs)
-		if err != nil {
-			log.Error(err)
-		}
+	users, err := b.helixClient.GetUsersByUserIds(userIDs)
+	if err != nil {
+		log.Error(err)
+	}
 
-		for _, user := range users {
-			if _, ok := b.joined.m[user.Login]; !ok {
-				b.Join(user.Login)
-			}
+	for _, user := range users {
+		if _, ok := b.joined.m[user.Login]; !ok {
+			b.Join(user.Login)
 		}
-	}()
+	}
 }
 
 func (b *Bot) Join(channel string) {

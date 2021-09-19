@@ -60,6 +60,8 @@ func NewClient(cfg *config.Config, db *store.Database) *Client {
 			log.Errorf("Failure saving app access token: %s", err.Error())
 		}
 		token = store.AppAccessToken{AccessToken: resp.Data.AccessToken, RefreshToken: resp.Data.RefreshToken, Scopes: strings.Join(resp.Data.Scopes, " "), ExpiresIn: resp.Data.ExpiresIn}
+	} else {
+		client.SetAppAccessToken(token.AccessToken)
 	}
 
 	return &Client{

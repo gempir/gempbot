@@ -51,6 +51,9 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 			if err != nil {
 				return map[string]UserData{}, err
 			}
+			if resp.StatusCode == http.StatusUnauthorized {
+				return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
+			}
 
 			log.Debugf("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
 
