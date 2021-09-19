@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
+	"github.com/gempir/gempbot/pkg/chat"
+	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/slice"
@@ -14,12 +16,14 @@ import (
 )
 
 type UserAdmin struct {
+	cfg         *config.Config
 	db          *store.Database
 	helixClient *helix.Client
+	chatClient  *chat.ChatClient
 }
 
-func NewUserAdmin(db *store.Database, helixClient *helix.Client) *UserAdmin {
-	return &UserAdmin{db, helixClient}
+func NewUserAdmin(cfg *config.Config, db *store.Database, helixClient *helix.Client, chatClient *chat.ChatClient) *UserAdmin {
+	return &UserAdmin{cfg, db, helixClient, chatClient}
 }
 
 type UserConfig struct {
@@ -177,7 +181,7 @@ func (u *UserAdmin) CheckEditor(r *http.Request, userConfig UserConfig) (string,
 func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login string, newConfig UserConfig, managing string) api.Error {
 	isManaging := managing != ""
 	ownerUserID := userID
-	// ownerLogin := login
+	ownerLogin := login
 	newUserIDConfig, err := u.ConvertUserConfig(newConfig, false)
 	if err != nil {
 		return err
@@ -189,7 +193,7 @@ func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login stri
 			return api.NewApiError(http.StatusBadRequest, fmt.Errorf("could not find managing"))
 		}
 		ownerUserID = uData.ID
-		// ownerLogin = uData.Login
+		ownerLogin = uData.Login
 		oldConfig := u.GetUserConfig(uData.ID)
 
 		if !oldConfig.isEditor(userID) {
@@ -207,6 +211,11 @@ func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login stri
 	// } else {
 	// 	u.store.PublishIngesterMessage(store.IngesterMsgPart, ownerLogin)
 	// }
+	if newConfig.BotJoin {
+		u.chatClient.Say(u.cfg.Username, fmt.Sprintf("JOIN %s", ownerLogin))
+	} else {
+		u.chatClient.Say(u.cfg.Username, fmt.Sprintf("PART %s", ownerLogin))
+	}
 
 	previousPerms := u.db.GetChannelPermissions(ownerUserID)
 	previousPermIds := []string{}

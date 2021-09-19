@@ -23,3 +23,5 @@ bot:
 refresh:
 	go run cmd/refresh/main.go
 
+docker: 
+	sudo docker build . -t rg.fr-par.scw.cloud/funcscwgempbotp9rlmser/bot

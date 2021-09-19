@@ -17,7 +17,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	db := store.NewDatabase(cfg)
 	helixClient := helix.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
-	userAdmin := user.NewUserAdmin(db, helixClient)
+	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
 
 	username := r.URL.Query().Get("username")
 	userID := ""

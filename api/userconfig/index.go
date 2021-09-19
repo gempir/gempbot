@@ -7,6 +7,7 @@ import (
 
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/auth"
+	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
@@ -16,10 +17,13 @@ import (
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
+	chatClient := chat.NewClient(cfg)
+	ircClientConnected := make(chan bool)
+	go chatClient.Connect(ircClientConnected)
 	db := store.NewDatabase(cfg)
 	helixClient := helix.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
-	userAdmin := user.NewUserAdmin(db, helixClient)
+	userAdmin := user.NewUserAdmin(cfg, db, helixClient, chatClient)
 
 	authResp, _, err := auth.AttemptAuth(r, w)
 	if err != nil {
@@ -49,6 +53,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		<-ircClientConnected
 		api.WriteJson(w, userConfig, http.StatusOK)
 		return
 
@@ -74,10 +79,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		<-ircClientConnected
 		api.WriteJson(w, nil, http.StatusOK)
 		return
 	}
 
 	http.Error(w, "unknown method", http.StatusMethodNotAllowed)
-	return
 }
