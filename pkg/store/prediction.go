@@ -20,8 +20,8 @@ type PredictionLog struct {
 	WinningOutcomeID string
 	Status           string
 	StartedAt        time.Time
-	LockedAt         time.Time
-	EndedAt          time.Time
+	LockedAt         *time.Time
+	EndedAt          *time.Time
 	Outcomes         []PredictionLogOutcome `gorm:"foreignKey:PredictionID;references:ID"`
 }
 

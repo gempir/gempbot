@@ -49,7 +49,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		api.WriteJson(w, userConfig)
+		api.WriteJson(w, userConfig, http.StatusOK)
 		return
 
 	} else if r.Method == http.MethodPost {
@@ -74,7 +74,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		api.WriteJson(w, nil)
+		api.WriteJson(w, nil, http.StatusOK)
 		return
 	}
 

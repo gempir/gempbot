@@ -10,6 +10,9 @@ export TWITCH_CLIENT_ID
 export TWITCH_CLIENT_SECRET
 export TWITCH_USERNAME
 export TWITCH_OAUTH
+export SECRET
+export NEXT_PUBLIC_BASE_URL
+export VERCEL_ENV
 
 migrate:
 	go run cmd/migrate/main.go

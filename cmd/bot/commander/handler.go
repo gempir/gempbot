@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gempir/gempbot/pkg/apiclient"
+	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/humanize"
@@ -16,15 +18,19 @@ import (
 )
 
 type Handler struct {
+	cfg         *config.Config
+	apiClient   *apiclient.ApiClient
 	db          *store.Database
 	helixClient *helix.Client
 	write       chan store.SpeakerMessage
 }
 
-func NewHandler(helixClient *helix.Client, db *store.Database, write chan store.SpeakerMessage) *Handler {
+func NewHandler(cfg *config.Config, helixClient *helix.Client, db *store.Database, write chan store.SpeakerMessage) *Handler {
 	return &Handler{
+		cfg:         cfg,
 		db:          db,
 		helixClient: helixClient,
+		apiClient:   apiclient.NewApiClient(cfg),
 		write:       write,
 	}
 }
@@ -132,7 +138,7 @@ func (h *Handler) setOutcomeForPrediction(payload dto.CommandPayload) {
 	}
 
 	for _, prediction := range resp.Data.Predictions {
-		err := h.db.SavePrediction(store.PredictionLog{ID: prediction.ID, OwnerTwitchID: payload.Msg.RoomID, Title: prediction.Title, StartedAt: prediction.CreatedAt.Time, LockedAt: prediction.LockedAt.Time, EndedAt: prediction.EndedAt.Time, WinningOutcomeID: prediction.WinningOutcomeID})
+		err := h.db.SavePrediction(store.PredictionLog{ID: prediction.ID, OwnerTwitchID: payload.Msg.RoomID, Title: prediction.Title, StartedAt: prediction.CreatedAt.Time, LockedAt: &prediction.LockedAt.Time, EndedAt: &prediction.EndedAt.Time, WinningOutcomeID: prediction.WinningOutcomeID})
 		if err != nil {
 			log.Error(err)
 		}
@@ -187,40 +193,13 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 		PredictionWindow: predictionWindow,
 	}
 
-	token, err := h.db.GetUserAccessToken(payload.Msg.RoomID)
-	if err != nil {
-		h.handleError(payload.Msg, errors.New("no api token, broadcaster needs to login again in dashboard"))
-		return
-	}
-
-	h.helixClient.Client.SetUserAccessToken(token.AccessToken)
-	resp, err := h.helixClient.Client.CreatePrediction(prediction)
-	h.helixClient.Client.SetUserAccessToken("")
-
+	resp, err := h.apiClient.CreatePrediction(payload.Msg.RoomID, prediction)
 	if err != nil {
 		log.Error(err)
-		h.handleError(payload.Msg, errors.New("bad twitch api response"))
+		h.handleError(payload.Msg, errors.New(err.Error()))
 		return
 	}
-	log.Infof("[helix] %d CreatePrediction %s", resp.StatusCode, payload.Msg.RoomID)
-	if resp.StatusCode >= http.StatusBadRequest {
-		h.handleError(payload.Msg, fmt.Errorf("bad twitch api response: %s", resp.ErrorMessage))
-		return
-	}
-
-	for _, prediction := range resp.Data.Predictions {
-		err := h.db.SavePrediction(store.PredictionLog{ID: prediction.ID, OwnerTwitchID: payload.Msg.RoomID, Title: prediction.Title, StartedAt: prediction.CreatedAt.Time, LockedAt: prediction.LockedAt.Time, EndedAt: prediction.EndedAt.Time, WinningOutcomeID: prediction.WinningOutcomeID})
-		if err != nil {
-			log.Error(err)
-		}
-
-		for _, outcome := range prediction.Outcomes {
-			err := h.db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: prediction.ID, Title: outcome.Title, Color: strings.ToLower(outcome.Color), Users: outcome.Users, ChannelPoints: outcome.ChannelPoints})
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
+	log.Infof("[api] %d CreatePrediction %s", resp.StatusCode, payload.Msg.RoomID)
 }
 
 func (h *Handler) handleError(msg twitch.PrivateMessage, err error) {

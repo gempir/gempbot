@@ -57,5 +57,5 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.WriteJson(w, db.GetEmoteHistory(r.Context(), userID, pageNumber, api.EMOTEHISTORY_PAGE_SIZE))
+	api.WriteJson(w, db.GetEmoteHistory(r.Context(), userID, pageNumber, api.EMOTEHISTORY_PAGE_SIZE), http.StatusOK)
 }

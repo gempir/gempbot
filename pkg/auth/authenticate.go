@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/config"
@@ -14,6 +15,22 @@ import (
 	"github.com/golang-jwt/jwt"
 	nickHelix "github.com/nicklaw5/helix"
 )
+
+func CreateApiToken(secret, userID string) string {
+	expirationTime := time.Now().Add(365 * 24 * time.Hour)
+	claims := &TokenClaims{
+		UserID: userID,
+		StandardClaims: jwt.StandardClaims{
+			// In JWT, the expiry time is expressed as unix milliseconds
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, _ := token.SignedString([]byte(secret))
+
+	return tokenString
+}
 
 type TokenClaims struct {
 	UserID         string
@@ -103,7 +120,7 @@ func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, s
 			return *resp, refreshedToken, nil
 		}
 
-		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("token not valid"))
+		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("token not valid: %s", resp.ErrorMessage))
 	}
 
 	return *resp, token, nil

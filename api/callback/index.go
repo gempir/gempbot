@@ -11,7 +11,6 @@ import (
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	"github.com/golang-jwt/jwt"
 )
 
 var (
@@ -41,11 +40,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := createApiToken(validateResp.Data.UserID)
-	if err != nil {
-		fmt.Fprintf(w, "failed to create jwt token in callback %s", err)
-		return
-	}
+	token := auth.CreateApiToken(cfg.Secret, validateResp.Data.UserID)
 
 	err = db.SaveUserAccessToken(r.Context(), validateResp.Data.UserID, resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " "))
 	if err != nil {
@@ -59,22 +54,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dashboardRedirect(w, r, token)
-}
-
-func createApiToken(userID string) (string, error) {
-	expirationTime := time.Now().Add(365 * 24 * time.Hour)
-	claims := &auth.TokenClaims{
-		UserID: userID,
-		StandardClaims: jwt.StandardClaims{
-			// In JWT, the expiry time is expressed as unix milliseconds
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(cfg.Secret))
-
-	return tokenString, err
 }
 
 func dashboardRedirect(w http.ResponseWriter, r *http.Request, scToken string) {

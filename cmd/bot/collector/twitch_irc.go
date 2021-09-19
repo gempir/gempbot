@@ -43,7 +43,7 @@ func NewBot(cfg *config.Config, db *store.Database, helixClient *helix.Client) *
 	channelsMap := stringUserDataSyncMap{m: map[string]helix.UserData{}, mutex: &sync.Mutex{}}
 
 	write := make(chan store.SpeakerMessage)
-	handler := commander.NewHandler(helixClient, db, write)
+	handler := commander.NewHandler(cfg, helixClient, db, write)
 
 	listener := commander.NewListener(db, handler)
 	listener.RegisterDefaultCommands()
