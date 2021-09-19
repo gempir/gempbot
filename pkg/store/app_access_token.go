@@ -9,7 +9,7 @@ import (
 )
 
 type AppAccessToken struct {
-	AccessToken  string
+	AccessToken  string `gorm:"primaryKey"`
 	RefreshToken string
 	Scopes       string
 	ExpiresIn    int
