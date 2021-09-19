@@ -23,7 +23,7 @@ var (
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg = config.FromEnv()
 	db = store.NewDatabase(cfg)
-	helixClient = helix.NewClient(cfg)
+	helixClient = helix.NewClient(cfg, db)
 
 	code := r.URL.Query().Get("code")
 

@@ -15,7 +15,7 @@ import (
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
-	helixClient := helix.NewClient(cfg)
+	helixClient := helix.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
 	userAdmin := user.NewUserAdmin(db, helixClient)
 

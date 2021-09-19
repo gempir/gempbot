@@ -18,12 +18,14 @@ import (
 type Handler struct {
 	db          *store.Database
 	helixClient *helix.Client
+	write       chan store.SpeakerMessage
 }
 
-func NewHandler(helixClient *helix.Client, db *store.Database) *Handler {
+func NewHandler(helixClient *helix.Client, db *store.Database, write chan store.SpeakerMessage) *Handler {
 	return &Handler{
 		db:          db,
 		helixClient: helixClient,
+		write:       write,
 	}
 }
 
@@ -222,5 +224,5 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 }
 
 func (h *Handler) handleError(msg twitch.PrivateMessage, err error) {
-	// h.redis.PublishSpeakerMessage(msg.RoomID, msg.Channel, fmt.Sprintf("@%s %s", msg.User.DisplayName, err))
+	h.write <- store.SpeakerMessage{UserID: msg.RoomID, Channel: msg.Channel, Message: fmt.Sprintf("@%s %s", msg.User.DisplayName, err)}
 }

@@ -16,17 +16,17 @@ import (
 
 // Bot basic logging bot
 type Bot struct {
-	startTime      time.Time
-	cfg            *config.Config
-	scaler         *scaler.Scaler
-	db             *store.Database
-	helixClient    *helix.Client
-	readerListener *commander.Listener
-	channels       stringUserDataSyncMap
-	write          chan store.SpeakerMessage
-	joined         stringBoolSyncMap
-	active         stringBoolSyncMap
-	Done           chan bool
+	startTime   time.Time
+	cfg         *config.Config
+	scaler      *scaler.Scaler
+	db          *store.Database
+	helixClient *helix.Client
+	listener    *commander.Listener
+	channels    stringUserDataSyncMap
+	write       chan store.SpeakerMessage
+	joined      stringBoolSyncMap
+	active      stringBoolSyncMap
+	Done        chan bool
 }
 
 type stringUserDataSyncMap struct {
@@ -39,19 +39,25 @@ type stringBoolSyncMap struct {
 	mutex *sync.Mutex
 }
 
-func NewBot(cfg *config.Config, db *store.Database, helixClient *helix.Client, readerListener *commander.Listener) *Bot {
+func NewBot(cfg *config.Config, db *store.Database, helixClient *helix.Client) *Bot {
 	channelsMap := stringUserDataSyncMap{m: map[string]helix.UserData{}, mutex: &sync.Mutex{}}
 
+	write := make(chan store.SpeakerMessage)
+	handler := commander.NewHandler(helixClient, db, write)
+
+	listener := commander.NewListener(db, handler)
+	listener.RegisterDefaultCommands()
+
 	return &Bot{
-		Done:           make(chan bool),
-		cfg:            cfg,
-		db:             db,
-		readerListener: readerListener,
-		helixClient:    helixClient,
-		channels:       channelsMap,
-		write:          make(chan store.SpeakerMessage),
-		joined:         stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
-		active:         stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
+		Done:        make(chan bool),
+		cfg:         cfg,
+		db:          db,
+		listener:    listener,
+		helixClient: helixClient,
+		channels:    channelsMap,
+		write:       write,
+		joined:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
+		active:      stringBoolSyncMap{m: map[string]bool{}, mutex: &sync.Mutex{}},
 	}
 }
 
@@ -64,11 +70,15 @@ func (b *Bot) Connect() {
 	} else {
 		log.Info("[collector] joining as user " + b.cfg.Username)
 	}
-	b.joinBotConfigChannels()
+	go b.joinBotConfigChannels()
+
+	for msg := range b.write {
+		b.scaler.Say(msg.Channel, msg.Message)
+	}
 }
 
 func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
-	b.readerListener.HandlePrivateMessage(message)
+	b.listener.HandlePrivateMessage(message)
 }
 
 func (b *Bot) joinBotConfigChannels() {
