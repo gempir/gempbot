@@ -49,9 +49,10 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
     const [loading, setLoading] = useState(false);
     const [changeCounter, setChangeCounter] = useState(0);
     const managing = useStore(state => state.managing);
+    const scToken = useStore(state => state.scToken);
 
     const fetchConfig = () => {
-        if (!useStore.getState().scToken) {
+        if (!scToken) {
             return;
         }
 
@@ -60,7 +61,7 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(fetchConfig, [managing]);
+    useEffect(fetchConfig, [managing, scToken]);
 
     useDebounce(() => {
         if (changeCounter && userConfig) {

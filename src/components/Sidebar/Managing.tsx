@@ -1,6 +1,7 @@
 import React from "react";
 import { UserConfig } from "../../hooks/useUserConfig";
 import { UserGroup } from "../../icons/UserGroup";
+import { setCookie } from "../../service/cookie";
 import { useStore } from "../../store";
 
 export function Managing({ userConfig }: { userConfig: UserConfig | null | undefined }) {
@@ -11,7 +12,7 @@ export function Managing({ userConfig }: { userConfig: UserConfig | null | undef
     const updateManaging = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const setManaging = useStore(state => state.setManaging);
         setManaging(e.target.value);
-        window.localStorage.setItem("managing", e.target.value);
+        setCookie("managing", e.target.value);
     };
 
     return <div className="Managing flex items-center my-4">

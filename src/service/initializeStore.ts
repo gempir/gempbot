@@ -6,7 +6,8 @@ export const initializeStore = (ctx: NextPageContext) => {
 
     return {
         store: {
-            scToken: cookies.scToken ?? "",
+            scToken: cookies.scToken ?? undefined,
+            managing: cookies.managing ?? undefined,
         },
     };
 }
