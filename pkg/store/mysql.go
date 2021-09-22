@@ -8,6 +8,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Database struct {
@@ -28,7 +29,7 @@ func NewDatabase(cfg *config.Config) *Database {
 	}
 
 	pdb, err := gorm.Open(gormMysql.Open(mysqlConfig.FormatDSN()), &gorm.Config{
-		Logger:                                   log.NewGormLogger(),
+		Logger:                                   logger.Default.LogMode(logger.Info),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {

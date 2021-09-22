@@ -75,11 +75,7 @@ func (db *Database) SaveReward(reward ChannelPointReward) error {
 	}
 
 	update := db.Client.Model(&reward).Where("owner_twitch_id = ? AND type = ?", reward.OwnerTwitchID, reward.Type).Updates(&updateMap)
-	if update.Error != nil {
-		return update.Error
-	}
-
-	if update.RowsAffected > 0 {
+	if update.Error == nil {
 		return nil
 	}
 

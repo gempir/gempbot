@@ -17,11 +17,7 @@ func (db *Database) SaveBotConfig(ctx context.Context, botCfg BotConfig) error {
 	}
 
 	update := db.Client.WithContext(ctx).Model(&botCfg).Where("owner_twitch_id = ?", botCfg.OwnerTwitchID).Updates(&updateMap)
-	if update.Error != nil {
-		return update.Error
-	}
-
-	if update.RowsAffected > 0 {
+	if update.Error == nil {
 		return nil
 	}
 
