@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"strings"
 	"time"
 
@@ -18,6 +19,7 @@ var (
 )
 
 func main() {
+	log.Info(os.Getenv("PLANETSCALE_DB"))
 	cfg = config.FromEnv()
 	db = store.NewDatabase(cfg)
 	helixClient = helix.NewClient(cfg, db)
