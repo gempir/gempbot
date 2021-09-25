@@ -67,7 +67,12 @@ func (s *Scaler) Part(channel string) {
 	}
 }
 
-func (s *Scaler) Say(channel, message string) {
+type Message struct {
+	Channel string
+	Message string
+}
+
+func (s *Scaler) Say(msg Message) {
 	randomIndex := rand.Intn(len(s.clients))
-	s.clients[randomIndex].client.Say(channel, message)
+	s.clients[randomIndex].client.Say(msg.Channel, msg.Message)
 }

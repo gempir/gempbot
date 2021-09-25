@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gempir/gempbot/cmd/bot/scaler"
 	"github.com/gempir/gempbot/pkg/apiclient"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
@@ -22,10 +23,10 @@ type Handler struct {
 	apiClient   *apiclient.ApiClient
 	db          *store.Database
 	helixClient *helix.Client
-	write       chan store.SpeakerMessage
+	write       chan scaler.Message
 }
 
-func NewHandler(cfg *config.Config, helixClient *helix.Client, db *store.Database, write chan store.SpeakerMessage) *Handler {
+func NewHandler(cfg *config.Config, helixClient *helix.Client, db *store.Database, write chan scaler.Message) *Handler {
 	return &Handler{
 		cfg:         cfg,
 		db:          db,
@@ -203,5 +204,5 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 }
 
 func (h *Handler) handleError(msg twitch.PrivateMessage, err error) {
-	h.write <- store.SpeakerMessage{UserID: msg.RoomID, Channel: msg.Channel, Message: fmt.Sprintf("@%s %s", msg.User.DisplayName, err)}
+	h.write <- scaler.Message{Channel: msg.Channel, Message: fmt.Sprintf("@%s %s", msg.User.DisplayName, err)}
 }

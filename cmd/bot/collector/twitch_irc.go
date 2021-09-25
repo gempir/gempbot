@@ -23,7 +23,7 @@ type Bot struct {
 	helixClient *helix.Client
 	listener    *commander.Listener
 	channels    stringUserDataSyncMap
-	write       chan store.SpeakerMessage
+	write       chan scaler.Message
 	joined      stringBoolSyncMap
 	active      stringBoolSyncMap
 	Done        chan bool
@@ -42,7 +42,7 @@ type stringBoolSyncMap struct {
 func NewBot(cfg *config.Config, db *store.Database, helixClient *helix.Client) *Bot {
 	channelsMap := stringUserDataSyncMap{m: map[string]helix.UserData{}, mutex: &sync.Mutex{}}
 
-	write := make(chan store.SpeakerMessage)
+	write := make(chan scaler.Message)
 	handler := commander.NewHandler(cfg, helixClient, db, write)
 
 	listener := commander.NewListener(db, handler)
@@ -73,7 +73,7 @@ func (b *Bot) Connect() {
 	go b.joinBotConfigChannels()
 
 	for msg := range b.write {
-		b.scaler.Say(msg.Channel, msg.Message)
+		b.scaler.Say(scaler.Message{Channel: msg.Channel, Message: msg.Message})
 	}
 }
 
