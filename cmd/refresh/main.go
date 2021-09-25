@@ -19,7 +19,7 @@ var (
 )
 
 func main() {
-	log.Info(os.Getenv("PLANETSCALE_DB"))
+	log.Info(os.Getenv("TWITCH_CLIENT_ID"))
 	cfg = config.FromEnv()
 	log.Info("clientid:" + cfg.ClientID)
 	db = store.NewDatabase(cfg)
