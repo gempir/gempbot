@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"os"
 	"strings"
 	"time"
 
@@ -19,9 +18,7 @@ var (
 )
 
 func main() {
-	log.Info(os.Getenv("TWITCH_CLIENT_ID"))
 	cfg = config.FromEnv()
-	log.Info("clientid:" + cfg.ClientID)
 	db = store.NewDatabase(cfg)
 	helixClient = helix.NewClient(cfg, db)
 
