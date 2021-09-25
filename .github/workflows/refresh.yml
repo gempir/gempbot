@@ -16,16 +16,16 @@ jobs:
       - name: Run refresh
         run: go run cmd/refresh/main.go
         env:
-          SCALEWAY_SECRET: ${{ env.SCALEWAY_SECRET }}
-          TWITCH_OAUTH: ${{ env.TWITCH_OAUTH }}
-          TWITCH_USERNAME: ${{ env.TWITCH_USERNAME }}
-          NEXT_PUBLIC_VERCEL_ENV: ${{ env.NEXT_PUBLIC_VERCEL_ENV }}
-          NEXT_PUBLIC_BASE_URL: ${{ env.NEXT_PUBLIC_BASE_URL }}
-          TWITCH_CLIENT_SECRET: ${{ env.SCALEWAY_SECRET }}
-          TWITCH_CLIENT_ID: ${{ env.TWITCH_CLIENT_ID }}
-          NEXT_PUBLIC_TWITCH_CLIENT_ID: ${{ env.NEXT_PUBLIC_TWITCH_CLIENT_ID }}
-          PLANETSCALE_DB: ${{ env.PLANETSCALE_DB }}
-          PLANETSCALE_DB_PASSWORD: ${{ env.PLANETSCALE_DB_PASSWORD }}
-          PLANETSCALE_DB_USERNAME: ${{ env.PLANETSCALE_DB_USERNAME }}
-          PLANETSCALE_DB_HOST: ${{ env.PLANETSCALE_DB_HOST }}
-          SECRET: ${{ env.SECRET }}
+          SCALEWAY_SECRET: ${{ secrets.SCALEWAY_SECRET }}
+          TWITCH_OAUTH: ${{ secrets.TWITCH_OAUTH }}
+          TWITCH_USERNAME: ${{ secrets.TWITCH_USERNAME }}
+          NEXT_PUBLIC_VERCEL_secrets: ${{ secrets.NEXT_PUBLIC_VERCEL_ENV }}
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.SCALEWAY_SECRET }}
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          NEXT_PUBLIC_TWITCH_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_TWITCH_CLIENT_ID }}
+          PLANETSCALE_DB: ${{ secrets.PLANETSCALE_DB }}
+          PLANETSCALE_DB_PASSWORD: ${{ secrets.PLANETSCALE_DB_PASSWORD }}
+          PLANETSCALE_DB_USERNAME: ${{ secrets.PLANETSCALE_DB_USERNAME }}
+          PLANETSCALE_DB_HOST: ${{ secrets.PLANETSCALE_DB_HOST }}
+          SECRET: ${{ secrets.SECRET }}
