@@ -21,6 +21,7 @@ var (
 func main() {
 	log.Info(os.Getenv("PLANETSCALE_DB"))
 	cfg = config.FromEnv()
+	log.Info("clientid:" + cfg.ClientID)
 	db = store.NewDatabase(cfg)
 	helixClient = helix.NewClient(cfg, db)
 
