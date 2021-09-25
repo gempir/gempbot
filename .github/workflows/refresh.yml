@@ -16,14 +16,12 @@ jobs:
       - name: Run refresh
         run: go run cmd/refresh/main.go
         env:
-          SCALEWAY_SECRET: ${{ secrets.SCALEWAY_SECRET }}
           TWITCH_OAUTH: ${{ secrets.TWITCH_OAUTH }}
           TWITCH_USERNAME: ${{ secrets.TWITCH_USERNAME }}
-          NEXT_PUBLIC_VERCEL_secrets: ${{ secrets.NEXT_PUBLIC_VERCEL_ENV }}
+          NEXT_PUBLIC_VERCEL_ENV: ${{ secrets.NEXT_PUBLIC_VERCEL_ENV }}
           NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
-          TWITCH_CLIENT_SECRET: ${{ secrets.SCALEWAY_SECRET }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
-          NEXT_PUBLIC_TWITCH_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_TWITCH_CLIENT_ID }}
           PLANETSCALE_DB: ${{ secrets.PLANETSCALE_DB }}
           PLANETSCALE_DB_PASSWORD: ${{ secrets.PLANETSCALE_DB_PASSWORD }}
           PLANETSCALE_DB_USERNAME: ${{ secrets.PLANETSCALE_DB_USERNAME }}
