@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-go@v2
 
       - name: Run refresh
-        run: go run cmd/refresh/main.go
+        run: go run cmd/refresh/main.go >/dev/null 2>&1
         env:
           TWITCH_OAUTH: ${{ secrets.TWITCH_OAUTH }}
           TWITCH_USERNAME: ${{ secrets.TWITCH_USERNAME }}
