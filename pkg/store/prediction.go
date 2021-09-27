@@ -68,7 +68,7 @@ func (db *Database) GetOutcomes(predictionID string) []PredictionLogOutcome {
 
 func (db *Database) SavePrediction(log PredictionLog) error {
 	update := db.Client.Model(&log).Where("id = ?", log.ID).Updates(&log)
-	if update.Error == nil {
+	if update.Error == nil && update.RowsAffected > 0 {
 		return nil
 	}
 
@@ -79,7 +79,7 @@ func (db *Database) SavePrediction(log PredictionLog) error {
 
 func (db *Database) SaveOutcome(log PredictionLogOutcome) error {
 	update := db.Client.Model(&log).Where("id = ?", log.ID).Updates(&log)
-	if update.Error == nil {
+	if update.Error == nil && update.RowsAffected > 0 {
 		return nil
 	}
 

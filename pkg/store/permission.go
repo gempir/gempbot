@@ -37,7 +37,7 @@ func (db *Database) DeletePermission(channelID string, userID string) {
 
 func (db *Database) SavePermission(updateMap map[string]interface{}) error {
 	update := db.Client.Model(&Permission{}).Where("twitch_id = ? AND channel_twitch_id = ?", updateMap["TwitchID"], updateMap["ChannelTwitchId"]).Updates(&updateMap)
-	if update.Error == nil {
+	if update.Error == nil && update.RowsAffected > 0 {
 		return nil
 	}
 

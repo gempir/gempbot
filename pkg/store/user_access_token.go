@@ -19,7 +19,7 @@ func (db *Database) SaveUserAccessToken(ctx context.Context, ownerId string, acc
 	token := UserAccessToken{OwnerTwitchID: ownerId, AccessToken: accessToken, RefreshToken: refreshToken, Scopes: scopes}
 
 	update := db.Client.WithContext(ctx).Model(&UserAccessToken{}).Where("owner_twitch_id = ?", ownerId).Updates(&token)
-	if update.Error == nil {
+	if update.Error == nil && update.RowsAffected > 0 {
 		return nil
 	}
 
