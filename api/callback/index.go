@@ -48,11 +48,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.SaveBotConfig(r.Context(), store.BotConfig{OwnerTwitchID: validateResp.Data.UserID, JoinBot: true})
-	if err != nil {
-		log.Error(err)
-	}
-
 	dashboardRedirect(w, r, token)
 }
 
