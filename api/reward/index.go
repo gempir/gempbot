@@ -21,7 +21,7 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 	helixClient := helix.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
-	cpm := channelpoint.NewChannelPointManager(helixClient, db)
+	cpm := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 
 	authResp, _, apiErr := auth.AttemptAuth(r, w)
 	if apiErr != nil {
@@ -74,7 +74,10 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// _ = s.subscribeChannelPoints(c.Param("userID"))
+		err = cpm.SubscribeChannelPoints(userID)
+		if err != nil {
+			log.Error(err)
+		}
 	} else if r.Method == http.MethodDelete {
 
 		reward, err := db.GetChannelPointReward(userID, dto.RewardType(r.URL.Query().Get("type")))

@@ -29,7 +29,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	// userID := authResp.Data.UserID
 
 	if r.Method == http.MethodGet {
 		userConfig := userAdmin.GetUserConfig(authResp.Data.UserID)

@@ -5,21 +5,26 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"time"
 
+	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
+	nickHelix "github.com/nicklaw5/helix"
 )
 
 type ChannelPointManager struct {
+	cfg         *config.Config
 	helixClient *helix.Client
 	db          *store.Database
 }
 
-func NewChannelPointManager(helixClient *helix.Client, db *store.Database) *ChannelPointManager {
+func NewChannelPointManager(cfg *config.Config, helixClient *helix.Client, db *store.Database) *ChannelPointManager {
 	return &ChannelPointManager{
+		cfg:         cfg,
 		helixClient: helixClient,
 		db:          db,
 	}
@@ -316,4 +321,36 @@ func CreateRewardFromBody(body io.ReadCloser) (Reward, error) {
 	}
 
 	return nil, errors.New("unknown reward")
+}
+
+func (cpm *ChannelPointManager) SubscribeChannelPoints(userID string) error {
+	response, err := cpm.helixClient.CreateEventSubSubscription(userID, cpm.cfg.WebhookApiBaseUrl+"/api/eventsub", nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
+	if err != nil {
+		log.Errorf("Error subscribing: %s", err)
+		return nil
+	}
+
+	if response.StatusCode == http.StatusForbidden {
+		return errors.New("forbidden")
+	}
+
+	log.Infof("[%d] subscription %s %s", response.StatusCode, response.Error, response.ErrorMessage)
+	for _, sub := range response.Data.EventSubSubscriptions {
+		log.Infof("new subscription for %s id: %s", userID, sub.ID)
+		cpm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
+	}
+
+	return nil
+}
+
+func (cpm *ChannelPointManager) RemoveEventSubSubscription(userID string, subscriptionID string, subType string, reason string) error {
+	response, err := cpm.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("[%d] removed EventSubSubscription for %s reason: %s", response.StatusCode, userID, reason)
+	cpm.db.RemoveEventSubSubscription(userID, subscriptionID, subType)
+
+	return nil
 }
