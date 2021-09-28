@@ -66,4 +66,4 @@ jobs:
         continue-on-error: true
 
       - name: run
-        run: ssh prod 'docker run ghcr.io/gempir/gempbot:main --env-file /root/.env'
+        run: ssh prod 'docker run ghcr.io/gempir/gempbot:main --name --env-file /root/env_prod'
