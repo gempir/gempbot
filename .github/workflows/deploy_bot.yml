@@ -16,3 +16,7 @@ jobs:
           docker build . -t ${{ secrets.SCALEWAY_REGISTRY_ENDPOINT }}/gempbot
           docker login rg.fr-par.scw.cloud -u nologin -p ${{ secrets.SCALEWAY_SECRET }}
           docker push ${{ secrets.SCALEWAY_REGISTRY_ENDPOINT }}/gempbot
+
+      - name: Deploy
+        run: |
+          curl -X POST -H "X-Auth-Token: ${{ secrets.SCALEWAY_SECRET }}" -H "Content-Type: application/json" -d '{"redeploy":true}' https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCALEWAY_CONTAINER_ID }}
