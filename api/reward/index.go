@@ -75,6 +75,27 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// _ = s.subscribeChannelPoints(c.Param("userID"))
+	} else if r.Method == http.MethodDelete {
+
+		reward, err := db.GetChannelPointReward(userID, dto.RewardType(r.URL.Query().Get("type")))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		token, err := db.GetUserAccessToken(userID)
+		if err != nil {
+			http.Error(w, "no accessToken to edit reward", http.StatusNotFound)
+		}
+
+		db.DeleteChannelPointReward(userID, dto.RewardType(r.URL.Query().Get("type")))
+
+		err = helixClient.DeleteReward(userID, token.AccessToken, reward.RewardID)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 }
