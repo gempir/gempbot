@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"errors"
+
+	"gorm.io/gorm/clause"
 )
 
 type BotConfig struct {
@@ -11,17 +13,9 @@ type BotConfig struct {
 }
 
 func (db *Database) SaveBotConfig(ctx context.Context, botCfg BotConfig) error {
-	updateMap, err := StructToMap(botCfg)
-	if err != nil {
-		return err
-	}
-
-	update := db.Client.WithContext(ctx).Model(&botCfg).Where("owner_twitch_id = ?", botCfg.OwnerTwitchID).Updates(&updateMap)
-	if update.Error == nil && update.RowsAffected > 0 {
-		return nil
-	}
-
-	update = db.Client.Create(&botCfg)
+	update := db.Client.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&botCfg)
 
 	return update.Error
 }
