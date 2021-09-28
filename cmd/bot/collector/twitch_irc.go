@@ -77,8 +77,23 @@ func (b *Bot) Connect() {
 	}
 }
 
-func (b *Bot) handlePrivateMessage(message twitch.PrivateMessage) {
-	b.listener.HandlePrivateMessage(message)
+func (b *Bot) handlePrivateMessage(msg twitch.PrivateMessage) {
+	sysMessage := msg.Channel == b.cfg.Username && msg.User.Name == b.cfg.Username
+	if sysMessage {
+		log.Infof("sysMessage: %s", msg.Message)
+		if strings.HasPrefix(msg.Message, "JOIN ") {
+			b.Join(strings.TrimPrefix(msg.Message, "JOIN "))
+			return
+		}
+
+		if strings.HasPrefix(msg.Message, "PART ") {
+			b.Part(strings.TrimPrefix(msg.Message, "PART "))
+			return
+		}
+
+	}
+
+	b.listener.HandlePrivateMessage(msg)
 }
 
 func (b *Bot) joinBotConfigChannels() {

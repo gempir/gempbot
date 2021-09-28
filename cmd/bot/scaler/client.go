@@ -36,7 +36,6 @@ func (s *Scaler) Join(channelName string) {
 		if len(client.joined) < 50 {
 			client.client.Join(channelName)
 			client.joined[channelName] = true
-			log.Infof("joining %s", channelName)
 			return
 		}
 	}
@@ -62,29 +61,9 @@ func (s *Scaler) Join(channelName string) {
 func (s *Scaler) Part(channel string) {
 	for _, client := range s.clients {
 		if _, ok := client.joined[channel]; ok {
-			log.Infof("parting %s", channel)
 			client.client.Depart(channel)
 		}
 	}
-}
-
-func (s *Scaler) HandlePrivateMessage(msg twitch.PrivateMessage) {
-	sysMessage := msg.Channel == s.cfg.Username && msg.User.Name == s.cfg.Username
-	if sysMessage {
-		log.Infof("sysMessage: %s", msg.Message)
-		if strings.HasPrefix(msg.Message, "JOIN ") {
-			s.Join(strings.TrimPrefix(msg.Message, "JOIN "))
-			return
-		}
-
-		if strings.HasPrefix(msg.Message, "PART ") {
-			s.Part(strings.TrimPrefix(msg.Message, "PART "))
-			return
-		}
-
-	}
-
-	s.onPrivateMessage(msg)
 }
 
 type Message struct {
