@@ -45,7 +45,7 @@ func NewBot(cfg *config.Config, db *store.Database, helixClient *helix.Client) *
 	write := make(chan scaler.Message)
 	handler := commander.NewHandler(cfg, helixClient, db, write)
 
-	listener := commander.NewListener(db, handler)
+	listener := commander.NewListener(db, handler, write)
 	listener.RegisterDefaultCommands()
 
 	return &Bot{

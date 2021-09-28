@@ -1,34 +1,43 @@
 package commander
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/gempir/gempbot/cmd/bot/scaler"
 	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/humanize"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/tmi"
 	"github.com/gempir/go-twitch-irc/v2"
 )
 
 type Listener struct {
+	startTime          time.Time
 	db                 *store.Database
 	predictionsHandler *Handler
 	commands           map[string]func(dto.CommandPayload)
+	write              chan scaler.Message
 }
 
 var (
 	commandRegex = regexp.MustCompile(`^\!(\w+)\ ?`)
 )
 
-func NewListener(db *store.Database, predictionsHandler *Handler) *Listener {
+func NewListener(db *store.Database, predictionsHandler *Handler, write chan scaler.Message) *Listener {
 	return &Listener{
+		startTime:          time.Now(),
 		db:                 db,
 		predictionsHandler: predictionsHandler,
 		commands:           map[string]func(dto.CommandPayload){},
+		write:              write,
 	}
 }
 
 func (l *Listener) RegisterDefaultCommands() {
+	l.commands[dto.CmdNameStatus] = l.handleStatus
 	l.commands[dto.CmdNamePrediction] = l.handlePrediction
 	l.commands[dto.CmdNameOutcome] = l.handlePrediction
 }
@@ -48,11 +57,23 @@ func (l *Listener) HandlePrivateMessage(msg twitch.PrivateMessage) {
 	}
 }
 
+func (l *Listener) hasElevatedPermissions(payload dto.CommandPayload) bool {
+	return tmi.IsModerator(payload.Msg.User) || tmi.IsBroadcaster(payload.Msg.User) || l.db.GetChannelUserPermissions(payload.Msg.User.ID, payload.Msg.RoomID).Prediction
+}
+
 func (l *Listener) handlePrediction(payload dto.CommandPayload) {
-	perm := l.db.GetChannelUserPermissions(payload.Msg.User.ID, payload.Msg.RoomID)
-	if !perm.Prediction && !tmi.IsModerator(payload.Msg.User) && !tmi.IsBroadcaster(payload.Msg.User) {
+	if !l.hasElevatedPermissions(payload) {
 		return
 	}
 
 	l.predictionsHandler.HandleCommand(payload)
+}
+
+func (l *Listener) handleStatus(payload dto.CommandPayload) {
+	if !l.hasElevatedPermissions(payload) {
+		return
+	}
+
+	uptime := humanize.TimeSince(l.startTime)
+	l.write <- scaler.Message{Channel: payload.Msg.Channel, Message: fmt.Sprintf("@%s, uptime: %s", payload.Msg.User.DisplayName, uptime)}
 }

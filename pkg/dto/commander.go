@@ -10,5 +10,6 @@ type CommandPayload struct {
 
 const (
 	CmdNamePrediction = "prediction"
+	CmdNameStatus     = "status"
 	CmdNameOutcome    = "outcome"
 )
