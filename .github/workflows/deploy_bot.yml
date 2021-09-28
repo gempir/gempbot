@@ -54,5 +54,16 @@ jobs:
           SSH_KEY: ${{ secrets.SSH_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
 
-      - name: Run command
-        run: ssh prod 'docker ls'
+      - name: pull
+        run: ssh prod 'docker pull ghcr.io/gempir/gempbot:main'
+
+      - name: stop
+        run: ssh prod 'docker stop gempbot'
+        continue-on-error: true
+
+      - name: remove
+        run: ssh prod 'docker rm gempbot'
+        continue-on-error: true
+
+      - name: run
+        run: ssh prod 'docker run ghcr.io/gempir/gempbot:main --env-file /root/.env'
