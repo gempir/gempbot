@@ -13,6 +13,6 @@ jobs:
 
       - name: Build & Upload image
         run: |
-          docker build . -t ${{ secrets.SCALEWAY_REGISTRY_ENDPOINT }}/bot
+          docker build . -t ${{ secrets.SCALEWAY_REGISTRY_ENDPOINT }}/gempbot
           docker login rg.fr-par.scw.cloud -u nologin -p ${{ secrets.SCALEWAY_SECRET }}
-          docker push ${{ secrets.SCALEWAY_REGISTRY_ENDPOINT }}/bot
+          docker push ${{ secrets.SCALEWAY_REGISTRY_ENDPOINT }}/gempbot
