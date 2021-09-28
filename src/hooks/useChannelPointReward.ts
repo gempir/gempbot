@@ -6,7 +6,12 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
     const [reward, setReward] = useState<ChannelPointReward>(defaultReward);
 
     const fetchReward = () => {
-        doFetch(Method.GET, `/api/reward/${userID}/type/${type}`).then((response: RawBttvChannelPointReward) => ({...response, AdditionalOptionsParsed: response.AdditionalOptions !== "" ? JSON.parse(response.AdditionalOptions) : defaultReward.AdditionalOptionsParsed})).then(setReward).catch(reason => {
+        const endPoint = "/api/reward";
+        const searchParams = new URLSearchParams();
+        searchParams.append("type", type);
+        // if managing
+
+        doFetch(Method.GET, endPoint, searchParams).then((response: RawBttvChannelPointReward) => ({...response, AdditionalOptionsParsed: response.AdditionalOptions !== "" ? JSON.parse(response.AdditionalOptions) : defaultReward.AdditionalOptionsParsed})).then(setReward).catch(reason => {
             if (reason !== RejectReason.NotFound) {
                 throw new Error(reason);
             }
@@ -18,11 +23,21 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
     useEffect(fetchReward, [userID, type, defaultReward]);
 
     const updateReward = (reward: ChannelPointReward) => {
-        doFetch(Method.POST, `/api/reward/${userID}`, undefined, reward).then(fetchReward);
+        const endPoint = "/api/reward";
+        const searchParams = new URLSearchParams();
+        searchParams.append("type", type);
+        // if managing
+
+        doFetch(Method.POST, endPoint, searchParams, reward).then(fetchReward);
     }
 
     const deleteReward = () => {
-        doFetch(Method.DELETE, `/api/reward/${userID}/type/${type}`, undefined, reward).then(fetchReward);
+        const endPoint = "/api/reward";
+        const searchParams = new URLSearchParams();
+        searchParams.append("type", type);
+        // if managing
+
+        doFetch(Method.DELETE, endPoint, searchParams, reward).then(fetchReward);
     }
 
     return [reward, updateReward, deleteReward];
