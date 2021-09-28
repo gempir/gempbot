@@ -3,6 +3,9 @@ name: Deploy Bot
 on:
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: gempbot
+
 jobs:
   refresh:
     environment: Production
@@ -11,12 +14,25 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build & Upload image
-        run: |
-          docker build . -t ${{ secrets.SCALEWAY_REGISTRY_ENDPOINT }}/gempbot
-          docker login rg.fr-par.scw.cloud -u nologin -p ${{ secrets.SCALEWAY_SECRET }}
-          docker push ${{ secrets.SCALEWAY_REGISTRY_ENDPOINT }}/gempbot
+      - name: Build image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME
 
-      - name: Deploy
+      - name: Log into GitHub Container Registry
+      # TODO: Create a PAT with `read:packages` and `write:packages` scopes and save it as an Actions secret `CR_PAT`
+        run: echo "${{ secrets.CR_PAT }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image to GitHub Container Registry
         run: |
-          curl -X PATCH -H "X-Auth-Token: ${{ secrets.SCALEWAY_SECRET }}" -H "Content-Type: application/json" -d '{"redeploy":true}' https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/${{ secrets.SCALEWAY_CONTAINER_ID }}
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
