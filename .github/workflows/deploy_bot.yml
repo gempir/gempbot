@@ -37,24 +37,15 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
 
-      - name: Setup SSH
-        env:
-            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-            SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-            mkdir ~/.ssh
-            echo "$SSH_KEY" > ~/.ssh/id_rsa
-            touch ~/.ssh/known_hosts
-            chmod 600 ~/.ssh/id_rsa
-            ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-            ssh-add ~/.ssh/id_rsa
-            ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Stop
+      - name: Deploy
         uses: appleboy/ssh-action@master
         with:
-            host: ${{ secrets.SSH_HOST }}
-            username: ${{ secrets.SSH_USERNAME }}
-            key: ${{ secrets.SSH_KEY }}
-            port: ${{ secrets.SSH_PORT }}
-            script: docker ps
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
+          script: |
+            whoami
+            ls -al
+            docker ps
