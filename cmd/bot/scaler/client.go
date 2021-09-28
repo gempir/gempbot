@@ -36,7 +36,7 @@ func (s *Scaler) Join(channelName string) {
 		if len(client.joined) < 50 {
 			client.client.Join(channelName)
 			client.joined[channelName] = true
-			log.Debugf("joining %s", channelName)
+			log.Infof("joining %s", channelName)
 			return
 		}
 	}
@@ -62,6 +62,7 @@ func (s *Scaler) Join(channelName string) {
 func (s *Scaler) Part(channel string) {
 	for _, client := range s.clients {
 		if _, ok := client.joined[channel]; ok {
+			log.Infof("parting %s", channel)
 			client.client.Depart(channel)
 		}
 	}
