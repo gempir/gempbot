@@ -67,6 +67,20 @@ func (s *Scaler) Part(channel string) {
 	}
 }
 
+func (s *Scaler) HandlePrivateMessage(msg twitch.PrivateMessage) {
+	sysMessage := msg.Channel == s.cfg.Username && msg.User.Name == s.cfg.Username
+	if sysMessage && strings.HasPrefix(msg.Message, "JOIN ") {
+		s.Join(strings.TrimPrefix(msg.Message, "JOIN "))
+		return
+	}
+	if sysMessage && strings.HasPrefix(msg.Message, "PART ") {
+		s.Part(strings.TrimPrefix(msg.Message, "PART "))
+		return
+	}
+
+	s.onPrivateMessage(msg)
+}
+
 type Message struct {
 	Channel string
 	Message string

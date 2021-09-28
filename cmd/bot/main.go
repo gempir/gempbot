@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/gempir/gempbot/cmd/bot/collector"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helix"
@@ -20,17 +17,5 @@ func main() {
 	bot := collector.NewBot(cfg, db, helixClient)
 	go bot.Connect()
 
-	http.HandleFunc("/", status)
-	go func() {
-		err := http.ListenAndServe(":8080", nil)
-		if err != nil {
-			panic(err)
-		}
-	}()
-
 	<-bot.Done
-}
-
-func status(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "ok\n")
 }
