@@ -70,6 +70,7 @@ func (b *Bot) Connect() {
 	} else {
 		log.Info("[collector] joining as user " + b.cfg.Username)
 	}
+	go b.Join(b.cfg.Username)
 	go b.joinBotConfigChannels()
 
 	for msg := range b.write {
@@ -90,7 +91,6 @@ func (b *Bot) handlePrivateMessage(msg twitch.PrivateMessage) {
 			b.Part(strings.TrimPrefix(msg.Message, "PART "))
 			return
 		}
-
 	}
 
 	b.listener.HandlePrivateMessage(msg)
