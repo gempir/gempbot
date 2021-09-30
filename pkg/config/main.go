@@ -105,6 +105,7 @@ func FromEnv() *Config {
 		DbName:            Getenv("PLANETSCALE_DB"),
 		Username:          Getenv("TWITCH_USERNAME"),
 		OAuth:             Getenv("TWITCH_OAUTH"),
+		BttvToken:         Getenv("BTTV_TOKEN"),
 	}
 }
 
