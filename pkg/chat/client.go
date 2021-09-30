@@ -24,6 +24,14 @@ func (c *ChatClient) Say(channel string, message string) {
 	c.ircClient.Say(channel, message)
 }
 
+func (c *ChatClient) JoinBot(channel string) {
+	c.Say(c.cfg.Username, "JOIN "+c.cfg.Environment+" "+channel)
+}
+
+func (c *ChatClient) PartBot(channel string) {
+	c.Say(c.cfg.Username, "PART "+c.cfg.Environment+" "+channel)
+}
+
 func (c *ChatClient) Connect() {
 	go func() {
 		c.ircClient.Connect()

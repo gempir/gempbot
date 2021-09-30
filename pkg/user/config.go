@@ -193,9 +193,9 @@ func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login stri
 		return api.NewApiError(http.StatusInternalServerError, fmt.Errorf("failed to save bot config"))
 	}
 	if newConfig.BotJoin {
-		u.chatClient.Say(u.cfg.Username, fmt.Sprintf("JOIN %s", ownerLogin))
+		u.chatClient.JoinBot(ownerLogin)
 	} else {
-		u.chatClient.Say(u.cfg.Username, fmt.Sprintf("PART %s", ownerLogin))
+		u.chatClient.PartBot(ownerLogin)
 	}
 
 	previousPerms := u.db.GetChannelPermissions(ownerUserID)

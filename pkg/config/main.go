@@ -34,6 +34,7 @@ type Config struct {
 	DbUsername            string   `json:"DbUsername"`
 	DbPassword            string   `json:"DbPassword"`
 	DbName                string   `json:"DbName"`
+	Environment           string   `json:"environment"`
 }
 
 // ChannelConfig config for indiviual channels
@@ -106,6 +107,7 @@ func FromEnv() *Config {
 		Username:          Getenv("TWITCH_USERNAME"),
 		OAuth:             Getenv("TWITCH_OAUTH"),
 		BttvToken:         Getenv("BTTV_TOKEN"),
+		Environment:       Getenv("VERCEL_ENV"),
 	}
 }
 
