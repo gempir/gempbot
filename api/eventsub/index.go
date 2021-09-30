@@ -39,6 +39,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		eventSubManager.HandlePredictionBegin(event)
 		return
 	}
+	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPredictionLock {
+		eventSubManager.HandlePredictionLock(event)
+		return
+	}
+	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPredictionEnd {
+		eventSubManager.HandlePredictionEnd(event)
+		return
+	}
 
 	http.Error(w, "Invalid event type", http.StatusBadRequest)
 }

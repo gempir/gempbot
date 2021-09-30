@@ -3,7 +3,9 @@ package eventsub
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
+	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/humanize"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
@@ -61,7 +63,12 @@ func (esm *EventSubManager) HandlePredictionBegin(event []byte) {
 		return
 	}
 
-	err = esm.db.SavePrediction(store.PredictionLog{ID: data.ID, OwnerTwitchID: data.BroadcasterUserID, Title: data.Title, StartedAt: data.StartedAt.Time, LockedAt: &data.LocksAt.Time})
+	lockedTime := &data.LocksAt.Time
+	if lockedTime.IsZero() {
+		lockedTime = nil
+	}
+
+	err = esm.db.SavePrediction(store.PredictionLog{ID: data.ID, OwnerTwitchID: data.BroadcasterUserID, Title: data.Title, StartedAt: data.StartedAt.Time, LockedAt: lockedTime})
 	if err != nil {
 		log.Error(err)
 	}
@@ -82,4 +89,99 @@ func (esm *EventSubManager) HandlePredictionBegin(event []byte) {
 			humanize.TimeUntil(data.StartedAt.Time, data.LocksAt.Time),
 		),
 	)
+}
+
+func (esm *EventSubManager) HandlePredictionLock(event []byte) {
+	var data nickHelix.EventSubChannelPredictionLockEvent
+	err := json.Unmarshal(event, &data)
+	if err != nil {
+		log.Errorf("Failed to decode event: %s", err)
+		return
+	}
+
+	log.Infof("predictionLock %s", data.LockedAt)
+	if data.ID == "" {
+		return
+	}
+
+	lockedTime := &data.LockedAt.Time
+	if lockedTime.IsZero() {
+		lockedTime = nil
+	}
+
+	err = esm.db.SavePrediction(store.PredictionLog{ID: data.ID, OwnerTwitchID: data.BroadcasterUserID, Title: data.Title, StartedAt: data.StartedAt.Time, LockedAt: lockedTime})
+	if err != nil {
+		log.Error(err)
+	}
+
+	for _, outcome := range data.Outcomes {
+		err = esm.db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: data.ID, Title: outcome.Title, Color: outcome.Color, Users: outcome.Users, ChannelPoints: outcome.ChannelPoints})
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	esm.chatClient.Say(
+		data.BroadcasterUserLogin,
+		fmt.Sprintf("FBtouchdown locked submissions for: %s",
+			data.Title,
+		),
+	)
+}
+
+func (esm *EventSubManager) HandlePredictionEnd(event []byte) {
+	var data nickHelix.EventSubChannelPredictionEndEvent
+	err := json.Unmarshal(event, &data)
+	if err != nil {
+		log.Errorf("Failed to decode event: %s", err)
+		return
+	}
+
+	log.Infof("predictionEnd %s", data.Status)
+	if data.ID == "" {
+		return
+	}
+
+	endTime := &data.EndedAt.Time
+	if endTime.IsZero() {
+		endTime = nil
+	}
+
+	err = esm.db.SavePrediction(store.PredictionLog{ID: data.ID, OwnerTwitchID: data.BroadcasterUserID, Title: data.Title, StartedAt: data.StartedAt.Time, EndedAt: endTime, WinningOutcomeID: data.WinningOutcomeID, Status: data.Status})
+	if err != nil {
+		log.Error(err)
+	}
+
+	var winningOutcome store.PredictionLogOutcome
+
+	for _, outcome := range data.Outcomes {
+		outcomeModel := store.PredictionLogOutcome{ID: outcome.ID, PredictionID: data.ID, Title: outcome.Title, Color: outcome.Color, Users: outcome.Users, ChannelPoints: outcome.ChannelPoints}
+
+		if data.WinningOutcomeID == outcome.ID {
+			winningOutcome = outcomeModel
+		}
+
+		err = esm.db.SaveOutcome(outcomeModel)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	if strings.ToUpper(data.Status) == dto.PredictionStatusCanceled {
+		esm.chatClient.Say(
+			data.BroadcasterUserLogin,
+			fmt.Sprintf("NinjaGrumpy canceled prediction: %s",
+				data.Title,
+			),
+		)
+	} else {
+		esm.chatClient.Say(
+			data.BroadcasterUserLogin,
+			fmt.Sprintf("PogChamp ended prediction: %s Winner: %s %s",
+				data.Title,
+				winningOutcome.GetColorEmoji(),
+				winningOutcome.Title,
+			),
+		)
+	}
 }

@@ -2,6 +2,7 @@ package chat
 
 import (
 	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/go-twitch-irc/v2"
 )
 
@@ -34,7 +35,11 @@ func (c *ChatClient) PartBot(channel string) {
 
 func (c *ChatClient) Connect() {
 	go func() {
-		c.ircClient.Connect()
+		err := c.ircClient.Connect()
+		if err != nil {
+			log.Error()
+			c.connected <- false
+		}
 	}()
 
 	go func() {
