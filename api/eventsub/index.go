@@ -10,7 +10,7 @@ import (
 	"github.com/gempir/gempbot/pkg/eventsub"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix"
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -21,17 +21,22 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	chatClient := chat.NewClient(cfg)
 	go chatClient.Connect()
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db, emoteChief, chatClient)
-	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, channelPointManager)
+	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, channelPointManager, chatClient)
+
+	event, err := eventSubManager.HandleWebhook(w, r)
+	if err != nil || len(event) == 0 {
+		if err != nil {
+			http.Error(w, err.Error(), err.Status())
+		}
+		return
+	}
 
 	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd {
-		event, err := eventSubManager.HandleWebhook(w, r)
-		if err != nil || len(event) == 0 {
-			if err != nil {
-				http.Error(w, err.Error(), err.Status())
-			}
-			return
-		}
 		eventSubManager.HandleChannelPointsCustomRewardRedemption(event)
+		return
+	}
+	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPredictionBegin {
+		eventSubManager.HandlePredictionBegin(event)
 		return
 	}
 

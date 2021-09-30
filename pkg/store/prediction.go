@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gempir/gempbot/pkg/dto"
+	"gorm.io/gorm/clause"
 )
 
 const (
@@ -67,23 +68,17 @@ func (db *Database) GetOutcomes(predictionID string) []PredictionLogOutcome {
 }
 
 func (db *Database) SavePrediction(log PredictionLog) error {
-	update := db.Client.Model(&log).Where("id = ?", log.ID).Updates(&log)
-	if update.Error == nil && update.RowsAffected > 0 {
-		return nil
-	}
-
-	update = db.Client.Create(&log)
+	update := db.Client.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&log)
 
 	return update.Error
 }
 
 func (db *Database) SaveOutcome(log PredictionLogOutcome) error {
-	update := db.Client.Model(&log).Where("id = ?", log.ID).Updates(&log)
-	if update.Error == nil && update.RowsAffected > 0 {
-		return nil
-	}
-
-	update = db.Client.Create(&log)
+	update := db.Client.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&log)
 
 	return update.Error
 }

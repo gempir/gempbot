@@ -1,7 +1,7 @@
 package helix
 
 import (
-	nickHelix "github.com/nicklaw5/helix"
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 func (c *Client) CreateEventSubSubscription(userID string, webHookUrl string, subType string) (*nickHelix.EventSubSubscriptionsResponse, error) {

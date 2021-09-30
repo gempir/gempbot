@@ -1,5 +1,7 @@
 package store
 
+import "gorm.io/gorm/clause"
+
 type Permission struct {
 	ChannelTwitchId string `gorm:"primaryKey"`
 	TwitchID        string `gorm:"primaryKey"`
@@ -35,13 +37,10 @@ func (db *Database) DeletePermission(channelID string, userID string) {
 	db.Client.Delete(&Permission{}, "channel_twitch_id = ? AND twitch_id = ?", channelID, userID)
 }
 
-func (db *Database) SavePermission(updateMap map[string]interface{}) error {
-	update := db.Client.Model(&Permission{}).Where("twitch_id = ? AND channel_twitch_id = ?", updateMap["TwitchID"], updateMap["ChannelTwitchId"]).Updates(&updateMap)
-	if update.Error == nil && update.RowsAffected > 0 {
-		return nil
-	}
-
-	update = db.Client.Model(&Permission{}).Create(&updateMap)
+func (db *Database) SavePermission(permission Permission) error {
+	update := db.Client.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&permission)
 
 	return update.Error
 }

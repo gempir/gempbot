@@ -25,7 +25,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	chatClient := chat.NewClient(cfg)
 	go chatClient.Connect()
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db, emoteChief, chatClient)
-	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, channelPointManager)
+	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, channelPointManager, chatClient)
 
 	authResp, _, apiErr := auth.AttemptAuth(r, w)
 	if apiErr != nil {

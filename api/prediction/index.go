@@ -12,7 +12,7 @@ import (
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/user"
-	nickHelix "github.com/nicklaw5/helix"
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {

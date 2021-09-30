@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gempir/gempbot/pkg/log"
-	helixClient "github.com/nicklaw5/helix"
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 // UserData exported data from twitch
@@ -45,7 +45,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 		chunks := chunkBy(filteredUserIDs, 100)
 
 		for _, chunk := range chunks {
-			resp, err := c.Client.GetUsers(&helixClient.UsersParams{
+			resp, err := c.Client.GetUsers(&nickHelix.UsersParams{
 				IDs: chunk,
 			})
 			if err != nil {
@@ -103,7 +103,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	}
 
 	if len(filteredUsernames) > 0 {
-		resp, err := c.Client.GetUsers(&helixClient.UsersParams{
+		resp, err := c.Client.GetUsers(&nickHelix.UsersParams{
 			Logins: filteredUsernames,
 		})
 		if err != nil {

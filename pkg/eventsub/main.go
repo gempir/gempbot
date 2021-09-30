@@ -8,12 +8,13 @@ import (
 
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/channelpoint"
+	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix"
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 type EventSubManager struct {
@@ -21,10 +22,11 @@ type EventSubManager struct {
 	helixClient         *helix.Client
 	db                  *store.Database
 	channelPointManager *channelpoint.ChannelPointManager
+	chatClient          *chat.ChatClient
 }
 
-func NewEventSubManager(cfg *config.Config, helixClient *helix.Client, db *store.Database, channelPointManager *channelpoint.ChannelPointManager) *EventSubManager {
-	return &EventSubManager{cfg: cfg, helixClient: helixClient, db: db, channelPointManager: channelPointManager}
+func NewEventSubManager(cfg *config.Config, helixClient *helix.Client, db *store.Database, channelPointManager *channelpoint.ChannelPointManager, chatClient *chat.ChatClient) *EventSubManager {
+	return &EventSubManager{cfg: cfg, helixClient: helixClient, db: db, channelPointManager: channelPointManager, chatClient: chatClient}
 }
 
 type eventSubNotification struct {

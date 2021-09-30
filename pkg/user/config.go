@@ -164,20 +164,6 @@ func (u *UserAdmin) CheckEditor(r *http.Request, userConfig UserConfig) (string,
 	return userData[managing].ID, nil
 }
 
-// func (u *UserAdmin) checkIsEditor(editorUserID string, ownerUserID string) api.Error {
-// 	if editorUserID == ownerUserID {
-// 		return nil
-// 	}
-
-// 	userConfig := u.GetUserConfig(ownerUserID)
-
-// 	if userConfig.isEditor(editorUserID) {
-// 		return nil
-// 	}
-
-// 	return api.NewApiError(http.StatusForbidden, fmt.Errorf("user is not editor"))
-// }
-
 func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login string, newConfig UserConfig, managing string) api.Error {
 	isManaging := managing != ""
 	ownerUserID := userID
@@ -228,10 +214,7 @@ func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login stri
 	}
 
 	for permissionUserID, perm := range newUserIDConfig.Permissions {
-		newPerms := map[string]interface{}{"ChannelTwitchId": ownerUserID, "TwitchID": permissionUserID, "Prediction": perm.Prediction}
-		if !isManaging {
-			newPerms["Editor"] = perm.Editor
-		}
+		newPerms := store.Permission{ChannelTwitchId: ownerUserID, TwitchID: permissionUserID, Prediction: perm.Prediction, Editor: perm.Editor}
 
 		err := u.db.SavePermission(newPerms)
 		if err != nil {

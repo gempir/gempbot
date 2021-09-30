@@ -13,7 +13,7 @@ import (
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/golang-jwt/jwt"
-	nickHelix "github.com/nicklaw5/helix"
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 func CreateApiToken(secret, userID string) string {

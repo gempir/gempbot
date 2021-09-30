@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"gorm.io/gorm/clause"
 )
 
 type UserAccessToken struct {
@@ -18,12 +20,9 @@ type UserAccessToken struct {
 func (db *Database) SaveUserAccessToken(ctx context.Context, ownerId string, accessToken string, refreshToken string, scopes string) error {
 	token := UserAccessToken{OwnerTwitchID: ownerId, AccessToken: accessToken, RefreshToken: refreshToken, Scopes: scopes}
 
-	update := db.Client.WithContext(ctx).Model(&UserAccessToken{}).Where("owner_twitch_id = ?", ownerId).Updates(&token)
-	if update.Error == nil && update.RowsAffected > 0 {
-		return nil
-	}
-
-	update = db.Client.Create(&token)
+	update := db.Client.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&token)
 
 	return update.Error
 }
