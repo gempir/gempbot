@@ -323,15 +323,16 @@ func CreateRewardFromBody(body io.ReadCloser) (Reward, error) {
 	return nil, errors.New("unknown reward")
 }
 
-func (cpm *ChannelPointManager) SubscribeChannelPoints(userID string) error {
-	response, err := cpm.helixClient.CreateEventSubSubscription(userID, cpm.cfg.WebhookApiBaseUrl+"/api/eventsub", nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
+func (cpm *ChannelPointManager) SubscribeChannelPoints(userID string) {
+	response, err := cpm.helixClient.CreateEventSubSubscription(userID, cpm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd, nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
-		return nil
+		return
 	}
 
 	if response.StatusCode == http.StatusForbidden {
-		return errors.New("forbidden")
+		log.Errorf("Forbidden subscription %s", response.ErrorMessage)
+		return
 	}
 
 	log.Infof("[%d] subscription %s %s", response.StatusCode, response.Error, response.ErrorMessage)
@@ -339,8 +340,6 @@ func (cpm *ChannelPointManager) SubscribeChannelPoints(userID string) error {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
 		cpm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
 	}
-
-	return nil
 }
 
 func (cpm *ChannelPointManager) RemoveEventSubSubscription(userID string, subscriptionID string, subType string, reason string) error {

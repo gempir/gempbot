@@ -74,10 +74,7 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = cpm.SubscribeChannelPoints(userID)
-		if err != nil {
-			log.Error(err)
-		}
+		cpm.SubscribeChannelPoints(userID)
 	} else if r.Method == http.MethodDelete {
 
 		reward, err := db.GetChannelPointReward(userID, dto.RewardType(r.URL.Query().Get("type")))
