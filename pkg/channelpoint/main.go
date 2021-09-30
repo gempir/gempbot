@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"time"
 
 	"github.com/gempir/gempbot/pkg/config"
@@ -13,7 +12,6 @@ import (
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix"
 )
 
 type ChannelPointManager struct {
@@ -321,35 +319,4 @@ func CreateRewardFromBody(body io.ReadCloser) (Reward, error) {
 	}
 
 	return nil, errors.New("unknown reward")
-}
-
-func (cpm *ChannelPointManager) SubscribeChannelPoints(userID string) {
-	response, err := cpm.helixClient.CreateEventSubSubscription(userID, cpm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd, nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
-	if err != nil {
-		log.Errorf("Error subscribing: %s", err)
-		return
-	}
-
-	if response.StatusCode == http.StatusForbidden {
-		log.Errorf("Forbidden subscription %s", response.ErrorMessage)
-		return
-	}
-
-	log.Infof("[%d] subscription %s %s", response.StatusCode, response.Error, response.ErrorMessage)
-	for _, sub := range response.Data.EventSubSubscriptions {
-		log.Infof("new subscription for %s id: %s", userID, sub.ID)
-		cpm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
-	}
-}
-
-func (cpm *ChannelPointManager) RemoveEventSubSubscription(userID string, subscriptionID string, subType string, reason string) error {
-	response, err := cpm.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
-	if err != nil {
-		return err
-	}
-
-	log.Infof("[%d] removed EventSubSubscription for %s reason: %s", response.StatusCode, userID, reason)
-	cpm.db.RemoveEventSubSubscription(userID, subscriptionID, subType)
-
-	return nil
 }

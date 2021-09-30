@@ -5,12 +5,16 @@ import (
 
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/eventsub"
+	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/store"
 	nickHelix "github.com/nicklaw5/helix"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
-	eventSubManager := eventsub.NewEventSubManager(cfg)
+	db := store.NewDatabase(cfg)
+	helixClient := helix.NewClient(cfg, db)
+	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db)
 
 	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd {
 		var redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent

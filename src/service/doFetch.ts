@@ -1,10 +1,10 @@
 import { useStore } from "../store";
-import { deleteCookie } from "./cookie";
 
 export enum Method {
     GET = "GET",
     POST = "POST",
     DELETE = "DELETE",
+    PUT = "PUT",
     PATCH = "PATCH"
 }
 

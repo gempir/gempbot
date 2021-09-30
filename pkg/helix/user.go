@@ -70,8 +70,10 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 					ViewCount:       user.ViewCount,
 					Email:           user.Email,
 				}
+				cacheMutex.Lock()
 				userCacheByID[user.ID] = data
 				userCacheByUsername[user.Login] = data
+				cacheMutex.Unlock()
 			}
 		}
 	}

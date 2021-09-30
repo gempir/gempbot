@@ -73,8 +73,6 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("Failed saving reward: %s", err), http.StatusInternalServerError)
 			return
 		}
-
-		cpm.SubscribeChannelPoints(userID)
 	} else if r.Method == http.MethodDelete {
 
 		reward, err := db.GetChannelPointReward(userID, dto.RewardType(r.URL.Query().Get("type")))

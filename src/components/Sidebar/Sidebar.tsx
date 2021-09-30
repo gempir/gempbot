@@ -8,6 +8,7 @@ import React from "react";
 import { House } from "../../icons/House";
 import { Gift } from "../../icons/Gift";
 import { Settings } from "../../icons/Settings";
+import { EventSubManager } from "./EventSubManager";
 
 export function Sidebar() {
     const [userConfig, setUserConfig] = useUserConfig();
@@ -17,6 +18,7 @@ export function Sidebar() {
         <Login />
         {loggedIn && <>
             <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} />
+            <EventSubManager />
             <Managing userConfig={userConfig} />
             <Link href="/">
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 "><House /> Home</a>

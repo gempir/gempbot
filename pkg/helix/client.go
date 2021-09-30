@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gempir/gempbot/pkg/config"
@@ -24,11 +25,13 @@ type Client struct {
 }
 
 var (
+	cacheMutex          *sync.Mutex
 	userCacheByID       map[string]*UserData
 	userCacheByUsername map[string]*UserData
 )
 
 func init() {
+	cacheMutex = &sync.Mutex{}
 	userCacheByID = map[string]*UserData{}
 	userCacheByUsername = map[string]*UserData{}
 }
