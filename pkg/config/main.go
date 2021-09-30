@@ -83,24 +83,22 @@ func (cfg *Config) persistConfig() {
 }
 
 func FromEnv() *Config {
-	protocol := "https://"
-	if Getenv("VERCEL_ENV") == "development" {
-		protocol = "http://"
-	}
+	baseUrl := Getenv("NEXT_PUBLIC_BASE_URL")
+	cookieDomain := strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(baseUrl, "https://"), "http://"), ":3000")
 
-	domain := Getenv("NEXT_PUBLIC_BASE_URL")
-	if domain == "" {
-		domain = Getenv("VERCEL_URL")
+	webhookApiBaseUrl := Getenv("WEBHOOK_BASE_URL")
+	if webhookApiBaseUrl == "" {
+		webhookApiBaseUrl = baseUrl
 	}
 
 	return &Config{
 		ClientID:          Getenv("TWITCH_CLIENT_ID"),
 		ClientSecret:      Getenv("TWITCH_CLIENT_SECRET"),
 		Secret:            Getenv("SECRET"),
-		ApiBaseUrl:        protocol + domain,
-		WebBaseUrl:        protocol + domain,
-		WebhookApiBaseUrl: protocol + domain,
-		CookieDomain:      domain,
+		ApiBaseUrl:        baseUrl,
+		WebBaseUrl:        baseUrl,
+		WebhookApiBaseUrl: webhookApiBaseUrl,
+		CookieDomain:      cookieDomain,
 		DbHost:            Getenv("PLANETSCALE_DB_HOST"),
 		DbUsername:        Getenv("PLANETSCALE_DB_USERNAME"),
 		DbPassword:        Getenv("PLANETSCALE_DB_PASSWORD"),

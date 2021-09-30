@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gempir/gempbot/pkg/dto"
+	"gorm.io/gorm/clause"
 )
 
 type ChannelPointReward struct {
@@ -69,17 +70,9 @@ func (db *Database) GetDistinctRewardsPerUser() []ChannelPointReward {
 }
 
 func (db *Database) SaveReward(reward ChannelPointReward) error {
-	updateMap, err := StructToMap(reward)
-	if err != nil {
-		return err
-	}
-
-	update := db.Client.Model(&reward).Where("owner_twitch_id = ? AND type = ?", reward.OwnerTwitchID, reward.Type).Updates(&updateMap)
-	if update.Error == nil && update.RowsAffected > 0 {
-		return nil
-	}
-
-	update = db.Client.Create(&reward)
+	update := db.Client.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&reward)
 
 	return update.Error
 }

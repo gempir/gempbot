@@ -14,3 +14,13 @@ func WriteJson(w http.ResponseWriter, data interface{}, status int) {
 		return
 	}
 }
+
+func WriteText(w http.ResponseWriter, data string, status int) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(status)
+	_, err := w.Write([]byte(data))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
