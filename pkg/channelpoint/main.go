@@ -7,8 +7,10 @@ import (
 	"io/ioutil"
 	"time"
 
+	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
@@ -18,13 +20,17 @@ type ChannelPointManager struct {
 	cfg         *config.Config
 	helixClient *helix.Client
 	db          *store.Database
+	emotechief  *emotechief.EmoteChief
+	chatClient  *chat.ChatClient
 }
 
-func NewChannelPointManager(cfg *config.Config, helixClient *helix.Client, db *store.Database) *ChannelPointManager {
+func NewChannelPointManager(cfg *config.Config, helixClient *helix.Client, db *store.Database, emotechief *emotechief.EmoteChief, chatClient *chat.ChatClient) *ChannelPointManager {
 	return &ChannelPointManager{
 		cfg:         cfg,
 		helixClient: helixClient,
 		db:          db,
+		emotechief:  emotechief,
+		chatClient:  chatClient,
 	}
 }
 

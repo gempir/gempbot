@@ -8,27 +8,30 @@ import (
 type ChatClient struct {
 	ircClient *twitch.Client
 	cfg       *config.Config
+	connected chan bool
 }
 
 func NewClient(cfg *config.Config) *ChatClient {
 	return &ChatClient{
 		cfg:       cfg,
+		connected: make(chan bool),
 		ircClient: twitch.NewClient(cfg.Username, cfg.OAuth),
 	}
 }
 
 func (c *ChatClient) Say(channel string, message string) {
+	<-c.connected
 	c.ircClient.Say(channel, message)
 }
 
-func (c *ChatClient) Connect(done chan bool) {
+func (c *ChatClient) Connect() {
 	go func() {
 		c.ircClient.Connect()
 	}()
 
 	go func() {
 		c.ircClient.OnConnect(func() {
-			done <- true
+			c.connected <- true
 		})
 	}()
 }

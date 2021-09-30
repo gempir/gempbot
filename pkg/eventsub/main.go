@@ -7,7 +7,9 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
+	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
@@ -15,40 +17,54 @@ import (
 )
 
 type EventSubManager struct {
-	cfg         *config.Config
-	helixClient *helix.Client
-	db          *store.Database
+	cfg                 *config.Config
+	helixClient         *helix.Client
+	db                  *store.Database
+	channelPointManager *channelpoint.ChannelPointManager
 }
 
-func NewEventSubManager(cfg *config.Config, helixClient *helix.Client, db *store.Database) *EventSubManager {
-	return &EventSubManager{cfg: cfg, helixClient: helixClient, db: db}
+func NewEventSubManager(cfg *config.Config, helixClient *helix.Client, db *store.Database, channelPointManager *channelpoint.ChannelPointManager) *EventSubManager {
+	return &EventSubManager{cfg: cfg, helixClient: helixClient, db: db, channelPointManager: channelPointManager}
 }
 
-func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request, response interface{}) (done bool, apiErr api.Error) {
+type eventSubNotification struct {
+	Subscription nickHelix.EventSubSubscription `json:"subscription"`
+	Challenge    string                         `json:"challenge"`
+	Event        json.RawMessage                `json:"event"`
+}
+
+func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request) (event []byte, apiErr api.Error) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error(err)
-		return true, api.NewApiError(http.StatusBadRequest, err)
+		return []byte{}, api.NewApiError(http.StatusBadRequest, err)
 	}
 
 	verified := nickHelix.VerifyEventSubNotification(esm.cfg.Secret, r.Header, string(body))
 	if !verified {
 		log.Errorf("Failed verification %s", r.Header.Get("Twitch-Eventsub-Message-Id"))
-		return true, api.NewApiError(http.StatusPreconditionFailed, fmt.Errorf("failed verfication"))
+		return []byte{}, api.NewApiError(http.StatusPreconditionFailed, fmt.Errorf("failed verfication"))
 	}
 
 	if r.Header.Get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification" {
-		return true, esm.handleChallenge(w, r, body)
+		return []byte{}, esm.handleChallenge(w, r, body)
 	}
 
-	err = json.Unmarshal(body, &response)
+	var eventSubNotification eventSubNotification
+
+	err = json.Unmarshal(body, &eventSubNotification)
 	if err != nil {
-		return true, api.NewApiError(http.StatusPreconditionFailed, fmt.Errorf("failed decoding body"+err.Error()))
+		return []byte{}, api.NewApiError(http.StatusPreconditionFailed, fmt.Errorf("failed decoding body"+err.Error()))
+	}
+
+	if eventSubNotification.Subscription.Version != "1" && eventSubNotification.Subscription.Version != "" {
+		log.Errorf("Unknown subscription version found %s %s", eventSubNotification.Subscription.Version, eventSubNotification.Subscription.ID)
+		return []byte{}, api.NewApiError(http.StatusBadRequest, fmt.Errorf("unknown subscription version"))
 	}
 
 	api.WriteText(w, "ok", http.StatusOK)
 
-	return false, nil
+	return eventSubNotification.Event, nil
 }
 
 func (esm *EventSubManager) handleChallenge(w http.ResponseWriter, r *http.Request, body []byte) api.Error {
@@ -65,8 +81,30 @@ func (esm *EventSubManager) handleChallenge(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
-func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) {
-	log.Infof("Channel points custom reward redemption: %s", redemption.ID)
+func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []byte) {
+	var redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent
+	err := json.Unmarshal(event, &redemption)
+	if err != nil {
+		log.Errorf("Failed to decode event: %s", err)
+		return
+	}
+
+	reward, err := esm.db.GetEnabledChannelPointRewardByID(redemption.Reward.ID)
+	if err != nil {
+		log.Errorf("no redemption found for rewardId %s", redemption.Reward.ID)
+		return
+	}
+
+	// Err is only returned when it's worth responding with a bad response code
+	if reward.Type == dto.REWARD_BTTV {
+		esm.channelPointManager.HandleBttvRedemption(reward, redemption)
+		return
+	}
+
+	// Err is only returned when it's worth responding with a bad response code
+	// if reward.Type == dto.REWARD_SEVENTV {
+	// 	err = s.handleSeventvRedemption(reward, redemption)
+	// }
 }
 
 func (esm *EventSubManager) SubscribeChannelPoints(userID string) {

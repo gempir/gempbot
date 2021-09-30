@@ -7,8 +7,10 @@ import (
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/auth"
 	"github.com/gempir/gempbot/pkg/channelpoint"
+	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
@@ -21,7 +23,10 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 	helixClient := helix.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
-	cpm := channelpoint.NewChannelPointManager(cfg, helixClient, db)
+	emoteChief := emotechief.NewEmoteChief(cfg, db)
+	chatClient := chat.NewClient(cfg)
+	go chatClient.Connect()
+	cpm := channelpoint.NewChannelPointManager(cfg, helixClient, db, emoteChief, chatClient)
 
 	authResp, _, apiErr := auth.AttemptAuth(r, w)
 	if apiErr != nil {

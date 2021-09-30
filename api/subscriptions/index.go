@@ -5,7 +5,10 @@ import (
 
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/auth"
+	"github.com/gempir/gempbot/pkg/channelpoint"
+	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/eventsub"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/store"
@@ -18,7 +21,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	helixClient := helix.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
-	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db)
+	emoteChief := emotechief.NewEmoteChief(cfg, db)
+	chatClient := chat.NewClient(cfg)
+	go chatClient.Connect()
+	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db, emoteChief, chatClient)
+	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, channelPointManager)
 
 	authResp, _, apiErr := auth.AttemptAuth(r, w)
 	if apiErr != nil {

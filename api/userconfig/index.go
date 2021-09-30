@@ -18,8 +18,7 @@ import (
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
 	chatClient := chat.NewClient(cfg)
-	ircClientConnected := make(chan bool)
-	go chatClient.Connect(ircClientConnected)
+	go chatClient.Connect()
 	db := store.NewDatabase(cfg)
 	helixClient := helix.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
@@ -52,7 +51,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		<-ircClientConnected
 		api.WriteJson(w, userConfig, http.StatusOK)
 		return
 
@@ -78,7 +76,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		<-ircClientConnected
 		api.WriteJson(w, nil, http.StatusOK)
 		return
 	}
