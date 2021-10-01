@@ -23,5 +23,8 @@ bot:
 refresh:
 	go run cmd/refresh/main.go
 
+eventsub:
+	go run cmd/eventsub/main.go
+
 docker: 
 	docker build . -t rg.fr-par.scw.cloud/funcscwgempbotp9rlmser/bot
