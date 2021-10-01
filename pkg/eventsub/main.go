@@ -148,28 +148,27 @@ func (esm *EventSubManager) RemoveAllEventSubSubscriptions(userID string) {
 		return
 	}
 
-	log.Info(resp.Data.EventSubSubscriptions)
-
 	subscriptions := resp.Data.EventSubSubscriptions
 
+	cursor := resp.Data.Pagination.Cursor
+
 	for {
-		cursor := resp.Data.Pagination.Cursor
 		if cursor == "" {
 			break
 		}
 		log.Infof("Getting next subscriptions cursor: %s", cursor)
 
-		nextResp, err := esm.helixClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{})
+		nextResp, err := esm.helixClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{After: cursor})
 		if err != nil {
 			log.Errorf("Failed to get subscriptions: %s", err)
 		}
-		log.Info(nextResp.Data.EventSubSubscriptions)
+		cursor = nextResp.Data.Pagination.Cursor
 
 		subscriptions = append(subscriptions, nextResp.Data.EventSubSubscriptions...)
 	}
 
 	for _, sub := range subscriptions {
-		if sub.Condition.BroadcasterUserID != userID {
+		if sub.Condition.BroadcasterUserID != userID && userID != "" {
 			continue
 		}
 

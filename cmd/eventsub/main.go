@@ -28,9 +28,10 @@ func main() {
 	cpm := channelpoint.NewChannelPointManager(cfg, helixClient, db, emotechief, chatClient)
 	esm := eventsub.NewEventSubManager(cfg, helixClient, db, cpm, chatClient)
 
+	esm.RemoveAllEventSubSubscriptions("")
+
 	for _, token := range db.GetAllUserAccessToken() {
 		log.Infof("Correcting subscriptions for %s", token.OwnerTwitchID)
-		esm.RemoveAllEventSubSubscriptions(token.OwnerTwitchID)
 		esm.SubscribeChannelPoints(token.OwnerTwitchID)
 
 		if strings.Contains(token.Scopes, "predictions") {
