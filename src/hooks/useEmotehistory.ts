@@ -49,9 +49,7 @@ export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () 
 
     const fetchPredictions = () => {
         setLoading(true);
-
         const currentPage = pageRef.current;
-
 
         const endPoint = "/api/emotehistory";
         const searchParams = new URLSearchParams();

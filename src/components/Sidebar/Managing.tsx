@@ -5,12 +5,13 @@ import { setCookie } from "../../service/cookie";
 import { useStore } from "../../store";
 
 export function Managing({ userConfig }: { userConfig: UserConfig | null | undefined }) {
+    const setManaging = useStore(state => state.setManaging);
+
     if (userConfig?.Protected.EditorFor.length === 0) {
         return null;
     }
     const managing = useStore(state => state.managing);
     const updateManaging = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const setManaging = useStore(state => state.setManaging);
         setManaging(e.target.value);
         setCookie("managing", e.target.value);
     };
