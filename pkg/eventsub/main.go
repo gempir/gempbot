@@ -148,6 +148,8 @@ func (esm *EventSubManager) RemoveAllEventSubSubscriptions(userID string) {
 		return
 	}
 
+	log.Info(resp.Data.EventSubSubscriptions)
+
 	subscriptions := resp.Data.EventSubSubscriptions
 
 	for {
@@ -161,6 +163,7 @@ func (esm *EventSubManager) RemoveAllEventSubSubscriptions(userID string) {
 		if err != nil {
 			log.Errorf("Failed to get subscriptions: %s", err)
 		}
+		log.Info(nextResp.Data.EventSubSubscriptions)
 
 		subscriptions = append(subscriptions, nextResp.Data.EventSubSubscriptions...)
 	}
