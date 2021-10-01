@@ -10,6 +10,7 @@ export interface Store {
     managing?: string;
 }
 
+
 export const useStore = create<Store>(set => ({
     twitchClientId: process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ?? "",
     apiBaseUrl: process.env.NEXT_PUBLIC_BASE_URL ?? "",
