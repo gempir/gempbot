@@ -3,7 +3,6 @@ package main
 import (
 	"strings"
 
-	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/emotechief"
@@ -23,10 +22,9 @@ func main() {
 	cfg = config.FromEnv()
 	db = store.NewDatabase(cfg)
 	helixClient = helix.NewClient(cfg, db)
-	emotechief := emotechief.NewEmoteChief(cfg, db)
 	chatClient := chat.NewClient(cfg)
-	cpm := channelpoint.NewChannelPointManager(cfg, helixClient, db, emotechief, chatClient)
-	esm := eventsub.NewEventSubManager(cfg, helixClient, db, cpm, chatClient)
+	emotechief := emotechief.NewEmoteChief(cfg, db, helixClient, chatClient)
+	esm := eventsub.NewEventSubManager(cfg, helixClient, db, emotechief, chatClient)
 
 	esm.RemoveAllEventSubSubscriptions("")
 

@@ -7,10 +7,10 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
-	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
@@ -18,15 +18,21 @@ import (
 )
 
 type EventSubManager struct {
-	cfg                 *config.Config
-	helixClient         *helix.Client
-	db                  *store.Database
-	channelPointManager *channelpoint.ChannelPointManager
-	chatClient          *chat.ChatClient
+	cfg         *config.Config
+	helixClient *helix.Client
+	db          *store.Database
+	emoteChief  *emotechief.EmoteChief
+	chatClient  *chat.ChatClient
 }
 
-func NewEventSubManager(cfg *config.Config, helixClient *helix.Client, db *store.Database, channelPointManager *channelpoint.ChannelPointManager, chatClient *chat.ChatClient) *EventSubManager {
-	return &EventSubManager{cfg: cfg, helixClient: helixClient, db: db, channelPointManager: channelPointManager, chatClient: chatClient}
+func NewEventSubManager(cfg *config.Config, helixClient *helix.Client, db *store.Database, emoteChief *emotechief.EmoteChief, chatClient *chat.ChatClient) *EventSubManager {
+	return &EventSubManager{
+		cfg:         cfg,
+		helixClient: helixClient,
+		db:          db,
+		emoteChief:  emoteChief,
+		chatClient:  chatClient,
+	}
 }
 
 type eventSubNotification struct {
@@ -99,7 +105,7 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 
 	// Err is only returned when it's worth responding with a bad response code
 	if reward.Type == dto.REWARD_BTTV {
-		esm.channelPointManager.HandleBttvRedemption(reward, redemption)
+		esm.emoteChief.HandleBttvRedemption(reward, redemption)
 		return
 	}
 

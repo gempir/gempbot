@@ -3,7 +3,6 @@ package eventsub
 import (
 	"net/http"
 
-	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/emotechief"
@@ -17,11 +16,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
 	helixClient := helix.NewClient(cfg, db)
-	emoteChief := emotechief.NewEmoteChief(cfg, db)
 	chatClient := chat.NewClient(cfg)
 	go chatClient.Connect()
-	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db, emoteChief, chatClient)
-	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, channelPointManager, chatClient)
+	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, chatClient)
+	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, emoteChief, chatClient)
 
 	event, err := eventSubManager.HandleWebhook(w, r)
 	if err != nil || len(event) == 0 {
