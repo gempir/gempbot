@@ -58,7 +58,15 @@ func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request
 		return []byte{}, esm.handleChallenge(w, r, body)
 	}
 
-	// if Twitch-Eventsub-Message-Id known -> go next
+	messageID := r.Header.Get("Twitch-Eventsub-Message-Id")
+	if _, err := esm.db.GetEventSubMessage(messageID); err == nil {
+		log.Infof("Message handled before %s", messageID)
+		api.WriteText(w, "handled before", http.StatusOK)
+		return
+	} else {
+		log.Infof("Message new, handling %s", messageID)
+		esm.db.CreateEventSubMessage(store.EventSubMessage{ID: messageID})
+	}
 
 	var eventSubNotification eventSubNotification
 
