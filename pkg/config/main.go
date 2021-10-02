@@ -107,6 +107,7 @@ func FromEnv() *Config {
 		Username:          Getenv("TWITCH_USERNAME"),
 		OAuth:             Getenv("TWITCH_OAUTH"),
 		BttvToken:         Getenv("BTTV_TOKEN"),
+		SevenTvToken:      Getenv("SEVEN_TV_TOKEN"),
 		Environment:       Getenv("VERCEL_ENV"),
 	}
 }

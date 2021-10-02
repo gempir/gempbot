@@ -1,6 +1,7 @@
 package emotechief
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,13 +17,88 @@ var sevenTvRegex = regexp.MustCompile(`https?:\/\/7tv.app\/emotes\/(\w*)`)
 
 const sevenTvApiBaseUrl = "https://api.7tv.app/v2"
 
+type GqlQuery struct {
+	Query     string                 `json:"query"`
+	Variables map[string]interface{} `json:"variables"`
+}
+
+type SevenTvUserResponse struct {
+	Data struct {
+		User struct {
+			ID           string        `json:"id"`
+			EmoteAliases []interface{} `json:"emote_aliases"`
+			Emotes       []struct {
+				ID         string `json:"id"`
+				Name       string `json:"name"`
+				Status     int    `json:"status"`
+				Visibility int    `json:"visibility"`
+				Width      []int  `json:"width"`
+				Height     []int  `json:"height"`
+			} `json:"emotes"`
+			EmoteSlots int    `json:"emote_slots"`
+			Banned     bool   `json:"banned"`
+			YoutubeID  string `json:"youtube_id"`
+		} `json:"user"`
+	} `json:"data"`
+}
+
 func (e *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
 	emote, err := getSevenTvEmote(emoteId)
 	if err != nil {
 		return
 	}
 
-	log.Info(emote.Name)
+	gqlQuery := GqlQuery{
+		Query: `
+		query GetUser($id: String!) {
+			user(id: $id) {
+			  ...FullUser
+			  banned
+			  youtube_id
+			}
+		  }
+		  
+		fragment FullUser on User {
+			id
+			emote_aliases
+			emotes {
+				id
+				name
+				status
+				visibility
+				width
+				height
+			}
+			emote_slots
+		}
+		`,
+		Variables: map[string]interface{}{"id": "60ae3e98b2ecb0150535c6b7"},
+	}
+
+	data, err := json.Marshal(gqlQuery)
+	if err != nil {
+		return
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "https://api.7tv.app/v2/gql", bytes.NewBuffer(data))
+	req.Header.Set("Content-Type", "application/json")
+	// req.Header.Set("authorization", "Bearer "+e.cfg.SevenTvToken)
+	if err != nil {
+		return
+	}
+
+	resp, err := e.httpClient.Do(req)
+	if err != nil {
+		return
+	}
+
+	var userData SevenTvUserResponse
+	err = json.NewDecoder(resp.Body).Decode(&userData)
+	if err != nil {
+		return
+	}
+
+	log.Info(userData.Data.User.Emotes)
 
 	return emote, nil, nil
 }
