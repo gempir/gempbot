@@ -58,6 +58,8 @@ func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request
 		return []byte{}, esm.handleChallenge(w, r, body)
 	}
 
+	// if Twitch-Eventsub-Message-Id known -> go next
+
 	var eventSubNotification eventSubNotification
 
 	err = json.Unmarshal(body, &eventSubNotification)
