@@ -116,16 +116,14 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 		return
 	}
 
-	// Err is only returned when it's worth responding with a bad response code
 	if reward.Type == dto.REWARD_BTTV {
 		esm.emoteChief.HandleBttvRedemption(reward, redemption)
 		return
 	}
-
-	// Err is only returned when it's worth responding with a bad response code
-	// if reward.Type == dto.REWARD_SEVENTV {
-	// 	err = s.handleSeventvRedemption(reward, redemption)
-	// }
+	if reward.Type == dto.REWARD_SEVENTV {
+		esm.emoteChief.HandleSeventvRedemption(reward, redemption)
+		return
+	}
 }
 
 func (esm *EventSubManager) SubscribeChannelPoints(userID string) {
