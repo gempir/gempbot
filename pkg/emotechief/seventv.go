@@ -35,14 +35,12 @@ type SevenTvUserResponse struct {
 				Width      []int  `json:"width"`
 				Height     []int  `json:"height"`
 			} `json:"emotes"`
-			EmoteSlots int    `json:"emote_slots"`
-			Banned     bool   `json:"banned"`
-			YoutubeID  string `json:"youtube_id"`
+			EmoteSlots int `json:"emote_slots"`
 		} `json:"user"`
 	} `json:"data"`
 }
 
-func (e *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
+func (e *EmoteChief) SetSevenTvEmote(channelUserID, login, emoteId, channel string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
 	emote, err := getSevenTvEmote(emoteId)
 	if err != nil {
 		return
@@ -53,8 +51,6 @@ func (e *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel string, slo
 		query GetUser($id: String!) {
 			user(id: $id) {
 			  ...FullUser
-			  banned
-			  youtube_id
 			}
 		  }
 		  
@@ -72,7 +68,7 @@ func (e *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel string, slo
 			emote_slots
 		}
 		`,
-		Variables: map[string]interface{}{"id": "60ae3e98b2ecb0150535c6b7"},
+		Variables: map[string]interface{}{"id": login},
 	}
 
 	data, err := json.Marshal(gqlQuery)
@@ -98,7 +94,7 @@ func (e *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel string, slo
 		return
 	}
 
-	log.Info(userData.Data.User.Emotes)
+	log.Infof("%d/%d", len(userData.Data.User.Emotes), userData.Data.User.EmoteSlots)
 
 	return emote, nil, nil
 }
@@ -109,7 +105,7 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 
 	matches := sevenTvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
-		emoteAdded, emoteRemoved, err := ec.SetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, opts.Slots)
+		emoteAdded, emoteRemoved, err := ec.SetSevenTvEmote(redemption.BroadcasterUserID, redemption.BroadcasterUserLogin, matches[0][1], redemption.BroadcasterUserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from: @%s error: %s", redemption.UserName, err.Error()))
