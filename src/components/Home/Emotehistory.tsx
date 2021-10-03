@@ -44,10 +44,10 @@ export function Emotehistory({channel}: {channel?: string}) {
 }
 
 function Emote({ id, type }: { id: string, type: EmoteType }): JSX.Element {
-    const url = `https://cdn.betterttv.net/emote/${id}/1x`;
+    let url = `https://cdn.betterttv.net/emote/${id}/1x`;
 
     if (type === EmoteType.SEVENTV) {
-        //
+        url = `https://cdn.7tv.app/emote/${id}/1x`
     }
 
     return <img className="inline-block" style={{minWidth: 28}} src={url} alt={id} />
