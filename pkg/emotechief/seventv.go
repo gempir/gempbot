@@ -12,12 +12,27 @@ import (
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
+	"github.com/gempir/gempbot/pkg/utils"
 	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 var sevenTvRegex = regexp.MustCompile(`https?:\/\/7tv.app\/emotes\/(\w*)`)
 
 const sevenTvApiBaseUrl = "https://api.7tv.app/v2"
+
+const (
+	EmoteVisibilityPrivate int32 = 1 << iota
+	EmoteVisibilityGlobal
+	EmoteVisibilityUnlisted
+	EmoteVisibilityOverrideBTTV
+	EmoteVisibilityOverrideFFZ
+	EmoteVisibilityOverrideTwitchGlobal
+	EmoteVisibilityOverrideTwitchSubscriber
+	EmoteVisibilityZeroWidth
+	EmoteVisibilityPermanentlyUnlisted
+
+	EmoteVisibilityAll int32 = (1 << iota) - 1
+)
 
 type SevenTvUserResponse struct {
 	Data struct {
@@ -42,7 +57,8 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, login, emoteId, channel str
 		return
 	}
 
-	if newEmote.Visibility != 0 {
+	if utils.BitField.HasBits(int64(newEmote.Visibility), int64(EmoteVisibilityPrivate)) ||
+		utils.BitField.HasBits(int64(newEmote.Visibility), int64(EmoteVisibilityUnlisted)) {
 		err = fmt.Errorf("7tv emote %s has incorrect visibility", newEmote.Name)
 		return
 	}
