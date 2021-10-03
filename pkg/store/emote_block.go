@@ -12,3 +12,10 @@ type EmoteBlock struct {
 	EmoteID         string         `gorm:"primarykey"`
 	CreatedAt       time.Time
 }
+
+func (db *Database) IsEmoteBlocked(channelTwitchID string, emoteID string, rewardType dto.RewardType) bool {
+	var emoteBlocks []EmoteBlock
+	db.Client.Where("channel_twitch_id = ? AND emote_id = ? AND type = ?", channelTwitchID, emoteID, rewardType).Find(&emoteBlocks)
+
+	return len(emoteBlocks) > 0
+}

@@ -87,6 +87,10 @@ type dashboardCfg struct {
 }
 
 func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, removedEmote *bttvEmoteResponse, err error) {
+	if e.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_BTTV) {
+		return nil, nil, errors.New("Emote is blocked")
+	}
+
 	addedEmote, err = getBttvEmote(emoteId)
 	if err != nil {
 		return

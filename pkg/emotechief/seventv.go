@@ -3,6 +3,7 @@ package emotechief
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -52,6 +53,10 @@ type SevenTvUserResponse struct {
 }
 
 func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
+	if ec.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_SEVENTV) {
+		return nil, nil, errors.New("Emote is blocked")
+	}
+
 	newEmote, err := getSevenTvEmote(emoteId)
 	if err != nil {
 		return
