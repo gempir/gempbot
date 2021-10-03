@@ -179,7 +179,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 			return
 		}
 	}
-	log.Debugf("Current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
+	log.Infof("Current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
 
 	var removalTargetEmoteId string
 
