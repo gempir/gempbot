@@ -51,7 +51,7 @@ type SevenTvUserResponse struct {
 	} `json:"data"`
 }
 
-func (ec *EmoteChief) SetSevenTvEmote(channelUserID, login, emoteId, channel string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
+func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
 	newEmote, err := getSevenTvEmote(emoteId)
 	if err != nil {
 		return
@@ -64,7 +64,7 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, login, emoteId, channel str
 	}
 
 	var userData SevenTvUserResponse
-	err = ec.QuerySevenTvGQL(SEVEN_TV_USER_DATA_QUERY, map[string]interface{}{"id": login}, &userData)
+	err = ec.QuerySevenTvGQL(SEVEN_TV_USER_DATA_QUERY, map[string]interface{}{"id": channel}, &userData)
 	if err != nil {
 		return
 	}
@@ -106,7 +106,14 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, login, emoteId, channel str
 	// do we need to remove the emote?
 	if removalTargetEmoteId != "" {
 		var empty struct{}
-		err := ec.QuerySevenTvGQL(SEVEN_TV_DELETE_EMOTE_QUERY, map[string]interface{}{"ch": userData.Data.User.ID, "re": "redemption", "em": removalTargetEmoteId}, &empty)
+		err := ec.QuerySevenTvGQL(
+			SEVEN_TV_DELETE_EMOTE_QUERY,
+			map[string]interface{}{
+				"ch": userData.Data.User.ID,
+				"re": fmt.Sprintf("removed for redemption by %s, new emote: %s", redeemedByUsername, newEmote.Name),
+				"em": removalTargetEmoteId,
+			}, &empty,
+		)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -114,21 +121,30 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, login, emoteId, channel str
 		ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, removalTargetEmoteId, emoteAddType)
 	}
 
+	removedEmoteName := removalTargetEmoteId
+	if removalTargetEmoteId != "" {
+		var sevenTvErr error
+		removedEmote, sevenTvErr = getSevenTvEmote(removalTargetEmoteId)
+		if sevenTvErr == nil {
+			removedEmoteName = removedEmote.Name
+		}
+	}
+
 	// add the emote
 	var empty struct{}
-	err = ec.QuerySevenTvGQL(SEVEN_TV_ADD_EMOTE_QUERY, map[string]interface{}{"ch": userData.Data.User.ID, "re": "redemption", "em": newEmote.ID}, &empty)
+	err = ec.QuerySevenTvGQL(
+		SEVEN_TV_ADD_EMOTE_QUERY,
+		map[string]interface{}{
+			"ch": userData.Data.User.ID,
+			"re": fmt.Sprintf("redemption by %s, replaced: %s", redeemedByUsername, removedEmoteName),
+			"em": newEmote.ID,
+		}, &empty,
+	)
 	if err != nil {
 		return
 	}
 
 	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteId, dto.EMOTE_ADD_ADD)
-
-	if removalTargetEmoteId != "" {
-		removedEmote, err = getSevenTvEmote(removalTargetEmoteId)
-		if err != nil {
-			return
-		}
-	}
 
 	return newEmote, removedEmote, nil
 }
@@ -198,7 +214,7 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 
 	matches := sevenTvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
-		emoteAdded, emoteRemoved, err := ec.SetSevenTvEmote(redemption.BroadcasterUserID, redemption.BroadcasterUserLogin, matches[0][1], redemption.BroadcasterUserLogin, opts.Slots)
+		emoteAdded, emoteRemoved, err := ec.SetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
 		if err != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from: @%s error: %s", redemption.UserName, err.Error()))
