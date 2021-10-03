@@ -1,7 +1,9 @@
-import { EmoteType, useEmotehistory } from "../../hooks/useEmotehistory";
+import React from "react";
+import { useEmotehistory } from "../../hooks/useEmotehistory";
 import { ChevronLeft } from "../../icons/ChevronLeft";
 import { ChevronRight } from "../../icons/ChevronRight";
 import { Refresh } from "../../icons/Refresh";
+import { Emote } from "../Emote/Emote";
 
 
 export function Emotehistory({channel}: {channel?: string}) {
@@ -42,22 +44,3 @@ export function Emotehistory({channel}: {channel?: string}) {
         </table>
     </div>
 }
-
-function Emote({ id, type }: { id: string, type: EmoteType }): JSX.Element {
-    let url = `https://cdn.betterttv.net/emote/${id}/1x`;
-
-    if (type === EmoteType.SEVENTV) {
-        url = `https://cdn.7tv.app/emote/${id}/1x`
-    }
-
-    return <img className="inline-block" style={{minWidth: 28}} src={url} alt={id} />
-}
-
-// CreatedAt: Date;
-// UpdatedAt: Date;
-// DeletedAt: Date | null;
-// ID: number;
-// ChannelTwitchID: string;
-// Type: string;
-// ChangeType: string;
-// EmoteID: string;

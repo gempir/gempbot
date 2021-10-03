@@ -19,3 +19,10 @@ func (db *Database) IsEmoteBlocked(channelTwitchID string, emoteID string, rewar
 
 	return len(emoteBlocks) > 0
 }
+
+func (db *Database) GetEmoteBlocks(channelTwitchID string, page int, pageSize int) []EmoteBlock {
+	var emoteBlocks []EmoteBlock
+	db.Client.Where("channel_twitch_id = ?", channelTwitchID).Offset((page * pageSize) - pageSize).Limit(pageSize).Order("created_at desc").Find(&emoteBlocks)
+
+	return emoteBlocks
+}

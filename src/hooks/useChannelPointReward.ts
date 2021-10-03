@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { doFetch, Method, RejectReason } from "../service/doFetch";
-import { useStore } from "../store";
-import { ChannelPointReward, RewardTypes, RawBttvChannelPointReward } from "../types/Rewards";
+import { ChannelPointReward, RawBttvChannelPointReward, RewardTypes } from "../types/Rewards";
 
 export function useChannelPointReward(userID: string, type: RewardTypes, defaultReward: ChannelPointReward, onUpdate: () => void): [ChannelPointReward, (reward: ChannelPointReward) => void, () => void] {
     const [reward, setReward] = useState<ChannelPointReward>(defaultReward);

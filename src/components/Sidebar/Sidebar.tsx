@@ -9,6 +9,7 @@ import { House } from "../../icons/House";
 import { Gift } from "../../icons/Gift";
 import { Settings } from "../../icons/Settings";
 import { EventSubManager } from "./EventSubManager";
+import { Block } from "../../icons/Block";
 
 export function Sidebar() {
     const [userConfig, setUserConfig] = useUserConfig();
@@ -28,6 +29,9 @@ export function Sidebar() {
             </Link>
             <Link href="/permissions" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><Settings /> Permissions</a>
+            </Link>
+            <Link href="/blocks" >
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><Block /> Blocks</a>
             </Link>
             <div className="absolute bottom-3 text-center left-0 right-0 mx-auto hover:text-blue-500">
                 <Link href="/privacy">
