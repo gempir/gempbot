@@ -6,8 +6,8 @@ import (
 )
 
 type EventSubMessage struct {
-	ID        string `gorm:"primaryKey"`
-	CreatedAt time.Time
+	ID        string    `gorm:"primaryKey"`
+	CreatedAt time.Time `gorm:"index"`
 }
 
 func (db *Database) CreateEventSubMessage(message EventSubMessage) {
