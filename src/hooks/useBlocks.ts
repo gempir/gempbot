@@ -24,6 +24,7 @@ interface Return {
     increasePage: () => void,
     decreasePage: () => void,
     block: (emoteIds: string, type: EmoteType) => void,
+    deleteBlock: (block: Block) => void,
 }
 
 export function useBlocks(): Return {
@@ -71,6 +72,17 @@ export function useBlocks(): Return {
         });
     };
 
+    const deleteBlock = (block: Block) => {
+        setLoading(true);
+
+        const endPoint = "/api/blocks";
+        const searchParams = new URLSearchParams();
+        doFetch(Method.DELETE, endPoint, searchParams, block).then(fetchBlocks).catch(err => {
+            setLoading(false);
+            throw err;
+        });
+    };
+
     return {
         blocks: blocks,
         fetch: fetchBlocks,
@@ -79,5 +91,6 @@ export function useBlocks(): Return {
         increasePage: () => blocks.length === PAGE_SIZE ? setPage(page + 1) : undefined,
         decreasePage: () => page > 1 ? setPage(page - 1) : undefined,
         block: block,
+        deleteBlock: deleteBlock,
     };
 }

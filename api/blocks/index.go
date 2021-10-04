@@ -73,6 +73,25 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if r.Method == http.MethodDelete {
+		var req deleteRequest
+
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = db.DeleteEmoteBlock(userID, req.EmoteID, req.Type)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type deleteRequest struct {
+	store.EmoteBlock
 }
 
 type blockRequest struct {

@@ -28,6 +28,17 @@ func (db *Database) GetEmoteBlocks(channelTwitchID string, page int, pageSize in
 	return emoteBlocks
 }
 
+func (db *Database) DeleteEmoteBlock(channelTwitchID string, emoteId string, emoteType dto.RewardType) error {
+	emoteBlock := EmoteBlock{ChannelTwitchID: channelTwitchID, EmoteID: emoteId, Type: emoteType}
+
+	res := db.Client.Delete(&emoteBlock)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
 func (db *Database) BlockEmotes(channelTwitchID string, emoteIds []string, emoteType string) error {
 	var emoteBlocks []EmoteBlock
 	for _, emoteId := range emoteIds {
