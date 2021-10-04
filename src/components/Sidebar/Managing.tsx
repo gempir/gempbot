@@ -6,15 +6,15 @@ import { useStore } from "../../store";
 
 export function Managing({ userConfig }: { userConfig: UserConfig | null | undefined }) {
     const setManaging = useStore(state => state.setManaging);
-
-    if (userConfig?.Protected.EditorFor.length === 0) {
-        return null;
-    }
     const managing = useStore(state => state.managing);
     const updateManaging = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setManaging(e.target.value);
         setCookie("managing", e.target.value);
     };
+
+    if (userConfig?.Protected.EditorFor.length === 0) {
+        return null;
+    }
 
     return <div className="Managing flex items-center my-4">
         <UserGroup />
