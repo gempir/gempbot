@@ -66,7 +66,16 @@ func (a *Auth) AttemptAuth(r *http.Request, w http.ResponseWriter) (nickHelix.Va
 }
 
 func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
-	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	scToken := ""
+	for _, cookie := range r.Cookies() {
+		if cookie.Name == "scToken" {
+			scToken = cookie.Value
+		}
+	}
+
+	if scToken == "" {
+		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("no scToken cookie set"))
+	}
 
 	// Initialize a new instance of `Claims`
 	claims := &TokenClaims{}

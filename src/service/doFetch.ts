@@ -13,13 +13,9 @@ export enum RejectReason {
 }
 
 export async function doFetch(method: Method, path: string, params: URLSearchParams = new URLSearchParams(), body: any = undefined) {
-    const { apiBaseUrl, scToken, managing } = useStore.getState();
+    const { apiBaseUrl, managing } = useStore.getState();
 
     const headers: Record<string, string> = { 'content-type': 'application/json' }
-    if (scToken) {
-        headers.Authorization = `Bearer ${scToken}`
-    }
-
     const config: RequestInit = {
         method: method,
         headers: {
