@@ -66,7 +66,7 @@ func (a *Auth) AttemptAuth(r *http.Request, w http.ResponseWriter) (nickHelix.Va
 }
 
 func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
-	scToken := ""
+	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	for _, cookie := range r.Cookies() {
 		if cookie.Name == "scToken" {
 			scToken = cookie.Value
