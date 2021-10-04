@@ -40,7 +40,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodPut {
-		eventSubManager.SubscribeChannelPoints(userID)
 		eventSubManager.SubscribePredictions(userID)
 	} else if r.Method == http.MethodDelete {
 		eventSubManager.RemoveAllEventSubSubscriptions(userID)
