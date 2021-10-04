@@ -9,6 +9,7 @@ type EventSubSubscription struct {
 	TargetTwitchID string `gorm:"primaryKey"`
 	SubscriptionID string `gorm:"primaryKey"`
 	Type           string `gorm:"index"`
+	ForeignID      string `gorm:"index"`
 	Version        string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
