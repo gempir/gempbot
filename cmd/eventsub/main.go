@@ -1,15 +1,12 @@
 package main
 
 import (
-	"strings"
-
-	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/eventsub"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 var (
@@ -22,18 +19,20 @@ func main() {
 	cfg = config.FromEnv()
 	db = store.NewDatabase(cfg)
 	helixClient = helix.NewClient(cfg, db)
-	chatClient := chat.NewClient(cfg)
-	emotechief := emotechief.NewEmoteChief(cfg, db, helixClient, chatClient)
-	esm := eventsub.NewEventSubManager(cfg, helixClient, db, emotechief, chatClient)
+	subscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 
-	esm.RemoveAllEventSubSubscriptions("")
-
-	for _, token := range db.GetAllUserAccessToken() {
-		log.Infof("Correcting subscriptions for %s", token.OwnerTwitchID)
-		esm.SubscribeChannelPoints(token.OwnerTwitchID)
-
-		if strings.Contains(token.Scopes, "predictions") {
-			esm.SubscribePredictions(token.OwnerTwitchID)
+	rewards := map[string]string{}
+	for _, sub := range db.GetAllSubscriptions() {
+		if sub.Type == nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd {
+			if _, ok := rewards[sub.TargetTwitchID]; !ok {
+				rewards[sub.TargetTwitchID] = sub.SubscriptionID
+			} else {
+				log.Warnf("Multiple custom rewards for channel %s removing old", sub.TargetTwitchID)
+				err := subscriptionManager.RemoveSubscription(sub.SubscriptionID)
+				if err != nil {
+					log.Error(err)
+				}
+			}
 		}
 	}
 }

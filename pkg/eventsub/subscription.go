@@ -47,3 +47,15 @@ func (esm *SubscriptionManager) SubscribeRewardRedemptionAdd(userID, rewardId st
 		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, rewardId)
 	}
 }
+
+func (esm *SubscriptionManager) RemoveSubscription(subscriptionID string) error {
+	response, err := esm.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("[%d] removed EventSubSubscription", response.StatusCode)
+	esm.db.RemoveEventSubSubscription(subscriptionID)
+
+	return nil
+}

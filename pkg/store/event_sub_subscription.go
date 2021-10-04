@@ -20,6 +20,12 @@ func (db *Database) AddEventSubSubscription(targetTwitchID, subscriptionID, vers
 	db.Client.Create(&sub)
 }
 
+func (db *Database) GetAllSubscriptions() []EventSubSubscription {
+	var subs []EventSubSubscription
+	db.Client.Order("updated_at desc").Find(&subs)
+	return subs
+}
+
 func (db *Database) HasEventSubSubscription(subscriptionID string) bool {
 	var subs []EventSubSubscription
 	result := db.Client.Where("subscription_id = ?", subscriptionID).Find(&subs)
