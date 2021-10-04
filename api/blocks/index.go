@@ -1,8 +1,10 @@
 package blocks
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/auth"
@@ -51,4 +53,29 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		api.WriteJson(w, blocks, http.StatusOK)
 		return
 	}
+	if r.Method == http.MethodPatch {
+		var req blockRequest
+
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		toBlock := []string{}
+		for _, emote := range strings.Split(req.EmoteIds, ",") {
+			toBlock = append(toBlock, strings.TrimSpace(emote))
+		}
+
+		err = db.BlockEmotes(userID, toBlock, req.EmoteType)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type blockRequest struct {
+	EmoteIds  string `json:"emoteIds"`
+	EmoteType string `json:"type"`
 }
