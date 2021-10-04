@@ -21,8 +21,8 @@ interface Return {
     fetch: () => void,
     loading: boolean,
     page: number,
-    nextPage: () => void,
-    prevPage: () => void,
+    increasePage: () => void,
+    decreasePage: () => void,
     block: (emoteIds: string, type: EmoteType) => void,
 }
 
@@ -76,8 +76,8 @@ export function useBlocks(): Return {
         fetch: fetchBlocks,
         loading: loading,
         page: page,
-        nextPage: () => blocks.length === PAGE_SIZE ? setPage(page + 1) : undefined,
-        prevPage: () => page > 1 ? setPage(page - 1) : undefined,
+        increasePage: () => blocks.length === PAGE_SIZE ? setPage(page + 1) : undefined,
+        decreasePage: () => page > 1 ? setPage(page - 1) : undefined,
         block: block,
     };
 }

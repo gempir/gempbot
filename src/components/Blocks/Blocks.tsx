@@ -1,10 +1,13 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useBlocks } from "../../hooks/useBlocks";
 import { EmoteType } from "../../hooks/useEmotehistory";
 import { Emote } from "../Emote/Emote";
+import { ChevronLeft } from "../../icons/ChevronLeft";
+import { ChevronRight } from "../../icons/ChevronRight";
+import { Refresh } from "../../icons/Refresh";
 
 export function Blocks() {
-    const {blocks, block, loading} = useBlocks();
+    const { blocks, block, loading, increasePage, decreasePage, page, fetch } = useBlocks();
 
     const [newEmoteType, setNewEmoteType] = useState<EmoteType>(EmoteType.SEVENTV);
     const [newEmoteID, setNewEmoteID] = useState<string>("");
@@ -20,14 +23,30 @@ export function Blocks() {
 
     return <div className="p-4">
         <div className="p-4 bg-gray-800 rounded shadow relative">
-            <h2 className="mb-4 text-xl">Blocks</h2>
+            <div className="flex gap-5 items-center mb-5">
+                <h2 className="text-xl">Blocks</h2>
+                <div className="text-2xl flex gap-5 w-full select-none" onClick={fetch}>
+                    <div className="flex gap-2 items-center">
+                        <div onClick={decreasePage} className="cursor-pointer hover:text-blue-500">
+                            <ChevronLeft />
+                        </div>
+                        <div className="text-base w-4 text-center">
+                            {page}
+                        </div>
+                        <div onClick={increasePage} className="cursor-pointer hover:text-blue-500">
+                            <ChevronRight />
+                        </div>
+                    </div>
+                    <Refresh className={"hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+                </div>
+            </div>
             <table className={"w-full" + (loading ? " animate-pulse opacity-10" : "")}>
                 <thead>
                     <tr className="border-b-8 border-transparent">
                         <th />
                         <th className="px-5">Emote</th>
                         <th className="text-left pl-5">EmoteID</th>
-                        <th className="px-5">Platform</th>
+                        <th className="px-5">Type</th>
                         <th className="px-5">Created</th>
                     </tr>
                 </thead>
