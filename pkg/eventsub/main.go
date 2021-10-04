@@ -80,7 +80,12 @@ func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request
 
 	if eventSubNotification.Subscription.Version != "1" && eventSubNotification.Subscription.Version != "" {
 		log.Errorf("Unknown subscription version found %s %s", eventSubNotification.Subscription.Version, eventSubNotification.Subscription.ID)
-		return []byte{}, api.NewApiError(http.StatusBadRequest, fmt.Errorf("unknown subscription version"))
+		return []byte{}, api.NewApiError(http.StatusOK, fmt.Errorf("unknown subscription version"))
+	}
+
+	if !esm.db.HasEventSubSubscription(eventSubNotification.Subscription.ID) {
+		log.Errorf("Unknown subscription id found %s", eventSubNotification.Subscription.ID)
+		return []byte{}, api.NewApiError(http.StatusOK, fmt.Errorf("unknown subscription"))
 	}
 
 	api.WriteText(w, "ok", http.StatusOK)
@@ -141,18 +146,18 @@ func (esm *EventSubManager) SubscribeChannelPoints(userID string) {
 	log.Infof("[%d] subscription %s %s", response.StatusCode, response.Error, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
-		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
+		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
 }
 
-func (esm *EventSubManager) RemoveEventSubSubscription(userID string, subscriptionID string, subType string, reason string) error {
+func (esm *EventSubManager) RemoveEventSubSubscription(subscriptionID string) error {
 	response, err := esm.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("[%d] removed EventSubSubscription for %s reason: %s", response.StatusCode, userID, reason)
-	esm.db.RemoveEventSubSubscription(userID, subscriptionID, subType)
+	log.Infof("[%d] removed EventSubSubscription", response.StatusCode)
+	esm.db.RemoveEventSubSubscription(subscriptionID)
 
 	return nil
 }
@@ -189,7 +194,7 @@ func (esm *EventSubManager) RemoveAllEventSubSubscriptions(userID string) {
 			continue
 		}
 
-		err := esm.RemoveEventSubSubscription(userID, sub.ID, sub.Type, "removed all subscriptions")
+		err := esm.RemoveEventSubSubscription(sub.ID)
 		if err != nil {
 			log.Error(err)
 			return

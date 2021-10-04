@@ -22,7 +22,7 @@ func (esm *EventSubManager) SubscribePredictions(userID string) {
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new sub in %s %s", userID, sub.Type)
-		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
+		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
 
 	response, err = esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPredictionLock, "channel.prediction.lock")
@@ -34,7 +34,7 @@ func (esm *EventSubManager) SubscribePredictions(userID string) {
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new sub in %s %s", userID, sub.Type)
-		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
+		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
 
 	response, err = esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPredictionEnd, "channel.prediction.end")
@@ -46,7 +46,7 @@ func (esm *EventSubManager) SubscribePredictions(userID string) {
 	log.Infof("[%d] created subscription %s", response.StatusCode, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new sub in %s %s", userID, sub.Type)
-		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type)
+		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
 }
 

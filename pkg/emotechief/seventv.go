@@ -133,6 +133,9 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 		if sevenTvErr == nil {
 			removedEmoteName = removedEmote.Name
 		}
+		if sevenTvErr != nil {
+			log.Errorf("Failed to fetch removed Emote %s", sevenTvErr.Error())
+		}
 	}
 
 	// add the emote

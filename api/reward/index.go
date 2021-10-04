@@ -10,6 +10,7 @@ import (
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/eventsub"
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
@@ -25,6 +26,7 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 	chatClient := chat.NewClient(cfg)
 	go chatClient.Connect()
 	cpm := channelpoint.NewChannelPointManager(cfg, helixClient, db)
+	subscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 
 	authResp, _, apiErr := auth.AttemptAuth(r, w)
 	if apiErr != nil {
@@ -68,6 +70,8 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("Failed saving reward to twitch: %s", err), http.StatusInternalServerError)
 			return
 		}
+
+		subscriptionManager.SubscribeRewardRedemptionAdd(userID, config.ID)
 
 		newReward.SetConfig(config)
 

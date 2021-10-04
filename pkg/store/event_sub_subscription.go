@@ -1,36 +1,35 @@
 package store
 
 import (
-	"errors"
 	"time"
 )
 
 type EventSubSubscription struct {
-	TargetTwitchID string `gorm:"primaryKey"`
-	SubscriptionID string `gorm:"primaryKey"`
-	Type           string `gorm:"index"`
+	TargetTwitchID string `gorm:"primary_key"`
+	SubscriptionID string `gorm:"primary_key;index"`
+	Type           string
 	ForeignID      string `gorm:"index"`
 	Version        string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
 
-func (db *Database) AddEventSubSubscription(targetTwitchID string, subscriptionID string, version string, subType string) {
-	sub := EventSubSubscription{TargetTwitchID: targetTwitchID, SubscriptionID: subscriptionID, Version: version, Type: subType}
+func (db *Database) AddEventSubSubscription(targetTwitchID, subscriptionID, version, subType, foreignID string) {
+	sub := EventSubSubscription{TargetTwitchID: targetTwitchID, SubscriptionID: subscriptionID, Version: version, Type: subType, ForeignID: foreignID}
 
 	db.Client.Create(&sub)
 }
 
-func (db *Database) GetEventSubSubscription(targetTwitchID string, subscriptionID string, subType string) (EventSubSubscription, error) {
-	var sub EventSubSubscription
-	result := db.Client.Where("target_twitch_id = ? AND subscription_id = ? AND type = ?", targetTwitchID, subscriptionID, subType).First(&sub)
-	if result.RowsAffected == 0 {
-		return sub, errors.New("not found")
+func (db *Database) HasEventSubSubscription(subscriptionID string) bool {
+	var subs []EventSubSubscription
+	result := db.Client.Where("subscription_id = ?", subscriptionID).Find(&subs)
+	if result.Error != nil {
+		return false
 	}
 
-	return sub, nil
+	return len(subs) > 0
 }
 
-func (db *Database) RemoveEventSubSubscription(targetTwitchID string, subscriptionID string, subType string) {
-	db.Client.Delete(&EventSubSubscription{}, "target_twitch_id = ? AND subscription_id = ? AND type = ?", targetTwitchID, subscriptionID, subType)
+func (db *Database) RemoveEventSubSubscription(subscriptionID string) {
+	db.Client.Delete(&EventSubSubscription{}, "subscription_id = ?", subscriptionID)
 }
