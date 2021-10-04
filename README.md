@@ -11,8 +11,7 @@
 
 ## Setup
 
-1. Login
-2. Press Sub once (green button) and wait a moment (5s), this will subscribe the necesary webhooks to your channels
+- Login
 
 ### Setup Channel Point Rewards
 
@@ -22,8 +21,8 @@
 
 ### Setup Prediction Management
 
+- Press Sub once (green button) and wait a moment (5s), this will subscribe the necessary webhooks to your channels
 - Join the bot to your channel from the sidebar
-
 
 ## Prediction Usage
 
