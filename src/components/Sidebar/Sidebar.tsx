@@ -12,13 +12,13 @@ import { EventSubManager } from "./EventSubManager";
 import { Block } from "../../icons/Block";
 
 export function Sidebar() {
-    const [userConfig, setUserConfig] = useUserConfig();
+    const [userConfig, setUserConfig, , loading] = useUserConfig();
     const loggedIn = useStore(state => Boolean(state.scToken));
 
     return <div className="p-4 bg-gray-800 px-6 shadow flex flex-col relative h-screen">
         <Login />
         {loggedIn && <>
-            <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} />
+            <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} userConfigLoading={loading} />
             <EventSubManager />
             <Managing userConfig={userConfig} />
             <Link href="/">

@@ -12,7 +12,7 @@ export function Managing({ userConfig }: { userConfig: UserConfig | null | undef
         setCookie("managing", e.target.value);
     };
 
-    if (userConfig?.Protected.EditorFor.length === 0) {
+    if (userConfig?.Protected?.EditorFor.length === 0) {
         return null;
     }
 
