@@ -2,6 +2,8 @@ package store
 
 import (
 	"time"
+
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 type EventSubSubscription struct {
@@ -23,6 +25,12 @@ func (db *Database) AddEventSubSubscription(targetTwitchID, subscriptionID, vers
 func (db *Database) GetAllSubscriptions() []EventSubSubscription {
 	var subs []EventSubSubscription
 	db.Client.Order("updated_at desc").Find(&subs)
+	return subs
+}
+
+func (db *Database) GetAllPredictionSubscriptions(userID string) []EventSubSubscription {
+	var subs []EventSubSubscription
+	db.Client.Where("target_twitch_id = ? AND type IN (?, ?, ?)", userID, nickHelix.EventSubTypeChannelPredictionBegin, nickHelix.EventSubTypeChannelPredictionLock, nickHelix.EventSubTypeChannelPredictionEnd).Find(&subs)
 	return subs
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/eventsub"
 	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/user"
 )
@@ -42,7 +43,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPut {
 		eventSubManager.SubscribePredictions(userID)
 	} else if r.Method == http.MethodDelete {
-		eventSubManager.RemoveAllEventSubSubscriptions(userID)
+		for _, sub := range db.GetAllPredictionSubscriptions(userID) {
+			log.Infof("Removing subscribtion on request %s from %s", sub.SubscriptionID, sub.TargetTwitchID)
+			err := eventSubManager.RemoveEventSubSubscription(sub.SubscriptionID)
+			if err != nil {
+				log.Error(err)
+			}
+		}
 	}
 
 	api.WriteJson(w, "ok", http.StatusOK)

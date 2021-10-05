@@ -15,14 +15,14 @@ export function useSubscribtions(): [() => void, () => void] {
     };
 
     const subscribe = () => {
-        if (!confirm("This will re-subscribe all eventsub subscriptions to your channel.\nOnly do this if you know what you are doing")) {
+        if (!confirm("Subscribe to all prediction events, to log them here and write to chat")) {
             return
         }
 
         executeSubscriptions(Method.PUT);
     }
     const remove = () => {
-        if (!confirm("This will remove all eventsub subscriptions to your channel.\nOnly do this if you know what you are doing")) {
+        if (!confirm("Unsubscribe prediction events")) {
             return
         }
 
