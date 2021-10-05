@@ -44,7 +44,7 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
         setLoading(false);
     }
 
-    const [reward, setReward, deleteReward] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward, onUpdate);
+    const [reward, setReward, deleteReward, errorMessage] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward, onUpdate);
     const onSubmit = (data: BttvRewardForm) => {
         const rewardData: ChannelPointReward = {
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
@@ -148,6 +148,10 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
                 Global Cooldown in Minutes
                 <input defaultValue={(reward.GlobalCooldownSeconds ?? 0) / 60} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
+
+            {errorMessage && <div className="p-4 text-red-800">
+                {errorMessage}
+            </div>}
 
             <div className="flex flex-row justify-between items-center select-none">
                 <label className="flex items-center">

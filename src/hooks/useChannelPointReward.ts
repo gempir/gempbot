@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { doFetch, Method, RejectReason } from "../service/doFetch";
 import { ChannelPointReward, RawBttvChannelPointReward, RewardTypes } from "../types/Rewards";
 
-export function useChannelPointReward(userID: string, type: RewardTypes, defaultReward: ChannelPointReward, onUpdate: () => void): [ChannelPointReward, (reward: ChannelPointReward) => void, () => void] {
+export function useChannelPointReward(userID: string, type: RewardTypes, defaultReward: ChannelPointReward, onUpdate: () => void): [ChannelPointReward, (reward: ChannelPointReward) => void, () => void, string | null] {
     const [reward, setReward] = useState<ChannelPointReward>(defaultReward);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const fetchReward = () => {
         const endPoint = "/api/reward";
@@ -26,7 +27,7 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
         const searchParams = new URLSearchParams();
         searchParams.append("type", type);
 
-        doFetch(Method.POST, endPoint, searchParams, reward).then(fetchReward);
+        doFetch(Method.POST, endPoint, searchParams, reward).catch(setErrorMessage).then(fetchReward);
     }
 
     const deleteReward = () => {
@@ -34,8 +35,8 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
         const searchParams = new URLSearchParams();
         searchParams.append("type", type);
 
-        doFetch(Method.DELETE, endPoint, searchParams, reward).then(fetchReward);
+        doFetch(Method.DELETE, endPoint, searchParams, reward).catch(setErrorMessage).then(fetchReward);
     }
 
-    return [reward, updateReward, deleteReward];
+    return [reward, updateReward, deleteReward, errorMessage];
 }

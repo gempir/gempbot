@@ -45,7 +45,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
         setLoading(false);
     }
 
-    const [reward, setReward, deleteReward] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.SevenTv, defaultReward, onUpdate);
+    const [reward, setReward, deleteReward, errorMessage] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.SevenTv, defaultReward, onUpdate);
     const onSubmit = (data: BttvRewardForm) => {
         const rewardData: ChannelPointReward = {
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
@@ -89,7 +89,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-5">
                     <>
-                        <SevenTvLogo className={"w-16"}/>
+                        <SevenTvLogo className={"w-16"} />
                         <h3 className="text-xl font-bold">7tv Emote</h3>
                     </>
                 </div>
@@ -149,6 +149,10 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
                 Global Cooldown in Minutes
                 <input defaultValue={(reward.GlobalCooldownSeconds ?? 0) / 60} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
             </label>
+
+            {errorMessage && <div className="my-4 text-red-600">
+                {errorMessage}
+            </div>}
 
             <div className="flex flex-row justify-between items-center select-none">
                 <label className="flex items-center">

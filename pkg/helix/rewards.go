@@ -184,7 +184,7 @@ func (c *Client) CreateOrUpdateReward(userID, userAccessToken string, reward Cre
 
 		log.Errorf("Failed to create reward for %s: %s", userID, response.Message)
 
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("Failed to create reward: %s", response.Message)
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("%s", response.Message)
 	}
 
 	var response CreateCustomRewardResponse
