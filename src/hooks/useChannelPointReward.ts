@@ -27,7 +27,7 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
         const searchParams = new URLSearchParams();
         searchParams.append("type", type);
 
-        doFetch(Method.POST, endPoint, searchParams, reward).catch(setErrorMessage).then(fetchReward).then(() => setErrorMessage(null));
+        doFetch(Method.POST, endPoint, searchParams, reward).then(fetchReward).then(() => setErrorMessage(null)).catch(setErrorMessage);
     }
 
     const deleteReward = () => {
@@ -35,7 +35,7 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
         const searchParams = new URLSearchParams();
         searchParams.append("type", type);
 
-        doFetch(Method.DELETE, endPoint, searchParams, reward).catch(setErrorMessage).then(fetchReward).then(() => setErrorMessage(null));
+        doFetch(Method.DELETE, endPoint, searchParams, reward).then(fetchReward).then(() => setErrorMessage(null)).catch(setErrorMessage);
     }
 
     return [reward, updateReward, deleteReward, errorMessage];
