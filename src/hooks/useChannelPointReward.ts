@@ -16,7 +16,7 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
                 throw new Error(reason);
             }
             setReward(defaultReward);
-        }).then(onUpdate)
+        }).then(() => setErrorMessage(null)).then(onUpdate)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -27,7 +27,7 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
         const searchParams = new URLSearchParams();
         searchParams.append("type", type);
 
-        doFetch(Method.POST, endPoint, searchParams, reward).then(fetchReward).then(() => setErrorMessage(null)).catch(setErrorMessage);
+        doFetch(Method.POST, endPoint, searchParams, reward).then(fetchReward).catch(setErrorMessage);
     }
 
     const deleteReward = () => {
@@ -35,7 +35,7 @@ export function useChannelPointReward(userID: string, type: RewardTypes, default
         const searchParams = new URLSearchParams();
         searchParams.append("type", type);
 
-        doFetch(Method.DELETE, endPoint, searchParams, reward).then(fetchReward).then(() => setErrorMessage(null)).catch(setErrorMessage);
+        doFetch(Method.DELETE, endPoint, searchParams, reward).then(fetchReward).catch(setErrorMessage);
     }
 
     return [reward, updateReward, deleteReward, errorMessage];
