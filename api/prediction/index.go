@@ -70,7 +70,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	log.Infof("[helix] %d Created Prediction %s", resp.StatusCode, userID)
+	log.Infof("[helix] %d Created Prediction %s Error: %s", resp.StatusCode, userID, resp.ErrorMessage)
 
 	api.WriteJson(w, resp.ErrorMessage, resp.StatusCode)
 }
