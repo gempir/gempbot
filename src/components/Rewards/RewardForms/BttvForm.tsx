@@ -38,13 +38,8 @@ const defaultReward = {
 
 export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
-    const [loading, setLoading] = useState(false);
 
-    const onUpdate = () => {
-        setLoading(false);
-    }
-
-    const [reward, setReward, deleteReward, errorMessage] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward, onUpdate);
+    const [reward, setReward, deleteReward, errorMessage, loading] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.Bttv, defaultReward);
     const onSubmit = (data: BttvRewardForm) => {
         const rewardData: ChannelPointReward = {
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
@@ -68,7 +63,6 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
         };
 
         setReward(rewardData);
-        setLoading(true);
     }
 
     useEffect(() => {

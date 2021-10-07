@@ -39,13 +39,8 @@ const defaultReward = {
 
 export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
-    const [loading, setLoading] = useState(false);
 
-    const onUpdate = () => {
-        setLoading(false);
-    }
-
-    const [reward, setReward, deleteReward, errorMessage] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.SevenTv, defaultReward, onUpdate);
+    const [reward, setReward, deleteReward, errorMessage, loading] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.SevenTv, defaultReward);
     const onSubmit = (data: BttvRewardForm) => {
         const rewardData: ChannelPointReward = {
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
@@ -69,7 +64,6 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
         };
 
         setReward(rewardData);
-        setLoading(true);
     }
 
     useEffect(() => {
