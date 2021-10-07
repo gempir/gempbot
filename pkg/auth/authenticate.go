@@ -161,27 +161,3 @@ func (a *Auth) WriteDeleteCookieResponse(w http.ResponseWriter, err api.Error) {
 	http.SetCookie(w, cookie)
 	http.Error(w, err.Error(), err.Status())
 }
-
-// func (a *Auth) getUserConfig(userID string) UserConfig {
-// 	uCfg := createDefaultUserConfig()
-
-// 	botConfig, err := s.db.GetBotConfig(userID)
-// 	if err != nil {
-// 		uCfg.BotJoin = false
-// 	} else {
-// 		uCfg.BotJoin = botConfig.JoinBot
-// 	}
-
-// 	uCfg.Protected.CurrentUserID = userID
-
-// 	perms := s.db.GetChannelPermissions(userID)
-// 	for _, perm := range perms {
-// 		uCfg.Permissions[perm.TwitchID] = Permission{perm.Editor, perm.Prediction}
-// 	}
-
-// 	for _, perm := range s.db.GetUserPermissions(userID) {
-// 		uCfg.Protected.EditorFor = append(uCfg.Protected.EditorFor, perm.ChannelTwitchId)
-// 	}
-
-// 	return uCfg
-// }
