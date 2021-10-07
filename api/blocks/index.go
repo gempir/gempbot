@@ -14,8 +14,6 @@ import (
 	"github.com/gempir/gempbot/pkg/user"
 )
 
-const PAGE_SIZE = 20
-
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
@@ -49,7 +47,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		blocks := db.GetEmoteBlocks(userID, pageNumber, PAGE_SIZE)
+		blocks := db.GetEmoteBlocks(userID, pageNumber, api.BLOCKS_PAGE_SIZE)
 		api.WriteJson(w, blocks, http.StatusOK)
 		return
 	}
