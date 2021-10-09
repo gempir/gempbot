@@ -100,7 +100,9 @@ func (b *Bot) joinBotConfigChannels() {
 		log.Error(err)
 	}
 
+	log.Infof("joining %d channels", len(users))
 	for _, user := range users {
+		time.Sleep(time.Millisecond * 1000)
 		b.chatClient.Join(user.Login)
 	}
 }

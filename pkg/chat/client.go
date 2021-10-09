@@ -54,8 +54,10 @@ func (c *ChatClient) Connect() {
 		}()
 	})
 
+	count := 0
 	c.ircClient.OnRoomStateMessage(func(roomStateMessage twitch.RoomStateMessage) {
-		log.Infof("#%s roomstate %v", roomStateMessage.Channel, roomStateMessage.State)
+		count++
+		log.Infof("%d #%s roomstate %v", count, roomStateMessage.Channel, roomStateMessage.State)
 	})
 
 	err := c.ircClient.Connect()
