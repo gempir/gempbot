@@ -46,5 +46,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	chatClient.WaitForConnect()
 	http.Error(w, "Invalid event type", http.StatusBadRequest)
 }

@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gempir/gempbot/cmd/bot/scaler"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/humanize"
 	"github.com/gempir/gempbot/pkg/store"
@@ -19,20 +18,20 @@ type Listener struct {
 	db                 *store.Database
 	predictionsHandler *Handler
 	commands           map[string]func(dto.CommandPayload)
-	write              chan scaler.Message
+	chatSay            func(channel, message string)
 }
 
 var (
 	commandRegex = regexp.MustCompile(`^\!(\w+)\ ?`)
 )
 
-func NewListener(db *store.Database, predictionsHandler *Handler, write chan scaler.Message) *Listener {
+func NewListener(db *store.Database, predictionsHandler *Handler, chatSay func(channel, message string)) *Listener {
 	return &Listener{
 		startTime:          time.Now(),
 		db:                 db,
 		predictionsHandler: predictionsHandler,
 		commands:           map[string]func(dto.CommandPayload){},
-		write:              write,
+		chatSay:            chatSay,
 	}
 }
 
@@ -75,5 +74,5 @@ func (l *Listener) handleStatus(payload dto.CommandPayload) {
 	}
 
 	uptime := humanize.TimeSince(l.startTime)
-	l.write <- scaler.Message{Channel: payload.Msg.Channel, Message: fmt.Sprintf("@%s, uptime: %s", payload.Msg.User.DisplayName, uptime)}
+	l.chatSay(payload.Msg.Channel, fmt.Sprintf("@%s, uptime: %s", payload.Msg.User.DisplayName, uptime))
 }

@@ -21,7 +21,6 @@ func NewClient(cfg *config.Config) *ChatClient {
 }
 
 func (c *ChatClient) Say(channel string, message string) {
-	<-c.connected
 	c.ircClient.Say(channel, message)
 }
 
@@ -33,18 +32,38 @@ func (c *ChatClient) PartBot(channel string) {
 	c.Say(c.cfg.Username, "PART "+c.cfg.Environment+" "+channel)
 }
 
-func (c *ChatClient) Connect() {
-	go func() {
-		err := c.ircClient.Connect()
-		if err != nil {
-			log.Error()
-			c.connected <- false
-		}
-	}()
+func (c *ChatClient) Join(channel string) {
+	log.Infof("JOIN %s", channel)
+	c.ircClient.Join(channel)
+}
 
-	go func() {
-		c.ircClient.OnConnect(func() {
+func (c *ChatClient) Part(channel string) {
+	log.Infof("PART %s", channel)
+	c.ircClient.Depart(channel)
+}
+
+func (c *ChatClient) WaitForConnect() {
+	<-c.connected
+}
+
+func (c *ChatClient) Connect() {
+	c.ircClient.OnConnect(func() {
+		log.Info("connected to Twitch IRC")
+		go func() {
 			c.connected <- true
-		})
-	}()
+		}()
+	})
+
+	c.ircClient.OnRoomStateMessage(func(roomStateMessage twitch.RoomStateMessage) {
+		log.Infof("#%s roomstate %v", roomStateMessage.Channel, roomStateMessage.State)
+	})
+
+	err := c.ircClient.Connect()
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+func (c *ChatClient) SetOnPrivateMessage(f func(twitch.PrivateMessage)) {
+	c.ircClient.OnPrivateMessage(f)
 }

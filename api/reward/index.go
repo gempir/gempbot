@@ -50,7 +50,6 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 		}
 
 		api.WriteJson(w, reward, http.StatusOK)
-
 	} else if r.Method == http.MethodPost {
 		newReward, err := channelpoint.CreateRewardFromBody(r.Body)
 		if err != nil {
@@ -103,4 +102,5 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	chatClient.WaitForConnect()
 }

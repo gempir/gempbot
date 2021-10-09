@@ -52,5 +52,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	chatClient.WaitForConnect()
 	api.WriteJson(w, "ok", http.StatusOK)
 }
