@@ -25,10 +25,12 @@ func (c *ChatClient) Say(channel string, message string) {
 }
 
 func (c *ChatClient) JoinBot(channel string) {
+	c.WaitForConnect()
 	c.Say(c.cfg.Username, "JOIN "+c.cfg.Environment+" "+channel)
 }
 
 func (c *ChatClient) PartBot(channel string) {
+	c.WaitForConnect()
 	c.Say(c.cfg.Username, "PART "+c.cfg.Environment+" "+channel)
 }
 

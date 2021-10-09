@@ -80,6 +80,5 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chatClient.WaitForConnect()
 	http.Error(w, "unknown method", http.StatusMethodNotAllowed)
 }

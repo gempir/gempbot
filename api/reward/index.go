@@ -7,7 +7,6 @@ import (
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/auth"
 	"github.com/gempir/gempbot/pkg/channelpoint"
-	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/eventsub"
@@ -23,8 +22,6 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 	helixClient := helix.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
-	chatClient := chat.NewClient(cfg)
-	go chatClient.Connect()
 	cpm := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 	subscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 
@@ -101,6 +98,4 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	chatClient.WaitForConnect()
 }
