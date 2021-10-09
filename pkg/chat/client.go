@@ -33,7 +33,6 @@ func (c *ChatClient) PartBot(channel string) {
 }
 
 func (c *ChatClient) Join(channel string) {
-	c.WaitForConnect()
 	log.Infof("JOIN %s", channel)
 	c.ircClient.Join(channel)
 }
