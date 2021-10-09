@@ -291,6 +291,7 @@ func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, rede
 	matches := bttvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
 		emoteAdded, emoteRemoved, err := ec.SetBttvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, opts.Slots)
+		ec.chatClient.WaitForConnect()
 		if err != nil {
 			log.Warnf("Bttv error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from: @%s error: %s", redemption.UserName, err.Error()))
@@ -305,6 +306,7 @@ func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, rede
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new bttv emote: [unknown] redeemed by @%s", redemption.UserName))
 		}
 	} else {
+		ec.chatClient.WaitForConnect()
 		ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: no bttv link found in message", redemption.UserName))
 	}
 
