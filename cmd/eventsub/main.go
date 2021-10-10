@@ -22,8 +22,8 @@ func main() {
 
 	subs := map[string]string{}
 	for _, sub := range db.GetAllSubscriptions() {
-		if _, ok := subs[sub.Type+sub.TargetTwitchID]; !ok {
-			subs[sub.Type+sub.TargetTwitchID] = sub.SubscriptionID
+		if _, ok := subs[sub.Type+sub.TargetTwitchID+sub.ForeignID]; !ok {
+			subs[sub.Type+sub.TargetTwitchID+sub.ForeignID] = sub.SubscriptionID
 		} else {
 			log.Warnf("Multiple subscriptions found for channel %s removing old %s", sub.TargetTwitchID, sub.SubscriptionID)
 			err := subscriptionManager.RemoveSubscription(sub.SubscriptionID)
