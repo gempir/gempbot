@@ -240,6 +240,10 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 		ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: no 7tv link found in message", redemption.UserName))
 	}
 
+	if redemption.UserLogin == "gempir" {
+		return
+	}
+
 	token, err := ec.db.GetUserAccessToken(redemption.BroadcasterUserID)
 	if err != nil {
 		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.BroadcasterUserID)

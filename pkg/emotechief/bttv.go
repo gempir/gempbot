@@ -310,6 +310,10 @@ func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, rede
 		ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: no bttv link found in message", redemption.UserName))
 	}
 
+	if redemption.UserLogin == "gempir" {
+		return
+	}
+
 	token, err := ec.db.GetUserAccessToken(redemption.BroadcasterUserID)
 	if err != nil {
 		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.BroadcasterUserID)
