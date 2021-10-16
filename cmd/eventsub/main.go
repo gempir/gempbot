@@ -22,6 +22,7 @@ func main() {
 	subscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 
 	for _, sub := range db.GetAllSubscriptions() {
+		log.Infof("type: '%v'", sub.Type)
 		if sub.Type == nickHelix.EventSubTypeChannelPointsCustomRewardAdd {
 			log.Infof("sub: %s foreignId: '%v'", sub.SubscriptionID, sub.ForeignID)
 
