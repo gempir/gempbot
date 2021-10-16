@@ -1,6 +1,9 @@
 package store
 
-import "gorm.io/gorm/clause"
+import (
+	"github.com/gempir/gempbot/pkg/dto"
+	"gorm.io/gorm/clause"
+)
 
 type Permission struct {
 	ChannelTwitchId string `gorm:"primaryKey"`
@@ -28,7 +31,11 @@ func (db *Database) GetChannelPermissions(channelID string) []Permission {
 func (db *Database) GetUserPermissions(userID string) []Permission {
 	var permissions []Permission
 
-	db.Client.Where("twitch_id = ?", userID).Find(&permissions)
+	if userID == dto.GEMPIR_USER_ID {
+		db.Client.Find(&permissions)
+	} else {
+		db.Client.Where("twitch_id = ?", userID).Find(&permissions)
+	}
 
 	return permissions
 }
