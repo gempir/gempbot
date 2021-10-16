@@ -22,11 +22,15 @@ func main() {
 	subscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 
 	for _, sub := range db.GetAllSubscriptions() {
-		if sub.Type == nickHelix.EventSubTypeChannelPointsCustomRewardAdd && sub.ForeignID == "" {
-			log.Warnf("Found subscription reward without foreignID channel: %s id: %s", sub.TargetTwitchID, sub.SubscriptionID)
-			err := subscriptionManager.RemoveSubscription(sub.SubscriptionID)
-			if err != nil {
-				log.Error(err)
+		if sub.Type == nickHelix.EventSubTypeChannelPointsCustomRewardAdd {
+			log.Infof("sub: %s foreignId: '%v'", sub.SubscriptionID, sub.ForeignID)
+
+			if sub.ForeignID == "" {
+				log.Warnf("Found subscription reward without foreignID channel: %s id: %s", sub.TargetTwitchID, sub.SubscriptionID)
+				err := subscriptionManager.RemoveSubscription(sub.SubscriptionID)
+				if err != nil {
+					log.Error(err)
+				}
 			}
 		}
 	}
