@@ -6,6 +6,7 @@ import (
 	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
+	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
 var (
@@ -20,12 +21,9 @@ func main() {
 	helixClient = helix.NewClient(cfg, db)
 	subscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 
-	subs := map[string]string{}
 	for _, sub := range db.GetAllSubscriptions() {
-		if _, ok := subs[sub.Type+sub.TargetTwitchID+sub.ForeignID]; !ok {
-			subs[sub.Type+sub.TargetTwitchID+sub.ForeignID] = sub.SubscriptionID
-		} else {
-			log.Warnf("Multiple subscriptions found for channel %s removing old %s", sub.TargetTwitchID, sub.SubscriptionID)
+		if sub.Type == nickHelix.EventSubTypeChannelPointsCustomRewardAdd && sub.ForeignID == "" {
+			log.Warnf("Found subscription reward without foreignID channel: %s id: %s", sub.TargetTwitchID, sub.SubscriptionID)
 			err := subscriptionManager.RemoveSubscription(sub.SubscriptionID)
 			if err != nil {
 				log.Error(err)
