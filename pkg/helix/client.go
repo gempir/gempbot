@@ -49,6 +49,38 @@ func NewClient(cfg *config.Config, db *store.Database) *Client {
 		panic(err)
 	}
 
+	token := setOrUpdateAccessToken(client, db)
+
+	return &Client{
+		clientID:       cfg.ClientID,
+		clientSecret:   cfg.ClientSecret,
+		eventSubSecret: cfg.Secret,
+		Client:         client,
+		AppAccessToken: nickHelix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
+		db:             db,
+		httpClient:     &http.Client{},
+	}
+}
+
+// StartRefreshTokenRoutine refresh our token
+func (c *Client) StartRefreshTokenRoutine() {
+	ticker := time.NewTicker(24 * time.Hour)
+
+	for range ticker.C {
+		setOrUpdateAccessToken(c.Client, c.db)
+	}
+}
+
+func (c *Client) SetAppAccessToken(ctx context.Context, token nickHelix.AccessCredentials) {
+	c.AppAccessToken = token
+	c.Client.SetAppAccessToken(token.AccessToken)
+	err := c.db.SaveAppAccessToken(ctx, token.AccessToken, token.RefreshToken, strings.Join(token.Scopes, " "), token.ExpiresIn)
+	if err != nil {
+		log.Errorf("Failure saving app access token: %s", err.Error())
+	}
+}
+
+func setOrUpdateAccessToken(client *nickHelix.Client, db *store.Database) store.AppAccessToken {
 	token, err := db.GetAppAccessToken()
 	if err != nil || time.Since(token.UpdatedAt) > 24*time.Hour {
 		log.Info("App AccessToken not found or older than 24hours")
@@ -67,38 +99,5 @@ func NewClient(cfg *config.Config, db *store.Database) *Client {
 		client.SetAppAccessToken(token.AccessToken)
 	}
 
-	return &Client{
-		clientID:       cfg.ClientID,
-		clientSecret:   cfg.ClientSecret,
-		eventSubSecret: cfg.Secret,
-		Client:         client,
-		AppAccessToken: nickHelix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
-		db:             db,
-		httpClient:     &http.Client{},
-	}
-}
-
-// StartRefreshTokenRoutine refresh our token
-func (c *Client) StartRefreshTokenRoutine() {
-	ticker := time.NewTicker(24 * time.Hour)
-
-	for range ticker.C {
-		resp, err := c.Client.RequestAppAccessToken(scopes)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		log.Infof("Requested access token from routine, response: %d, expires in: %d", resp.StatusCode, resp.Data.ExpiresIn)
-
-		c.SetAppAccessToken(context.Background(), resp.Data)
-	}
-}
-
-func (c *Client) SetAppAccessToken(ctx context.Context, token nickHelix.AccessCredentials) {
-	c.AppAccessToken = token
-	c.Client.SetAppAccessToken(token.AccessToken)
-	err := c.db.SaveAppAccessToken(ctx, token.AccessToken, token.RefreshToken, strings.Join(token.Scopes, " "), token.ExpiresIn)
-	if err != nil {
-		log.Errorf("Failure saving app access token: %s", err.Error())
-	}
+	return token
 }
