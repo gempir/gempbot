@@ -1,6 +1,5 @@
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { useStore } from "../../store";
-import { BotManager } from "./BotManager";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
 import Link from "next/link";
@@ -8,13 +7,12 @@ import React from "react";
 import { HomeIcon, GiftIcon, AdjustmentsIcon, BanIcon, ChatAlt2Icon } from "@heroicons/react/solid";
 
 export function Sidebar() {
-    const [userConfig, setUserConfig, , loading] = useUserConfig();
+    const [userConfig] = useUserConfig();
     const loggedIn = useStore(state => Boolean(state.scToken));
 
     return <div className="p-4 bg-gray-800 px-6 shadow flex flex-col relative h-screen">
         <Login />
         {loggedIn && <>
-            <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} userConfigLoading={loading} />
             <Managing userConfig={userConfig} />
             <Link href="/">
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 "><HomeIcon className="h-6" /> Home</a>

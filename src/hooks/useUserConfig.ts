@@ -46,7 +46,7 @@ export type SetUserConfig = (userConfig: UserConfig | null) => void;
 export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, () => void, boolean, string | undefined] {
     const [userConfig, setUserConfig] = useState<UserConfig | null | undefined>(undefined);
     const [errorMessage, setError] = useState<string | undefined>();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [changeCounter, setChangeCounter] = useState(0);
     const managing = useStore(state => state.managing);
     const scToken = useStore(state => state.scToken);
@@ -57,7 +57,7 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
         }
 
         let endPoint = "/api/userconfig";
-        doFetch(Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig))
+        doFetch(Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig)).then(() => setLoading(false)).catch(setError);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
