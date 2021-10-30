@@ -15,6 +15,10 @@ import (
 	"github.com/gempir/gempbot/pkg/user"
 )
 
+type SubscribtionStatus struct {
+	Predictions bool `json:"predictions"`
+}
+
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
@@ -42,6 +46,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPut {
 		eventSubManager.SubscribePredictions(userID)
+
+		api.WriteJson(w, "ok", http.StatusOK)
 	} else if r.Method == http.MethodDelete {
 		for _, sub := range db.GetAllPredictionSubscriptions(userID) {
 			log.Infof("Removing subscribtion on request %s from %s", sub.SubscriptionID, sub.TargetTwitchID)
@@ -50,7 +56,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				log.Error(err)
 			}
 		}
-	}
 
-	api.WriteJson(w, "ok", http.StatusOK)
+		api.WriteJson(w, "ok", http.StatusOK)
+	} else if r.Method == http.MethodGet {
+		subs := db.GetAllPredictionSubscriptions(userID)
+		log.Info(subs)
+
+		hasPredictions := len(subs) > 0
+
+		api.WriteJson(w, SubscribtionStatus{Predictions: hasPredictions}, http.StatusOK)
+	}
 }

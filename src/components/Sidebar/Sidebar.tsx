@@ -1,12 +1,11 @@
-import { AdjustmentsIcon, BanIcon, GiftIcon, HomeIcon } from "@heroicons/react/solid";
-import Link from "next/link";
-import React from "react";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { useStore } from "../../store";
 import { BotManager } from "./BotManager";
-import { EventSubManager } from "./EventSubManager";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
+import Link from "next/link";
+import React from "react";
+import { HomeIcon, GiftIcon, AdjustmentsIcon, BanIcon, ChatAlt2Icon } from "@heroicons/react/solid";
 
 export function Sidebar() {
     const [userConfig, setUserConfig, , loading] = useUserConfig();
@@ -16,10 +15,12 @@ export function Sidebar() {
         <Login />
         {loggedIn && <>
             <BotManager userConfig={userConfig!} setUserConfig={setUserConfig} userConfigLoading={loading} />
-            <EventSubManager />
             <Managing userConfig={userConfig} />
             <Link href="/">
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 "><HomeIcon className="h-6" /> Home</a>
+            </Link>
+            <Link href="/bot" >
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><ChatAlt2Icon className="h-6" /> Bot</a>
             </Link>
             <Link href="/rewards" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><GiftIcon className="h-6" /> Rewards</a>

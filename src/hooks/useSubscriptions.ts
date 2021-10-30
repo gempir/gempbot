@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
 
-export function useSubscribtions(): [() => void, () => void, boolean, boolean] {
+interface SubscriptionStatus {
+    predictions: boolean;
+}
+
+export function useSubscribtions(): [() => void, () => void, SubscriptionStatus, boolean] {
     const managing = useStore(state => state.managing);
-    const [loadingSubscribe, setLoadingSubscribe] = useState(false);
-    const [loadingUnsubscribe, setLoadingUnsubscribe] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>({ predictions: false });
 
     const executeSubscriptions = (method: Method) => {
         const endPoint = "/api/subscriptions";
@@ -18,21 +22,33 @@ export function useSubscribtions(): [() => void, () => void, boolean, boolean] {
     };
 
     const subscribe = () => {
-        if (!confirm("Subscribe to all prediction events, to log them here and write to chat")) {
-            return
-        }
-        setLoadingSubscribe(true);
+        setLoading(true);
 
-        executeSubscriptions(Method.PUT).then(() => setLoadingSubscribe(false)).catch(() => setLoadingSubscribe(false));
+        executeSubscriptions(Method.PUT).then(() => setSubscriptionStatus({predictions: true})).then(() => setLoading(false)).catch(err => {
+            console.error(err);
+            setLoading(false);
+        });
     }
     const remove = () => {
-        if (!confirm("Unsubscribe prediction events")) {
-            return
-        }
-        setLoadingUnsubscribe(true);
+        setLoading(true);
 
-        executeSubscriptions(Method.DELETE).then(() => setLoadingUnsubscribe(false)).catch(() => setLoadingSubscribe(false));
+        executeSubscriptions(Method.DELETE).then(() => setSubscriptionStatus({predictions: false})).then(() => setLoading(false)).catch(err => {
+            console.error(err);
+            setLoading(false);
+        });
+    }
+    const status = () => {
+        setLoading(true);
+
+        executeSubscriptions(Method.GET).then(setSubscriptionStatus).then(() => setLoading(false)).catch(err => {
+            console.error(err);
+            setLoading(false);
+        });
     }
 
-    return [subscribe, remove, loadingSubscribe, loadingUnsubscribe];
+    useEffect(() => {
+        status();
+    }, [managing]);
+
+    return [subscribe, remove, subscriptionStatus, loading];
 }
