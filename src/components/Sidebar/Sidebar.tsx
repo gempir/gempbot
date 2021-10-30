@@ -1,15 +1,12 @@
+import { AdjustmentsIcon, BanIcon, GiftIcon, HomeIcon } from "@heroicons/react/solid";
+import Link from "next/link";
+import React from "react";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { useStore } from "../../store";
 import { BotManager } from "./BotManager";
+import { EventSubManager } from "./EventSubManager";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
-import Link from "next/link";
-import React from "react";
-import { House } from "../../icons/House";
-import { Gift } from "../../icons/Gift";
-import { Settings } from "../../icons/Settings";
-import { EventSubManager } from "./EventSubManager";
-import { Block } from "../../icons/Block";
 
 export function Sidebar() {
     const [userConfig, setUserConfig, , loading] = useUserConfig();
@@ -22,16 +19,16 @@ export function Sidebar() {
             <EventSubManager />
             <Managing userConfig={userConfig} />
             <Link href="/">
-                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 "><House /> Home</a>
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 "><HomeIcon className="h-6" /> Home</a>
             </Link>
             <Link href="/rewards" >
-                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><Gift /> Rewards</a>
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><GiftIcon className="h-6" /> Rewards</a>
             </Link>
             <Link href="/permissions" >
-                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><Settings /> Permissions</a>
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><AdjustmentsIcon className="h-6" /> Permissions</a>
             </Link>
             <Link href="/blocks" >
-                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><Block /> Blocks</a>
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><BanIcon className="h-6" /> Blocks</a>
             </Link>
             <div className="absolute bottom-3 text-center left-0 right-0 mx-auto hover:text-blue-500">
                 <Link href="/privacy">

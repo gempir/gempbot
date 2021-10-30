@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createLoginUrl } from "../../factory/createLoginUrl";
-import { User } from "../../icons/User";
 import { useStore } from "../../store";
+import { UserIcon } from "@heroicons/react/solid";
 
 export function Login() {
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
@@ -21,7 +21,7 @@ export function Login() {
         onMouseLeave={() => setHovering(false)}
         className={classes.join(" ")}
         href={url.toString()}>
-        {isLoggedIn && <>{hovering ? <><User />&nbsp;&nbsp;Login again</> : <><User />&nbsp;&nbsp;Logged in</>}</>}
-        {!isLoggedIn && <>{hovering ? <><User />&nbsp;&nbsp;Login</> : <><User />&nbsp;&nbsp;Login</>}</>}
+        {isLoggedIn && <>{hovering ? <><UserIcon className="h-6" />&nbsp;&nbsp;Login again</> : <><UserIcon className="h-6" />&nbsp;&nbsp;Logged in</>}</>}
+        {!isLoggedIn && <>{hovering ? <><UserIcon className="h-6" />&nbsp;&nbsp;Login</> : <><UserIcon className="h-6" />&nbsp;&nbsp;Login</>}</>}
     </a>
 }

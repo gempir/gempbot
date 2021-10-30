@@ -1,6 +1,7 @@
+import { ChatIcon } from "@heroicons/react/solid";
 import { useState } from "react";
 import { SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
-import { Chat } from "../../icons/Chat";
+
 
 export function BotManager({ userConfig, setUserConfig, userConfigLoading }: { userConfig: UserConfig, setUserConfig: SetUserConfig, userConfigLoading: boolean }) {
     const classes = "p-3 flex justify-center rounded shadow cursor-pointer mt-2 w-full hover:opacity-100 whitespace-nowrap w-36".split(" ")
@@ -25,7 +26,7 @@ export function BotManager({ userConfig, setUserConfig, userConfigLoading }: { u
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
         onClick={() => setUserConfig({ ...userConfig, BotJoin: !userConfig?.BotJoin })}>
-        {hovering ? userConfig?.BotJoin ? <><Chat />&nbsp;&nbsp;Depart Bot</> : <><Chat />&nbsp;&nbsp;Join Bot</> : userConfig?.BotJoin ? <><Chat />&nbsp;&nbsp;Bot joined</> : <><Chat />&nbsp;&nbsp;Not Joined</>}
+        {hovering ? userConfig?.BotJoin ? <><ChatIcon className="h-6" />&nbsp;&nbsp;Depart Bot</> : <><ChatIcon className="h-6" />&nbsp;&nbsp;Join Bot</> : userConfig?.BotJoin ? <><ChatIcon className="h-6" />&nbsp;&nbsp;Bot joined</> : <><ChatIcon className="h-6" />&nbsp;&nbsp;Not Joined</>}
     </div>
 }
 

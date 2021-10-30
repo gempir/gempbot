@@ -1,9 +1,7 @@
 import React from "react";
 import { useEmotehistory } from "../../hooks/useEmotehistory";
-import { ChevronLeft } from "../../icons/ChevronLeft";
-import { ChevronRight } from "../../icons/ChevronRight";
-import { Refresh } from "../../icons/Refresh";
 import { Emote } from "../Emote/Emote";
+import { RefreshIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
 
 
 export function Emotehistory({channel}: {channel?: string}) {
@@ -13,16 +11,16 @@ export function Emotehistory({channel}: {channel?: string}) {
         <div className="text-2xl flex gap-5 w-full" onClick={fetch}>
             <div className="flex gap-2 items-center">
                 <div onClick={decreasePage} className="cursor-pointer hover:text-blue-500">
-                    <ChevronLeft />
+                    <ChevronLeftIcon className="h-6" />
                 </div>
                 <div className="text-base w-4 text-center">
                     {page}
                 </div>
                 <div onClick={increasePage} className="cursor-pointer hover:text-blue-500">
-                    <ChevronRight />
+                    <ChevronRightIcon className="h-6" />
                 </div>
             </div>
-            <Refresh className={"hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+            <RefreshIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
         </div>
         <table className="w-full table-auto">
             <thead>

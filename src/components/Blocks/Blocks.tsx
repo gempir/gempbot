@@ -1,11 +1,8 @@
+import { ChevronLeftIcon, ChevronRightIcon, RefreshIcon, XIcon } from "@heroicons/react/solid";
 import React, { useState } from "react";
-import { Block, useBlocks } from "../../hooks/useBlocks";
+import { useBlocks } from "../../hooks/useBlocks";
 import { EmoteType } from "../../hooks/useEmotehistory";
 import { Emote } from "../Emote/Emote";
-import { ChevronLeft } from "../../icons/ChevronLeft";
-import { ChevronRight } from "../../icons/ChevronRight";
-import { Refresh } from "../../icons/Refresh";
-import { Cross } from "../../icons/Cross";
 
 export function Blocks() {
     const { blocks, block, loading, increasePage, decreasePage, page, fetch, deleteBlock } = useBlocks();
@@ -29,16 +26,16 @@ export function Blocks() {
                 <div className="text-2xl flex gap-5 w-full select-none" onClick={fetch}>
                     <div className="flex gap-2 items-center">
                         <div onClick={decreasePage} className="cursor-pointer hover:text-blue-500">
-                            <ChevronLeft />
+                            <ChevronLeftIcon className="h-6" />
                         </div>
                         <div className="text-base w-4 text-center">
                             {page}
                         </div>
                         <div onClick={increasePage} className="cursor-pointer hover:text-blue-500">
-                            <ChevronRight />
+                            <ChevronRightIcon className="h-6" />
                         </div>
                     </div>
-                    <Refresh className={"hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+                    <RefreshIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
                 </div>
             </div>
             <table className={"w-full" + (loading ? " animate-pulse opacity-10" : "")}>
@@ -53,7 +50,7 @@ export function Blocks() {
                 </thead>
                 <tbody>
                     {blocks.map(block => <tr key={block.ChannelTwitchID + block.EmoteID + block.EmoteID}>
-                        <th className="hover:text-red-600 cursor-pointer" onClick={() => deleteBlock(block)}><Cross /></th>
+                        <th className="hover:text-red-600 cursor-pointer" onClick={() => deleteBlock(block)}><XIcon className="h-6" /></th>
                         <th><Emote id={block.EmoteID} type={block.Type} /></th>
                         <th>{block.EmoteID}</th>
                         <th>{block.Type}</th>

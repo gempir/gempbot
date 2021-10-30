@@ -1,8 +1,9 @@
 import React from "react";
 import { UserConfig } from "../../hooks/useUserConfig";
-import { UserGroup } from "../../icons/UserGroup";
 import { setCookie } from "../../service/cookie";
 import { useStore } from "../../store";
+import { UserGroupIcon } from "@heroicons/react/solid";
+
 
 export function Managing({ userConfig }: { userConfig: UserConfig | null | undefined }) {
     const setManaging = useStore(state => state.setManaging);
@@ -17,7 +18,7 @@ export function Managing({ userConfig }: { userConfig: UserConfig | null | undef
     }
 
     return <div className="Managing flex items-center my-4">
-        <UserGroup />
+        <UserGroupIcon className="h-6" />
         <select className="block ml-2 p-1 rounded bg-gray-900 shadow focus:outline-none" style={{maxWidth: 96}} onChange={updateManaging} value={managing}>
             {userConfig?.Protected.EditorFor.map(editorFor => <option key={editorFor} value={editorFor}>{editorFor}</option>)}
             <option value="">you</option>
