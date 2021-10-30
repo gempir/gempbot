@@ -1,7 +1,7 @@
-import { Toggle } from './Toggle';
 import { useEffect, useState } from 'react';
+import { useBotConfig } from '../../hooks/useBotConfig';
 import { useSubscribtions } from '../../hooks/useSubscriptions';
-import { useUserConfig } from '../../hooks/useUserConfig';
+import { Toggle } from './Toggle';
 
 export function Bot() {
     const [subscribe, unsubscribe, subscriptionsStatus, loading] = useSubscribtions();
@@ -21,10 +21,10 @@ export function Bot() {
         }
     };
 
-    const [userConfig, setUserConfig, , loadingUserConfig] = useUserConfig();
+    const [botConfig, setBotConfig, loadingUserConfig] = useBotConfig();
     const handlePredictionCommandsChange = (value: boolean) => {
-        if (userConfig) {
-            setUserConfig({ ...userConfig, BotJoin: value });
+        if (botConfig) {
+            setBotConfig({ ...botConfig, JoinBot: value });
         }
     };
 
@@ -65,7 +65,7 @@ export function Bot() {
                         </ul>
                     </div>
                 </div>
-                <Toggle checked={!!userConfig?.BotJoin} onChange={handlePredictionCommandsChange} />
+                <Toggle checked={!!botConfig?.JoinBot} onChange={handlePredictionCommandsChange} />
             </div>
         </div>
     </div >;

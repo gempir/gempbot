@@ -1,6 +1,8 @@
 package chat
 
 import (
+	"time"
+
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/go-twitch-irc/v2"
@@ -45,7 +47,14 @@ func (c *ChatClient) Part(channel string) {
 }
 
 func (c *ChatClient) WaitForConnect() {
-	<-c.connected
+	select {
+	case <-c.connected:
+		log.Info("Twitch irc connection established")
+		return
+	case <-time.After(5 * time.Second):
+		log.Info("Bot connection timed out")
+		return
+	}
 }
 
 func (c *ChatClient) Connect() {

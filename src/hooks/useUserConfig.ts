@@ -4,7 +4,6 @@ import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
 
 export interface UserConfig {
-    BotJoin: boolean,
     Permissions: Record<string, Permission>;
     Protected: Protected;
 }

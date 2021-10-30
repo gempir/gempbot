@@ -27,7 +27,6 @@ func NewUserAdmin(cfg *config.Config, db *store.Database, helixClient *helix.Cli
 }
 
 type UserConfig struct {
-	BotJoin     bool
 	Permissions map[string]Permission
 	Protected   Protected
 }
@@ -54,7 +53,6 @@ type Permission struct {
 
 func createDefaultUserConfig() UserConfig {
 	return UserConfig{
-		BotJoin:     false,
 		Permissions: map[string]Permission{},
 		Protected: Protected{
 			EditorFor:     []string{},
@@ -65,13 +63,6 @@ func createDefaultUserConfig() UserConfig {
 
 func (u *UserAdmin) GetUserConfig(userID string) UserConfig {
 	uCfg := createDefaultUserConfig()
-
-	botConfig, err := u.db.GetBotConfig(userID)
-	if err != nil {
-		uCfg.BotJoin = false
-	} else {
-		uCfg.BotJoin = botConfig.JoinBot
-	}
 
 	uCfg.Protected.CurrentUserID = userID
 
@@ -167,7 +158,6 @@ func (u *UserAdmin) CheckEditor(r *http.Request, userConfig UserConfig) (string,
 func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login string, newConfig UserConfig, managing string) api.Error {
 	isManaging := managing != ""
 	ownerUserID := userID
-	ownerLogin := login
 	newUserIDConfig, err := u.ConvertUserConfig(newConfig, false)
 	if err != nil {
 		return err
@@ -179,23 +169,11 @@ func (u *UserAdmin) ProcessConfig(ctx context.Context, userID string, login stri
 			return api.NewApiError(http.StatusBadRequest, fmt.Errorf("could not find managing"))
 		}
 		ownerUserID = uData.ID
-		ownerLogin = uData.Login
 		oldConfig := u.GetUserConfig(uData.ID)
 
 		if !oldConfig.isEditor(userID) {
 			return api.NewApiError(http.StatusForbidden, fmt.Errorf("user is not editor"))
 		}
-	}
-
-	dbErr := u.db.SaveBotConfig(ctx, store.BotConfig{OwnerTwitchID: ownerUserID, JoinBot: newUserIDConfig.BotJoin})
-	if dbErr != nil {
-		log.Error(dbErr)
-		return api.NewApiError(http.StatusInternalServerError, fmt.Errorf("failed to save bot config"))
-	}
-	if newConfig.BotJoin {
-		u.chatClient.JoinBot(ownerLogin)
-	} else {
-		u.chatClient.PartBot(ownerLogin)
 	}
 
 	previousPerms := u.db.GetChannelPermissions(ownerUserID)
