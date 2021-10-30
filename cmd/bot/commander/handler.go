@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gempir/gempbot/pkg/apiclient"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/helix"
@@ -19,7 +18,6 @@ import (
 
 type Handler struct {
 	cfg         *config.Config
-	apiClient   *apiclient.ApiClient
 	db          *store.Database
 	helixClient *helix.Client
 	chatSay     func(channel, message string)
@@ -30,7 +28,6 @@ func NewHandler(cfg *config.Config, helixClient *helix.Client, db *store.Databas
 		cfg:         cfg,
 		db:          db,
 		helixClient: helixClient,
-		apiClient:   apiclient.NewApiClient(cfg),
 		chatSay:     chatSay,
 	}
 }
@@ -168,13 +165,12 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 		PredictionWindow: predictionWindow,
 	}
 
-	resp, err := h.apiClient.CreatePrediction(payload.Msg.RoomID, prediction)
+	_, err := h.helixClient.CreatePrediction(prediction)
 	if err != nil {
 		log.Error(err)
 		h.handleError(payload.Msg, errors.New(err.Error()))
 		return
 	}
-	log.Infof("[api] %d CreatePrediction %s", resp.StatusCode, payload.Msg.RoomID)
 }
 
 func (h *Handler) handleError(msg twitch.PrivateMessage, err error) {

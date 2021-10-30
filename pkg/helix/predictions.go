@@ -40,7 +40,7 @@ func (c *Client) EndPrediction(params *nickHelix.EndPredictionParams) (*nickHeli
 	c.Client.SetUserAccessToken(token.AccessToken)
 	resp, err := c.Client.EndPrediction(params)
 	c.Client.SetUserAccessToken("")
-	log.Infof("[%d] GetPredictions", resp.StatusCode)
+	log.Infof("[%d] EndPrediction", resp.StatusCode)
 	if err != nil {
 		return resp, fmt.Errorf("could not set prediction outcome: %s", resp.ErrorMessage)
 	}
@@ -49,6 +49,29 @@ func (c *Client) EndPrediction(params *nickHelix.EndPredictionParams) (*nickHeli
 	}
 	if resp.StatusCode >= http.StatusBadRequest {
 		return resp, fmt.Errorf("bad twitch api response %s", resp.ErrorMessage)
+	}
+
+	return resp, nil
+}
+
+func (c *Client) CreatePrediction(params *nickHelix.CreatePredictionParams) (*nickHelix.PredictionsResponse, error) {
+	token, err := c.db.GetUserAccessToken(params.BroadcasterID)
+	if err != nil {
+		return &nickHelix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
+	}
+
+	c.Client.SetUserAccessToken(token.AccessToken)
+	resp, err := c.Client.CreatePrediction(params)
+	c.Client.SetUserAccessToken("")
+	log.Infof("[%d] CreatePrediction", resp.StatusCode)
+	if err != nil {
+		return resp, fmt.Errorf("could not create prediction: %s", resp.ErrorMessage)
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		return resp, fmt.Errorf("bot failed to manage predictions, broadcaster must login %s", resp.ErrorMessage)
+	}
+	if resp.StatusCode >= http.StatusBadRequest {
+		return resp, fmt.Errorf("bad twitch api response: %s", resp.ErrorMessage)
 	}
 
 	return resp, nil
