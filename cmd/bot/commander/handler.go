@@ -61,11 +61,13 @@ func (h *Handler) handlePrediction(payload dto.CommandPayload) {
 }
 
 func (h *Handler) lockOrCancelPrediction(payload dto.CommandPayload, status string) {
-	prediction, err := h.db.GetActivePrediction(payload.Msg.RoomID)
+	resp, err := h.helixClient.GetPredictions(&nickHelix.PredictionsParams{BroadcasterID: payload.Msg.RoomID})
 	if err != nil {
-		h.handleError(payload.Msg, errors.New("no active prediction found"))
+		log.Error(err)
+		h.handleError(payload.Msg, err)
 		return
 	}
+	prediction := resp.Data.Predictions[0]
 
 	token, err := h.db.GetUserAccessToken(payload.Msg.RoomID)
 	if err != nil {
@@ -73,7 +75,7 @@ func (h *Handler) lockOrCancelPrediction(payload dto.CommandPayload, status stri
 		return
 	}
 	h.helixClient.Client.SetUserAccessToken(token.AccessToken)
-	resp, err := h.helixClient.Client.EndPrediction(&nickHelix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: status})
+	resp, err = h.helixClient.Client.EndPrediction(&nickHelix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: status})
 	h.helixClient.Client.SetUserAccessToken("")
 
 	if err != nil {
@@ -89,23 +91,24 @@ func (h *Handler) lockOrCancelPrediction(payload dto.CommandPayload, status stri
 }
 
 func (h *Handler) setOutcomeForPrediction(payload dto.CommandPayload) {
-	var winningOutcome store.PredictionLogOutcome
+	var winningOutcome nickHelix.Outcomes
 
-	prediction, err := h.db.GetActivePrediction(payload.Msg.RoomID)
+	resp, err := h.helixClient.GetPredictions(&nickHelix.PredictionsParams{BroadcasterID: payload.Msg.RoomID})
 	if err != nil {
-		h.handleError(payload.Msg, errors.New("no active prediction found"))
+		log.Error(err)
+		h.handleError(payload.Msg, err)
 		return
 	}
+	prediction := resp.Data.Predictions[0]
 
-	outcomes := h.db.GetOutcomes(prediction.ID)
-	for _, outcome := range outcomes {
+	for _, outcome := range prediction.Outcomes {
 		if payload.Query == "1" || payload.Query == dto.Outcome_First || payload.Query == "first" {
-			if outcome.Color == dto.Outcome_First {
+			if outcome.Color == dto.Outcome_First || outcome.Color == dto.Outcome_First_Alt {
 				winningOutcome = outcome
 			}
 		}
 		if payload.Query == "2" || payload.Query == dto.Outcome_Second || payload.Query == "red" || payload.Query == "second" {
-			if outcome.Color == dto.Outcome_Second {
+			if outcome.Color == dto.Outcome_Second || outcome.Color == dto.Outcome_Second_Alt {
 				winningOutcome = outcome
 			}
 		}
@@ -116,39 +119,11 @@ func (h *Handler) setOutcomeForPrediction(payload dto.CommandPayload) {
 		return
 	}
 
-	token, err := h.db.GetUserAccessToken(payload.Msg.RoomID)
-	if err != nil {
-		h.handleError(payload.Msg, errors.New("no api token, broadcaster needs to login again in dashboard"))
-		return
-	}
-
-	h.helixClient.Client.SetUserAccessToken(token.AccessToken)
-	resp, err := h.helixClient.Client.EndPrediction(&nickHelix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: dto.PredictionStatusResolved, WinningOutcomeID: winningOutcome.ID})
-	h.helixClient.Client.SetUserAccessToken("")
-
+	_, err = h.helixClient.EndPrediction(&nickHelix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: dto.PredictionStatusResolved, WinningOutcomeID: winningOutcome.ID})
 	if err != nil {
 		log.Error(err)
 		h.handleError(payload.Msg, errors.New("bad twitch api response"))
 		return
-	}
-	log.Infof("[helix] %d EndPrediction %s", resp.StatusCode, payload.Msg.RoomID)
-	if resp.StatusCode >= http.StatusBadRequest {
-		h.handleError(payload.Msg, fmt.Errorf("bad twitch api response %s", resp.ErrorMessage))
-		return
-	}
-
-	for _, prediction := range resp.Data.Predictions {
-		err := h.db.SavePrediction(store.PredictionLog{ID: prediction.ID, OwnerTwitchID: payload.Msg.RoomID, Title: prediction.Title, StartedAt: prediction.CreatedAt.Time, LockedAt: &prediction.LockedAt.Time, EndedAt: &prediction.EndedAt.Time, WinningOutcomeID: prediction.WinningOutcomeID})
-		if err != nil {
-			log.Error(err)
-		}
-
-		for _, outcome := range prediction.Outcomes {
-			err := h.db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: prediction.ID, Title: outcome.Title, Color: outcome.Color, Users: outcome.Users, ChannelPoints: outcome.ChannelPoints})
-			if err != nil {
-				log.Error(err)
-			}
-		}
 	}
 }
 

@@ -8,7 +8,6 @@ import (
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/humanize"
 	"github.com/gempir/gempbot/pkg/log"
-	"github.com/gempir/gempbot/pkg/store"
 	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
@@ -68,18 +67,6 @@ func (esm *EventSubManager) HandlePredictionBegin(event []byte) {
 		lockedTime = nil
 	}
 
-	err = esm.db.SavePrediction(store.PredictionLog{ID: data.ID, OwnerTwitchID: data.BroadcasterUserID, Title: data.Title, StartedAt: data.StartedAt.Time, LockedAt: lockedTime})
-	if err != nil {
-		log.Error(err)
-	}
-
-	for _, outcome := range data.Outcomes {
-		err = esm.db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: data.ID, Title: outcome.Title, Color: outcome.Color})
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
 	esm.chatClient.WaitForConnect()
 	esm.chatClient.Say(
 		data.BroadcasterUserLogin,
@@ -110,18 +97,6 @@ func (esm *EventSubManager) HandlePredictionLock(event []byte) {
 		lockedTime = nil
 	}
 
-	err = esm.db.SavePrediction(store.PredictionLog{ID: data.ID, OwnerTwitchID: data.BroadcasterUserID, Title: data.Title, StartedAt: data.StartedAt.Time, LockedAt: lockedTime})
-	if err != nil {
-		log.Error(err)
-	}
-
-	for _, outcome := range data.Outcomes {
-		err = esm.db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: data.ID, Title: outcome.Title, Color: outcome.Color, Users: outcome.Users, ChannelPoints: outcome.ChannelPoints})
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
 	esm.chatClient.WaitForConnect()
 	esm.chatClient.Say(
 		data.BroadcasterUserLogin,
@@ -149,23 +124,11 @@ func (esm *EventSubManager) HandlePredictionEnd(event []byte) {
 		endTime = nil
 	}
 
-	err = esm.db.SavePrediction(store.PredictionLog{ID: data.ID, OwnerTwitchID: data.BroadcasterUserID, Title: data.Title, StartedAt: data.StartedAt.Time, EndedAt: endTime, WinningOutcomeID: data.WinningOutcomeID, Status: data.Status})
-	if err != nil {
-		log.Error(err)
-	}
-
-	var winningOutcome store.PredictionLogOutcome
+	var winningOutcome nickHelix.EventSubOutcome
 
 	for _, outcome := range data.Outcomes {
-		outcomeModel := store.PredictionLogOutcome{ID: outcome.ID, PredictionID: data.ID, Title: outcome.Title, Color: outcome.Color, Users: outcome.Users, ChannelPoints: outcome.ChannelPoints}
-
 		if data.WinningOutcomeID == outcome.ID {
-			winningOutcome = outcomeModel
-		}
-
-		err = esm.db.SaveOutcome(outcomeModel)
-		if err != nil {
-			log.Error(err)
+			winningOutcome = outcome
 		}
 	}
 
@@ -182,9 +145,17 @@ func (esm *EventSubManager) HandlePredictionEnd(event []byte) {
 			data.BroadcasterUserLogin,
 			fmt.Sprintf("PogChamp ended prediction: %s Winner: %s %s",
 				data.Title,
-				winningOutcome.GetColorEmoji(),
+				getColorEmoji(winningOutcome),
 				winningOutcome.Title,
 			),
 		)
 	}
+}
+
+func getColorEmoji(outcome nickHelix.EventSubOutcome) string {
+	if outcome.Color == dto.Outcome_First {
+		return "🟦"
+	}
+
+	return "🟪"
 }

@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Emotehistory } from "../components/Home/Emotehistory";
-import { PredictionLog } from "../components/Home/PredictionLog";
 import { Teaser } from "../components/Teaser";
 import { initializeStore } from "../service/initializeStore";
-import { Store, useStore } from "../store";
+import { useStore } from "../store";
 
 export default function Home() {
     const isLoggedIn = useStore(s => !!s.scToken);
@@ -12,7 +11,6 @@ export default function Home() {
         {!isLoggedIn && <Teaser />}
         {isLoggedIn && <>
             <Emotehistory />
-            <PredictionLog />
         </>}
     </div>
 }

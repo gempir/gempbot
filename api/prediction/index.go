@@ -3,7 +3,6 @@ package prediction
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/auth"
@@ -57,19 +56,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, prediction := range resp.Data.Predictions {
-		err := db.SavePrediction(store.PredictionLog{ID: prediction.ID, OwnerTwitchID: userID, Title: prediction.Title, StartedAt: prediction.CreatedAt.Time, LockedAt: nil, EndedAt: nil, WinningOutcomeID: prediction.WinningOutcomeID})
-		if err != nil {
-			log.Error(err)
-		}
-
-		for _, outcome := range prediction.Outcomes {
-			err := db.SaveOutcome(store.PredictionLogOutcome{ID: outcome.ID, PredictionID: prediction.ID, Title: outcome.Title, Color: strings.ToLower(outcome.Color), Users: outcome.Users, ChannelPoints: outcome.ChannelPoints})
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
 	log.Infof("[helix] %d Created Prediction %s Error: %s", resp.StatusCode, userID, resp.ErrorMessage)
 
 	api.WriteJson(w, resp.ErrorMessage, resp.StatusCode)
