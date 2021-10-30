@@ -36,7 +36,7 @@ func init() {
 	userCacheByUsername = map[string]*UserData{}
 }
 
-var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions"}
+var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions moderation:read"}
 
 // NewClient Create helix client
 func NewClient(cfg *config.Config, db *store.Database) *Client {
