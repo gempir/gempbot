@@ -12,6 +12,7 @@ type ChannelPointReward struct {
 	OwnerTwitchID                     string         `gorm:"primaryKey"`
 	Type                              dto.RewardType `gorm:"primaryKey"`
 	RewardID                          string         `gorm:"index"`
+	ApproveOnly                       bool           `gorm:"default:false"`
 	CreatedAt                         time.Time
 	UpdatedAt                         time.Time
 	Title                             string
