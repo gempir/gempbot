@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gempir/gempbot/pkg/log"
@@ -334,4 +335,16 @@ func (c *Client) DeleteReward(userID string, userAccessToken string, rewardID st
 	}
 
 	return nil
+}
+
+func RewardStatusIsUnfullfilled(status string) bool {
+	return strings.ToLower(status) == "unfulfilled"
+}
+
+func RewardStatusIsCancelled(status string) bool {
+	return strings.ToLower(status) == "cancelled" || strings.ToLower(status) == "canceled"
+}
+
+func RewardStatusIsFullfilled(status string) bool {
+	return strings.ToLower(status) == "fulfilled"
 }

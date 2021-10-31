@@ -69,6 +69,7 @@ func (cpm *ChannelPointManager) CreateOrUpdateChannelPointReward(userID string, 
 
 	return TwitchRewardConfig{
 		Title:                             resp.Title,
+		ApproveOnly:                       request.ApproveOnly,
 		Prompt:                            resp.Prompt,
 		Cost:                              resp.Cost,
 		BackgroundColor:                   resp.BackgroundColor,
@@ -105,7 +106,8 @@ type TwitchRewardConfig struct {
 	IsGlobalCooldownEnabled           bool   `json:"isGlobalCooldownEnabled"`
 	GlobalCooldownSeconds             int    `json:"globalCooldownSeconds"`
 	ShouldRedemptionsSkipRequestQueue bool   `json:"shouldRedemptionsSkipRequestQueue"`
-	Enabled                           bool   `json:"enabled"`
+	ApproveOnly                       bool
+	Enabled                           bool `json:"enabled"`
 	ID                                string
 }
 
@@ -217,6 +219,7 @@ func CreateStoreRewardFromReward(userID string, reward Reward) store.ChannelPoin
 		GlobalCooldownSeconds:             reward.GetConfig().GlobalCooldownSeconds,
 		ShouldRedemptionsSkipRequestQueue: reward.GetConfig().ShouldRedemptionsSkipRequestQueue,
 		Enabled:                           reward.GetConfig().Enabled,
+		ApproveOnly:                       reward.GetConfig().ApproveOnly,
 		AdditionalOptions:                 string(addOpts),
 	}
 }
@@ -240,6 +243,7 @@ type rewardRequestBody struct {
 	IsGlobalCooldownEnabled           bool
 	GlobalCooldownSeconds             int
 	ShouldRedemptionsSkipRequestQueue bool
+	ApproveOnly                       bool
 	Enabled                           bool
 }
 
@@ -265,6 +269,7 @@ func createTwitchRewardConfigFromRequestBody(body rewardRequestBody) TwitchRewar
 		IsGlobalCooldownEnabled:           body.IsGlobalCooldownEnabled,
 		GlobalCooldownSeconds:             body.GlobalCooldownSeconds,
 		ShouldRedemptionsSkipRequestQueue: false,
+		ApproveOnly:                       body.ApproveOnly,
 		Enabled:                           body.Enabled,
 		ID:                                body.ID,
 	}

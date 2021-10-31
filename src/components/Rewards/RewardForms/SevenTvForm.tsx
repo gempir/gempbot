@@ -5,7 +5,7 @@ import { UserConfig } from "../../../hooks/useUserConfig";
 import { SevenTvLogo } from "../../../icons/SevenTv";
 import { ChannelPointReward, RewardTypes } from "../../../types/Rewards";
 
-interface BttvRewardForm {
+interface SevenTvRewardForm {
     title: string;
     cost: string;
     prompt: string;
@@ -15,6 +15,7 @@ interface BttvRewardForm {
     globalCooldownMinutes: string;
     enabled: boolean;
     isDefault: boolean;
+    approveOnly: boolean;
     slots: number;
 }
 
@@ -33,6 +34,7 @@ const defaultReward = {
     IsGlobalCooldownEnabled: false,
     GlobalCooldownSeconds: 0,
     ShouldRedemptionsSkipRequestQueue: false,
+    ApproveOnly: false,
     Enabled: false,
     AdditionalOptionsParsed: { Slots: 1 }
 }
@@ -41,7 +43,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
 
     const [reward, setReward, deleteReward, errorMessage, loading] = useChannelPointReward(userConfig?.Protected.CurrentUserID, RewardTypes.SevenTv, defaultReward);
-    const onSubmit = (data: BttvRewardForm) => {
+    const onSubmit = (data: SevenTvRewardForm) => {
         const rewardData: ChannelPointReward = {
             OwnerTwitchID: userConfig?.Protected.CurrentUserID,
             Type: RewardTypes.SevenTv,
@@ -57,6 +59,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
             IsGlobalCooldownEnabled: Boolean(data.globalCooldownMinutes),
             GlobalCooldownSeconds: Number(data.globalCooldownMinutes) * 60,
             ShouldRedemptionsSkipRequestQueue: false,
+            ApproveOnly: data.approveOnly,
             Enabled: data.enabled,
             AdditionalOptionsParsed: {
                 Slots: Number(data.slots)
@@ -75,6 +78,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
         setValue("maxPerStream", reward.MaxPerStream);
         setValue("maxPerUserPerStream", reward.MaxPerUserPerStream);
         setValue("globalCooldownMinutes", reward.GlobalCooldownSeconds / 60);
+        setValue("approveOnly", reward.ApproveOnly);
         setValue("enabled", reward.Enabled);
     }, [reward, setValue]);
 
@@ -142,6 +146,11 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
             <label className="flex items-center mt-3">
                 Global Cooldown in Minutes
                 <input defaultValue={(reward.GlobalCooldownSeconds ?? 0) / 60} placeholder="0" type="number" spellCheck={false} {...register("globalCooldownMinutes")} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+            </label>
+
+            <label className="flex items-center my-3">
+                <input defaultChecked={reward.ApproveOnly} type="checkbox" {...register("approveOnly")} className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" />
+                <span className="ml-2">Approve only <span className="text-gray-500">will only activate the reward when it's marked as complete by a moderator</span></span>
             </label>
 
             {errorMessage && <div className="my-4 text-red-600">

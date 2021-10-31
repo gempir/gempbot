@@ -121,6 +121,11 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 		return
 	}
 
+	if reward.ApproveOnly && !helix.RewardStatusIsFullfilled(redemption.Status) {
+		log.Infof("[%s] Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
+		return
+	}
+
 	if reward.Type == dto.REWARD_BTTV {
 		esm.emoteChief.HandleBttvRedemption(reward, redemption)
 		return

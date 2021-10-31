@@ -41,7 +41,31 @@ func (esm *SubscriptionManager) SubscribeRewardRedemptionAdd(userID, rewardId st
 		return
 	}
 
-	log.Infof("[%d] subscription %s %s", response.StatusCode, response.Error, response.ErrorMessage)
+	log.Infof("[%d] SubscribeRewardRedemptionAdd %s %s", response.StatusCode, response.Error, response.ErrorMessage)
+	for _, sub := range response.Data.EventSubSubscriptions {
+		log.Infof("new subscription for %s id: %s", userID, sub.ID)
+		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, rewardId)
+	}
+}
+
+func (esm *SubscriptionManager) SubscribeRewardRedemptionUpdate(userID, rewardId string) {
+	response, err := esm.helixClient.CreateRewardEventSubSubscription(
+		userID,
+		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
+		nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
+		rewardId,
+	)
+	if err != nil {
+		log.Errorf("Error subscribing: %s", err)
+		return
+	}
+
+	if response.StatusCode == http.StatusForbidden {
+		log.Errorf("Forbidden subscription %s", response.ErrorMessage)
+		return
+	}
+
+	log.Infof("[%d] SubscribeRewardRedemptionUpdate %s %s", response.StatusCode, response.Error, response.ErrorMessage)
 	for _, sub := range response.Data.EventSubSubscriptions {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
 		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, rewardId)

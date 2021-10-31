@@ -33,6 +33,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		eventSubManager.HandleChannelPointsCustomRewardRedemption(event)
 		return
 	}
+	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate {
+		eventSubManager.HandleChannelPointsCustomRewardRedemption(event)
+		return
+	}
 	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPredictionBegin {
 		eventSubManager.HandlePredictionBegin(event)
 		return

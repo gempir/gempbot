@@ -68,6 +68,9 @@ func HandlerBttv(w http.ResponseWriter, r *http.Request) {
 		}
 
 		subscriptionManager.SubscribeRewardRedemptionAdd(userID, config.ID)
+		if config.ApproveOnly {
+			subscriptionManager.SubscribeRewardRedemptionUpdate(userID, config.ID)
+		}
 
 		newReward.SetConfig(config)
 

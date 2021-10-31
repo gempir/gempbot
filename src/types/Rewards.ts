@@ -6,6 +6,7 @@ export enum RewardTypes {
 
 export interface ChannelPointReward {
     OwnerTwitchID: string
+    ApproveOnly: boolean
     Type: RewardTypes
     Title: string
     Cost: number
