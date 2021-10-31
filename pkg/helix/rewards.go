@@ -226,7 +226,11 @@ type UpdateRedemptionStatusResponse struct {
 	} `json:"data"`
 }
 
-func (c *Client) UpdateRedemptionStatus(broadcasterID, userAccessToken string, rewardID string, redemptionID string, statusSuccess bool) error {
+func (c *Client) UpdateRedemptionStatus(broadcasterID, rewardID string, redemptionID string, statusSuccess bool) error {
+	token, err := c.db.GetUserAccessToken(broadcasterID)
+	if err != nil {
+		return fmt.Errorf("Failed to get userAccess token to update redemption status for %s", broadcasterID)
+	}
 
 	request := UpdateRedemptionStatusRequest{}
 	if statusSuccess {
@@ -255,7 +259,7 @@ func (c *Client) UpdateRedemptionStatus(broadcasterID, userAccessToken string, r
 	reqUrl.RawQuery = query.Encode()
 
 	req, err := http.NewRequest(method, reqUrl.String(), bytes.NewBuffer(marshalled))
-	req.Header.Set("authorization", "Bearer "+userAccessToken)
+	req.Header.Set("authorization", "Bearer "+token.AccessToken)
 	req.Header.Set("client-id", c.clientID)
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {

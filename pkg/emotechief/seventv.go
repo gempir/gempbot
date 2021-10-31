@@ -244,18 +244,11 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 		return
 	}
 
-	token, err := ec.db.GetUserAccessToken(redemption.BroadcasterUserID)
+	err := ec.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, redemption.Reward.ID, redemption.ID, success)
 	if err != nil {
-		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.BroadcasterUserID)
+		log.Errorf("Failed to update redemption status %s", err.Error())
 		return
-	} else {
-		err := ec.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, token.AccessToken, redemption.Reward.ID, redemption.ID, success)
-		if err != nil {
-			log.Errorf("Failed to update redemption status %s", err.Error())
-			return
-		}
 	}
-
 }
 
 type sevenTvEmote struct {

@@ -86,9 +86,9 @@ type dashboardCfg struct {
 	} `json:"limits"`
 }
 
-func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, removedEmote *bttvEmoteResponse, err error) {
+func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, emoteAddType dto.EmoteChangeType, bttvUserId string, removalTargetEmoteId string, err error) {
 	if e.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_BTTV) {
-		return nil, nil, errors.New("Emote is blocked")
+		return nil, dto.EMOTE_ADD_ADD, "", "", errors.New("Emote is blocked")
 	}
 
 	addedEmote, err = getBttvEmote(emoteId)
@@ -115,7 +115,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 	if err != nil {
 		return
 	}
-	bttvUserId := userResp.ID
+	bttvUserId = userResp.ID
 
 	// figure out the limit for the channel, might also chache this later on with expiry
 	var req *http.Request
@@ -185,8 +185,6 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 	}
 	log.Infof("Current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
 
-	var removalTargetEmoteId string
-
 	emotesAdded := e.db.GetEmoteAdded(channelUserID, dto.REWARD_BTTV, slots)
 	log.Infof("Total Previous emotes %d in %s", len(emotesAdded), channelUserID)
 
@@ -199,7 +197,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 		}
 	}
 
-	emoteAddType := dto.EMOTE_ADD_REMOVED_PREVIOUS
+	emoteAddType = dto.EMOTE_ADD_REMOVED_PREVIOUS
 
 	if len(confirmedEmotesAdded) == slots {
 		removalTargetEmoteId = confirmedEmotesAdded[len(confirmedEmotesAdded)-1].EmoteID
@@ -210,9 +208,19 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 		removalTargetEmoteId = dashboard.Sharedemotes[rand.Intn(len(dashboard.Sharedemotes))].ID
 	}
 
+	return
+}
+
+func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, removedEmote *bttvEmoteResponse, err error) {
+	addedEmote, emoteAddType, bttvUserId, removalTargetEmoteId, err := e.VerifySetBttvEmote(channelUserID, emoteId, channel, slots)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	// do we need to remove the emote?
 	if removalTargetEmoteId != "" {
 		// Delete the current emote
+		var req *http.Request
 		req, err = http.NewRequest("DELETE", "https://api.betterttv.net/3/emotes/"+removalTargetEmoteId+"/shared/"+bttvUserId, nil)
 		req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
 		if err != nil {
@@ -220,6 +228,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 			return
 		}
 
+		var resp *http.Response
 		resp, err = e.httpClient.Do(req)
 		if err != nil {
 			log.Error(err)
@@ -230,6 +239,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 	}
 
 	// Add new emote
+	var req *http.Request
 	req, err = http.NewRequest("PUT", "https://api.betterttv.net/3/emotes/"+emoteId+"/shared/"+bttvUserId, nil)
 	req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
 	if err != nil {
@@ -237,6 +247,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 		return
 	}
 
+	var resp *http.Response
 	resp, err = e.httpClient.Do(req)
 	if err != nil {
 		log.Error(err)
@@ -284,7 +295,28 @@ func getBttvEmote(emoteID string) (*bttvEmoteResponse, error) {
 
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
-func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) {
+func (ec *EmoteChief) VerifyBttvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) bool {
+	opts := channelpoint.UnmarshallBttvAdditionalOptions(reward.AdditionalOptions)
+
+	matches := bttvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
+	if len(matches) == 1 && len(matches[0]) == 2 {
+		_, _, _, _, err := ec.VerifySetBttvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, opts.Slots)
+		if err != nil {
+			ec.chatClient.WaitForConnect()
+			log.Warnf("Bttv error %s %s", redemption.BroadcasterUserLogin, err)
+			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from: @%s error: %s", redemption.UserName, err.Error()))
+			return false
+		}
+
+		return true
+	}
+
+	ec.chatClient.WaitForConnect()
+	ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: no bttv link found in message", redemption.UserName))
+	return false
+}
+
+func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent, updateStatus bool) {
 	opts := channelpoint.UnmarshallBttvAdditionalOptions(reward.AdditionalOptions)
 	success := false
 
@@ -314,12 +346,8 @@ func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, rede
 		return
 	}
 
-	token, err := ec.db.GetUserAccessToken(redemption.BroadcasterUserID)
-	if err != nil {
-		log.Errorf("Failed to get userAccess token to update redemption status for %s", redemption.BroadcasterUserID)
-		return
-	} else {
-		err := ec.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, token.AccessToken, redemption.Reward.ID, redemption.ID, success)
+	if updateStatus {
+		err := ec.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, redemption.Reward.ID, redemption.ID, success)
 		if err != nil {
 			log.Errorf("Failed to update redemption status %s", err.Error())
 			return
