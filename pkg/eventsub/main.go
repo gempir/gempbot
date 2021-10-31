@@ -121,43 +121,60 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 		return
 	}
 
-	if reward.Type == dto.REWARD_BTTV {
-		if helix.RewardStatusIsUnfullfilled(redemption.Status) {
-			if reward.ApproveOnly {
+	if helix.RewardStatusIsUnfullfilled(redemption.Status) {
+		if reward.ApproveOnly {
+			if reward.Type == dto.REWARD_BTTV {
 				if !esm.emoteChief.VerifyBttvRedemption(reward, redemption) {
-					log.Infof("[%s] Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
+					log.Infof("[%s] Bttv Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
 					err := esm.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, reward.RewardID, redemption.ID, false)
 					if err != nil {
 						log.Error(err)
 					}
 				} else {
-					log.Infof("[%s] Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
+					log.Infof("[%s] Bttv Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
 					return
 				}
-			} else {
+			}
+			if reward.Type == dto.REWARD_SEVENTV {
+				if !esm.emoteChief.VerifySeventvRedemption(reward, redemption) {
+					log.Infof("[%s] 7tv Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
+					err := esm.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, reward.RewardID, redemption.ID, false)
+					if err != nil {
+						log.Error(err)
+					}
+				} else {
+					log.Infof("[%s] 7tv Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
+					return
+				}
+			}
+		} else {
+			if reward.Type == dto.REWARD_BTTV {
 				esm.emoteChief.HandleBttvRedemption(reward, redemption, true)
+				return
+			}
+			if reward.Type == dto.REWARD_SEVENTV {
+				esm.emoteChief.HandleSeventvRedemption(reward, redemption, true)
+				return
 			}
 		}
-		if helix.RewardStatusIsCancelled(redemption.Status) {
-			return
-		}
-		if helix.RewardStatusIsFullfilled(redemption.Status) {
-			if reward.ApproveOnly {
+	}
+	if helix.RewardStatusIsCancelled(redemption.Status) {
+		return
+	}
+	if helix.RewardStatusIsFullfilled(redemption.Status) {
+		if reward.ApproveOnly {
+			if reward.Type == dto.REWARD_BTTV {
 				esm.emoteChief.HandleBttvRedemption(reward, redemption, false)
+				return
+			}
+			if reward.Type == dto.REWARD_SEVENTV {
+				esm.emoteChief.HandleSeventvRedemption(reward, redemption, false)
+				return
 			}
 		}
-
-		return
 	}
-	if reward.Type == dto.REWARD_SEVENTV {
-		if reward.ApproveOnly && !helix.RewardStatusIsFullfilled(redemption.Status) {
-			log.Infof("[%s] SevenTvReward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
-			return
-		}
 
-		esm.emoteChief.HandleSeventvRedemption(reward, redemption)
-		return
-	}
+	return
 }
 
 func (esm *EventSubManager) SubscribeChannelPoints(userID string) {

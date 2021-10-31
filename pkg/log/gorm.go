@@ -28,7 +28,7 @@ func (l *logger) LogMode(gormlogger.LogLevel) gormlogger.Interface {
 }
 
 func (l *logger) Info(ctx context.Context, s string, args ...interface{}) {
-	log.WithContext(ctx).Infof(s, args...)
+	// log.WithContext(ctx).Infof(s, args...)
 }
 
 func (l *logger) Warn(ctx context.Context, s string, args ...interface{}) {

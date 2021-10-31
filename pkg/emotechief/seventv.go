@@ -52,12 +52,12 @@ type SevenTvUserResponse struct {
 	} `json:"data"`
 }
 
-func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
+func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (newEmote *sevenTvEmote, emoteAddType dto.EmoteChangeType, userData *SevenTvUserResponse, removalTargetEmoteId string, err error) {
 	if ec.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_SEVENTV) {
-		return nil, nil, errors.New("Emote is blocked")
+		return nil, dto.EMOTE_ADD_ADD, nil, "", errors.New("Emote is blocked")
 	}
 
-	newEmote, err := getSevenTvEmote(emoteId)
+	newEmote, err = getSevenTvEmote(emoteId)
 	if err != nil {
 		return
 	}
@@ -68,7 +68,6 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 		return
 	}
 
-	var userData SevenTvUserResponse
 	err = ec.QuerySevenTvGQL(SEVEN_TV_USER_DATA_QUERY, map[string]interface{}{"id": channel}, &userData)
 	if err != nil {
 		return
@@ -78,12 +77,10 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 	emotesLimit := userData.Data.User.EmoteSlots
 	for _, emote := range emotes {
 		if emote.Name == newEmote.Name {
-			return nil, nil, fmt.Errorf("Emote code already added")
+			return nil, dto.EMOTE_ADD_ADD, nil, "", errors.New("Emote code already added")
 		}
 	}
 	log.Infof("Current 7tv emotes: %d/%d", len(userData.Data.User.Emotes), userData.Data.User.EmoteSlots)
-
-	var removalTargetEmoteId string
 
 	emotesAdded := ec.db.GetEmoteAdded(channelUserID, dto.REWARD_SEVENTV, slots)
 	log.Infof("Total Previous emotes %d in %s", len(emotesAdded), channelUserID)
@@ -97,7 +94,7 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 		}
 	}
 
-	emoteAddType := dto.EMOTE_ADD_REMOVED_PREVIOUS
+	emoteAddType = dto.EMOTE_ADD_REMOVED_PREVIOUS
 
 	if len(confirmedEmotesAdded) == slots {
 		removalTargetEmoteId = confirmedEmotesAdded[len(confirmedEmotesAdded)-1].EmoteID
@@ -106,6 +103,15 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 		emoteAddType = dto.EMOTE_ADD_REMOVED_RANDOM
 		log.Infof("Didn't find previous emote history of %d emotes and limit reached, choosing random in %s", slots, channelUserID)
 		removalTargetEmoteId = emotes[rand.Intn(len(emotes))].ID
+	}
+
+	return
+}
+
+func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
+	newEmote, emoteAddType, userData, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, redeemedByUsername, channel, slots)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	// do we need to remove the emote?
@@ -216,7 +222,28 @@ func (ec *EmoteChief) QuerySevenTvGQL(query string, variables map[string]interfa
 	return nil
 }
 
-func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) {
+func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) bool {
+	opts := channelpoint.UnmarshallSevenTvAdditionalOptions(reward.AdditionalOptions)
+
+	matches := sevenTvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
+	if len(matches) == 1 && len(matches[0]) == 2 {
+		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.UserLogin, redemption.BroadcasterUserLogin, opts.Slots)
+		if err != nil {
+			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
+			ec.chatClient.WaitForConnect()
+			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from: @%s error: %s", redemption.UserName, err.Error()))
+			return false
+		}
+
+		return true
+	}
+
+	ec.chatClient.WaitForConnect()
+	ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: no 7tv link found in message", redemption.UserName))
+	return false
+}
+
+func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent, updateStatus bool) {
 	opts := channelpoint.UnmarshallSevenTvAdditionalOptions(reward.AdditionalOptions)
 	success := false
 
@@ -244,10 +271,12 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 		return
 	}
 
-	err := ec.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, redemption.Reward.ID, redemption.ID, success)
-	if err != nil {
-		log.Errorf("Failed to update redemption status %s", err.Error())
-		return
+	if updateStatus {
+		err := ec.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, redemption.Reward.ID, redemption.ID, success)
+		if err != nil {
+			log.Errorf("Failed to update redemption status %s", err.Error())
+			return
+		}
 	}
 }
 

@@ -302,8 +302,8 @@ func (ec *EmoteChief) VerifyBttvRedemption(reward store.ChannelPointReward, rede
 	if len(matches) == 1 && len(matches[0]) == 2 {
 		_, _, _, _, err := ec.VerifySetBttvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, opts.Slots)
 		if err != nil {
-			ec.chatClient.WaitForConnect()
 			log.Warnf("Bttv error %s %s", redemption.BroadcasterUserLogin, err)
+			ec.chatClient.WaitForConnect()
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from: @%s error: %s", redemption.UserName, err.Error()))
 			return false
 		}
