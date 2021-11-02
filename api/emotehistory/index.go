@@ -7,7 +7,7 @@ import (
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/auth"
 	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/user"
 )
@@ -15,7 +15,7 @@ import (
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
-	helixClient := helix.NewClient(cfg, db)
+	helixClient := helixclient.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
 

@@ -9,18 +9,18 @@ import (
 
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 )
 
 type ChannelPointManager struct {
 	cfg         *config.Config
-	helixClient *helix.Client
+	helixClient *helixclient.Client
 	db          *store.Database
 }
 
-func NewChannelPointManager(cfg *config.Config, helixClient *helix.Client, db *store.Database) *ChannelPointManager {
+func NewChannelPointManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database) *ChannelPointManager {
 	return &ChannelPointManager{
 		cfg:         cfg,
 		helixClient: helixClient,
@@ -34,7 +34,7 @@ func (cpm *ChannelPointManager) CreateOrUpdateChannelPointReward(userID string, 
 		return TwitchRewardConfig{}, err
 	}
 
-	req := helix.CreateCustomRewardRequest{
+	req := helixclient.CreateCustomRewardRequest{
 		Title:                             request.Title,
 		Prompt:                            request.Prompt,
 		Cost:                              request.Cost,

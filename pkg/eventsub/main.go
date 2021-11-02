@@ -11,21 +11,21 @@ import (
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/emotechief"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type EventSubManager struct {
 	cfg         *config.Config
-	helixClient *helix.Client
+	helixClient *helixclient.Client
 	db          *store.Database
 	emoteChief  *emotechief.EmoteChief
 	chatClient  *chat.ChatClient
 }
 
-func NewEventSubManager(cfg *config.Config, helixClient *helix.Client, db *store.Database, emoteChief *emotechief.EmoteChief, chatClient *chat.ChatClient) *EventSubManager {
+func NewEventSubManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, chatClient *chat.ChatClient) *EventSubManager {
 	return &EventSubManager{
 		cfg:         cfg,
 		helixClient: helixClient,
@@ -36,9 +36,9 @@ func NewEventSubManager(cfg *config.Config, helixClient *helix.Client, db *store
 }
 
 type eventSubNotification struct {
-	Subscription nickHelix.EventSubSubscription `json:"subscription"`
-	Challenge    string                         `json:"challenge"`
-	Event        json.RawMessage                `json:"event"`
+	Subscription helix.EventSubSubscription `json:"subscription"`
+	Challenge    string                     `json:"challenge"`
+	Event        json.RawMessage            `json:"event"`
 }
 
 func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request) (event []byte, apiErr api.Error) {
@@ -48,7 +48,7 @@ func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request
 		return []byte{}, api.NewApiError(http.StatusBadRequest, err)
 	}
 
-	verified := nickHelix.VerifyEventSubNotification(esm.cfg.Secret, r.Header, string(body))
+	verified := helix.VerifyEventSubNotification(esm.cfg.Secret, r.Header, string(body))
 	if !verified {
 		log.Errorf("Failed verification %s", r.Header.Get("Twitch-Eventsub-Message-Id"))
 		return []byte{}, api.NewApiError(http.StatusPreconditionFailed, fmt.Errorf("failed verfication"))
@@ -108,7 +108,7 @@ func (esm *EventSubManager) handleChallenge(w http.ResponseWriter, r *http.Reque
 }
 
 func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []byte) {
-	var redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent
+	var redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent
 	err := json.Unmarshal(event, &redemption)
 	if err != nil {
 		log.Errorf("Failed to decode event: %s", err)
@@ -121,7 +121,7 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 		return
 	}
 
-	if helix.RewardStatusIsUnfullfilled(redemption.Status) {
+	if helixclient.RewardStatusIsUnfullfilled(redemption.Status) {
 		if reward.ApproveOnly {
 			if reward.Type == dto.REWARD_BTTV {
 				if !esm.emoteChief.VerifyBttvRedemption(reward, redemption) {
@@ -158,10 +158,10 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 			}
 		}
 	}
-	if helix.RewardStatusIsCancelled(redemption.Status) {
+	if helixclient.RewardStatusIsCancelled(redemption.Status) {
 		return
 	}
-	if helix.RewardStatusIsFullfilled(redemption.Status) {
+	if helixclient.RewardStatusIsFullfilled(redemption.Status) {
 		if reward.ApproveOnly {
 			if reward.Type == dto.REWARD_BTTV {
 				esm.emoteChief.HandleBttvRedemption(reward, redemption, false)
@@ -173,12 +173,10 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 			}
 		}
 	}
-
-	return
 }
 
 func (esm *EventSubManager) SubscribeChannelPoints(userID string) {
-	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd, nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
+	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd, helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
 		return
@@ -210,7 +208,7 @@ func (esm *EventSubManager) RemoveEventSubSubscription(subscriptionID string) er
 
 func (esm *EventSubManager) RemoveAllEventSubSubscriptions(userID string) {
 	// @TODO rework using the DB so we don't need to query literally every sub
-	resp, err := esm.helixClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{})
+	resp, err := esm.helixClient.Client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
 	if err != nil {
 		log.Errorf("Failed to get subscriptions: %s", err)
 		return
@@ -226,7 +224,7 @@ func (esm *EventSubManager) RemoveAllEventSubSubscriptions(userID string) {
 		}
 		log.Infof("Getting next subscriptions cursor: %s", cursor)
 
-		nextResp, err := esm.helixClient.Client.GetEventSubSubscriptions(&nickHelix.EventSubSubscriptionsParams{After: cursor})
+		nextResp, err := esm.helixClient.Client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{After: cursor})
 		if err != nil {
 			log.Errorf("Failed to get subscriptions: %s", err)
 		}

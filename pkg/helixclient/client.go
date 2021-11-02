@@ -1,4 +1,4 @@
-package helix
+package helixclient
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 // Client wrapper for helix
@@ -18,8 +18,8 @@ type Client struct {
 	clientID       string
 	clientSecret   string
 	eventSubSecret string
-	Client         *nickHelix.Client
-	AppAccessToken nickHelix.AccessCredentials
+	Client         *helix.Client
+	AppAccessToken helix.AccessCredentials
 	db             *store.Database
 	httpClient     *http.Client
 }
@@ -40,7 +40,7 @@ var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", 
 
 // NewClient Create helix client
 func NewClient(cfg *config.Config, db *store.Database) *Client {
-	client, err := nickHelix.NewClient(&nickHelix.Options{
+	client, err := helix.NewClient(&helix.Options{
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
 		RedirectURI:  cfg.ApiBaseUrl + "/api/callback",
@@ -56,7 +56,7 @@ func NewClient(cfg *config.Config, db *store.Database) *Client {
 		clientSecret:   cfg.ClientSecret,
 		eventSubSecret: cfg.Secret,
 		Client:         client,
-		AppAccessToken: nickHelix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
+		AppAccessToken: helix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
 		db:             db,
 		httpClient:     &http.Client{},
 	}
@@ -71,7 +71,7 @@ func (c *Client) StartRefreshTokenRoutine() {
 	}
 }
 
-func (c *Client) SetAppAccessToken(ctx context.Context, token nickHelix.AccessCredentials) {
+func (c *Client) SetAppAccessToken(ctx context.Context, token helix.AccessCredentials) {
 	c.AppAccessToken = token
 	c.Client.SetAppAccessToken(token.AccessToken)
 	err := c.db.SaveAppAccessToken(ctx, token.AccessToken, token.RefreshToken, strings.Join(token.Scopes, " "), token.ExpiresIn)
@@ -80,7 +80,7 @@ func (c *Client) SetAppAccessToken(ctx context.Context, token nickHelix.AccessCr
 	}
 }
 
-func setOrUpdateAccessToken(client *nickHelix.Client, db *store.Database) store.AppAccessToken {
+func setOrUpdateAccessToken(client *helix.Client, db *store.Database) store.AppAccessToken {
 	token, err := db.GetAppAccessToken()
 	if err != nil || time.Since(token.UpdatedAt) > 24*time.Hour {
 		log.Info("App AccessToken not found or older than 24hours")

@@ -4,19 +4,19 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type SubscriptionManager struct {
 	cfg         *config.Config
 	db          *store.Database
-	helixClient *helix.Client
+	helixClient *helixclient.Client
 }
 
-func NewSubscriptionManager(cfg *config.Config, db *store.Database, helixClient *helix.Client) *SubscriptionManager {
+func NewSubscriptionManager(cfg *config.Config, db *store.Database, helixClient *helixclient.Client) *SubscriptionManager {
 	return &SubscriptionManager{
 		helixClient: helixClient,
 		db:          db,
@@ -27,8 +27,8 @@ func NewSubscriptionManager(cfg *config.Config, db *store.Database, helixClient 
 func (esm *SubscriptionManager) SubscribeRewardRedemptionAdd(userID, rewardId string) {
 	response, err := esm.helixClient.CreateRewardEventSubSubscription(
 		userID,
-		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
-		nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
+		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
+		helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
 		rewardId,
 	)
 	if err != nil {
@@ -51,8 +51,8 @@ func (esm *SubscriptionManager) SubscribeRewardRedemptionAdd(userID, rewardId st
 func (esm *SubscriptionManager) SubscribeRewardRedemptionUpdate(userID, rewardId string) {
 	response, err := esm.helixClient.CreateRewardEventSubSubscription(
 		userID,
-		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
-		nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
+		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
+		helix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
 		rewardId,
 	)
 	if err != nil {

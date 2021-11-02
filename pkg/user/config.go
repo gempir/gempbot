@@ -9,7 +9,7 @@ import (
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/slice"
 	"github.com/gempir/gempbot/pkg/store"
@@ -18,11 +18,11 @@ import (
 type UserAdmin struct {
 	cfg         *config.Config
 	db          *store.Database
-	helixClient *helix.Client
+	helixClient *helixclient.Client
 	chatClient  *chat.ChatClient
 }
 
-func NewUserAdmin(cfg *config.Config, db *store.Database, helixClient *helix.Client, chatClient *chat.ChatClient) *UserAdmin {
+func NewUserAdmin(cfg *config.Config, db *store.Database, helixClient *helixclient.Client, chatClient *chat.ChatClient) *UserAdmin {
 	return &UserAdmin{cfg, db, helixClient, chatClient}
 }
 
@@ -92,7 +92,7 @@ func (u *UserAdmin) ConvertUserConfig(uCfg UserConfig, toNames bool) (UserConfig
 	allSlice := slice.MapToSlice(all)
 
 	var err error
-	var userData map[string]helix.UserData
+	var userData map[string]helixclient.UserData
 	if toNames {
 		userData, err = u.helixClient.GetUsersByUserIds(allSlice)
 	} else {

@@ -8,22 +8,22 @@ import (
 
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/humanize"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/go-twitch-irc/v2"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type Handler struct {
 	cfg         *config.Config
 	db          *store.Database
-	helixClient *helix.Client
+	helixClient *helixclient.Client
 	chatSay     func(channel, message string)
 }
 
-func NewHandler(cfg *config.Config, helixClient *helix.Client, db *store.Database, chatSay func(channel, message string)) *Handler {
+func NewHandler(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, chatSay func(channel, message string)) *Handler {
 	return &Handler{
 		cfg:         cfg,
 		db:          db,
@@ -58,7 +58,7 @@ func (h *Handler) handlePrediction(payload dto.CommandPayload) {
 }
 
 func (h *Handler) lockOrCancelPrediction(payload dto.CommandPayload, status string) {
-	resp, err := h.helixClient.GetPredictions(&nickHelix.PredictionsParams{BroadcasterID: payload.Msg.RoomID})
+	resp, err := h.helixClient.GetPredictions(&helix.PredictionsParams{BroadcasterID: payload.Msg.RoomID})
 	if err != nil {
 		log.Error(err)
 		h.handleError(payload.Msg, err)
@@ -72,7 +72,7 @@ func (h *Handler) lockOrCancelPrediction(payload dto.CommandPayload, status stri
 		return
 	}
 	h.helixClient.Client.SetUserAccessToken(token.AccessToken)
-	resp, err = h.helixClient.Client.EndPrediction(&nickHelix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: status})
+	resp, err = h.helixClient.Client.EndPrediction(&helix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: status})
 	h.helixClient.Client.SetUserAccessToken("")
 
 	if err != nil {
@@ -88,9 +88,9 @@ func (h *Handler) lockOrCancelPrediction(payload dto.CommandPayload, status stri
 }
 
 func (h *Handler) setOutcomeForPrediction(payload dto.CommandPayload) {
-	var winningOutcome nickHelix.Outcomes
+	var winningOutcome helix.Outcomes
 
-	resp, err := h.helixClient.GetPredictions(&nickHelix.PredictionsParams{BroadcasterID: payload.Msg.RoomID})
+	resp, err := h.helixClient.GetPredictions(&helix.PredictionsParams{BroadcasterID: payload.Msg.RoomID})
 	if err != nil {
 		log.Error(err)
 		h.handleError(payload.Msg, err)
@@ -116,7 +116,7 @@ func (h *Handler) setOutcomeForPrediction(payload dto.CommandPayload) {
 		return
 	}
 
-	_, err = h.helixClient.EndPrediction(&nickHelix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: dto.PredictionStatusResolved, WinningOutcomeID: winningOutcome.ID})
+	_, err = h.helixClient.EndPrediction(&helix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: dto.PredictionStatusResolved, WinningOutcomeID: winningOutcome.ID})
 	if err != nil {
 		log.Error(err)
 		h.handleError(payload.Msg, errors.New("bad twitch api response"))
@@ -158,10 +158,10 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 		return
 	}
 
-	prediction := &nickHelix.CreatePredictionParams{
+	prediction := &helix.CreatePredictionParams{
 		BroadcasterID:    payload.Msg.RoomID,
 		Title:            title,
-		Outcomes:         []nickHelix.PredictionChoiceParam{{Title: outcome1}, {Title: outcome2}},
+		Outcomes:         []helix.PredictionChoiceParam{{Title: outcome1}, {Title: outcome2}},
 		PredictionWindow: predictionWindow,
 	}
 
