@@ -168,18 +168,18 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 			return
 		}
 		if emote.Code == addedEmote.Code {
-			err = errors.New("Emote code already added")
+			err = fmt.Errorf("Emote code \"%s\" already added", addedEmote.Code)
 			return
 		}
 	}
 
 	for _, emote := range dashboard.Channelemotes {
 		if emote.ID == emoteId {
-			err = errors.New("Emote already a channelEmote")
+			err = fmt.Errorf("Emote \"%s\" already a channel emote", emote.Code)
 			return
 		}
 		if emote.Code == addedEmote.Code {
-			err = errors.New("Emote code already a channelEmote")
+			err = fmt.Errorf("Emote code \"%s\" already a channel emote", addedEmote.Code)
 			return
 		}
 	}

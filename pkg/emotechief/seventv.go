@@ -77,7 +77,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	emotesLimit := userData.Data.User.EmoteSlots
 	for _, emote := range emotes {
 		if emote.Name == newEmote.Name {
-			return nil, dto.EMOTE_ADD_ADD, nil, "", errors.New("Emote code already added")
+			return nil, dto.EMOTE_ADD_ADD, nil, "", fmt.Errorf("Emote code \"%s\" already added", newEmote.Name)
 		}
 	}
 	log.Infof("Current 7tv emotes: %d/%d", len(userData.Data.User.Emotes), userData.Data.User.EmoteSlots)
