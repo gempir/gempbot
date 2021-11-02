@@ -7,15 +7,15 @@ import (
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/eventsub"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
-	helixClient := helix.NewClient(cfg, db)
+	helixClient := helixclient.NewClient(cfg, db)
 	chatClient := chat.NewClient(cfg)
 	go chatClient.Connect()
 	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, chatClient)
@@ -29,23 +29,23 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionAdd {
+	if r.URL.Query().Get("type") == helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd {
 		eventSubManager.HandleChannelPointsCustomRewardRedemption(event)
 		return
 	}
-	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate {
+	if r.URL.Query().Get("type") == helix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate {
 		eventSubManager.HandleChannelPointsCustomRewardRedemption(event)
 		return
 	}
-	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPredictionBegin {
+	if r.URL.Query().Get("type") == helix.EventSubTypeChannelPredictionBegin {
 		eventSubManager.HandlePredictionBegin(event)
 		return
 	}
-	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPredictionLock {
+	if r.URL.Query().Get("type") == helix.EventSubTypeChannelPredictionLock {
 		eventSubManager.HandlePredictionLock(event)
 		return
 	}
-	if r.URL.Query().Get("type") == nickHelix.EventSubTypeChannelPredictionEnd {
+	if r.URL.Query().Get("type") == helix.EventSubTypeChannelPredictionEnd {
 		eventSubManager.HandlePredictionEnd(event)
 		return
 	}

@@ -13,7 +13,7 @@ import (
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	helix "github.com/nicklaw5/helix/v2"
 )
 
 type bttvDashboardResponse struct {
@@ -295,7 +295,7 @@ func getBttvEmote(emoteID string) (*bttvEmoteResponse, error) {
 
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
 
-func (ec *EmoteChief) VerifyBttvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) bool {
+func (ec *EmoteChief) VerifyBttvRedemption(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) bool {
 	opts := channelpoint.UnmarshallBttvAdditionalOptions(reward.AdditionalOptions)
 
 	matches := bttvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
@@ -316,7 +316,7 @@ func (ec *EmoteChief) VerifyBttvRedemption(reward store.ChannelPointReward, rede
 	return false
 }
 
-func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent, updateStatus bool) {
+func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent, updateStatus bool) {
 	opts := channelpoint.UnmarshallBttvAdditionalOptions(reward.AdditionalOptions)
 	success := false
 

@@ -9,11 +9,11 @@ import (
 
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/golang-jwt/jwt"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 func CreateApiToken(secret, userID string) string {
@@ -41,7 +41,7 @@ func (t *TokenClaims) Valid() error {
 	return nil
 }
 
-func NewAuth(cfg *config.Config, db *store.Database, helixClient *helix.Client) *Auth {
+func NewAuth(cfg *config.Config, db *store.Database, helixClient *helixclient.Client) *Auth {
 	return &Auth{
 		cfg:         cfg,
 		db:          db,
@@ -50,22 +50,22 @@ func NewAuth(cfg *config.Config, db *store.Database, helixClient *helix.Client) 
 }
 
 type Auth struct {
-	helixClient *helix.Client
+	helixClient *helixclient.Client
 	db          *store.Database
 	cfg         *config.Config
 }
 
-func (a *Auth) AttemptAuth(r *http.Request, w http.ResponseWriter) (nickHelix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
+func (a *Auth) AttemptAuth(r *http.Request, w http.ResponseWriter) (helix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
 	resp, token, err := a.Authenticate(r)
 	if err != nil {
 		a.WriteDeleteCookieResponse(w, err)
-		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, err
+		return helix.ValidateTokenResponse{}, store.UserAccessToken{}, err
 	}
 
 	return resp, token, nil
 }
 
-func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
+func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
 	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	for _, cookie := range r.Cookies() {
 		if cookie.Name == "scToken" {
@@ -74,7 +74,7 @@ func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, s
 	}
 
 	if scToken == "" {
-		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("no scToken cookie set"))
+		return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("no scToken cookie set"))
 	}
 
 	// Initialize a new instance of `Claims`
@@ -89,13 +89,13 @@ func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, s
 	})
 	if err != nil || !tkn.Valid {
 		log.Errorf("found to validate jwt: %s", err)
-		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("bad authentication"))
+		return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("bad authentication"))
 	}
 
 	token, err := a.db.GetUserAccessToken(claims.UserID)
 	if err != nil {
 		log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
-		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("Failed to get userAccessTokenData: %s", err.Error()))
+		return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("Failed to get userAccessTokenData: %s", err.Error()))
 	}
 
 	success, resp, err := a.helixClient.Client.ValidateToken(token.AccessToken)
@@ -108,13 +108,13 @@ func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, s
 		if resp.Error == "Unauthorized" {
 			err := a.refreshToken(r.Context(), token)
 			if err != nil {
-				return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("failed to refresh token"))
+				return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("failed to refresh token"))
 			}
 
 			refreshedToken, err := a.db.GetUserAccessToken(claims.UserID)
 			if err != nil {
 				log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
-				return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("Failed to get userAccessTokenData: %s", err.Error()))
+				return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("Failed to get userAccessTokenData: %s", err.Error()))
 			}
 
 			success, resp, err = a.helixClient.Client.ValidateToken(refreshedToken.AccessToken)
@@ -123,13 +123,13 @@ func (a *Auth) Authenticate(r *http.Request) (nickHelix.ValidateTokenResponse, s
 					log.Errorf("refreshed Token did not validate: %s", err)
 				}
 
-				return nickHelix.ValidateTokenResponse{}, refreshedToken, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("refreshed token did not validate"))
+				return helix.ValidateTokenResponse{}, refreshedToken, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("refreshed token did not validate"))
 			}
 
 			return *resp, refreshedToken, nil
 		}
 
-		return nickHelix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("token not valid: %s", resp.ErrorMessage))
+		return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("token not valid: %s", resp.ErrorMessage))
 	}
 
 	return *resp, token, nil

@@ -1,17 +1,17 @@
-package helix
+package helixclient
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/log"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
-func (c *Client) GetPredictions(params *nickHelix.PredictionsParams) (*nickHelix.PredictionsResponse, error) {
+func (c *Client) GetPredictions(params *helix.PredictionsParams) (*helix.PredictionsResponse, error) {
 	token, err := c.db.GetUserAccessToken(params.BroadcasterID)
 	if err != nil {
-		return &nickHelix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
+		return &helix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
 	}
 
 	c.Client.SetUserAccessToken(token.AccessToken)
@@ -31,10 +31,10 @@ func (c *Client) GetPredictions(params *nickHelix.PredictionsParams) (*nickHelix
 	return resp, nil
 }
 
-func (c *Client) EndPrediction(params *nickHelix.EndPredictionParams) (*nickHelix.PredictionsResponse, error) {
+func (c *Client) EndPrediction(params *helix.EndPredictionParams) (*helix.PredictionsResponse, error) {
 	token, err := c.db.GetUserAccessToken(params.BroadcasterID)
 	if err != nil {
-		return &nickHelix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
+		return &helix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
 	}
 
 	c.Client.SetUserAccessToken(token.AccessToken)
@@ -54,10 +54,10 @@ func (c *Client) EndPrediction(params *nickHelix.EndPredictionParams) (*nickHeli
 	return resp, nil
 }
 
-func (c *Client) CreatePrediction(params *nickHelix.CreatePredictionParams) (*nickHelix.PredictionsResponse, error) {
+func (c *Client) CreatePrediction(params *helix.CreatePredictionParams) (*helix.PredictionsResponse, error) {
 	token, err := c.db.GetUserAccessToken(params.BroadcasterID)
 	if err != nil {
-		return &nickHelix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
+		return &helix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
 	}
 
 	c.Client.SetUserAccessToken(token.AccessToken)

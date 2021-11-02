@@ -3,7 +3,7 @@ package store
 import (
 	"time"
 
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type EventSubSubscription struct {
@@ -30,7 +30,7 @@ func (db *Database) GetAllSubscriptions() []EventSubSubscription {
 
 func (db *Database) GetAllPredictionSubscriptions(userID string) []EventSubSubscription {
 	var subs []EventSubSubscription
-	db.Client.Where("target_twitch_id = ? AND type IN (?, ?, ?)", userID, nickHelix.EventSubTypeChannelPredictionBegin, nickHelix.EventSubTypeChannelPredictionLock, nickHelix.EventSubTypeChannelPredictionEnd).Find(&subs)
+	db.Client.Where("target_twitch_id = ? AND type IN (?, ?, ?)", userID, helix.EventSubTypeChannelPredictionBegin, helix.EventSubTypeChannelPredictionLock, helix.EventSubTypeChannelPredictionEnd).Find(&subs)
 	return subs
 }
 

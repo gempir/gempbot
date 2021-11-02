@@ -8,11 +8,11 @@ import (
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/humanize"
 	"github.com/gempir/gempbot/pkg/log"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 func (esm *EventSubManager) SubscribePredictions(userID string) {
-	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPredictionBegin, "channel.prediction.begin")
+	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionBegin, "channel.prediction.begin")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
 		return
@@ -24,7 +24,7 @@ func (esm *EventSubManager) SubscribePredictions(userID string) {
 		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
 
-	response, err = esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPredictionLock, "channel.prediction.lock")
+	response, err = esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionLock, "channel.prediction.lock")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
 		return
@@ -36,7 +36,7 @@ func (esm *EventSubManager) SubscribePredictions(userID string) {
 		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
 
-	response, err = esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+nickHelix.EventSubTypeChannelPredictionEnd, "channel.prediction.end")
+	response, err = esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionEnd, "channel.prediction.end")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
 		return
@@ -50,7 +50,7 @@ func (esm *EventSubManager) SubscribePredictions(userID string) {
 }
 
 func (esm *EventSubManager) HandlePredictionBegin(event []byte) {
-	var data nickHelix.EventSubChannelPredictionBeginEvent
+	var data helix.EventSubChannelPredictionBeginEvent
 	err := json.Unmarshal(event, &data)
 	if err != nil {
 		log.Errorf("Failed to decode event: %s", err)
@@ -80,7 +80,7 @@ func (esm *EventSubManager) HandlePredictionBegin(event []byte) {
 }
 
 func (esm *EventSubManager) HandlePredictionLock(event []byte) {
-	var data nickHelix.EventSubChannelPredictionLockEvent
+	var data helix.EventSubChannelPredictionLockEvent
 	err := json.Unmarshal(event, &data)
 	if err != nil {
 		log.Errorf("Failed to decode event: %s", err)
@@ -107,7 +107,7 @@ func (esm *EventSubManager) HandlePredictionLock(event []byte) {
 }
 
 func (esm *EventSubManager) HandlePredictionEnd(event []byte) {
-	var data nickHelix.EventSubChannelPredictionEndEvent
+	var data helix.EventSubChannelPredictionEndEvent
 	err := json.Unmarshal(event, &data)
 	if err != nil {
 		log.Errorf("Failed to decode event: %s", err)
@@ -124,7 +124,7 @@ func (esm *EventSubManager) HandlePredictionEnd(event []byte) {
 		endTime = nil
 	}
 
-	var winningOutcome nickHelix.EventSubOutcome
+	var winningOutcome helix.EventSubOutcome
 
 	for _, outcome := range data.Outcomes {
 		if data.WinningOutcomeID == outcome.ID {
@@ -152,7 +152,7 @@ func (esm *EventSubManager) HandlePredictionEnd(event []byte) {
 	}
 }
 
-func getColorEmoji(outcome nickHelix.EventSubOutcome) string {
+func getColorEmoji(outcome helix.EventSubOutcome) string {
 	if outcome.Color == dto.Outcome_First {
 		return "🟦"
 	}

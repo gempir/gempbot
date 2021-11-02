@@ -9,7 +9,7 @@ import (
 	"github.com/gempir/gempbot/pkg/auth"
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/helix"
+	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/user"
@@ -20,7 +20,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	chatClient := chat.NewClient(cfg)
 	go chatClient.Connect()
 	db := store.NewDatabase(cfg)
-	helixClient := helix.NewClient(cfg, db)
+	helixClient := helixclient.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, chatClient)
 

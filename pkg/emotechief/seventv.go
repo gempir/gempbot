@@ -14,7 +14,7 @@ import (
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/utils"
-	nickHelix "github.com/nicklaw5/helix/v2"
+	helix "github.com/nicklaw5/helix/v2"
 )
 
 var sevenTvRegex = regexp.MustCompile(`https?:\/\/7tv.app\/emotes\/(\w*)`)
@@ -222,7 +222,7 @@ func (ec *EmoteChief) QuerySevenTvGQL(query string, variables map[string]interfa
 	return nil
 }
 
-func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) bool {
+func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) bool {
 	opts := channelpoint.UnmarshallSevenTvAdditionalOptions(reward.AdditionalOptions)
 
 	matches := sevenTvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
@@ -243,7 +243,7 @@ func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, r
 	return false
 }
 
-func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent, updateStatus bool) {
+func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent, updateStatus bool) {
 	opts := channelpoint.UnmarshallSevenTvAdditionalOptions(reward.AdditionalOptions)
 	success := false
 

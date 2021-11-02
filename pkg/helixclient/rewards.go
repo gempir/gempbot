@@ -1,4 +1,4 @@
-package helix
+package helixclient
 
 import (
 	"bytes"
