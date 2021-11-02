@@ -10,81 +10,26 @@ import (
 	"time"
 
 	"github.com/gempir/gempbot/pkg/channelpoint"
+	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 	nickHelix "github.com/nicklaw5/helix/v2"
 )
 
-type bttvDashboardResponse struct {
-	ID            string   `json:"id"`
-	Name          string   `json:"name"`
-	Displayname   string   `json:"displayName"`
-	Providerid    string   `json:"providerId"`
-	Bots          []string `json:"bots"`
-	Channelemotes []struct {
-		ID             string    `json:"id"`
-		Code           string    `json:"code"`
-		Imagetype      string    `json:"imageType"`
-		Userid         string    `json:"userId"`
-		Createdat      time.Time `json:"createdAt"`
-		Updatedat      time.Time `json:"updatedAt"`
-		Global         bool      `json:"global"`
-		Live           bool      `json:"live"`
-		Sharing        bool      `json:"sharing"`
-		Approvalstatus string    `json:"approvalStatus"`
-	} `json:"channelEmotes"`
-	Sharedemotes []struct {
-		ID             string    `json:"id"`
-		Code           string    `json:"code"`
-		Imagetype      string    `json:"imageType"`
-		Createdat      time.Time `json:"createdAt"`
-		Updatedat      time.Time `json:"updatedAt"`
-		Global         bool      `json:"global"`
-		Live           bool      `json:"live"`
-		Sharing        bool      `json:"sharing"`
-		Approvalstatus string    `json:"approvalStatus"`
-		User           struct {
-			ID          string `json:"id"`
-			Name        string `json:"name"`
-			Displayname string `json:"displayName"`
-			Providerid  string `json:"providerId"`
-		} `json:"user"`
-	} `json:"sharedEmotes"`
+type bttvEmoteChief struct {
+	cfg         *config.Config
+	db          *store.Database
+	helixClient *helix.Client
+	httpClient  *http.Client
 }
 
-type bttvEmoteResponse struct {
-	ID             string    `json:"id"`
-	Code           string    `json:"code"`
-	Imagetype      string    `json:"imageType"`
-	Createdat      time.Time `json:"createdAt"`
-	Updatedat      time.Time `json:"updatedAt"`
-	Global         bool      `json:"global"`
-	Live           bool      `json:"live"`
-	Sharing        bool      `json:"sharing"`
-	Approvalstatus string    `json:"approvalStatus"`
-	User           struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		Displayname string `json:"displayName"`
-		Providerid  string `json:"providerId"`
-	} `json:"user"`
+func (e *bttvEmoteChief) VerifySetEmote(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) error {
+	
 }
 
-type dashboardsResponse []dashboardCfg
 
-type dashboardCfg struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Displayname string `json:"displayName"`
-	Providerid  string `json:"providerId"`
-	Avatar      string `json:"avatar"`
-	Limits      struct {
-		Channelemotes  int `json:"channelEmotes"`
-		Sharedemotes   int `json:"sharedEmotes"`
-		Personalemotes int `json:"personalEmotes"`
-	} `json:"limits"`
-}
 
 func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, emoteAddType dto.EmoteChangeType, bttvUserId string, removalTargetEmoteId string, err error) {
 	if e.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_BTTV) {
@@ -353,4 +298,74 @@ func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, rede
 			return
 		}
 	}
+}
+
+type bttvDashboardResponse struct {
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	Displayname   string   `json:"displayName"`
+	Providerid    string   `json:"providerId"`
+	Bots          []string `json:"bots"`
+	Channelemotes []struct {
+		ID             string    `json:"id"`
+		Code           string    `json:"code"`
+		Imagetype      string    `json:"imageType"`
+		Userid         string    `json:"userId"`
+		Createdat      time.Time `json:"createdAt"`
+		Updatedat      time.Time `json:"updatedAt"`
+		Global         bool      `json:"global"`
+		Live           bool      `json:"live"`
+		Sharing        bool      `json:"sharing"`
+		Approvalstatus string    `json:"approvalStatus"`
+	} `json:"channelEmotes"`
+	Sharedemotes []struct {
+		ID             string    `json:"id"`
+		Code           string    `json:"code"`
+		Imagetype      string    `json:"imageType"`
+		Createdat      time.Time `json:"createdAt"`
+		Updatedat      time.Time `json:"updatedAt"`
+		Global         bool      `json:"global"`
+		Live           bool      `json:"live"`
+		Sharing        bool      `json:"sharing"`
+		Approvalstatus string    `json:"approvalStatus"`
+		User           struct {
+			ID          string `json:"id"`
+			Name        string `json:"name"`
+			Displayname string `json:"displayName"`
+			Providerid  string `json:"providerId"`
+		} `json:"user"`
+	} `json:"sharedEmotes"`
+}
+
+type bttvEmoteResponse struct {
+	ID             string    `json:"id"`
+	Code           string    `json:"code"`
+	Imagetype      string    `json:"imageType"`
+	Createdat      time.Time `json:"createdAt"`
+	Updatedat      time.Time `json:"updatedAt"`
+	Global         bool      `json:"global"`
+	Live           bool      `json:"live"`
+	Sharing        bool      `json:"sharing"`
+	Approvalstatus string    `json:"approvalStatus"`
+	User           struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Displayname string `json:"displayName"`
+		Providerid  string `json:"providerId"`
+	} `json:"user"`
+}
+
+type dashboardsResponse []dashboardCfg
+
+type dashboardCfg struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Displayname string `json:"displayName"`
+	Providerid  string `json:"providerId"`
+	Avatar      string `json:"avatar"`
+	Limits      struct {
+		Channelemotes  int `json:"channelEmotes"`
+		Sharedemotes   int `json:"sharedEmotes"`
+		Personalemotes int `json:"personalEmotes"`
+	} `json:"limits"`
 }
