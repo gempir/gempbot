@@ -100,6 +100,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 		removalTargetEmoteId = confirmedEmotesAdded[len(confirmedEmotesAdded)-1].EmoteID
 		log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
 	} else if len(emotes) >= emotesLimit {
+		log.Infof("7tv Userdata for %s %v", channelUserID, userData)
 		if len(emotes) == 0 {
 			return nil, dto.EMOTE_ADD_ADD, nil, "", errors.New("emotes limit reached and can't find amount of emotes added to choose random")
 		}
