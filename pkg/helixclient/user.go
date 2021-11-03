@@ -55,7 +55,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 				return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
 			}
 
-			log.Debugf("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
+			log.Infof("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
 
 			for _, user := range resp.Data.Users {
 				data := &UserData{
@@ -83,7 +83,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 	for _, id := range userIDs {
 		val, ok := userCacheByID[id]
 		if !ok {
-			log.Debugf("Could not find userId, channel might be banned: %s", id)
+			log.Infof("Could not find userId, channel might be banned: %s", id)
 			continue
 		}
 		result[id] = *val
@@ -138,7 +138,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	for _, username := range usernames {
 		val, ok := userCacheByUsername[strings.ToLower(username)]
 		if !ok {
-			log.Debugf("Could not find userId, channel might be banned: %s", username)
+			log.Infof("Could not find userId, channel might be banned: %s", username)
 			continue
 		}
 		result[strings.ToLower(username)] = *val
