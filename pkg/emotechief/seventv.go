@@ -232,7 +232,7 @@ func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, r
 
 	matches := sevenTvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
-		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.UserLogin, redemption.BroadcasterUserLogin, opts.Slots)
+		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.WaitForConnect()
