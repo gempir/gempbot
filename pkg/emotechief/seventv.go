@@ -114,7 +114,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 }
 
 func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
-	newEmote, emoteAddType, userData, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, redeemedByUsername, channel, slots)
+	newEmote, emoteAddType, userData, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
 		return nil, nil, err
 	}
