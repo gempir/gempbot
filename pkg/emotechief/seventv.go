@@ -100,6 +100,11 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 		removalTargetEmoteId = confirmedEmotesAdded[len(confirmedEmotesAdded)-1].EmoteID
 		log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
 	} else if len(emotes) >= emotesLimit {
+		log.Infof("7tv Userdata for %s %v", channelUserID, userData)
+		if len(emotes) == 0 {
+			return nil, dto.EMOTE_ADD_ADD, nil, "", errors.New("emotes limit reached and can't find amount of emotes added to choose random")
+		}
+
 		emoteAddType = dto.EMOTE_ADD_REMOVED_RANDOM
 		log.Infof("Didn't find previous emote history of %d emotes and limit reached, choosing random in %s", slots, channelUserID)
 		removalTargetEmoteId = emotes[rand.Intn(len(emotes))].ID
@@ -109,7 +114,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 }
 
 func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
-	newEmote, emoteAddType, userData, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, redeemedByUsername, channel, slots)
+	newEmote, emoteAddType, userData, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -227,7 +232,7 @@ func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, r
 
 	matches := sevenTvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
 	if len(matches) == 1 && len(matches[0]) == 2 {
-		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.UserLogin, redemption.BroadcasterUserLogin, opts.Slots)
+		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.WaitForConnect()

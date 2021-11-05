@@ -28,3 +28,6 @@ eventsub:
 
 docker: 
 	docker build . -t rg.fr-par.scw.cloud/funcscwgempbotp9rlmser/bot
+
+tunnel:
+	lt --port 3000 --subdomain gempir

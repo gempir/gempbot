@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -99,8 +98,7 @@ func (u *UserAdmin) ConvertUserConfig(uCfg UserConfig, toNames bool) (UserConfig
 		userData, err = u.helixClient.GetUsersByUsernames(allSlice)
 	}
 	if err != nil || len(userData) != len(all) {
-		log.Errorf("Failed to get users %s", err)
-		return UserConfig{}, api.NewApiError(http.StatusBadRequest, errors.New("failed to get users"))
+		log.Errorf("Failed to get all users, some might be banned. %s", err)
 	}
 
 	editorFor := []string{}
