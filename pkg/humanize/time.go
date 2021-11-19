@@ -44,10 +44,10 @@ func SecondsToString(s int) string {
 		return fmt.Sprintf("%dm", s/60)
 	}
 
-	floored := math.Floor(float64(s) / 60)
-	rest := float64(s) - (floored * 60)
+	floored := int(math.Floor(float64(s) / 60))
+	rest := int(float64(s)) - (floored * 60)
 
-	return fmt.Sprintf("%fm %fs", floored, rest)
+	return fmt.Sprintf("%dm %ds", floored, rest)
 }
 
 func formatDiff(years, months, days, hours, mins, secs int) string {
