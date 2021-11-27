@@ -7,18 +7,7 @@ import (
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/store"
-	nickHelix "github.com/nicklaw5/helix/v2"
 )
-
-type EmoteChiefInterface interface {
-	VerifySetEmote(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) error
-	SetEmote(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) error
-}
-
-type Emote interface {
-	GetEmoteId() string
-	GetEmoteName() string
-}
 
 type EmoteChief struct {
 	cfg         *config.Config

@@ -10,26 +10,11 @@ import (
 	"time"
 
 	"github.com/gempir/gempbot/pkg/channelpoint"
-	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/dto"
-	"github.com/gempir/gempbot/pkg/helix"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	helix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 )
-
-type bttvEmoteChief struct {
-	cfg         *config.Config
-	db          *store.Database
-	helixClient *helix.Client
-	httpClient  *http.Client
-}
-
-func (e *bttvEmoteChief) VerifySetEmote(reward store.ChannelPointReward, redemption nickHelix.EventSubChannelPointsCustomRewardRedemptionEvent) error {
-	
-}
-
-
 
 func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, emoteAddType dto.EmoteChangeType, bttvUserId string, removalTargetEmoteId string, err error) {
 	if e.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_BTTV) {
