@@ -118,21 +118,18 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 	emotesAdded := e.db.GetEmoteAdded(channelUserID, dto.REWARD_BTTV, slots)
 	log.Infof("Total Previous emotes %d in %s", len(emotesAdded), channelUserID)
 
-	confirmedEmotesAdded := []store.EmoteAdd{}
-	for _, emote := range emotesAdded {
+	if len(emotesAdded) > 0 {
+		oldestEmote := emotesAdded[len(emotesAdded)-1]
 		for _, sharedEmote := range dashboard.Sharedemotes {
-			if emote.EmoteID == sharedEmote.ID {
-				confirmedEmotesAdded = append(confirmedEmotesAdded, emote)
+			if oldestEmote.EmoteID == sharedEmote.ID {
+				removalTargetEmoteId = oldestEmote.EmoteID
+				log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
 			}
 		}
 	}
 
 	emoteAddType = dto.EMOTE_ADD_REMOVED_PREVIOUS
-
-	if len(confirmedEmotesAdded) == slots {
-		removalTargetEmoteId = confirmedEmotesAdded[len(confirmedEmotesAdded)-1].EmoteID
-		log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
-	} else if len(dashboard.Sharedemotes) >= sharedEmotesLimit {
+	if removalTargetEmoteId == "" && len(dashboard.Sharedemotes) >= sharedEmotesLimit {
 		if len(dashboard.Sharedemotes) == 0 {
 			return nil, dto.EMOTE_ADD_ADD, "", "", errors.New("emotes limit reached and can't find amount of emotes added to choose random")
 		}
