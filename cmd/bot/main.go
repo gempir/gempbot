@@ -59,7 +59,7 @@ func NewBot(cfg *config.Config, db *store.Database, helixClient *helixclient.Cli
 func (b *Bot) Connect() {
 	b.startTime = time.Now()
 	b.chatClient.SetOnPrivateMessage(b.handlePrivateMessage)
-	go b.chatClient.Connect()
+	go b.chatClient.Connect(b.joinBotConfigChannels)
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
 		log.Info("joining as anonymous")
@@ -67,7 +67,6 @@ func (b *Bot) Connect() {
 		log.Info("joining as user " + b.cfg.Username)
 	}
 	go b.chatClient.Join(b.cfg.Username)
-	go b.joinBotConfigChannels()
 }
 
 func (b *Bot) handlePrivateMessage(msg twitch.PrivateMessage) {

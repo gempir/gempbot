@@ -17,7 +17,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	db := store.NewDatabase(cfg)
 	helixClient := helixclient.NewClient(cfg, db)
 	chatClient := chat.NewClient(cfg)
-	go chatClient.Connect()
+	go chatClient.Connect(func() {})
 	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, chatClient)
 	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, emoteChief, chatClient)
 

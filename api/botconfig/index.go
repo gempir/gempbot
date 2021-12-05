@@ -20,7 +20,7 @@ import (
 func Handler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.FromEnv()
 	chatClient := chat.NewClient(cfg)
-	go chatClient.Connect()
+	go chatClient.Connect(func() {})
 	db := store.NewDatabase(cfg)
 	helixClient := helixclient.NewClient(cfg, db)
 	auth := auth.NewAuth(cfg, db, helixClient)

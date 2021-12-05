@@ -57,12 +57,13 @@ func (c *ChatClient) WaitForConnect() {
 	}
 }
 
-func (c *ChatClient) Connect() {
+func (c *ChatClient) Connect(onConnect func()) {
 	c.ircClient.OnConnect(func() {
 		log.Info("connected to Twitch IRC")
 		go func() {
 			c.connected <- true
 		}()
+		onConnect()
 	})
 
 	count := 0
