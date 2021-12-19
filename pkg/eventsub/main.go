@@ -159,6 +159,28 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 		}
 	}
 	if helixclient.RewardStatusIsCancelled(redemption.Status) {
+		if reward.ApproveOnly {
+			emoteID := ""
+			if reward.Type == dto.REWARD_BTTV {
+				emoteID, err = emotechief.GetBttvEmoteId(redemption.UserInput)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+			if reward.Type == dto.REWARD_SEVENTV {
+				emoteID, err = emotechief.GetSevenTvEmoteId(redemption.UserInput)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+
+			if emoteID != "" {
+				err := esm.db.BlockEmotes(redemption.BroadcasterUserID, []string{emoteID}, string(reward.Type))
+				if err != nil {
+					log.Error(err)
+				}
+			}
+		}
 		return
 	}
 	if helixclient.RewardStatusIsFullfilled(redemption.Status) {

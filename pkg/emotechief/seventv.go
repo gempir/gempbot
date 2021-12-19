@@ -223,12 +223,22 @@ func (ec *EmoteChief) QuerySevenTvGQL(query string, variables map[string]interfa
 	return nil
 }
 
+func GetSevenTvEmoteId(message string) (string, error) {
+	matches := sevenTvRegex.FindAllStringSubmatch(message, -1)
+
+	if len(matches) == 1 && len(matches[0]) == 2 {
+		return matches[0][1], nil
+	}
+
+	return "", errors.New("no 7tv emote link found")
+}
+
 func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) bool {
 	opts := channelpoint.UnmarshallSevenTvAdditionalOptions(reward.AdditionalOptions)
 
-	matches := sevenTvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
-	if len(matches) == 1 && len(matches[0]) == 2 {
-		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
+	emoteID, err := GetSevenTvEmoteId(redemption.UserInput)
+	if err == nil {
+		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.WaitForConnect()
@@ -240,7 +250,7 @@ func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, r
 	}
 
 	ec.chatClient.WaitForConnect()
-	ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: no 7tv link found in message", redemption.UserName))
+	ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: %s", redemption.UserName, err.Error()))
 	return false
 }
 
@@ -248,9 +258,9 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 	opts := channelpoint.UnmarshallSevenTvAdditionalOptions(reward.AdditionalOptions)
 	success := false
 
-	matches := sevenTvRegex.FindAllStringSubmatch(redemption.UserInput, -1)
-	if len(matches) == 1 && len(matches[0]) == 2 {
-		emoteAdded, emoteRemoved, err := ec.SetSevenTvEmote(redemption.BroadcasterUserID, matches[0][1], redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
+	emoteID, err := GetSevenTvEmoteId(redemption.UserInput)
+	if err == nil {
+		emoteAdded, emoteRemoved, err := ec.SetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
 		if err != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from: @%s error: %s", redemption.UserName, err.Error()))
@@ -265,7 +275,7 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new 7tv emote: [unknown] redeemed by @%s", redemption.UserName))
 		}
 	} else {
-		ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: no 7tv link found in message", redemption.UserName))
+		ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: %s", redemption.UserName, err.Error()))
 	}
 
 	if redemption.UserID == dto.GEMPIR_USER_ID {

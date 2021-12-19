@@ -46,7 +46,7 @@ func (db *Database) Migrate() {
 	log.Info("Migrating schema")
 	err := db.Client.AutoMigrate(&ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{}, &AppAccessToken{}, &EmoteAdd{}, &BotConfig{}, &Permission{}, EventSubMessage{}, EmoteBlock{})
 	if err != nil {
-		panic(err)
+		panic("Failed to migrate, " + err.Error())
 	}
 	log.Info("Finished migrating schema")
 }

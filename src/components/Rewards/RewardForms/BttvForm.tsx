@@ -149,7 +149,7 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
 
             <label className="flex items-center my-3">
                 <input defaultChecked={reward.ApproveOnly} type="checkbox" {...register("approveOnly")} className="form-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50" />
-                <span className="ml-2">Approve only <span className="text-gray-500">will only activate the reward when it's marked as complete by a moderator</span></span>
+                <span className="ml-2">Approve only <span className="text-gray-500">will only activate the reward when it's marked as complete by a moderator. Rejects will be blocked</span></span>
             </label>
 
             {errorMessage && <div className="p-4 text-red-800">
