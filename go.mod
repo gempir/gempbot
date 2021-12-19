@@ -3,7 +3,7 @@ module github.com/gempir/gempbot
 go 1.16
 
 require (
-	github.com/gempir/go-twitch-irc/v2 v2.7.0
+	github.com/gempir/go-twitch-irc/v2 v2.8.2-beta.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
