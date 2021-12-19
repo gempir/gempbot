@@ -243,6 +243,16 @@
   resolved "https://registry.yarnpkg.com/@types/scheduler/-/scheduler-0.16.2.tgz#1a62f89525723dde24ba1b01b092bf5df8ad4d39"
   integrity sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==
 
+"@vercel/build-utils@2.12.3-canary.17":
+  version "2.12.3-canary.17"
+  resolved "https://registry.yarnpkg.com/@vercel/build-utils/-/build-utils-2.12.3-canary.17.tgz#c806047018d11fb2ad8bbc393f5ca4cd36855c7c"
+  integrity sha512-ajbHuchIHbFb6wznupKJ1FfIFg1rnUzuEacHiJnx95AHD1ApF7pmh8fINgAiNaDB/9exk9adOEdLkM/N8eAF7g==
+
+"@vercel/go@1.2.4-canary.3":
+  version "1.2.4-canary.3"
+  resolved "https://registry.yarnpkg.com/@vercel/go/-/go-1.2.4-canary.3.tgz#151f0f3fe578afba89e615f677b148bfe74f72ad"
+  integrity sha512-z5tWn/X+TH7IgB7RPdGcAsxJZifSuGAQ73bza6TRnxEvrP1fjolMcMFqsbOCmFx2xxpYsSjifstC9+6IBo13sQ==
+
 "@xobotyi/scrollbar-width@^1.9.5":
   version "1.9.5"
   resolved "https://registry.yarnpkg.com/@xobotyi/scrollbar-width/-/scrollbar-width-1.9.5.tgz#80224a6919272f405b87913ca13b92929bdf3c4d"
@@ -2624,6 +2634,14 @@ util@0.12.4, util@^0.12.0:
     is-typed-array "^1.1.3"
     safe-buffer "^5.1.2"
     which-typed-array "^1.1.2"
+
+vercel-plugin-go@^1.0.0-canary.1:
+  version "1.0.0-canary.1"
+  resolved "https://registry.yarnpkg.com/vercel-plugin-go/-/vercel-plugin-go-1.0.0-canary.1.tgz#72c065c3fac229ea888980e73f53cf71b19d0902"
+  integrity sha512-LwQLN/6CJeTLjyzLcjdg8vf+ugxaviv+018Khq8cA2KKJ/kTqyMzF4Qgzv2UYML3ZOmK8FmSEmMmdOtuZyJvcw==
+  dependencies:
+    "@vercel/build-utils" "2.12.3-canary.17"
+    "@vercel/go" "1.2.4-canary.3"
 
 vm-browserify@1.1.2:
   version "1.1.2"
