@@ -1,43 +1,33 @@
-package subscriptions
+package api
 
 import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
-	"github.com/gempir/gempbot/pkg/auth"
 	"github.com/gempir/gempbot/pkg/chat"
-	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/eventsub"
-	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
-	"github.com/gempir/gempbot/pkg/store"
-	"github.com/gempir/gempbot/pkg/user"
 )
 
 type SubscribtionStatus struct {
 	Predictions bool `json:"predictions"`
 }
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.FromEnv()
-	db := store.NewDatabase(cfg)
-	helixClient := helixclient.NewClient(cfg, db)
-	auth := auth.NewAuth(cfg, db, helixClient)
-	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
-	chatClient := chat.NewClient(cfg)
+func (a *Api) SubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
+	chatClient := chat.NewClient(a.cfg)
 	go chatClient.Connect(func() {})
-	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, chatClient)
-	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, emoteChief, chatClient)
+	emoteChief := emotechief.NewEmoteChief(a.cfg, a.db, a.helixClient, chatClient)
+	eventSubManager := eventsub.NewEventSubManager(a.cfg, a.helixClient, a.db, emoteChief, chatClient)
 
-	authResp, _, apiErr := auth.AttemptAuth(r, w)
+	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 	if apiErr != nil {
 		return
 	}
 	userID := authResp.Data.UserID
 
 	if r.URL.Query().Get("managing") != "" {
-		userID, apiErr = userAdmin.CheckEditor(r, userAdmin.GetUserConfig(userID))
+		userID, apiErr = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
 		if apiErr != nil {
 			http.Error(w, apiErr.Error(), apiErr.Status())
 			return
@@ -49,7 +39,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 		api.WriteJson(w, "ok", http.StatusOK)
 	} else if r.Method == http.MethodDelete {
-		for _, sub := range db.GetAllPredictionSubscriptions(userID) {
+		for _, sub := range a.db.GetAllPredictionSubscriptions(userID) {
 			log.Infof("Removing subscribtion on request %s from %s", sub.SubscriptionID, sub.TargetTwitchID)
 			err := eventSubManager.RemoveEventSubSubscription(sub.SubscriptionID)
 			if err != nil {
@@ -59,7 +49,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 		api.WriteJson(w, "ok", http.StatusOK)
 	} else if r.Method == http.MethodGet {
-		subs := db.GetAllPredictionSubscriptions(userID)
+		subs := a.db.GetAllPredictionSubscriptions(userID)
 		log.Info(subs)
 
 		hasPredictions := len(subs) > 0

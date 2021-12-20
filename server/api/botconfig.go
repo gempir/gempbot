@@ -1,4 +1,4 @@
-package userconfig
+package api
 
 import (
 	"context"
@@ -8,25 +8,16 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
-	"github.com/gempir/gempbot/pkg/auth"
 	"github.com/gempir/gempbot/pkg/chat"
-	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	"github.com/gempir/gempbot/pkg/user"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.FromEnv()
-	chatClient := chat.NewClient(cfg)
+func (a *Api) BotConfigHandler(w http.ResponseWriter, r *http.Request) {
+	chatClient := chat.NewClient(a.cfg)
 	go chatClient.Connect(func() {})
-	db := store.NewDatabase(cfg)
-	helixClient := helixclient.NewClient(cfg, db)
-	auth := auth.NewAuth(cfg, db, helixClient)
-	userAdmin := user.NewUserAdmin(cfg, db, helixClient, chatClient)
 
-	authResp, _, apiErr := auth.AttemptAuth(r, w)
+	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 	if apiErr != nil {
 		return
 	}
@@ -34,13 +25,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	ownerLogin := authResp.Data.Login
 
 	if r.URL.Query().Get("managing") != "" {
-		userID, apiErr = userAdmin.CheckEditor(r, userAdmin.GetUserConfig(userID))
+		userID, apiErr = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
 		if apiErr != nil {
 			http.Error(w, apiErr.Error(), apiErr.Status())
 			return
 		}
 
-		uData, err := helixClient.GetUserByUserID(userID)
+		uData, err := a.helixClient.GetUserByUserID(userID)
 		if err != nil {
 			api.WriteJson(w, fmt.Errorf("could not find managing user in helix"), http.StatusBadRequest)
 			return
@@ -49,7 +40,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		cfg, err := db.GetBotConfig(userID)
+		cfg, err := a.db.GetBotConfig(userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
@@ -73,7 +64,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		}
 		botCfg.OwnerTwitchID = userID
 
-		dbErr := db.SaveBotConfig(context.Background(), botCfg)
+		dbErr := a.db.SaveBotConfig(context.Background(), botCfg)
 		if dbErr != nil {
 			log.Error(dbErr)
 			api.WriteJson(w, fmt.Errorf("failed to save bot config"), http.StatusInternalServerError)

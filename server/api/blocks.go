@@ -1,4 +1,4 @@
-package blocks
+package api
 
 import (
 	"encoding/json"
@@ -7,28 +7,18 @@ import (
 	"strings"
 
 	"github.com/gempir/gempbot/pkg/api"
-	"github.com/gempir/gempbot/pkg/auth"
-	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/store"
-	"github.com/gempir/gempbot/pkg/user"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.FromEnv()
-	db := store.NewDatabase(cfg)
-	helixClient := helixclient.NewClient(cfg, db)
-	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
-	auth := auth.NewAuth(cfg, db, helixClient)
-
-	authResp, _, apiErr := auth.AttemptAuth(r, w)
+func (a *Api) BlocksHandler(w http.ResponseWriter, r *http.Request) {
+	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 	if apiErr != nil {
 		return
 	}
 	userID := authResp.Data.UserID
 
 	if r.URL.Query().Get("managing") != "" {
-		userID, apiErr = userAdmin.CheckEditor(r, userAdmin.GetUserConfig(userID))
+		userID, apiErr = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
 		if apiErr != nil {
 			http.Error(w, apiErr.Error(), apiErr.Status())
 			return
@@ -47,7 +37,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		blocks := db.GetEmoteBlocks(userID, pageNumber, api.BLOCKS_PAGE_SIZE)
+		blocks := a.db.GetEmoteBlocks(userID, pageNumber, api.BLOCKS_PAGE_SIZE)
 		api.WriteJson(w, blocks, http.StatusOK)
 		return
 	}
@@ -65,7 +55,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			toBlock = append(toBlock, strings.TrimSpace(emote))
 		}
 
-		err = db.BlockEmotes(userID, toBlock, req.EmoteType)
+		err = a.db.BlockEmotes(userID, toBlock, req.EmoteType)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -80,7 +70,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = db.DeleteEmoteBlock(userID, req.EmoteID, req.Type)
+		err = a.db.DeleteEmoteBlock(userID, req.EmoteID, req.Type)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

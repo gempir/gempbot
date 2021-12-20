@@ -1,5 +1,5 @@
 #!make
-.PHONY: migrate bot
+.PHONY: migrate server
 include .env
 
 export PLANETSCALE_DB
@@ -17,8 +17,8 @@ export VERCEL_ENV
 migrate:
 	go run cmd/migrate/main.go
 
-bot:
-	go run cmd/bot/main.go
+server:
+	go run server/main.go
 
 refresh:
 	go run cmd/refresh/main.go

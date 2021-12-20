@@ -1,15 +1,15 @@
-package main
+package bot
 
 import (
 	"strings"
 	"time"
 
-	"github.com/gempir/gempbot/cmd/bot/commander"
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
+	"github.com/gempir/gempbot/server/bot/commander"
 	"github.com/gempir/go-twitch-irc/v2"
 )
 
@@ -22,20 +22,6 @@ type Bot struct {
 	listener    *commander.Listener
 	Done        chan bool
 	chatClient  *chat.ChatClient
-}
-
-func main() {
-	cfg := config.FromEnv()
-
-	db := store.NewDatabase(cfg)
-
-	helixClient := helixclient.NewClient(cfg, db)
-	go helixClient.StartRefreshTokenRoutine()
-
-	bot := NewBot(cfg, db, helixClient)
-	go bot.Connect()
-
-	<-bot.Done
 }
 
 func NewBot(cfg *config.Config, db *store.Database, helixClient *helixclient.Client) *Bot {
