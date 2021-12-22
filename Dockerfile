@@ -10,3 +10,4 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 COPY --from=0 /go/src/github.com/gempir/gempbot/server/app .
 CMD ["./app"]
+EXPOSE 3010
