@@ -29,5 +29,8 @@ eventsub:
 docker: 
 	docker build . -t gempbot
 
+run_docker:
+	docker run --env-file=.env -p 3010:3010 gempbot
+
 tunnel:
 	lt --port 3000 --subdomain gempir
