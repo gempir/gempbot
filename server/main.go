@@ -11,6 +11,7 @@ import (
 	"github.com/gempir/gempbot/pkg/user"
 	"github.com/gempir/gempbot/server/api"
 	"github.com/gempir/gempbot/server/bot"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -28,16 +29,24 @@ func main() {
 
 	apiHandlers := api.NewApi(cfg, db, helixClient, userAdmin, authClient)
 
-	http.HandleFunc("/blocks", apiHandlers.BlocksHandler)
-	http.HandleFunc("/botconfig", apiHandlers.BotConfigHandler)
-	http.HandleFunc("/callback", apiHandlers.CallbackHandler)
-	http.HandleFunc("/emotehistory", apiHandlers.EmoteHistoryHandler)
-	http.HandleFunc("/eventsub", apiHandlers.EventSubHandler)
-	http.HandleFunc("/reward", apiHandlers.RewardHandler)
-	http.HandleFunc("/subscriptions", apiHandlers.SubscriptionsHandler)
-	http.HandleFunc("/userconfig", apiHandlers.UserConfigHandler)
+	mux := http.NewServeMux()
 
-	err := http.ListenAndServe("127.0.0.1:3010", nil)
+	mux.HandleFunc("/api/blocks", apiHandlers.BlocksHandler)
+	mux.HandleFunc("/api/botconfig", apiHandlers.BotConfigHandler)
+	mux.HandleFunc("/api/callback", apiHandlers.CallbackHandler)
+	mux.HandleFunc("/api/emotehistory", apiHandlers.EmoteHistoryHandler)
+	mux.HandleFunc("/api/eventsub", apiHandlers.EventSubHandler)
+	mux.HandleFunc("/api/reward", apiHandlers.RewardHandler)
+	mux.HandleFunc("/api/subscriptions", apiHandlers.SubscriptionsHandler)
+	mux.HandleFunc("/api/userconfig", apiHandlers.UserConfigHandler)
+
+	handler := cors.New(cors.Options{
+		AllowedOrigins:   []string{cfg.WebBaseUrl},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(mux)
+	err := http.ListenAndServe("localhost:3010", handler)
 	if err != nil {
 		log.Fatal(err)
 	}
