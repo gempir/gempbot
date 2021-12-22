@@ -27,7 +27,7 @@ eventsub:
 	go run cmd/eventsub/main.go
 
 docker: 
-	docker build . -t rg.fr-par.scw.cloud/funcscwgempbotp9rlmser/bot
+	docker build . -t gempbot
 
 tunnel:
 	lt --port 3000 --subdomain gempir
