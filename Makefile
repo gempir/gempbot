@@ -14,6 +14,9 @@ export SECRET
 export NEXT_PUBLIC_BASE_URL
 export VERCEL_ENV
 
+build_server:
+	go build server/main.go -o server
+
 migrate:
 	go run cmd/migrate/main.go
 
