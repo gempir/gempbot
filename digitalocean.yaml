@@ -1,6 +1,9 @@
 alerts:
 - rule: DEPLOYMENT_FAILED
 - rule: DOMAIN_FAILED
+domains:
+- domain: gempbot-api.gempir.com
+  type: PRIMARY
 envs:
 - key: SEVEN_TV_TOKEN
   scope: RUN_AND_BUILD_TIME
@@ -50,6 +53,9 @@ envs:
   scope: RUN_AND_BUILD_TIME
   type: SECRET
   value: EV[1:k4f2ixOEGKzmNvF8SVAMbddWvQ8CScJH:iC7OZ/6cz5w1tmBxFcbn1MD9Tp8aBDf+NxYzXW76rlgrX8oRy/6ePT71UDh/JEjIag==]
+- key: VERCEL_ENV
+  scope: RUN_AND_BUILD_TIME
+  value: production
 name: gempbot-api
 region: nyc
 services:
@@ -68,6 +74,10 @@ services:
   http_port: 3010
   instance_count: 1
   instance_size_slug: basic-xxs
+  log_destinations:
+  - logtail:
+      token: SOME_SECRET_TOKEN
+    name: digitalocean_gempbot
   name: gempbot
   routes:
   - path: /
