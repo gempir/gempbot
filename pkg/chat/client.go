@@ -26,16 +26,6 @@ func (c *ChatClient) Say(channel string, message string) {
 	c.ircClient.Say(channel, message)
 }
 
-func (c *ChatClient) JoinBot(channel string) {
-	c.WaitForConnect()
-	c.Say(c.cfg.Username, "JOIN "+c.cfg.Environment+" "+channel)
-}
-
-func (c *ChatClient) PartBot(channel string) {
-	c.WaitForConnect()
-	c.Say(c.cfg.Username, "PART "+c.cfg.Environment+" "+channel)
-}
-
 func (c *ChatClient) Join(channel string) {
 	log.Infof("JOIN %s", channel)
 	c.ircClient.Join(channel)

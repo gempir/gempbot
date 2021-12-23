@@ -21,7 +21,7 @@ type Bot struct {
 	helixClient *helixclient.Client
 	listener    *commander.Listener
 	Done        chan bool
-	chatClient  *chat.ChatClient
+	ChatClient  *chat.ChatClient
 }
 
 func NewBot(cfg *config.Config, db *store.Database, helixClient *helixclient.Client) *Bot {
@@ -34,7 +34,7 @@ func NewBot(cfg *config.Config, db *store.Database, helixClient *helixclient.Cli
 
 	return &Bot{
 		Done:        make(chan bool),
-		chatClient:  chatClient,
+		ChatClient:  chatClient,
 		cfg:         cfg,
 		db:          db,
 		listener:    listener,
@@ -42,17 +42,29 @@ func NewBot(cfg *config.Config, db *store.Database, helixClient *helixclient.Cli
 	}
 }
 
+func (b *Bot) Say(channel string, message string) {
+	go b.ChatClient.Say(channel, message)
+}
+
+func (b *Bot) Join(channel string) {
+	go b.ChatClient.Join(channel)
+}
+
+func (b *Bot) Part(channel string) {
+	go b.ChatClient.Part(channel)
+}
+
 func (b *Bot) Connect() {
 	b.startTime = time.Now()
-	b.chatClient.SetOnPrivateMessage(b.handlePrivateMessage)
-	go b.chatClient.Connect(b.joinBotConfigChannels)
+	b.ChatClient.SetOnPrivateMessage(b.handlePrivateMessage)
+	go b.ChatClient.Connect(b.joinBotConfigChannels)
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
 		log.Info("joining as anonymous")
 	} else {
 		log.Info("joining as user " + b.cfg.Username)
 	}
-	go b.chatClient.Join(b.cfg.Username)
+	go b.ChatClient.Join(b.cfg.Username)
 }
 
 func (b *Bot) handlePrivateMessage(msg twitch.PrivateMessage) {
@@ -60,12 +72,12 @@ func (b *Bot) handlePrivateMessage(msg twitch.PrivateMessage) {
 	if sysMessage {
 		log.Infof("sysMessage: %s", msg.Message)
 		if strings.HasPrefix(msg.Message, "JOIN "+b.cfg.Environment+" ") {
-			b.chatClient.Join(strings.TrimPrefix(msg.Message, "JOIN "+b.cfg.Environment+" "))
+			b.ChatClient.Join(strings.TrimPrefix(msg.Message, "JOIN "+b.cfg.Environment+" "))
 			return
 		}
 
 		if strings.HasPrefix(msg.Message, "PART "+b.cfg.Environment+" ") {
-			b.chatClient.Part(strings.TrimPrefix(msg.Message, "PART "+b.cfg.Environment+" "))
+			b.ChatClient.Part(strings.TrimPrefix(msg.Message, "PART "+b.cfg.Environment+" "))
 			return
 		}
 	}
@@ -85,9 +97,9 @@ func (b *Bot) joinBotConfigChannels() {
 		log.Error(err)
 	}
 
-	b.chatClient.WaitForConnect()
+	b.ChatClient.WaitForConnect()
 	log.Infof("joining %d channels", len(users))
 	for _, user := range users {
-		b.chatClient.Join(user.Login)
+		b.ChatClient.Join(user.Login)
 	}
 }

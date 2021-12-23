@@ -8,15 +8,11 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
-	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
 )
 
 func (a *Api) BotConfigHandler(w http.ResponseWriter, r *http.Request) {
-	chatClient := chat.NewClient(a.cfg)
-	go chatClient.Connect(func() {})
-
 	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 	if apiErr != nil {
 		return
@@ -70,12 +66,10 @@ func (a *Api) BotConfigHandler(w http.ResponseWriter, r *http.Request) {
 			api.WriteJson(w, fmt.Errorf("failed to save bot config"), http.StatusInternalServerError)
 			return
 		}
-		log.Info("waiting for bot connection")
-		chatClient.WaitForConnect()
 		if botCfg.JoinBot {
-			chatClient.JoinBot(ownerLogin)
+			a.bot.Join(ownerLogin)
 		} else {
-			chatClient.PartBot(ownerLogin)
+			a.bot.Part(ownerLogin)
 		}
 
 		return

@@ -241,7 +241,6 @@ func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, r
 		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
-			ec.chatClient.WaitForConnect()
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from: @%s error: %s", redemption.UserName, err.Error()))
 			return false
 		}
@@ -249,7 +248,6 @@ func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, r
 		return true
 	}
 
-	ec.chatClient.WaitForConnect()
 	ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: %s", redemption.UserName, err.Error()))
 	return false
 }

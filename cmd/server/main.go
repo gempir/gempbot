@@ -27,7 +27,7 @@ func main() {
 	bot := bot.NewBot(cfg, db, helixClient)
 	go bot.Connect()
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient)
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot)
 
 	mux := http.NewServeMux()
 
