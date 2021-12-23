@@ -4,12 +4,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gempir/gempbot/pkg/bot/commander"
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	"github.com/gempir/gempbot/server/bot/commander"
 	"github.com/gempir/go-twitch-irc/v2"
 )
 

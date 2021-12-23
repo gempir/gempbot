@@ -15,13 +15,13 @@ export NEXT_PUBLIC_BASE_URL
 export VERCEL_ENV
 
 build_server:
-	go build server/main.go -o server
+	go build cmd/server/main.go
 
 migrate:
 	go run cmd/migrate/main.go
 
 server:
-	go run server/main.go
+	go run cmd/server/main.go
 
 refresh:
 	go run cmd/refresh/main.go

@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/auth"
+	"github.com/gempir/gempbot/pkg/bot"
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
+	"github.com/gempir/gempbot/pkg/server"
 	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/user"
-	"github.com/gempir/gempbot/server/api"
-	"github.com/gempir/gempbot/server/bot"
 	"github.com/rs/cors"
 )
 
@@ -27,7 +27,7 @@ func main() {
 	bot := bot.NewBot(cfg, db, helixClient)
 	go bot.Connect()
 
-	apiHandlers := api.NewApi(cfg, db, helixClient, userAdmin, authClient)
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient)
 
 	mux := http.NewServeMux()
 
