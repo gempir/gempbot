@@ -13,6 +13,7 @@ export TWITCH_OAUTH
 export SECRET
 export NEXT_PUBLIC_BASE_URL
 export VERCEL_ENV
+export WEBHOOK_BASE_URL
 
 build_server:
 	go build cmd/server/main.go
