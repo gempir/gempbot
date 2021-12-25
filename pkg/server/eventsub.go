@@ -5,10 +5,12 @@ import (
 
 	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/eventsub"
+	"github.com/gempir/gempbot/pkg/log"
 	"github.com/nicklaw5/helix/v2"
 )
 
 func (a *Api) EventSubHandler(w http.ResponseWriter, r *http.Request) {
+	log.Infof("New event sub request %s %s", r.Method, r.URL.Path)
 	emoteChief := emotechief.NewEmoteChief(a.cfg, a.db, a.helixClient, a.bot.ChatClient)
 	eventSubManager := eventsub.NewEventSubManager(a.cfg, a.helixClient, a.db, emoteChief, a.bot.ChatClient)
 
