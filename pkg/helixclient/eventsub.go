@@ -23,6 +23,8 @@ func (c *Client) CreateEventSubSubscription(userID string, webHookUrl string, su
 }
 
 func (c *Client) CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string) (*helix.EventSubSubscriptionsResponse, error) {
+	c.Client.SetAppAccessToken(c.AppAccessToken.AccessToken)
+	c.Client.SetUserAccessToken("")
 	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
 	// Internally they check if the app token has authenticated users
 	response, err := c.Client.CreateEventSubSubscription(

@@ -1,7 +1,7 @@
 package emotechief
 
 import (
-	"encoding/json"
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/log"
@@ -32,38 +33,26 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 	}
 
 	// first figure out the bttvUserId for the channel, might cache this later on
-	var resp *http.Response
-	resp, err = http.Get("https://api.betterttv.net/3/cached/users/twitch/" + channelUserID)
+	var userResp bttvUserResponse
+	err = requests.
+		URL(BTTV_API).
+		Pathf("/3/cached/users/twitch/%s", channelUserID).
+		ToJSON(&userResp).
+		Fetch(context.Background())
 	if err != nil {
 		return
 	}
 
-	var userResp struct {
-		ID string `json:"id"`
-	}
-	err = json.NewDecoder(resp.Body).Decode(&userResp)
-	if err != nil {
-		return
-	}
 	bttvUserId = userResp.ID
 
 	// figure out the limit for the channel, might also chache this later on with expiry
-	var req *http.Request
-	req, err = http.NewRequest("GET", "https://api.betterttv.net/3/account/dashboards", nil)
-	req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	resp, err = e.httpClient.Do(req)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
 	var dashboards dashboardsResponse
-	err = json.NewDecoder(resp.Body).Decode(&dashboards)
+	err = requests.
+		URL(BTTV_API).
+		Pathf("/3/account/dashboards").
+		Bearer(e.cfg.BttvToken).
+		ToJSON(&dashboards).
+		Fetch(context.Background())
 	if err != nil {
 		return
 	}
@@ -81,13 +70,14 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 	sharedEmotesLimit := dbCfg.Limits.Sharedemotes
 
 	// figure currently added emotes
-	resp, err = http.Get("https://api.betterttv.net/3/users/" + bttvUserId + "?limited=false&personal=false")
-	if err != nil {
-		return
-	}
-
 	var dashboard bttvDashboardResponse
-	err = json.NewDecoder(resp.Body).Decode(&dashboard)
+	err = requests.
+		URL(BTTV_API).
+		Pathf("/3/users/%s", bttvUserId).
+		Param("limited", "false").
+		Param("personal", "false").
+		ToJSON(&dashboard).
+		Fetch(context.Background())
 	if err != nil {
 		return
 	}
@@ -150,52 +140,35 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 
 	// do we need to remove the emote?
 	if removalTargetEmoteId != "" {
-		// Delete the current emote
-		var req *http.Request
-		req, err = http.NewRequest("DELETE", "https://api.betterttv.net/3/emotes/"+removalTargetEmoteId+"/shared/"+bttvUserId, nil)
-		req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
+		err = requests.
+			URL(BTTV_API).
+			Pathf("/3/emotes/%s/shared/%s", removalTargetEmoteId, bttvUserId).
+			Bearer(e.cfg.BttvToken).
+			Method(http.MethodDelete).
+			Fetch(context.Background())
 		if err != nil {
-			log.Error(err)
 			return
 		}
 
-		var resp *http.Response
-		resp, err = e.httpClient.Do(req)
-		if err != nil {
-			log.Error(err)
-			return
-		}
 		e.db.CreateEmoteAdd(channelUserID, dto.REWARD_BTTV, removalTargetEmoteId, emoteAddType)
-		log.Infof("[%d] Deleted channelId: %s emoteId: %s", resp.StatusCode, channelUserID, removalTargetEmoteId)
+		log.Infof("Deleted channelId: %s emoteId: %s", channelUserID, removalTargetEmoteId)
+
+		removedEmote, _ = getBttvEmote(removalTargetEmoteId)
 	}
 
 	// Add new emote
-	var req *http.Request
-	req, err = http.NewRequest("PUT", "https://api.betterttv.net/3/emotes/"+emoteId+"/shared/"+bttvUserId, nil)
-	req.Header.Set("authorization", "Bearer "+e.cfg.BttvToken)
+	err = requests.
+		URL(BTTV_API).
+		Pathf("/3/emotes/%s/shared/%s", emoteId, bttvUserId).
+		Bearer(e.cfg.BttvToken).
+		Method(http.MethodPut).
+		Fetch(context.Background())
 	if err != nil {
-		log.Error(err)
 		return
 	}
 
-	var resp *http.Response
-	resp, err = e.httpClient.Do(req)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	log.Infof("[%d] Added channelId: %s emoteId: %s", resp.StatusCode, channelUserID, emoteId)
-
-	if resp.StatusCode < http.StatusBadRequest {
-		e.db.CreateEmoteAdd(channelUserID, dto.REWARD_BTTV, emoteId, dto.EMOTE_ADD_ADD)
-	}
-
-	if removalTargetEmoteId != "" {
-		removedEmote, err = getBttvEmote(removalTargetEmoteId)
-		if err != nil {
-			return
-		}
-	}
+	log.Infof("Added channelId: %s emoteId: %s", channelUserID, emoteId)
+	e.db.CreateEmoteAdd(channelUserID, dto.REWARD_BTTV, emoteId, dto.EMOTE_ADD_ADD)
 
 	return
 }
@@ -205,23 +178,14 @@ func getBttvEmote(emoteID string) (*bttvEmoteResponse, error) {
 		return nil, nil
 	}
 
-	response, err := http.Get("https://api.betterttv.net/3/emotes/" + emoteID)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
+	var emoteResp bttvEmoteResponse
+	err := requests.
+		URL(BTTV_API).
+		Pathf("/3/emotes/%s", emoteID).
+		ToJSON(&emoteResp).
+		Fetch(context.Background())
 
-	if response.StatusCode <= 100 || response.StatusCode >= 400 {
-		return nil, fmt.Errorf("Bad bttv response: %d", response.StatusCode)
-	}
-
-	var emoteResponse bttvEmoteResponse
-	err = json.NewDecoder(response.Body).Decode(&emoteResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &emoteResponse, nil
+	return &emoteResp, err
 }
 
 var bttvRegex = regexp.MustCompile(`https?:\/\/betterttv.com\/emotes\/(\w*)`)
@@ -290,6 +254,12 @@ func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, rede
 			return
 		}
 	}
+}
+
+const BTTV_API = "https://api.betterttv.net"
+
+type bttvUserResponse struct {
+	ID string `json:"id"`
 }
 
 type bttvDashboardResponse struct {
