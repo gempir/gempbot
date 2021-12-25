@@ -2,6 +2,7 @@ package helixclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/pkg/log"
 )
 
@@ -76,59 +78,26 @@ type CreateCustomRewardResponseDataItem struct {
 
 func (c *Client) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (CreateCustomRewardResponseDataItem, error) {
 	log.Infof("Updating Reward for user %s reward title: %s", userID, reward.Title)
-	marshalled, err := json.Marshal(reward)
-	if err != nil {
-		return CreateCustomRewardResponseDataItem{}, err
-	}
-
-	method := http.MethodPost
-	reqUrl, err := url.Parse("https://api.twitch.tv/helix/channel_points/custom_rewards")
-	if err != nil {
-		return CreateCustomRewardResponseDataItem{}, err
-	}
-
-	query := reqUrl.Query()
-	query.Set("broadcaster_id", userID)
-
-	if rewardID != "" {
-		query.Set("id", rewardID)
-		method = http.MethodPatch
-	}
-
-	reqUrl.RawQuery = query.Encode()
-
-	req, err := http.NewRequest(method, reqUrl.String(), bytes.NewBuffer(marshalled))
-	req.Header.Set("authorization", "Bearer "+userAccessToken)
-	req.Header.Set("client-id", c.clientID)
-	req.Header.Set("Content-Type", "application/json")
-	if err != nil {
-		log.Error(err)
-		return CreateCustomRewardResponseDataItem{}, err
-	}
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		log.Error(err)
-		return CreateCustomRewardResponseDataItem{}, err
-	}
-
-	log.Infof("[%d][%s] %s", resp.StatusCode, method, reqUrl.String())
-
-	if resp.StatusCode >= 400 {
-		var response ErrorResponse
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			return CreateCustomRewardResponseDataItem{}, fmt.Errorf("Failed to unmarshal reward error response: %s", err.Error())
-		}
-
-		log.Errorf("Failed to create reward for %s: %s", userID, response.Message)
-
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("%s", response.Message)
-	}
 
 	var response CreateCustomRewardResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
+
+	req := requests.
+		URL(TWITCH_API).
+		Path("/helix/channel_points/custom_rewards").
+		Bearer(userAccessToken).
+		Header("client-id", c.clientID).
+		Param("broadcaster_id", userID).
+		BodyJSON(reward).ToJSON(&response)
+
+	if rewardID != "" {
+		req = req.Param("id", rewardID).Method(http.MethodPatch)
+	} else {
+		req = req.Method(http.MethodPost)
+	}
+
+	err := req.Fetch(context.Background())
 	if err != nil {
+		log.Error(err)
 		return CreateCustomRewardResponseDataItem{}, err
 	}
 

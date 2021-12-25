@@ -36,6 +36,8 @@ func init() {
 	userCacheByUsername = map[string]*UserData{}
 }
 
+const TWITCH_API = "https://api.twitch.tv/"
+
 var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions moderation:read"}
 
 // NewClient Create helix client
