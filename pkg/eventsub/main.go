@@ -25,13 +25,13 @@ type EventSubManager struct {
 	chatClient  *chat.ChatClient
 }
 
-func NewEventSubManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, chatClient *chat.ChatClient) *EventSubManager {
+func NewEventSubManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventSubManager {
 	return &EventSubManager{
 		cfg:         cfg,
 		helixClient: helixClient,
 		db:          db,
 		emoteChief:  emoteChief,
-		chatClient:  chatClient,
+		chatClient:  bot,
 	}
 }
 

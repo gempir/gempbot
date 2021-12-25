@@ -1,4 +1,4 @@
-package userconfig
+package server
 
 import (
 	"encoding/json"
@@ -6,46 +6,37 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
-	"github.com/gempir/gempbot/pkg/auth"
 	"github.com/gempir/gempbot/pkg/chat"
-	"github.com/gempir/gempbot/pkg/config"
-	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
-	"github.com/gempir/gempbot/pkg/store"
 	"github.com/gempir/gempbot/pkg/user"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.FromEnv()
-	chatClient := chat.NewClient(cfg)
+func (a *Api) UserConfigHandler(w http.ResponseWriter, r *http.Request) {
+	chatClient := chat.NewClient(a.cfg)
 	go chatClient.Connect(func() {})
-	db := store.NewDatabase(cfg)
-	helixClient := helixclient.NewClient(cfg, db)
-	auth := auth.NewAuth(cfg, db, helixClient)
-	userAdmin := user.NewUserAdmin(cfg, db, helixClient, chatClient)
 
-	authResp, _, err := auth.AttemptAuth(r, w)
+	authResp, _, err := a.authClient.AttemptAuth(r, w)
 	if err != nil {
 		return
 	}
 
 	if r.Method == http.MethodGet {
-		userConfig := userAdmin.GetUserConfig(authResp.Data.UserID)
+		userConfig := a.userAdmin.GetUserConfig(authResp.Data.UserID)
 
 		if r.URL.Query().Get("managing") != "" {
-			ownerUserID, err := userAdmin.CheckEditor(r, userConfig)
+			ownerUserID, err := a.userAdmin.CheckEditor(r, userConfig)
 			if err != nil {
 				http.Error(w, err.Error(), err.Status())
 				return
 			}
 
 			editorFor := userConfig.Protected.EditorFor
-			userConfig = userAdmin.GetUserConfig(ownerUserID)
+			userConfig = a.userAdmin.GetUserConfig(ownerUserID)
 
 			userConfig.Protected.EditorFor = editorFor
 		}
 
-		userConfig, err := userAdmin.ConvertUserConfig(userConfig, true)
+		userConfig, err := a.userAdmin.ConvertUserConfig(userConfig, true)
 		if err != nil {
 			http.Error(w, err.Error(), err.Status())
 			return
@@ -69,7 +60,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = userAdmin.ProcessConfig(r.Context(), authResp.Data.UserID, authResp.Data.Login, newConfig, r.URL.Query().Get("managing"))
+		err = a.userAdmin.ProcessConfig(r.Context(), authResp.Data.UserID, authResp.Data.Login, newConfig, r.URL.Query().Get("managing"))
 		if err != nil {
 			log.Errorf("failed processing config: %s", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)

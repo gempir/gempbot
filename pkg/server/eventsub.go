@@ -1,25 +1,16 @@
-package eventsub
+package server
 
 import (
 	"net/http"
 
-	"github.com/gempir/gempbot/pkg/chat"
-	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/eventsub"
-	"github.com/gempir/gempbot/pkg/helixclient"
-	"github.com/gempir/gempbot/pkg/store"
 	"github.com/nicklaw5/helix/v2"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.FromEnv()
-	db := store.NewDatabase(cfg)
-	helixClient := helixclient.NewClient(cfg, db)
-	chatClient := chat.NewClient(cfg)
-	go chatClient.Connect(func() {})
-	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, chatClient)
-	eventSubManager := eventsub.NewEventSubManager(cfg, helixClient, db, emoteChief, chatClient)
+func (a *Api) EventSubHandler(w http.ResponseWriter, r *http.Request) {
+	emoteChief := emotechief.NewEmoteChief(a.cfg, a.db, a.helixClient, a.bot.ChatClient)
+	eventSubManager := eventsub.NewEventSubManager(a.cfg, a.helixClient, a.db, emoteChief, a.bot.ChatClient)
 
 	event, err := eventSubManager.HandleWebhook(w, r)
 	if err != nil || len(event) == 0 {

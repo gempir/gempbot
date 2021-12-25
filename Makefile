@@ -1,5 +1,5 @@
 #!make
-.PHONY: migrate bot
+.PHONY: migrate server
 include .env
 
 export PLANETSCALE_DB
@@ -14,11 +14,14 @@ export SECRET
 export NEXT_PUBLIC_BASE_URL
 export VERCEL_ENV
 
+build_server:
+	go build cmd/server/main.go
+
 migrate:
 	go run cmd/migrate/main.go
 
-bot:
-	go run cmd/bot/main.go
+server:
+	go run cmd/server/main.go
 
 refresh:
 	go run cmd/refresh/main.go
@@ -27,7 +30,10 @@ eventsub:
 	go run cmd/eventsub/main.go
 
 docker: 
-	docker build . -t rg.fr-par.scw.cloud/funcscwgempbotp9rlmser/bot
+	docker build . -t gempbot
+
+run_docker:
+	docker run --env-file=.env -p 3010:3010 gempbot
 
 tunnel:
 	lt --port 3000 --subdomain gempir

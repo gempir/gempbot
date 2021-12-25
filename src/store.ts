@@ -13,7 +13,7 @@ export interface Store {
 
 export const useStore = create<Store>(set => ({
     twitchClientId: process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ?? "",
-    apiBaseUrl: process.env.NEXT_PUBLIC_BASE_URL ?? "",
+    apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL ?? "",
     baseUrl: process.env.NEXT_PUBLIC_BASE_URL ?? "",
     scToken: undefined,
     setScToken: (token: string) => set(state => ({ scToken: token })),

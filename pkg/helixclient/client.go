@@ -43,7 +43,7 @@ func NewClient(cfg *config.Config, db *store.Database) *Client {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
-		RedirectURI:  cfg.ApiBaseUrl + "/api/callback",
+		RedirectURI:  cfg.WebBaseUrl + "/api/callback",
 	})
 	if err != nil {
 		panic(err)

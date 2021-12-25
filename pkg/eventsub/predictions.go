@@ -67,7 +67,6 @@ func (esm *EventSubManager) HandlePredictionBegin(event []byte) {
 		lockedTime = nil
 	}
 
-	esm.chatClient.WaitForConnect()
 	esm.chatClient.Say(
 		data.BroadcasterUserLogin,
 		fmt.Sprintf("PogChamp prediction: %s [ %s | %s ] ending in %s",
@@ -97,7 +96,6 @@ func (esm *EventSubManager) HandlePredictionLock(event []byte) {
 		lockedTime = nil
 	}
 
-	esm.chatClient.WaitForConnect()
 	esm.chatClient.Say(
 		data.BroadcasterUserLogin,
 		fmt.Sprintf("FBtouchdown locked submissions for: %s",
@@ -132,7 +130,6 @@ func (esm *EventSubManager) HandlePredictionEnd(event []byte) {
 		}
 	}
 
-	esm.chatClient.WaitForConnect()
 	if strings.ToUpper(data.Status) == dto.PredictionStatusCanceled {
 		esm.chatClient.Say(
 			data.BroadcasterUserLogin,

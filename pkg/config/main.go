@@ -3,9 +3,6 @@ package config
 import (
 	"os"
 	"strings"
-
-	"github.com/gempir/gempbot/pkg/log"
-	"github.com/sirupsen/logrus"
 )
 
 // Config application configuratin
@@ -30,20 +27,21 @@ type Config struct {
 }
 
 func FromEnv() *Config {
-	baseUrl := Getenv("NEXT_PUBLIC_BASE_URL")
-	cookieDomain := strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(baseUrl, "https://"), "http://"), ":3000")
+	apiBaseUrl := Getenv("NEXT_PUBLIC_API_BASE_URL")
+	webBaseUrl := Getenv("NEXT_PUBLIC_BASE_URL")
+	cookieDomain := strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(webBaseUrl, "https://"), "http://"), ":3000")
 
 	webhookApiBaseUrl := Getenv("WEBHOOK_BASE_URL")
 	if webhookApiBaseUrl == "" {
-		webhookApiBaseUrl = baseUrl
+		webhookApiBaseUrl = apiBaseUrl
 	}
 
 	return &Config{
 		ClientID:          Getenv("TWITCH_CLIENT_ID"),
 		ClientSecret:      Getenv("TWITCH_CLIENT_SECRET"),
 		Secret:            Getenv("SECRET"),
-		ApiBaseUrl:        baseUrl,
-		WebBaseUrl:        baseUrl,
+		ApiBaseUrl:        apiBaseUrl,
+		WebBaseUrl:        webBaseUrl,
 		WebhookApiBaseUrl: webhookApiBaseUrl,
 		CookieDomain:      cookieDomain,
 		DbHost:            Getenv("PLANETSCALE_DB_HOST"),
@@ -62,21 +60,4 @@ func Getenv(key string) string {
 	variable := os.Getenv(key)
 
 	return strings.TrimSuffix(strings.TrimPrefix(variable, "\""), "\"")
-}
-
-func (cfg *Config) setupLogger() {
-	switch cfg.LogLevel {
-	case "fatal":
-		log.SetLogLevel(logrus.FatalLevel)
-	case "panic":
-		log.SetLogLevel(logrus.PanicLevel)
-	case "error":
-		log.SetLogLevel(logrus.ErrorLevel)
-	case "warn":
-		log.SetLogLevel(logrus.WarnLevel)
-	case "info":
-		log.SetLogLevel(logrus.InfoLevel)
-	case "debug":
-		log.SetLogLevel(logrus.DebugLevel)
-	}
 }
