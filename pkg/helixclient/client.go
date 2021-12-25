@@ -64,11 +64,28 @@ func NewClient(cfg *config.Config, db *store.Database) *Client {
 
 // StartRefreshTokenRoutine refresh our token
 func (c *Client) StartRefreshTokenRoutine() {
-	ticker := time.NewTicker(24 * time.Hour)
+	setOrUpdateAccessToken(c.Client, c.db)
 
-	for range ticker.C {
-		setOrUpdateAccessToken(c.Client, c.db)
-	}
+	go func() {
+		for range time.NewTicker(12 * time.Hour).C {
+			setOrUpdateAccessToken(c.Client, c.db)
+		}
+	}()
+
+	go func() {
+		for range time.NewTicker(3 * time.Hour).C {
+			tokens := c.db.GetAllUserAccessToken()
+			for _, token := range tokens {
+				err := c.refreshToken(token)
+				if err != nil {
+					log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
+				} else {
+					log.Infof("refreshed token for user %s", token.OwnerTwitchID)
+				}
+				time.Sleep(time.Millisecond * 500)
+			}
+		}
+	}()
 }
 
 func (c *Client) SetAppAccessToken(ctx context.Context, token helix.AccessCredentials) {
@@ -100,4 +117,18 @@ func setOrUpdateAccessToken(client *helix.Client, db *store.Database) store.AppA
 	}
 
 	return token
+}
+
+func (c *Client) refreshToken(token store.UserAccessToken) error {
+	resp, err := c.Client.RefreshUserAccessToken(token.RefreshToken)
+	if err != nil {
+		return err
+	}
+
+	err = c.db.SaveUserAccessToken(context.Background(), token.OwnerTwitchID, resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " "))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
