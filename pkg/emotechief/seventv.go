@@ -1,7 +1,7 @@
 package emotechief
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/log"
@@ -192,33 +193,22 @@ type GqlQuery struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
+const SEVEN_TV_API = "https://api.7tv.app/v2/gql"
+
 func (ec *EmoteChief) QuerySevenTvGQL(query string, variables map[string]interface{}, response interface{}) error {
-	data, err := json.Marshal(GqlQuery{Query: query, Variables: variables})
+	gqlQuery := GqlQuery{Query: query, Variables: variables}
+
+	err := requests.
+		URL(SEVEN_TV_API).
+		BodyJSON(gqlQuery).
+		Bearer(ec.cfg.SevenTvToken).
+		ToJSON(&response).
+		Fetch(context.Background())
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "https://api.7tv.app/v2/gql", bytes.NewBuffer(data))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("authorization", "Bearer "+ec.cfg.SevenTvToken)
-	if err != nil {
-		return err
-	}
-
-	resp, err := ec.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	log.Infof("%d 7tv query '%s' with '%v'", resp.StatusCode, query, variables)
-
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return fmt.Errorf("Error %d: %s", resp.StatusCode, resp.Status)
-	}
+	log.Infof("7tv query '%s' with '%v'", query, variables)
 
 	return nil
 }

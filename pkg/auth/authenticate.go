@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -106,7 +105,7 @@ func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store
 
 		// Token might be expired, let's try refreshing
 		if resp.Error == "Unauthorized" {
-			err := a.refreshToken(r.Context(), token)
+			err := a.helixClient.RefreshToken(token)
 			if err != nil {
 				return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("failed to refresh token"))
 			}
@@ -135,25 +134,12 @@ func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store
 	return *resp, token, nil
 }
 
-func (a *Auth) refreshToken(ctx context.Context, token store.UserAccessToken) error {
-	resp, err := a.helixClient.Client.RefreshUserAccessToken(token.RefreshToken)
-	if err != nil {
-		return err
-	}
-
-	err = a.db.SaveUserAccessToken(ctx, token.OwnerTwitchID, resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " "))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (a *Auth) WriteDeleteCookieResponse(w http.ResponseWriter, err api.Error) {
 	cookie := &http.Cookie{
 		Name:     "scToken",
 		Value:    "",
 		Path:     "/",
+		Domain:   a.cfg.CookieDomain,
 		MaxAge:   -1,
 		HttpOnly: true,
 	}
