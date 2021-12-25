@@ -10,7 +10,6 @@ import (
 	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/store"
-	"github.com/gempir/go-twitch-irc/v2"
 )
 
 // Bot basic logging bot
@@ -56,7 +55,7 @@ func (b *Bot) Part(channel string) {
 
 func (b *Bot) Connect() {
 	b.startTime = time.Now()
-	b.ChatClient.SetOnPrivateMessage(b.handlePrivateMessage)
+	b.ChatClient.SetOnPrivateMessage(b.listener.HandlePrivateMessage)
 	go b.ChatClient.Connect(b.joinBotConfigChannels)
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {
@@ -65,24 +64,6 @@ func (b *Bot) Connect() {
 		log.Info("joining as user " + b.cfg.Username)
 	}
 	go b.ChatClient.Join(b.cfg.Username)
-}
-
-func (b *Bot) handlePrivateMessage(msg twitch.PrivateMessage) {
-	sysMessage := msg.Channel == b.cfg.Username && msg.User.Name == b.cfg.Username && strings.Contains(msg.Message, b.cfg.Environment)
-	if sysMessage {
-		log.Infof("sysMessage: %s", msg.Message)
-		if strings.HasPrefix(msg.Message, "JOIN "+b.cfg.Environment+" ") {
-			b.ChatClient.Join(strings.TrimPrefix(msg.Message, "JOIN "+b.cfg.Environment+" "))
-			return
-		}
-
-		if strings.HasPrefix(msg.Message, "PART "+b.cfg.Environment+" ") {
-			b.ChatClient.Part(strings.TrimPrefix(msg.Message, "PART "+b.cfg.Environment+" "))
-			return
-		}
-	}
-
-	b.listener.HandlePrivateMessage(msg)
 }
 
 func (b *Bot) joinBotConfigChannels() {

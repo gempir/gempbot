@@ -78,7 +78,7 @@ func (c *Client) StartRefreshTokenRoutine() {
 		for range time.NewTicker(3 * time.Hour).C {
 			tokens := c.db.GetAllUserAccessToken()
 			for _, token := range tokens {
-				err := c.refreshToken(token)
+				err := c.RefreshToken(token)
 				if err != nil {
 					log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
 				} else {
@@ -121,7 +121,7 @@ func setOrUpdateAccessToken(client *helix.Client, db *store.Database) store.AppA
 	return token
 }
 
-func (c *Client) refreshToken(token store.UserAccessToken) error {
+func (c *Client) RefreshToken(token store.UserAccessToken) error {
 	resp, err := c.Client.RefreshUserAccessToken(token.RefreshToken)
 	if err != nil {
 		return err

@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gempir/gempbot/pkg/chat/tmi"
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/humanize"
 	"github.com/gempir/gempbot/pkg/store"
-	"github.com/gempir/gempbot/pkg/tmi"
 	"github.com/gempir/go-twitch-irc/v2"
 )
 
