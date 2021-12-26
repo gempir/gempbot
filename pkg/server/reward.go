@@ -7,14 +7,10 @@ import (
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/dto"
-	"github.com/gempir/gempbot/pkg/eventsub"
 	"github.com/gempir/gempbot/pkg/log"
 )
 
 func (a *Api) RewardHandler(w http.ResponseWriter, r *http.Request) {
-	cpm := channelpoint.NewChannelPointManager(a.cfg, a.helixClient, a.db)
-	subscriptionManager := eventsub.NewSubscriptionManager(a.cfg, a.db, a.helixClient)
-
 	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 	if apiErr != nil {
 		return
@@ -51,15 +47,15 @@ func (a *Api) RewardHandler(w http.ResponseWriter, r *http.Request) {
 			rewardID = reward.RewardID
 		}
 
-		config, err := cpm.CreateOrUpdateChannelPointReward(userID, newReward.GetConfig(), rewardID)
+		config, err := a.channelPointManager.CreateOrUpdateChannelPointReward(userID, newReward.GetConfig(), rewardID)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed saving reward to twitch: %s", err), http.StatusInternalServerError)
 			return
 		}
 
-		subscriptionManager.SubscribeRewardRedemptionAdd(userID, config.ID)
+		a.eventsubSubscriptionManager.SubscribeRewardRedemptionAdd(userID, config.ID)
 		if config.ApproveOnly {
-			subscriptionManager.SubscribeRewardRedemptionUpdate(userID, config.ID)
+			a.eventsubSubscriptionManager.SubscribeRewardRedemptionUpdate(userID, config.ID)
 		}
 
 		newReward.SetConfig(config)

@@ -38,8 +38,7 @@ func (a *Api) BotConfigHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		cfg, err := a.db.GetBotConfig(userID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
+			log.Error(err)
 		}
 
 		api.WriteJson(w, cfg, http.StatusOK)

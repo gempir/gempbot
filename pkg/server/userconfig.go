@@ -6,15 +6,11 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
-	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/user"
 )
 
 func (a *Api) UserConfigHandler(w http.ResponseWriter, r *http.Request) {
-	chatClient := chat.NewClient(a.cfg)
-	go chatClient.Connect(func() {})
-
 	authResp, _, err := a.authClient.AttemptAuth(r, w)
 	if err != nil {
 		return

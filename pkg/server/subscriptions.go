@@ -4,9 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/pkg/api"
-	"github.com/gempir/gempbot/pkg/chat"
-	"github.com/gempir/gempbot/pkg/emotechief"
-	"github.com/gempir/gempbot/pkg/eventsub"
 	"github.com/gempir/gempbot/pkg/log"
 )
 
@@ -15,11 +12,6 @@ type SubscribtionStatus struct {
 }
 
 func (a *Api) SubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
-	chatClient := chat.NewClient(a.cfg)
-	go chatClient.Connect(func() {})
-	emoteChief := emotechief.NewEmoteChief(a.cfg, a.db, a.helixClient, chatClient)
-	eventSubManager := eventsub.NewEventSubManager(a.cfg, a.helixClient, a.db, emoteChief, chatClient)
-
 	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 	if apiErr != nil {
 		return
@@ -35,13 +27,13 @@ func (a *Api) SubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodPut {
-		eventSubManager.SubscribePredictions(userID)
+		a.eventsubManager.SubscribePredictions(userID)
 
 		api.WriteJson(w, "ok", http.StatusOK)
 	} else if r.Method == http.MethodDelete {
 		for _, sub := range a.db.GetAllPredictionSubscriptions(userID) {
 			log.Infof("Removing subscribtion on request %s from %s", sub.SubscriptionID, sub.TargetTwitchID)
-			err := eventSubManager.RemoveEventSubSubscription(sub.SubscriptionID)
+			err := a.eventsubManager.RemoveEventSubSubscription(sub.SubscriptionID)
 			if err != nil {
 				log.Error(err)
 			}

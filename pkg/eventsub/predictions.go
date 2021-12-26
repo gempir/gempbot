@@ -11,7 +11,7 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
-func (esm *EventSubManager) SubscribePredictions(userID string) {
+func (esm *EventsubManager) SubscribePredictions(userID string) {
 	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionBegin, "channel.prediction.begin")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
@@ -49,7 +49,7 @@ func (esm *EventSubManager) SubscribePredictions(userID string) {
 	}
 }
 
-func (esm *EventSubManager) HandlePredictionBegin(event []byte) {
+func (esm *EventsubManager) HandlePredictionBegin(event []byte) {
 	var data helix.EventSubChannelPredictionBeginEvent
 	err := json.Unmarshal(event, &data)
 	if err != nil {
@@ -78,7 +78,7 @@ func (esm *EventSubManager) HandlePredictionBegin(event []byte) {
 	)
 }
 
-func (esm *EventSubManager) HandlePredictionLock(event []byte) {
+func (esm *EventsubManager) HandlePredictionLock(event []byte) {
 	var data helix.EventSubChannelPredictionLockEvent
 	err := json.Unmarshal(event, &data)
 	if err != nil {
@@ -104,7 +104,7 @@ func (esm *EventSubManager) HandlePredictionLock(event []byte) {
 	)
 }
 
-func (esm *EventSubManager) HandlePredictionEnd(event []byte) {
+func (esm *EventsubManager) HandlePredictionEnd(event []byte) {
 	var data helix.EventSubChannelPredictionEndEvent
 	err := json.Unmarshal(event, &data)
 	if err != nil {

@@ -5,7 +5,10 @@ import (
 
 	"github.com/gempir/gempbot/pkg/auth"
 	"github.com/gempir/gempbot/pkg/bot"
+	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/config"
+	"github.com/gempir/gempbot/pkg/emotechief"
+	"github.com/gempir/gempbot/pkg/eventsub"
 	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/log"
 	"github.com/gempir/gempbot/pkg/server"
@@ -27,7 +30,12 @@ func main() {
 	bot := bot.NewBot(cfg, db, helixClient)
 	go bot.Connect()
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot)
+	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, bot.ChatClient)
+	eventsubManager := eventsub.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
+	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
+	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
+
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager)
 
 	mux := http.NewServeMux()
 

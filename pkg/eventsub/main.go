@@ -17,7 +17,7 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
-type EventSubManager struct {
+type EventsubManager struct {
 	cfg         *config.Config
 	helixClient *helixclient.Client
 	db          *store.Database
@@ -25,8 +25,8 @@ type EventSubManager struct {
 	chatClient  *chat.ChatClient
 }
 
-func NewEventSubManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventSubManager {
-	return &EventSubManager{
+func NewEventsubManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventsubManager {
+	return &EventsubManager{
 		cfg:         cfg,
 		helixClient: helixClient,
 		db:          db,
@@ -41,7 +41,7 @@ type eventSubNotification struct {
 	Event        json.RawMessage            `json:"event"`
 }
 
-func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request) (event []byte, apiErr api.Error) {
+func (esm *EventsubManager) HandleWebhook(w http.ResponseWriter, r *http.Request) (event []byte, apiErr api.Error) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error(err)
@@ -93,7 +93,7 @@ func (esm *EventSubManager) HandleWebhook(w http.ResponseWriter, r *http.Request
 	return eventSubNotification.Event, nil
 }
 
-func (esm *EventSubManager) handleChallenge(w http.ResponseWriter, r *http.Request, body []byte) api.Error {
+func (esm *EventsubManager) handleChallenge(w http.ResponseWriter, r *http.Request, body []byte) api.Error {
 	var event struct {
 		Challenge string `json:"challenge"`
 	}
@@ -107,7 +107,7 @@ func (esm *EventSubManager) handleChallenge(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
-func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []byte) {
+func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []byte) {
 	var redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent
 	err := json.Unmarshal(event, &redemption)
 	if err != nil {
@@ -197,7 +197,7 @@ func (esm *EventSubManager) HandleChannelPointsCustomRewardRedemption(event []by
 	}
 }
 
-func (esm *EventSubManager) SubscribeChannelPoints(userID string) {
+func (esm *EventsubManager) SubscribeChannelPoints(userID string) {
 	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd, helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
@@ -216,7 +216,7 @@ func (esm *EventSubManager) SubscribeChannelPoints(userID string) {
 	}
 }
 
-func (esm *EventSubManager) RemoveEventSubSubscription(subscriptionID string) error {
+func (esm *EventsubManager) RemoveEventSubSubscription(subscriptionID string) error {
 	response, err := esm.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
 		return err
@@ -228,7 +228,7 @@ func (esm *EventSubManager) RemoveEventSubSubscription(subscriptionID string) er
 	return nil
 }
 
-func (esm *EventSubManager) RemoveAllEventSubSubscriptions(userID string) {
+func (esm *EventsubManager) RemoveAllEventSubSubscriptions(userID string) {
 	// @TODO rework using the DB so we don't need to query literally every sub
 	resp, err := esm.helixClient.Client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
 	if err != nil {
