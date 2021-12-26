@@ -24,7 +24,7 @@ export default function App({ Component, pageProps }: { Component: any; pageProp
             }
         `}</style>
         <main>
-            <div className="flex">
+            <div className="flex" style={{scrollbarGutter: "stable"}}>
                 <Sidebar />
                 <Component {...pageProps} />
             </div>
