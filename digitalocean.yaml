@@ -25,10 +25,6 @@ envs:
   scope: RUN_AND_BUILD_TIME
   type: SECRET
   value: EV[1:TejZrD5N37QyWWbzhFZ4WGYO87huQW2O:N2JyHsGmzjaUKsQ/hxfS4xaHJsHvgfxT2CTl2u1AJbnV6P+S61CsmNPX7kkk8xaEJz4UCCZkTS+R0ZBDu0YLCnhNDqkqOglqHc5f4F6mtcR9j9JNvPBqh8tuYa26u35ivKYiRUCaBA5E/WotCY76KXtLhvQKNRgiSI4B6V3vRiD0T6uxoR3AflBP09JFDBLrjS1OlQlK26SfYuANR9THijfOljOrJ+dNMRtKsY8yahvKvpRFrSOk4+Y9My2LMuv9kmZHh606sz7DOn5TQxrHphS9oOC8dtqc7v5zUs3QRR9Nqqr6c2uucPLFrrUOQmt0paCLemHdajVcyvvwmfOlPSzNG3/fG0/2+vE8Qas=]
-- key: NEXT_PUBLIC_BASE_URL
-  scope: RUN_AND_BUILD_TIME
-  type: SECRET
-  value: EV[1:bD3AkYuVRj39/XIo/FiO9fxEQnEZa+Sa:nhX7kjceTXdMW2RkhQZSFvIjNjdNNh40LpWmIEPa+M8Z1GISywI=]
 - key: TWITCH_USERNAME
   scope: RUN_AND_BUILD_TIME
   type: SECRET
@@ -67,6 +63,9 @@ services:
   - key: NEXT_PUBLIC_BASE_URL
     scope: RUN_AND_BUILD_TIME
     value: https://bot.gempir.com
+  - key: COOKIE_DOMAIN
+    scope: RUN_AND_BUILD_TIME
+    value: gempir.com
   github:
     branch: main
     deploy_on_push: true

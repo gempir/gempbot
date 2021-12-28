@@ -29,7 +29,7 @@ type Config struct {
 func FromEnv() *Config {
 	apiBaseUrl := Getenv("NEXT_PUBLIC_API_BASE_URL")
 	webBaseUrl := Getenv("NEXT_PUBLIC_BASE_URL")
-	cookieDomain := strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(webBaseUrl, "https://"), "http://"), ":3000")
+	cookieDomain := Getenv("COOKIE_DOMAIN")
 
 	webhookApiBaseUrl := Getenv("WEBHOOK_BASE_URL")
 	if webhookApiBaseUrl == "" {
