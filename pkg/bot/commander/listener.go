@@ -10,7 +10,7 @@ import (
 	"github.com/gempir/gempbot/pkg/dto"
 	"github.com/gempir/gempbot/pkg/humanize"
 	"github.com/gempir/gempbot/pkg/store"
-	"github.com/gempir/go-twitch-irc/v2"
+	"github.com/gempir/go-twitch-irc/v3"
 )
 
 type Listener struct {

@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/carlmjohnson/requests v0.21.13
-	github.com/gempir/go-twitch-irc/v2 v2.8.2-beta.1
+	github.com/gempir/go-twitch-irc/v3 v3.0.0-beta.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect

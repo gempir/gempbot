@@ -3,8 +3,8 @@ github.com/carlmjohnson/requests v0.21.13/go.mod h1:Hw4fFOk3xDlHQbNRTGo4oc52TUTp
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/gempir/go-twitch-irc/v2 v2.8.2-beta.1 h1:5rP4CXvMaC3Q3+pZ5a2efn3ioMvYmu/JspY2x7d0cDw=
-github.com/gempir/go-twitch-irc/v2 v2.8.2-beta.1/go.mod h1:120d2SdlRYg8tRnZwsyNPeS+mWPn+YmNEzB7Bv/CDGE=
+github.com/gempir/go-twitch-irc/v3 v3.0.0-beta.2 h1:V84Fr5jvj3oZWrmJsVsB4wPqMJ3M+w+Z73pKAynIqWU=
+github.com/gempir/go-twitch-irc/v3 v3.0.0-beta.2/go.mod h1:/W9KZIiyizVecp4PEb7kc4AlIyXKiCmvlXrzlpPUytU=
 github.com/gin-contrib/sse v0.1.0/go.mod h1:RHrZQHXnP2xjPF+u1gW/2HnVO7nvIa9PG3Gm+fLHvGI=
 github.com/gin-gonic/gin v1.5.0/go.mod h1:Nd6IXA8m5kNZdNEHMBd93KT+mdY3+bewLgRvmCsR2Do=
 github.com/go-playground/locales v0.12.1/go.mod h1:IUMDtCfWo/w/mtMfIE/IG2K+Ey3ygWanZIBtBW0W2TM=

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/log"
-	"github.com/gempir/go-twitch-irc/v2"
+	"github.com/gempir/go-twitch-irc/v3"
 )
 
 type ChatClient struct {
