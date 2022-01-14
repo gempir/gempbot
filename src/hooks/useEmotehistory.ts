@@ -87,6 +87,7 @@ export function useEmotehistory(added: boolean, channel?: string): [Array<Emoteh
     };
 
     const remove = (emoteId: string) => {
+        setLoading(true);
         const endPoint = "/api/emotehistory";
         const searchParams = new URLSearchParams();
         searchParams.append("emoteId", emoteId);
