@@ -38,7 +38,7 @@ export interface EmotehistoryItem {
 
 const PAGE_SIZE = 20;
 
-export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void] {
+export function useEmotehistory(added: boolean, channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void] {
     const [page, setPage] = useState(1);
     const pageRef = useRef(page);
     pageRef.current = page;
@@ -57,6 +57,9 @@ export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () 
             searchParams.append("channel", channel);
         }
         searchParams.append("page", page.toString());
+        if (added) {
+            searchParams.append("added", "1");
+        }
         doFetch(Method.GET, endPoint, searchParams).then((resp) => {
             if (currentPage !== pageRef.current) {
                 throw new Error("Page changed");

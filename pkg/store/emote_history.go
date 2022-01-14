@@ -29,9 +29,17 @@ func (db *Database) GetEmoteAdded(channelTwitchID string, addType dto.RewardType
 	return emotes
 }
 
-func (db *Database) GetEmoteHistory(ctx context.Context, ownerTwitchID string, page int, pageSize int) []EmoteAdd {
+func (db *Database) GetEmoteHistory(ctx context.Context, ownerTwitchID string, page int, pageSize int, added bool) []EmoteAdd {
 	var emoteHistory []EmoteAdd
-	db.Client.WithContext(ctx).Where("channel_twitch_id = ?", ownerTwitchID).Offset((page * pageSize) - pageSize).Limit(pageSize).Order("updated_at desc").Find(&emoteHistory)
+
+	query := db.Client.WithContext(ctx)
+	if added {
+		query = query.Where("channel_twitch_id = ? AND change_type = ?", ownerTwitchID, dto.EMOTE_ADD_ADD)
+	} else {
+		query = query.Where("channel_twitch_id = ? AND change_type != ?", ownerTwitchID, dto.EMOTE_ADD_ADD)
+	}
+
+	query.Offset((page * pageSize) - pageSize).Limit(pageSize).Order("updated_at desc").Find(&emoteHistory)
 
 	return emoteHistory
 }
