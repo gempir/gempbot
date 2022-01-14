@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
+	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/chat"
 	"github.com/gempir/gempbot/pkg/config"
@@ -23,15 +25,23 @@ type EventsubManager struct {
 	db          *store.Database
 	emoteChief  *emotechief.EmoteChief
 	chatClient  *chat.ChatClient
+	ttlCache    *ttlcache.Cache
 }
 
 func NewEventsubManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventsubManager {
+	cache := ttlcache.NewCache()
+	err := cache.SetTTL(time.Second * 60)
+	if err != nil {
+		panic(err)
+	}
+
 	return &EventsubManager{
 		cfg:         cfg,
 		helixClient: helixClient,
 		db:          db,
 		emoteChief:  emoteChief,
 		chatClient:  bot,
+		ttlCache:    cache,
 	}
 }
 
@@ -126,7 +136,11 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 			if reward.Type == dto.REWARD_BTTV {
 				if !esm.emoteChief.VerifyBttvRedemption(reward, redemption) {
 					log.Infof("[%s] Bttv Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
-					err := esm.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, reward.RewardID, redemption.ID, false)
+					err := esm.ttlCache.Set(redemption.ID, false)
+					if err != nil {
+						log.Error(err)
+					}
+					err = esm.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, reward.RewardID, redemption.ID, false)
 					if err != nil {
 						log.Error(err)
 					}
@@ -138,7 +152,11 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 			if reward.Type == dto.REWARD_SEVENTV {
 				if !esm.emoteChief.VerifySeventvRedemption(reward, redemption) {
 					log.Infof("[%s] 7tv Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
-					err := esm.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, reward.RewardID, redemption.ID, false)
+					err := esm.ttlCache.Set(redemption.ID, false)
+					if err != nil {
+						log.Error(err)
+					}
+					err = esm.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, reward.RewardID, redemption.ID, false)
 					if err != nil {
 						log.Error(err)
 					}
@@ -179,6 +197,10 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 				if err != nil {
 					log.Error(err)
 				}
+			}
+			// if we don't find the redemption in our cache, we didn't send the redemption update ourselves and need to send a rejection message
+			if _, err := esm.ttlCache.Get(redemption.ID); err == ttlcache.ErrNotFound {
+				esm.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Emote redemption by @%s was rejected", redemption.UserLogin))
 			}
 		}
 		return
