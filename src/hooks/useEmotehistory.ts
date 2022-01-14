@@ -38,7 +38,7 @@ export interface EmotehistoryItem {
 
 const PAGE_SIZE = 20;
 
-export function useEmotehistory(added: boolean, channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void] {
+export function useEmotehistory(added: boolean, channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void, (emoteId: string) => void] {
     const [page, setPage] = useState(1);
     const pageRef = useRef(page);
     pageRef.current = page;
@@ -86,8 +86,14 @@ export function useEmotehistory(added: boolean, channel?: string): [Array<Emoteh
         });
     };
 
+    const remove = (emoteId: string) => {
+        doFetch(Method.DELETE, `/api/emotehistory/${emoteId}`).then(() => {
+            fetchPredictions();
+        });
+    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchPredictions, [managing, page]);
 
-    return [emotehistory, fetchPredictions, loading, page, () => emotehistory.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined];
+    return [emotehistory, fetchPredictions, loading, page, () => emotehistory.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined, remove];
 }
