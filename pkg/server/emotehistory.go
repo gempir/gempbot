@@ -34,6 +34,12 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 
 		userID = user.ID
 	}
+	if r.Method == http.MethodDelete {
+		a.db.RemoveEmoteAdd(userID, r.URL.Query().Get("emoteId"))
+
+		api.WriteJson(w, "ok", http.StatusOK)
+		return
+	}
 
 	page := r.URL.Query().Get("page")
 	if page == "" {
@@ -46,5 +52,5 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.WriteJson(w, a.db.GetEmoteHistory(r.Context(), userID, pageNumber, api.EMOTEHISTORY_PAGE_SIZE), http.StatusOK)
+	api.WriteJson(w, a.db.GetEmoteHistory(r.Context(), userID, pageNumber, api.EMOTEHISTORY_PAGE_SIZE, r.URL.Query().Has("added")), http.StatusOK)
 }

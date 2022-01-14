@@ -38,7 +38,7 @@ export interface EmotehistoryItem {
 
 const PAGE_SIZE = 20;
 
-export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void] {
+export function useEmotehistory(added: boolean, channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void, (emoteId: string) => void] {
     const [page, setPage] = useState(1);
     const pageRef = useRef(page);
     pageRef.current = page;
@@ -57,6 +57,9 @@ export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () 
             searchParams.append("channel", channel);
         }
         searchParams.append("page", page.toString());
+        if (added) {
+            searchParams.append("added", "1");
+        }
         doFetch(Method.GET, endPoint, searchParams).then((resp) => {
             if (currentPage !== pageRef.current) {
                 throw new Error("Page changed");
@@ -83,8 +86,18 @@ export function useEmotehistory(channel?: string): [Array<EmotehistoryItem>, () 
         });
     };
 
+    const remove = (emoteId: string) => {
+        setLoading(true);
+        const endPoint = "/api/emotehistory";
+        const searchParams = new URLSearchParams();
+        searchParams.append("emoteId", emoteId);
+        doFetch(Method.DELETE, endPoint, searchParams).then(() => {
+            fetchPredictions();
+        });
+    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchPredictions, [managing, page]);
 
-    return [emotehistory, fetchPredictions, loading, page, () => emotehistory.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined];
+    return [emotehistory, fetchPredictions, loading, page, () => emotehistory.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined, remove];
 }
