@@ -3,6 +3,7 @@ module github.com/gempir/gempbot
 go 1.16
 
 require (
+	github.com/ReneKroon/ttlcache/v2 v2.11.0 // indirect
 	github.com/carlmjohnson/requests v0.21.13
 	github.com/gempir/go-twitch-irc/v3 v3.0.0-beta.2
 	github.com/go-sql-driver/mysql v1.6.0
