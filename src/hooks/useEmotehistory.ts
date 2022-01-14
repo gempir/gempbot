@@ -87,7 +87,10 @@ export function useEmotehistory(added: boolean, channel?: string): [Array<Emoteh
     };
 
     const remove = (emoteId: string) => {
-        doFetch(Method.DELETE, `/api/emotehistory/${emoteId}`).then(() => {
+        const endPoint = "/api/emotehistory";
+        const searchParams = new URLSearchParams();
+        searchParams.append("emoteId", emoteId);
+        doFetch(Method.DELETE, endPoint, searchParams).then(() => {
             fetchPredictions();
         });
     };

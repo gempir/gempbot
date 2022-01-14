@@ -16,6 +16,10 @@ type EmoteAdd struct {
 	EmoteID         string
 }
 
+func (db *Database) RemoveEmoteAdd(channelTwitchID string, emoteID string) {
+	db.Client.Where("channel_twitch_id = ? AND emote_id = ? AND change_type = ? ", channelTwitchID, emoteID, dto.EMOTE_ADD_ADD).Delete(&EmoteAdd{})
+}
+
 func (db *Database) CreateEmoteAdd(channelTwitchID string, addType dto.RewardType, emoteID string, emoteChangeType dto.EmoteChangeType) {
 	add := EmoteAdd{ChannelTwitchID: channelTwitchID, Type: addType, EmoteID: emoteID, ChangeType: emoteChangeType}
 	db.Client.Create(&add)
