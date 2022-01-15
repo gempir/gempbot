@@ -110,11 +110,15 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 
 	if len(emotesAdded) > 0 {
 		oldestEmote := emotesAdded[len(emotesAdded)-1]
-		for _, sharedEmote := range dashboard.Sharedemotes {
-			if oldestEmote.EmoteID == sharedEmote.ID {
-				removalTargetEmoteId = oldestEmote.EmoteID
-				log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
+		if !oldestEmote.Blocked {
+			for _, sharedEmote := range dashboard.Sharedemotes {
+				if oldestEmote.EmoteID == sharedEmote.ID {
+					removalTargetEmoteId = oldestEmote.EmoteID
+					log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
+				}
 			}
+		} else {
+			log.Infof("Removal target %s is already blocked, so already removed, skipping removal", oldestEmote.EmoteID)
 		}
 	}
 
@@ -130,6 +134,35 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 	}
 
 	return
+}
+
+func (e *EmoteChief) RemoveBttvEmote(channelUserID, emoteID string) (*bttvEmoteResponse, error) {
+	var userResp bttvUserResponse
+	err := requests.
+		URL(BTTV_API).
+		Pathf("/3/cached/users/twitch/%s", channelUserID).
+		ToJSON(&userResp).
+		Fetch(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	bttvUserId := userResp.ID
+
+	err = requests.
+		URL(BTTV_API).
+		Pathf("/3/emotes/%s/shared/%s", emoteID, bttvUserId).
+		Bearer(e.cfg.BttvToken).
+		Method(http.MethodDelete).
+		Fetch(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	e.db.CreateEmoteAdd(channelUserID, dto.REWARD_BTTV, emoteID, dto.EMOTE_ADD_REMOVED_BLOCKED)
+	log.Infof("Blocked channelId: %s emoteId: %s", channelUserID, emoteID)
+
+	return getBttvEmote(emoteID)
 }
 
 func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, removedEmote *bttvEmoteResponse, err error) {

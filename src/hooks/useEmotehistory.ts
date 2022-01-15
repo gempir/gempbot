@@ -22,6 +22,7 @@ export interface RawEmotehistoryItem {
     Type: EmoteType;
     ChangeType: ChangeType;
     EmoteID: string;
+    Blocked: boolean;
 }
 
 export interface EmotehistoryItem {
@@ -33,12 +34,13 @@ export interface EmotehistoryItem {
     Type: EmoteType;
     ChangeType: ChangeType;
     EmoteID: string;
+    Blocked: boolean;
 }
 
 
 const PAGE_SIZE = 20;
 
-export function useEmotehistory(added: boolean, channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void, (emoteId: string) => void] {
+export function useEmotehistory(added: boolean, channel?: string): [Array<EmotehistoryItem>, () => void, boolean, number, () => void, () => void, (emoteId: string) => void, (emoteId: string) => void] {
     const [page, setPage] = useState(1);
     const pageRef = useRef(page);
     pageRef.current = page;
@@ -96,8 +98,18 @@ export function useEmotehistory(added: boolean, channel?: string): [Array<Emoteh
         });
     };
 
+    const block = (emoteId: string) => {
+        setLoading(true);
+        const endPoint = "/api/emotehistory";
+        const searchParams = new URLSearchParams();
+        searchParams.append("emoteId", emoteId);
+        doFetch(Method.PATCH, endPoint, searchParams).then(() => {
+            fetchPredictions();
+        });
+    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchPredictions, [managing, page]);
 
-    return [emotehistory, fetchPredictions, loading, page, () => emotehistory.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined, remove];
+    return [emotehistory, fetchPredictions, loading, page, () => emotehistory.length === PAGE_SIZE ? setPage(page + 1) : undefined, () => page > 1 ? setPage(page - 1) : undefined, remove, block];
 }

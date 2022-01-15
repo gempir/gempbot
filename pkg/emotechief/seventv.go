@@ -88,11 +88,15 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 
 	if len(emotesAdded) > 0 {
 		oldestEmote := emotesAdded[len(emotesAdded)-1]
-		for _, sharedEmote := range emotes {
-			if oldestEmote.EmoteID == sharedEmote.ID {
-				removalTargetEmoteId = oldestEmote.EmoteID
-				log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
+		if !oldestEmote.Blocked {
+			for _, sharedEmote := range emotes {
+				if oldestEmote.EmoteID == sharedEmote.ID {
+					removalTargetEmoteId = oldestEmote.EmoteID
+					log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
+				}
 			}
+		} else {
+			log.Infof("Removal target %s is already blocked, so already removed, skipping removal", oldestEmote.EmoteID)
 		}
 	}
 
@@ -108,6 +112,31 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	}
 
 	return
+}
+
+func (ec *EmoteChief) RemoveSevenTvEmote(channelUserID, emoteID string) (*sevenTvEmote, error) {
+	var userData SevenTvUserResponse
+	err := ec.QuerySevenTvGQL(SEVEN_TV_USER_DATA_QUERY, map[string]interface{}{"id": channelUserID}, &userData)
+	if err != nil {
+		return nil, err
+	}
+
+	var empty struct{}
+	err = ec.QuerySevenTvGQL(
+		SEVEN_TV_DELETE_EMOTE_QUERY,
+		map[string]interface{}{
+			"ch": userData.Data.User.ID,
+			"re": "blocked emote",
+			"em": emoteID,
+		}, &empty,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteID, dto.EMOTE_ADD_REMOVED_BLOCKED)
+
+	return getSevenTvEmote(emoteID)
 }
 
 func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
@@ -205,10 +234,11 @@ func (ec *EmoteChief) QuerySevenTvGQL(query string, variables map[string]interfa
 		ToJSON(&response).
 		Fetch(context.Background())
 	if err != nil {
+		log.Infof("7tv query '%s' with '%v' resp: '%v'", query, variables, response)
 		return err
 	}
 
-	log.Infof("7tv query '%s' with '%v'", query, variables)
+	log.Infof("7tv query '%s' with '%v' resp: '%v'", query, variables, response)
 
 	return nil
 }
