@@ -13,7 +13,18 @@ type EmoteAdd struct {
 	ChannelTwitchID string              `gorm:"index"`
 	Type            dto.RewardType      `gorm:"index"`
 	ChangeType      dto.EmoteChangeType `gorm:"index"`
+	Blocked         bool                `gorm:"index"`
 	EmoteID         string
+}
+
+func (db *Database) GetEmoteAdd(channelTwitchID string, emoteID string) *EmoteAdd {
+	var emoteAdd EmoteAdd
+	db.Client.Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).First(&emoteAdd)
+	return &emoteAdd
+}
+
+func (db *Database) BlockEmoteAdd(channelTwitchID string, emoteID string) {
+	db.Client.Model(&EmoteAdd{}).Where("channel_twitch_id = ? AND emote_id = ? AND change_type = ?", channelTwitchID, emoteID, dto.EMOTE_ADD_ADD).Update("blocked", true)
 }
 
 func (db *Database) RemoveEmoteAdd(channelTwitchID string, emoteID string) {
