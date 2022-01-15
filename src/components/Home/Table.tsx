@@ -44,7 +44,7 @@ export function Table({ channel, added, removeable, blockable }: { channel?: str
                     }
                     {blockable && !item.Blocked &&
                         <td className="text-center px-5 cursor-pointer hover:text-blue-500 group" onClick={() => block(item.EmoteID)}>
-                            <StopIcon className="h-6" /><span className="absolute z-50 hidden p-2 mx-10 -my-12 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Block emote and remove it from the channel</span>
+                            <StopIcon className="h-6" /><span className="absolute z-50 hidden p-2 mx-10 -my-12 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Block emote and remove it from the channel. Don't fill the slot after it has been removed.</span>
                         </td>
                     }
                 </tr>)}
