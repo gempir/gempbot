@@ -7,6 +7,7 @@ import (
 
 	"github.com/gempir/gempbot/pkg/api"
 	"github.com/gempir/gempbot/pkg/dto"
+	"github.com/gempir/gempbot/pkg/log"
 )
 
 func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +53,11 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		emoteAdd := a.db.GetEmoteAdd(userID, emoteID)
 
 		if emoteAdd.Type == dto.REWARD_SEVENTV {
+			err := a.db.BlockEmotes(userID, []string{emoteID}, string(dto.REWARD_SEVENTV))
+			if err != nil {
+				log.Error(err)
+			}
+
 			emote, err := a.emoteChief.RemoveSevenTvEmote(userID, emoteID)
 			if err != nil || emote == nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -60,6 +66,11 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 
 			a.bot.ChatClient.Say(login, fmt.Sprintf("⚠️ Emote %s has been removed and blocked", emote.Name))
 		} else if emoteAdd.Type == dto.REWARD_BTTV {
+			err := a.db.BlockEmotes(userID, []string{emoteID}, string(dto.REWARD_BTTV))
+			if err != nil {
+				log.Error(err)
+			}
+
 			emote, err := a.emoteChief.RemoveBttvEmote(userID, emoteID)
 			if err != nil || emote == nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
