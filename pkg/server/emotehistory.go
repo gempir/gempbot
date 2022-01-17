@@ -29,6 +29,13 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), err.Status())
 				return
 			}
+
+			uData, helixError := a.helixClient.GetUserByUserID(userID)
+			if helixError != nil {
+				api.WriteJson(w, fmt.Errorf("could not find managing user in helix"), http.StatusBadRequest)
+				return
+			}
+			login = uData.Login
 		}
 	} else {
 		user, err := a.helixClient.GetUserByUsername(username)
