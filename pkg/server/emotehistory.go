@@ -11,31 +11,35 @@ import (
 )
 
 func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	username := r.URL.Query().Get("username")
 	userID := ""
 	login := ""
 
-	authResult, _, err := a.authClient.AttemptAuth(r, w)
-	if err != nil {
-		return
-	}
-	userID = authResult.Data.UserID
-	login = authResult.Data.Login
-
-	if r.URL.Query().Get("managing") != "" {
-		userID, err := a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
+	if username == "" {
+		authResult, _, err := a.authClient.AttemptAuth(r, w)
 		if err != nil {
-			http.Error(w, err.Error(), err.Status())
+			return
+		}
+		userID = authResult.Data.UserID
+		login = authResult.Data.Login
+
+		if r.URL.Query().Get("managing") != "" {
+			userID, err = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
+			if err != nil {
+				http.Error(w, err.Error(), err.Status())
+				return
+			}
+		}
+	} else {
+		user, err := a.helixClient.GetUserByUsername(username)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		uData, helixError := a.helixClient.GetUserByUserID(userID)
-		if helixError != nil {
-			api.WriteJson(w, fmt.Errorf("could not find managing user in helix"), http.StatusBadRequest)
-			return
-		}
-		login = uData.Login
+		userID = user.ID
+		login = user.Login
 	}
-
 	if r.Method == http.MethodDelete {
 		a.db.RemoveEmoteAdd(userID, r.URL.Query().Get("emoteId"))
 
@@ -85,9 +89,9 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		page = "1"
 	}
 
-	pageNumber, convError := strconv.Atoi(page)
-	if convError != nil {
-		http.Error(w, convError.Error(), http.StatusBadRequest)
+	pageNumber, err := strconv.Atoi(page)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
