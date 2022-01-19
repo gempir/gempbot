@@ -36,7 +36,7 @@ func TestCanGetSevenTvEmoteFromMessage(t *testing.T) {
 }
 
 func TestCanVerifySevenTvEmoteRedemption(t *testing.T) {
-	ec := emotechief.NewEmoteChief(testutil.NewTestConfig(), &store.Database{}, &helixclient.Client{}, &chat.ChatClient{})
+	ec := emotechief.NewEmoteChief(testutil.NewTestConfig(), &store.Database{}, &helixclient.Client{}, chat.NewClient(testutil.NewTestConfig()))
 
 	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
