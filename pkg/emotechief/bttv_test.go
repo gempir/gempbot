@@ -1,8 +1,9 @@
-package emotechief
+package emotechief_test
 
 import (
 	"testing"
 
+	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +18,7 @@ func TestCanGetBttvTvEmoteFromMessage(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		emote, err := GetBttvEmoteId(test.message)
+		emote, err := emotechief.GetBttvEmoteId(test.message)
 		if err != nil && test.emoteId != "" {
 			t.Error(err.Error())
 		}
