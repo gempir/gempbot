@@ -52,6 +52,10 @@ envs:
 - key: VERCEL_ENV
   scope: RUN_AND_BUILD_TIME
   value: production
+- key: NEWRELIC_LICENSE
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:v+9yZKZhg/mPJW+gk4wh6xO4YkSAMWly:wvsUkCk9ytpCpmn/tq4gLM5Tt18MgKk6ebp8+QmyyHzGeeOi24fdTeE9dESQhRphUQXtjRlYbA8=]
 name: gempbot-api
 region: nyc
 services:
