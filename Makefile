@@ -33,19 +33,13 @@ export TWITCH_CLIENT_SECRET
 export TWITCH_CLIENT_ID
 
 build_server:
-	go build cmd/server/main.go
+	go build
 
 migrate:
 	go run cmd/migrate/main.go
 
-server:
-	go run cmd/server/main.go
-
-refresh:
-	go run cmd/refresh/main.go
-
-eventsub:
-	go run cmd/eventsub/main.go
+test:
+	go test ./pkg/...
 
 docker: 
 	docker build . -t gempbot

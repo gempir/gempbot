@@ -1,9 +1,7 @@
-package testutil
+package config
 
-import "github.com/gempir/gempbot/pkg/config"
-
-func NewTestConfig() *config.Config {
-	return &config.Config{
+func NewTestConfig() *Config {
+	return &Config{
 		ClientID:          "clientId",
 		ClientSecret:      "clientSecret",
 		Secret:            "secret",

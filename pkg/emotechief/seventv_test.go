@@ -6,10 +6,10 @@ import (
 
 	"github.com/gempir/gempbot/pkg/channelpoint"
 	"github.com/gempir/gempbot/pkg/chat"
+	"github.com/gempir/gempbot/pkg/config"
 	"github.com/gempir/gempbot/pkg/emotechief"
 	"github.com/gempir/gempbot/pkg/helixclient"
 	"github.com/gempir/gempbot/pkg/store"
-	"github.com/gempir/gempbot/pkg/testutil"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +36,7 @@ func TestCanGetSevenTvEmoteFromMessage(t *testing.T) {
 }
 
 func TestCanVerifySevenTvEmoteRedemption(t *testing.T) {
-	ec := emotechief.NewEmoteChief(testutil.NewTestConfig(), &store.Database{}, &helixclient.Client{}, chat.NewClient(testutil.NewTestConfig()))
+	ec := emotechief.NewEmoteChief(config.NewTestConfig(), &store.Database{}, &helixclient.Client{}, chat.NewClient(config.NewTestConfig()))
 
 	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
