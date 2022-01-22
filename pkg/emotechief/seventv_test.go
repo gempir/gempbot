@@ -35,11 +35,15 @@ func TestCanGetSevenTvEmoteFromMessage(t *testing.T) {
 
 }
 
-func TestCanVerifySevenTvEmoteRedemption(t *testing.T) {
+func TestCanNotVerifySevenTvEmoteRedemption(t *testing.T) {
 	ec := emotechief.NewEmoteChief(config.NewTestConfig(), &store.Database{}, &helixclient.Client{}, chat.NewClient(config.NewTestConfig()))
 
 	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
 
-	assert.True(t, ec.VerifySeventvRedemption(store.ChannelPointReward{AdditionalOptions: string(marshalled[:])}, helix.EventSubChannelPointsCustomRewardRedemptionEvent{}))
+	redemption := helix.EventSubChannelPointsCustomRewardRedemptionEvent{
+		UserInput: "bad input",
+	}
+
+	assert.False(t, ec.VerifySeventvRedemption(store.ChannelPointReward{AdditionalOptions: string(marshalled[:])}, redemption))
 }
