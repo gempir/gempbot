@@ -2,7 +2,7 @@
 FROM golang:latest
 WORKDIR /go/src/github.com/gempir/gempbot
 COPY . .
-RUN go get ./cmd/server
+RUN go get
 WORKDIR /go/src/github.com/gempir/gempbot
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app main.go
 
