@@ -39,7 +39,7 @@ migrate:
 	go run cmd/migrate/main.go
 
 test:
-	go test ./pkg/...
+	go test ./internal/...
 
 docker: 
 	docker build . -t gempbot
