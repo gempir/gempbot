@@ -31,9 +31,10 @@ export NEXT_PUBLIC_TWITCH_CLIENT_ID
 export SECRET
 export TWITCH_CLIENT_SECRET
 export TWITCH_CLIENT_ID
+export NEWRELIC_LICENSE
 
 build_server:
-	go build
+	go run main.go
 
 migrate:
 	go run cmd/migrate/main.go
