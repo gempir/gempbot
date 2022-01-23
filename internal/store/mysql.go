@@ -4,12 +4,19 @@ import (
 	"time"
 
 	"github.com/gempir/gempbot/internal/config"
+	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/go-sql-driver/mysql"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+type Store interface {
+	IsEmoteBlocked(channelUserID string, emoteID string, rewardType dto.RewardType) bool
+	GetEmoteAdded(channelUserID string, rewardType dto.RewardType, slots int) []EmoteAdd
+	CreateEmoteAdd(channelUserId string, rewardType dto.RewardType, emoteID string, changeType dto.EmoteChangeType)
+}
 
 type Database struct {
 	Client *gorm.DB

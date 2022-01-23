@@ -1,6 +1,6 @@
 package config
 
-func NewTestConfig() *Config {
+func NewMockConfig() *Config {
 	return &Config{
 		ClientID:          "clientId",
 		ClientSecret:      "clientSecret",

@@ -9,12 +9,12 @@ import (
 
 type EmoteChief struct {
 	cfg         *config.Config
-	db          *store.Database
+	db          store.Store
 	helixClient *helixclient.Client
 	chatClient  *chat.ChatClient
 }
 
-func NewEmoteChief(cfg *config.Config, db *store.Database, helixClient *helixclient.Client, chatClient *chat.ChatClient) *EmoteChief {
+func NewEmoteChief(cfg *config.Config, db store.Store, helixClient *helixclient.Client, chatClient *chat.ChatClient) *EmoteChief {
 	return &EmoteChief{
 		cfg:         cfg,
 		db:          db,
