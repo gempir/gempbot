@@ -14,7 +14,6 @@ import (
 	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
-	"github.com/gempir/gempbot/internal/utils"
 	"github.com/nicklaw5/helix/v2"
 )
 
@@ -53,35 +52,27 @@ type SevenTvUserResponse struct {
 	} `json:"data"`
 }
 
-func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (newEmote *sevenTvEmote, emoteAddType dto.EmoteChangeType, userData *SevenTvUserResponse, removalTargetEmoteId string, err error) {
+func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (emoteAddType dto.EmoteChangeType, removalTargetEmoteId string, err error) {
 	if ec.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_SEVENTV) {
-		return nil, dto.EMOTE_ADD_ADD, nil, "", errors.New("Emote is blocked")
+		return dto.EMOTE_ADD_ADD, "", errors.New("Emote is blocked")
 	}
 
-	newEmote, err = getSevenTvEmote(emoteId)
+	nextEmote, err := ec.sevenTvClient.GetEmote(emoteId)
 	if err != nil {
 		return
 	}
 
-	if utils.BitField.HasBits(int64(newEmote.Visibility), int64(EmoteVisibilityPrivate)) ||
-		utils.BitField.HasBits(int64(newEmote.Visibility), int64(EmoteVisibilityUnlisted)) {
-		err = fmt.Errorf("7tv emote %s has incorrect visibility", newEmote.Name)
-		return
-	}
-
-	err = ec.QuerySevenTvGQL(SEVEN_TV_USER_DATA_QUERY, map[string]interface{}{"id": channel}, &userData)
+	user, err := ec.sevenTvClient.GetUser(channelUserID)
 	if err != nil {
 		return
 	}
 
-	emotes := userData.Data.User.Emotes
-	emotesLimit := userData.Data.User.EmoteSlots
-	for _, emote := range emotes {
-		if emote.Name == newEmote.Name {
-			return nil, dto.EMOTE_ADD_ADD, nil, "", fmt.Errorf("Emote code \"%s\" already added", newEmote.Name)
+	for _, emote := range user.Emotes {
+		if emote.Code == nextEmote.Code {
+			return dto.EMOTE_ADD_ADD, "", fmt.Errorf("Emote code \"%s\" already added", newEmote.Name)
 		}
 	}
-	log.Infof("Current 7tv emotes: %d/%d", len(userData.Data.User.Emotes), userData.Data.User.EmoteSlots)
+	log.Infof("Current 7tv emotes: %d/%d", len(user.Emotes), user.EmoteSlots)
 
 	emotesAdded := ec.db.GetEmoteAdded(channelUserID, dto.REWARD_SEVENTV, slots)
 	log.Infof("Total Previous emotes %d in %s", len(emotesAdded), channelUserID)
@@ -89,7 +80,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	if len(emotesAdded) > 0 {
 		oldestEmote := emotesAdded[len(emotesAdded)-1]
 		if !oldestEmote.Blocked {
-			for _, sharedEmote := range emotes {
+			for _, sharedEmote := range user.Emotes {
 				if oldestEmote.EmoteID == sharedEmote.ID {
 					removalTargetEmoteId = oldestEmote.EmoteID
 					log.Infof("Found removal target %s in %s", removalTargetEmoteId, channelUserID)
@@ -101,14 +92,14 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	}
 
 	emoteAddType = dto.EMOTE_ADD_REMOVED_PREVIOUS
-	if removalTargetEmoteId == "" && len(emotes) >= emotesLimit {
-		if len(emotes) == 0 {
-			return nil, dto.EMOTE_ADD_ADD, nil, "", errors.New("emotes limit reached and can't find amount of emotes added to choose random")
+	if removalTargetEmoteId == "" && len(user.Emotes) >= user.EmoteSlots {
+		if len(user.Emotes) == 0 {
+			return dto.EMOTE_ADD_ADD, "", errors.New("emotes limit reached and can't find amount of emotes added to choose random")
 		}
 
 		emoteAddType = dto.EMOTE_ADD_REMOVED_RANDOM
 		log.Infof("Didn't find previous emote history of %d emotes and limit reached, choosing random in %s", slots, channelUserID)
-		removalTargetEmoteId = emotes[rand.Intn(len(emotes))].ID
+		removalTargetEmoteId = user.Emotes[rand.Intn(len(user.Emotes))].ID
 	}
 
 	return
@@ -139,59 +130,30 @@ func (ec *EmoteChief) RemoveSevenTvEmote(channelUserID, emoteID string) (*sevenT
 	return getSevenTvEmote(emoteID)
 }
 
-func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmote *sevenTvEmote, removedEmote *sevenTvEmote, err error) {
-	newEmote, emoteAddType, userData, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
+func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) error {
+	emoteAddType, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
 	// do we need to remove the emote?
 	if removalTargetEmoteId != "" {
-		var empty struct{}
-		err := ec.QuerySevenTvGQL(
-			SEVEN_TV_DELETE_EMOTE_QUERY,
-			map[string]interface{}{
-				"ch": userData.Data.User.ID,
-				"re": fmt.Sprintf("removed for redemption by %s, new emote: %s", redeemedByUsername, newEmote.Name),
-				"em": removalTargetEmoteId,
-			}, &empty,
-		)
+		err := ec.sevenTvClient.RemoveEmote(channelUserID, removalTargetEmoteId)
 		if err != nil {
-			return nil, nil, err
+			return err
 		}
 
 		ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, removalTargetEmoteId, emoteAddType)
 	}
 
-	removedEmoteName := removalTargetEmoteId
-	if removalTargetEmoteId != "" {
-		var sevenTvErr error
-		removedEmote, sevenTvErr = getSevenTvEmote(removalTargetEmoteId)
-		if sevenTvErr == nil {
-			removedEmoteName = removedEmote.Name
-		}
-		if sevenTvErr != nil {
-			log.Errorf("Failed to fetch removed Emote %s", sevenTvErr.Error())
-		}
-	}
-
-	// add the emote
-	var empty struct{}
-	err = ec.QuerySevenTvGQL(
-		SEVEN_TV_ADD_EMOTE_QUERY,
-		map[string]interface{}{
-			"ch": userData.Data.User.ID,
-			"re": fmt.Sprintf("redemption by %s, replaced: %s", redeemedByUsername, removedEmoteName),
-			"em": newEmote.ID,
-		}, &empty,
-	)
+	err = ec.sevenTvClient.AddEmote(channelUserID, emoteId)
 	if err != nil {
-		return
+		return err
 	}
 
 	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteId, dto.EMOTE_ADD_ADD)
 
-	return newEmote, removedEmote, nil
+	return nil
 }
 
 const SEVEN_TV_ADD_EMOTE_QUERY = `mutation AddChannelEmote($ch: String!, $em: String!, $re: String!) {addChannelEmote(channel_id: $ch, emote_id: $em, reason: $re) {emote_ids}}`
