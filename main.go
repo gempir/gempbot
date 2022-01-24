@@ -8,6 +8,7 @@ import (
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/emotechief"
+	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/eventsub"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
@@ -31,7 +32,9 @@ func main() {
 	bot := bot.NewBot(cfg, db, helixClient)
 	go bot.Connect()
 
-	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, bot.ChatClient)
+	seventvClient := emoteservice.NewSevenTvClient(cfg.SevenTvToken)
+
+	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, bot.ChatClient, seventvClient)
 	eventsubManager := eventsub.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
 	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)

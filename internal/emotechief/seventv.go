@@ -1,15 +1,11 @@
 package emotechief
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
-	"net/http"
 	"regexp"
 
-	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/log"
@@ -18,39 +14,6 @@ import (
 )
 
 var sevenTvRegex = regexp.MustCompile(`https?:\/\/7tv.app\/emotes\/(\w*)`)
-
-const sevenTvApiBaseUrl = "https://api.7tv.app/v2"
-
-const (
-	EmoteVisibilityPrivate int32 = 1 << iota
-	EmoteVisibilityGlobal
-	EmoteVisibilityUnlisted
-	EmoteVisibilityOverrideBTTV
-	EmoteVisibilityOverrideFFZ
-	EmoteVisibilityOverrideTwitchGlobal
-	EmoteVisibilityOverrideTwitchSubscriber
-	EmoteVisibilityZeroWidth
-	EmoteVisibilityPermanentlyUnlisted
-
-	EmoteVisibilityAll int32 = (1 << iota) - 1
-)
-
-type SevenTvUserResponse struct {
-	Data struct {
-		User struct {
-			ID     string `json:"id"`
-			Emotes []struct {
-				ID         string `json:"id"`
-				Name       string `json:"name"`
-				Status     int    `json:"status"`
-				Visibility int    `json:"visibility"`
-				Width      []int  `json:"width"`
-				Height     []int  `json:"height"`
-			} `json:"emotes"`
-			EmoteSlots int `json:"emote_slots"`
-		} `json:"user"`
-	} `json:"data"`
-}
 
 func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (emoteAddType dto.EmoteChangeType, removalTargetEmoteId string, err error) {
 	if ec.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_SEVENTV) {
@@ -69,7 +32,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 
 	for _, emote := range user.Emotes {
 		if emote.Code == nextEmote.Code {
-			return dto.EMOTE_ADD_ADD, "", fmt.Errorf("Emote code \"%s\" already added", newEmote.Name)
+			return dto.EMOTE_ADD_ADD, "", fmt.Errorf("Emote code \"%s\" already added", nextEmote.Code)
 		}
 	}
 	log.Infof("Current 7tv emotes: %d/%d", len(user.Emotes), user.EmoteSlots)
@@ -105,31 +68,6 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	return
 }
 
-func (ec *EmoteChief) RemoveSevenTvEmote(channelUserID, emoteID string) (*sevenTvEmote, error) {
-	var userData SevenTvUserResponse
-	err := ec.QuerySevenTvGQL(SEVEN_TV_USER_DATA_QUERY, map[string]interface{}{"id": channelUserID}, &userData)
-	if err != nil {
-		return nil, err
-	}
-
-	var empty struct{}
-	err = ec.QuerySevenTvGQL(
-		SEVEN_TV_DELETE_EMOTE_QUERY,
-		map[string]interface{}{
-			"ch": userData.Data.User.ID,
-			"re": "blocked emote",
-			"em": emoteID,
-		}, &empty,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteID, dto.EMOTE_ADD_REMOVED_BLOCKED)
-
-	return getSevenTvEmote(emoteID)
-}
-
 func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) error {
 	emoteAddType, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
@@ -152,55 +90,6 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 	}
 
 	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteId, dto.EMOTE_ADD_ADD)
-
-	return nil
-}
-
-const SEVEN_TV_ADD_EMOTE_QUERY = `mutation AddChannelEmote($ch: String!, $em: String!, $re: String!) {addChannelEmote(channel_id: $ch, emote_id: $em, reason: $re) {emote_ids}}`
-const SEVEN_TV_DELETE_EMOTE_QUERY = `mutation RemoveChannelEmote($ch: String!, $em: String!, $re: String!) {removeChannelEmote(channel_id: $ch, emote_id: $em, reason: $re) {emote_ids}}`
-const SEVEN_TV_USER_DATA_QUERY = `
-query GetUser($id: String!) {
-	user(id: $id) {
-	  ...FullUser
-	}
-  }
-  
-fragment FullUser on User {
-	id
-	emotes {
-		id
-		name
-		status
-		visibility
-		width
-		height
-	}
-	emote_slots
-}
-`
-
-type GqlQuery struct {
-	Query     string                 `json:"query"`
-	Variables map[string]interface{} `json:"variables"`
-}
-
-const SEVEN_TV_API = "https://api.7tv.app/v2/gql"
-
-func (ec *EmoteChief) QuerySevenTvGQL(query string, variables map[string]interface{}, response interface{}) error {
-	gqlQuery := GqlQuery{Query: query, Variables: variables}
-
-	err := requests.
-		URL(SEVEN_TV_API).
-		BodyJSON(gqlQuery).
-		Bearer(ec.cfg.SevenTvToken).
-		ToJSON(&response).
-		Fetch(context.Background())
-	if err != nil {
-		log.Infof("7tv query '%s' with '%v' resp: '%v'", query, variables, response)
-		return err
-	}
-
-	log.Infof("7tv query '%s' with '%v' resp: '%v'", query, variables, response)
 
 	return nil
 }
@@ -269,56 +158,4 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 			return
 		}
 	}
-}
-
-type sevenTvEmote struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Owner struct {
-		ID          string `json:"id"`
-		TwitchID    string `json:"twitch_id"`
-		Login       string `json:"login"`
-		DisplayName string `json:"display_name"`
-		Role        struct {
-			ID       string `json:"id"`
-			Name     string `json:"name"`
-			Position int    `json:"position"`
-			Color    int    `json:"color"`
-			Allowed  int    `json:"allowed"`
-			Denied   int    `json:"denied"`
-			Default  bool   `json:"default"`
-		} `json:"role"`
-	} `json:"owner"`
-	Visibility       int           `json:"visibility"`
-	VisibilitySimple []interface{} `json:"visibility_simple"`
-	Mime             string        `json:"mime"`
-	Status           int           `json:"status"`
-	Tags             []interface{} `json:"tags"`
-	Width            []int         `json:"width"`
-	Height           []int         `json:"height"`
-	Urls             [][]string    `json:"urls"`
-}
-
-func getSevenTvEmote(emoteID string) (*sevenTvEmote, error) {
-	if emoteID == "" {
-		return nil, nil
-	}
-
-	response, err := http.Get(sevenTvApiBaseUrl + "/emotes/" + emoteID)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	if response.StatusCode <= 100 || response.StatusCode >= 400 {
-		return nil, fmt.Errorf("Bad 7tv response: %d", response.StatusCode)
-	}
-
-	var emoteResponse sevenTvEmote
-	err = json.NewDecoder(response.Body).Decode(&emoteResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &emoteResponse, nil
 }
