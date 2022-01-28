@@ -68,7 +68,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	return
 }
 
-func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmoteId string, removedEmoteID string, err error) {
+func (ec *EmoteChief) setSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmoteId string, removedEmoteID string, err error) {
 	emoteAddType, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
 		return "", "", err
@@ -129,7 +129,7 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 
 	emoteID, err := GetSevenTvEmoteId(redemption.UserInput)
 	if err == nil {
-		added, removed, settingErr := ec.SetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
+		added, removed, settingErr := ec.setSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
 		addedEmote, err := ec.sevenTvClient.GetEmote(added)
 		if err != nil {
 			log.Error(err)

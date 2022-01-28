@@ -1,20 +1,24 @@
 package emoteservice
 
-type TestingClient struct {
+type MockApiClient struct {
 }
 
-func (c *TestingClient) GetEmote(emoteID string) (Emote, error) {
+func NewMockApiClient() *MockApiClient {
+	return &MockApiClient{}
+}
+
+func (c *MockApiClient) GetEmote(emoteID string) (Emote, error) {
 	return Emote{}, nil
 }
 
-func (c *TestingClient) RemoveEmote(channelID string, emoteID string) error {
+func (c *MockApiClient) RemoveEmote(channelID string, emoteID string) error {
 	return nil
 }
 
-func (c *TestingClient) AddEmote(channelID, emoteID string) error {
+func (c *MockApiClient) AddEmote(channelID, emoteID string) error {
 	return nil
 }
 
-func (c *TestingClient) GetUser(channelID string) (User, error) {
+func (c *MockApiClient) GetUser(channelID string) (User, error) {
 	return User{EmoteSlots: 100}, nil
 }
