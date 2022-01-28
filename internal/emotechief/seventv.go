@@ -68,17 +68,17 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	return
 }
 
-func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) error {
+func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmoteId string, removedEmoteID string, err error) {
 	emoteAddType, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	// do we need to remove the emote?
 	if removalTargetEmoteId != "" {
 		err := ec.sevenTvClient.RemoveEmote(channelUserID, removalTargetEmoteId)
 		if err != nil {
-			return err
+			return "", "", err
 		}
 
 		ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, removalTargetEmoteId, emoteAddType)
@@ -86,12 +86,12 @@ func (ec *EmoteChief) SetSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 
 	err = ec.sevenTvClient.AddEmote(channelUserID, emoteId)
 	if err != nil {
-		return err
+		return "", removalTargetEmoteId, err
 	}
 
 	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteId, dto.EMOTE_ADD_ADD)
 
-	return nil
+	return emoteId, removalTargetEmoteId, nil
 }
 
 func GetSevenTvEmoteId(message string) (string, error) {
@@ -109,7 +109,7 @@ func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, r
 
 	emoteID, err := GetSevenTvEmoteId(redemption.UserInput)
 	if err == nil {
-		_, _, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
+		_, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: %s", redemption.UserName, err.Error()))
@@ -129,22 +129,31 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 
 	emoteID, err := GetSevenTvEmoteId(redemption.UserInput)
 	if err == nil {
-		emoteAdded, emoteRemoved, err := ec.SetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
+		added, removed, settingErr := ec.SetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
+		addedEmote, err := ec.sevenTvClient.GetEmote(added)
 		if err != nil {
+			log.Error(err)
+		}
+		removedEmote, err := ec.sevenTvClient.GetEmote(removed)
+		if err != nil {
+			log.Error(err)
+		}
+
+		if settingErr != nil {
 			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: %s", redemption.UserName, err.Error()))
-		} else if emoteAdded != nil && emoteRemoved != nil {
+			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s %s", redemption.UserName, err.Error()))
+		} else if addedEmote.Code != "" && removedEmote.Code != "" {
 			success = true
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new 7tv emote %s redeemed by @%s removed: %s", emoteAdded.Name, redemption.UserName, emoteRemoved.Name))
-		} else if emoteAdded != nil {
+			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new 7tv emote %s redeemed by @%s removed %s", addedEmote.Code, redemption.UserName, removedEmote.Code))
+		} else if addedEmote.Code != "" {
 			success = true
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new 7tv emote %s redeemed by @%s", emoteAdded.Name, redemption.UserName))
+			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new 7tv emote %s redeemed by @%s", addedEmote.Code, redemption.UserName))
 		} else {
 			success = true
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new 7tv emote [unknown] redeemed by @%s", redemption.UserName))
 		}
 	} else {
-		ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s error: %s", redemption.UserName, err.Error()))
+		ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s %s", redemption.UserName, err.Error()))
 	}
 
 	if redemption.UserID == dto.GEMPIR_USER_ID {

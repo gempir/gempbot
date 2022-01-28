@@ -23,6 +23,10 @@ type Database struct {
 }
 
 func NewDatabase(cfg *config.Config) *Database {
+	if cfg.DbHost == "" {
+		panic("No database host specified")
+	}
+
 	mysqlConfig := mysql.Config{
 		User:                 cfg.DbUsername,
 		Passwd:               cfg.DbPassword,

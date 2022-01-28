@@ -39,7 +39,7 @@ func main() {
 	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager)
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager, seventvClient)
 
 	nrapp, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("gempbot"),
