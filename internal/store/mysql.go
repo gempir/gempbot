@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"time"
 
 	"github.com/gempir/gempbot/internal/config"
@@ -16,6 +17,11 @@ type Store interface {
 	IsEmoteBlocked(channelUserID string, emoteID string, rewardType dto.RewardType) bool
 	GetEmoteAdded(channelUserID string, rewardType dto.RewardType, slots int) []EmoteAdd
 	CreateEmoteAdd(channelUserId string, rewardType dto.RewardType, emoteID string, changeType dto.EmoteChangeType)
+	GetUserAccessToken(userID string) (UserAccessToken, error)
+	GetAppAccessToken() (AppAccessToken, error)
+	SaveAppAccessToken(ctx context.Context, accessToken string, refreshToken string, scopes string, expiresIn int) error
+	SaveUserAccessToken(ctx context.Context, ownerId string, accessToken string, refreshToken string, scopes string) error
+	GetAllUserAccessToken() []UserAccessToken
 }
 
 type Database struct {

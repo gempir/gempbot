@@ -50,7 +50,8 @@ func TestCanNotVerifySevenTvEmoteRedemption(t *testing.T) {
 }
 
 func TestCanVerifySevenTvEmoteRedemption(t *testing.T) {
-	ec := emotechief.NewEmoteChief(config.NewMockConfig(), store.NewMockStore(), &helixclient.Client{}, chat.NewClient(config.NewMockConfig()), &emoteservice.TestingClient{})
+	cfg := config.NewMockConfig()
+	ec := emotechief.NewEmoteChief(cfg, store.NewMockStore(), &helixclient.Client{}, chat.NewClient(cfg), emoteservice.NewMockApiClient())
 
 	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
@@ -60,4 +61,20 @@ func TestCanVerifySevenTvEmoteRedemption(t *testing.T) {
 	}
 
 	assert.True(t, ec.VerifySeventvRedemption(store.ChannelPointReward{AdditionalOptions: string(marshalled[:])}, redemption))
+}
+
+func TestCanHandleSevenTvEmoteRedemption(t *testing.T) {
+	cfg := config.NewMockConfig()
+	db := store.NewMockStore()
+
+	ec := emotechief.NewEmoteChief(cfg, db, helixclient.NewClient(cfg, db), chat.NewClient(cfg), emoteservice.NewMockApiClient())
+
+	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
+	marshalled, _ := json.Marshal(opts)
+
+	redemption := helix.EventSubChannelPointsCustomRewardRedemptionEvent{
+		UserInput: "my emote :) https://7tv.app/emotes/60aed4fe423a803ccae373d3",
+	}
+
+	ec.HandleSeventvRedemption(store.ChannelPointReward{AdditionalOptions: string(marshalled[:])}, redemption, true)
 }

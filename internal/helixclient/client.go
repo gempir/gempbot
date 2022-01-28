@@ -20,7 +20,7 @@ type Client struct {
 	eventSubSecret string
 	Client         *helix.Client
 	AppAccessToken helix.AccessCredentials
-	db             *store.Database
+	db             store.Store
 	httpClient     *http.Client
 }
 
@@ -41,7 +41,7 @@ const TWITCH_API = "https://api.twitch.tv/"
 var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions moderation:read"}
 
 // NewClient Create helix client
-func NewClient(cfg *config.Config, db *store.Database) *Client {
+func NewClient(cfg *config.Config, db store.Store) *Client {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
@@ -99,7 +99,7 @@ func (c *Client) SetAppAccessToken(ctx context.Context, token helix.AccessCreden
 	}
 }
 
-func setOrUpdateAccessToken(client *helix.Client, db *store.Database) store.AppAccessToken {
+func setOrUpdateAccessToken(client *helix.Client, db store.Store) store.AppAccessToken {
 	token, err := db.GetAppAccessToken()
 	if err != nil || time.Since(token.UpdatedAt) > 24*time.Hour {
 		log.Info("App AccessToken not found or older than 24hours")
