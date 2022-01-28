@@ -36,7 +36,4 @@ func TestCanConvertMapToSlice(t *testing.T) {
 	if len(a) != 4 {
 		t.Error("Expected to find 4 elements in slice")
 	}
-	if a[3] != "d" {
-		t.Error("Expected to find 'd' in slice")
-	}
 }

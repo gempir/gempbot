@@ -8,6 +8,7 @@ import (
 	"github.com/gempir/gempbot/internal/chat"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/emotechief"
+	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/nicklaw5/helix/v2"
@@ -36,7 +37,7 @@ func TestCanGetSevenTvEmoteFromMessage(t *testing.T) {
 }
 
 func TestCanNotVerifySevenTvEmoteRedemption(t *testing.T) {
-	ec := emotechief.NewEmoteChief(config.NewTestConfig(), &store.Database{}, &helixclient.Client{}, chat.NewClient(config.NewTestConfig()))
+	ec := emotechief.NewEmoteChief(config.NewMockConfig(), &store.Database{}, &helixclient.Client{}, chat.NewClient(config.NewMockConfig()), emoteservice.NewSevenTvClient("token"))
 
 	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
@@ -46,4 +47,17 @@ func TestCanNotVerifySevenTvEmoteRedemption(t *testing.T) {
 	}
 
 	assert.False(t, ec.VerifySeventvRedemption(store.ChannelPointReward{AdditionalOptions: string(marshalled[:])}, redemption))
+}
+
+func TestCanVerifySevenTvEmoteRedemption(t *testing.T) {
+	ec := emotechief.NewEmoteChief(config.NewMockConfig(), store.NewMockStore(), &helixclient.Client{}, chat.NewClient(config.NewMockConfig()), &emoteservice.TestingClient{})
+
+	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
+	marshalled, _ := json.Marshal(opts)
+
+	redemption := helix.EventSubChannelPointsCustomRewardRedemptionEvent{
+		UserInput: "my emote :) https://7tv.app/emotes/60aed4fe423a803ccae373d3",
+	}
+
+	assert.True(t, ec.VerifySeventvRedemption(store.ChannelPointReward{AdditionalOptions: string(marshalled[:])}, redemption))
 }
