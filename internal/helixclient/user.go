@@ -59,7 +59,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 				return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
 			}
 
-			log.Infof("[helix] %d GetUsersByUserIds %v %v %v", resp.StatusCode, resp.Error, resp.ErrorMessage, chunk)
+			log.Infof("[helix] %d GetUsersByUserIds %# v  %# v  %# v ", resp.StatusCode, resp.Error, resp.ErrorMessage, chunk)
 
 			for _, user := range resp.Data.Users {
 				data := &UserData{
@@ -121,7 +121,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 				return map[string]UserData{}, err
 			}
 
-			log.Infof("[helix] %d GetUsersByUsernames %v %v %v", resp.StatusCode, resp.Error, resp.ErrorMessage, chunk)
+			log.Infof("[helix] %d GetUsersByUsernames %# v  %# v  %# v ", resp.StatusCode, resp.Error, resp.ErrorMessage, chunk)
 			if resp.StatusCode > http.StatusMultipleChoices {
 				return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
 			}
