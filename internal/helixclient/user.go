@@ -103,33 +103,37 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	}
 
 	if len(filteredUsernames) > 0 {
-		resp, err := c.Client.GetUsers(&helix.UsersParams{
-			Logins: filteredUsernames,
-		})
-		if err != nil {
-			return map[string]UserData{}, err
-		}
+		chunks := chunkBy(filteredUsernames, 100)
 
-		log.Infof("[helix] %d GetUsersByUsernames %v", resp.StatusCode, filteredUsernames)
-		if resp.StatusCode > http.StatusMultipleChoices {
-			return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
-		}
-
-		for _, user := range resp.Data.Users {
-			data := &UserData{
-				ID:              user.ID,
-				Login:           user.Login,
-				DisplayName:     user.Login,
-				Type:            user.Type,
-				BroadcasterType: user.BroadcasterType,
-				Description:     user.Description,
-				ProfileImageURL: user.ProfileImageURL,
-				OfflineImageURL: user.OfflineImageURL,
-				ViewCount:       user.ViewCount,
-				Email:           user.Email,
+		for _, chunk := range chunks {
+			resp, err := c.Client.GetUsers(&helix.UsersParams{
+				Logins: chunk,
+			})
+			if err != nil {
+				return map[string]UserData{}, err
 			}
-			userCacheByID[user.ID] = data
-			userCacheByUsername[user.Login] = data
+
+			log.Infof("[helix] %d GetUsersByUsernames %v %v %v", resp.StatusCode, chunk, resp.Error, resp.ErrorMessage)
+			if resp.StatusCode > http.StatusMultipleChoices {
+				return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
+			}
+
+			for _, user := range resp.Data.Users {
+				data := &UserData{
+					ID:              user.ID,
+					Login:           user.Login,
+					DisplayName:     user.Login,
+					Type:            user.Type,
+					BroadcasterType: user.BroadcasterType,
+					Description:     user.Description,
+					ProfileImageURL: user.ProfileImageURL,
+					OfflineImageURL: user.OfflineImageURL,
+					ViewCount:       user.ViewCount,
+					Email:           user.Email,
+				}
+				userCacheByID[user.ID] = data
+				userCacheByUsername[user.Login] = data
+			}
 		}
 	}
 
