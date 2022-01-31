@@ -37,8 +37,12 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 
 	for _, id := range userIDs {
 		if _, ok := userCacheByID[id]; !ok {
-			filteredUserIDs = append(filteredUserIDs, strings.TrimSpace(id))
+			filteredUserIDs = append(filteredUserIDs, id)
 		}
+	}
+
+	for _, id := range filteredUserIDs {
+		log.Infof("id: '%s'", id)
 	}
 
 	if len(filteredUserIDs) > 0 {
@@ -98,7 +102,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 
 	for _, username := range usernames {
 		if _, ok := userCacheByUsername[strings.ToLower(username)]; !ok {
-			filteredUsernames = append(filteredUsernames, strings.ToLower(strings.TrimSpace(username)))
+			filteredUsernames = append(filteredUsernames, strings.ToLower(username))
 		}
 	}
 
