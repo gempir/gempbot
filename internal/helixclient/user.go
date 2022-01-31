@@ -42,7 +42,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 	}
 
 	if len(filteredUserIDs) > 0 {
-		chunks := chunkBy(filteredUserIDs, 100)
+		chunks := chunkBy(filteredUserIDs, 50)
 
 		for _, chunk := range chunks {
 			resp, err := c.Client.GetUsers(&helix.UsersParams{
@@ -55,7 +55,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 				return map[string]UserData{}, fmt.Errorf("bad helix response: %v", resp.ErrorMessage)
 			}
 
-			log.Infof("%d GetUsersByUserIds %v", resp.StatusCode, chunk)
+			log.Infof("[helix] %d GetUsersByUserIds %v %v %v", resp.StatusCode, chunk, resp.Error, resp.ErrorMessage)
 
 			for _, user := range resp.Data.Users {
 				data := &UserData{
@@ -103,7 +103,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	}
 
 	if len(filteredUsernames) > 0 {
-		chunks := chunkBy(filteredUsernames, 100)
+		chunks := chunkBy(filteredUsernames, 50)
 
 		for _, chunk := range chunks {
 			resp, err := c.Client.GetUsers(&helix.UsersParams{
