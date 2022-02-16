@@ -146,6 +146,7 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 					}
 				} else {
 					log.Infof("[%s] Bttv Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
+					esm.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("A new Bttv emote is waiting for approval, redeemed by @%s", redemption.UserName))
 					return
 				}
 			}
@@ -162,6 +163,7 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 					}
 				} else {
 					log.Infof("[%s] 7tv Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
+					esm.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("A new 7tv emote is waiting for approval, redeemed by @%s", redemption.UserName))
 					return
 				}
 			}
