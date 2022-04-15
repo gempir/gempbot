@@ -1,7 +1,6 @@
 package store
 
 import (
-	"github.com/gempir/gempbot/internal/dto"
 	"gorm.io/gorm/clause"
 )
 
