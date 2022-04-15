@@ -31,11 +31,7 @@ func (db *Database) GetChannelPermissions(channelID string) []Permission {
 func (db *Database) GetUserPermissions(userID string) []Permission {
 	var permissions []Permission
 
-	if userID == dto.GEMPIR_USER_ID {
-		db.Client.Distinct("channel_twitch_id").Find(&permissions)
-	} else {
-		db.Client.Where("twitch_id = ?", userID).Find(&permissions)
-	}
+	db.Client.Where("twitch_id = ?", userID).Find(&permissions)
 
 	return permissions
 }
