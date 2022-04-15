@@ -71,7 +71,9 @@ func (u *UserAdmin) GetUserConfig(userID string) UserConfig {
 	}
 
 	for _, perm := range u.db.GetUserPermissions(userID) {
-		uCfg.Protected.EditorFor = append(uCfg.Protected.EditorFor, perm.ChannelTwitchId)
+		if perm.Editor {
+			uCfg.Protected.EditorFor = append(uCfg.Protected.EditorFor, perm.ChannelTwitchId)
+		}
 	}
 
 	return uCfg
