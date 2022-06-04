@@ -62,6 +62,7 @@ export function Bot() {
                             <li>!prediction cancel</li>
                             <li className="mt-2">!outcome 1</li>
                             <li>!outcome 2</li>
+                            <li>!outcome 10</li>
                             <li>!outcome yabbe</li>
                         </ul>
                     </div>
