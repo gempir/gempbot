@@ -53,7 +53,7 @@ export function Bot() {
                     <h3 className="font-bold text-xl">Prediction Commands</h3>
                     <div className="p-2 text-gray-200 mx-0 px-0">
                         Commands to manage predictions.<br />
-                        <strong>Default:</strong> <span className="font-mono">1;yes;no</span>
+                        <strong>Default:</strong> <span className="font-mono">1m;yes;no</span>
                         <ul className="list-disc pl-6 font-mono mt-2">
                             <li>!prediction Will she win</li>
                             <li>!prediction Will she win;maybe</li>
