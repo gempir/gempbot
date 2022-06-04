@@ -53,14 +53,15 @@ export function Bot() {
                     <h3 className="font-bold text-xl">Prediction Commands</h3>
                     <div className="p-2 text-gray-200 mx-0 px-0">
                         Commands to manage predictions.<br />
-                        <strong>Default:</strong> <span className="font-mono">yes;no;1m</span>
+                        <strong>Default:</strong> <span className="font-mono">1;yes;no</span>
                         <ul className="list-disc pl-6 font-mono mt-2">
                             <li>!prediction Will she win</li>
                             <li>!prediction Will she win;maybe</li>
-                            <li>!prediction Will she win this game?;yes;no;1m</li>
+                            <li>!prediction Who will win this game?;5m;NymN;Yabbe;Zoil;Pokimane;gempir;Forsen;xQc;pajlada</li>
                             <li className="mt-2">!prediction lock</li>
                             <li>!prediction cancel</li>
                             <li className="mt-2">!outcome 1</li>
+                            <li className="mt-2">!outcome yabbe</li>
                             <li>!outcome 2</li>
                         </ul>
                     </div>

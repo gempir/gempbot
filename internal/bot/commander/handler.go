@@ -98,16 +98,10 @@ func (h *Handler) setOutcomeForPrediction(payload dto.CommandPayload) {
 	}
 	prediction := resp.Data.Predictions[0]
 
-	for _, outcome := range prediction.Outcomes {
-		if payload.Query == "1" || payload.Query == dto.Outcome_First || payload.Query == "first" {
-			if outcome.Color == dto.Outcome_First || outcome.Color == dto.Outcome_First_Alt {
-				winningOutcome = outcome
-			}
-		}
-		if payload.Query == "2" || payload.Query == dto.Outcome_Second || payload.Query == "red" || payload.Query == "second" {
-			if outcome.Color == dto.Outcome_Second || outcome.Color == dto.Outcome_Second_Alt {
-				winningOutcome = outcome
-			}
+	for index, outcome := range prediction.Outcomes {
+		if strings.EqualFold(outcome.Title, payload.Query) || fmt.Sprintf("%d", index+1) == payload.Query {
+			winningOutcome = outcome
+			break
 		}
 	}
 
@@ -133,19 +127,11 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 	}
 
 	title := strings.TrimSpace(split[0])
-	outcome1 := "yes"
-	outcome2 := "no"
 	predictionWindow := 60
 
 	if len(split) >= 2 {
-		outcome1 = strings.TrimSpace(split[1])
-	}
-	if len(split) >= 3 {
-		outcome2 = strings.TrimSpace(split[2])
-	}
-	if len(split) >= 4 {
 		var err error
-		predictionWindow, err = humanize.StringToSeconds(strings.TrimSpace(split[3]))
+		predictionWindow, err = humanize.StringToSeconds(strings.TrimSpace(split[1]))
 		if err != nil {
 			log.Error(err)
 			h.handleError(payload.Msg, errors.New("failed to parse time"))
@@ -153,15 +139,29 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 		}
 	}
 
-	if predictionWindow > 1800 {
-		h.handleError(payload.Msg, errors.New("max 30 minutes"))
-		return
+	outcomes := []helix.PredictionChoiceParam{}
+	if len(split) >= 3 {
+		for _, outcome := range split[2:] {
+			outcomes = append(outcomes, helix.PredictionChoiceParam{
+				Title: outcome,
+			})
+		}
+	}
+	if len(outcomes) == 0 {
+		outcomes = append(outcomes, helix.PredictionChoiceParam{
+			Title: "yes",
+		})
+	}
+	if len(outcomes) == 1 {
+		outcomes = append(outcomes, helix.PredictionChoiceParam{
+			Title: "no",
+		})
 	}
 
 	prediction := &helix.CreatePredictionParams{
 		BroadcasterID:    payload.Msg.RoomID,
 		Title:            title,
-		Outcomes:         []helix.PredictionChoiceParam{{Title: outcome1}, {Title: outcome2}},
+		Outcomes:         outcomes,
 		PredictionWindow: predictionWindow,
 	}
 
