@@ -47,7 +47,7 @@ export function Bot() {
                 <Toggle checked={predictionsAnnouncements} onChange={handlePredictionAnnouncementChange} />
             </div>
         </div>
-        <div className={"bg-gray-800 rounded shadow relative p-4 mt-4 " + (loadingUserConfig ? "animate-pulse pointer-events-none" : "") }>
+        <div className={"bg-gray-800 rounded shadow relative p-4 mt-4 " + (loadingUserConfig ? "animate-pulse pointer-events-none" : "")}>
             <div className="flex items-start justify-between">
                 <div>
                     <h3 className="font-bold text-xl">Prediction Commands</h3>
@@ -61,8 +61,8 @@ export function Bot() {
                             <li className="mt-2">!prediction lock</li>
                             <li>!prediction cancel</li>
                             <li className="mt-2">!outcome 1</li>
-                            <li className="mt-2">!outcome yabbe</li>
                             <li>!outcome 2</li>
+                            <li>!outcome yabbe</li>
                         </ul>
                     </div>
                 </div>
