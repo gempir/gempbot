@@ -67,12 +67,16 @@ func (esm *EventsubManager) HandlePredictionBegin(event []byte) {
 		lockedTime = nil
 	}
 
+	titles := []string{}
+	for _, outcome := range data.Outcomes {
+		titles = append(titles, outcome.Title)
+	}
+
 	esm.chatClient.Say(
 		data.BroadcasterUserLogin,
-		fmt.Sprintf("PogChamp prediction: %s [ %s | %s ] ending in %s",
+		fmt.Sprintf("PogChamp prediction: %s [ %s ] ending in %s",
 			data.Title,
-			data.Outcomes[0].Title,
-			data.Outcomes[1].Title,
+			strings.Join(titles, " | "),
 			humanize.TimeUntil(data.StartedAt.Time, data.LocksAt.Time),
 		),
 	)
