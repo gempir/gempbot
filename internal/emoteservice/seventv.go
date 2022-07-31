@@ -6,6 +6,7 @@ import (
 
 	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/internal/log"
+	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/utils"
 )
 
@@ -13,14 +14,14 @@ const DefaultSevenTvApiBaseUrl = "https://api.7tv.app/v2"
 const DefaultSevenTvGqlBaseUrl = "https://api.7tv.app/v2/gql"
 
 type SevenTvClient struct {
-	apiToken   string
+	store      store.Store
 	apiBaseUrl string
 	gqlBaseUrl string
 }
 
-func NewSevenTvClient(apiToken string) *SevenTvClient {
+func NewSevenTvClient(store store.Store) *SevenTvClient {
 	return &SevenTvClient{
-		apiToken:   apiToken,
+		store:      store,
 		apiBaseUrl: DefaultSevenTvApiBaseUrl,
 		gqlBaseUrl: DefaultSevenTvGqlBaseUrl,
 	}
@@ -120,7 +121,7 @@ func (c *SevenTvClient) QuerySevenTvGQL(query string, variables map[string]inter
 	err := requests.
 		URL(c.gqlBaseUrl).
 		BodyJSON(gqlQuery).
-		Bearer(c.apiToken).
+		Bearer(c.store.GetSevenTvToken(context.Background())).
 		ToJSON(&response).
 		Fetch(context.Background())
 	if err != nil {

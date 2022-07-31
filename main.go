@@ -21,6 +21,7 @@ import (
 func main() {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
+	db.Migrate()
 
 	helixClient := helixclient.NewClient(cfg, db)
 	go helixClient.StartRefreshTokenRoutine()
@@ -31,7 +32,7 @@ func main() {
 	bot := bot.NewBot(cfg, db, helixClient)
 	go bot.Connect()
 
-	seventvClient := emoteservice.NewSevenTvClient(cfg.SevenTvToken)
+	seventvClient := emoteservice.NewSevenTvClient(db)
 
 	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, bot.ChatClient, seventvClient)
 	eventsubManager := eventsub.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)

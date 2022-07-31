@@ -139,9 +139,14 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 			log.Error(err)
 		}
 
-		if settingErr != nil {
-			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, err)
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s %s", redemption.UserName, err.Error()))
+		if settingErr != nil || err != nil {
+			errorToLog := settingErr
+			if errorToLog == nil {
+				errorToLog = err
+			}
+
+			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, errorToLog)
+			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s %s", redemption.UserName, errorToLog.Error()))
 		} else if addedEmote.Code != "" && removedEmote.Code != "" {
 			success = true
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new 7tv emote %s redeemed by @%s removed %s", addedEmote.Code, redemption.UserName, removedEmote.Code))

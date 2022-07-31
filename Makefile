@@ -36,9 +36,6 @@ export NEWRELIC_LICENSE
 build_server:
 	go run main.go
 
-migrate:
-	go run cmd/migrate/main.go
-
 test:
 	go test ./internal/...
 
@@ -49,4 +46,4 @@ run_docker:
 	docker run --env-file=.env -p 3010:3010 gempbot
 
 tunnel:
-	lt --port 3010 --subdomain gempir
+	lt --print-requests --port 3010 --subdomain gempir
