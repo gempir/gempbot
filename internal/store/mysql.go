@@ -22,6 +22,7 @@ type Store interface {
 	SaveAppAccessToken(ctx context.Context, accessToken string, refreshToken string, scopes string, expiresIn int) error
 	SaveUserAccessToken(ctx context.Context, ownerId string, accessToken string, refreshToken string, scopes string) error
 	GetAllUserAccessToken() []UserAccessToken
+	GetSevenTvToken(ctx context.Context) string
 }
 
 type Database struct {
@@ -61,7 +62,7 @@ func NewDatabase(cfg *config.Config) *Database {
 
 func (db *Database) Migrate() {
 	log.Info("Migrating schema")
-	err := db.Client.AutoMigrate(&ChannelPointReward{}, &EventSubSubscription{}, &UserAccessToken{}, &AppAccessToken{}, &EmoteAdd{}, &BotConfig{}, &Permission{}, EventSubMessage{}, EmoteBlock{})
+	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{})
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())
 	}

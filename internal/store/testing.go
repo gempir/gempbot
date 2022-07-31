@@ -52,3 +52,7 @@ func (s *MockStore) GetAllUserAccessToken() []UserAccessToken {
 		{OwnerTwitchID: "31231", AccessToken: "accesstoken", RefreshToken: "refreshtoken", Scopes: "scopes"},
 	}
 }
+
+func (s *MockStore) GetSevenTvToken(ctx context.Context) string {
+	return "7tvApiToken"
+}
