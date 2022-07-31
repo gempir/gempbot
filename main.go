@@ -21,8 +21,6 @@ import (
 func main() {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
-	db.Migrate()
-
 	helixClient := helixclient.NewClient(cfg, db)
 	go helixClient.StartRefreshTokenRoutine()
 

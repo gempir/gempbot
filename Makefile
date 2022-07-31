@@ -36,6 +36,9 @@ export NEWRELIC_LICENSE
 build_server:
 	go run main.go
 
+migrate:
+	go run cmd/migrate/main.go
+
 test:
 	go test ./internal/...
 
