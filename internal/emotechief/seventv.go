@@ -13,7 +13,7 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
-var sevenTvRegex = regexp.MustCompile(`https?:\/\/7tv.app\/emotes\/(\w*)`)
+var sevenTvRegex = regexp.MustCompile(`https?:\/\/(next\.)?7tv.app\/emotes\/(\w*)`)
 
 func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (emoteAddType dto.EmoteChangeType, removalTargetEmoteId string, err error) {
 	if ec.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_SEVENTV) {
