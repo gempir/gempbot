@@ -132,21 +132,16 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 		added, removed, settingErr := ec.setSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
 		addedEmote, err := ec.sevenTvClient.GetEmote(added)
 		if err != nil {
-			log.Error(err)
+			log.Error("Error fetching added emote: " + err.Error())
 		}
 		removedEmote, err := ec.sevenTvClient.GetEmote(removed)
 		if err != nil {
-			log.Error(err)
+			log.Error("Error fetching removed emote: " + err.Error())
 		}
 
-		if settingErr != nil || err != nil {
-			errorToLog := settingErr
-			if errorToLog == nil {
-				errorToLog = err
-			}
-
-			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, errorToLog)
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s %s", redemption.UserName, errorToLog.Error()))
+		if settingErr != nil {
+			log.Warnf("7tv error %s %s", redemption.BroadcasterUserLogin, settingErr)
+			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7tv emote from @%s %s", redemption.UserName, settingErr.Error()))
 		} else if addedEmote.Code != "" && removedEmote.Code != "" {
 			success = true
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new 7tv emote %s redeemed by @%s removed %s", addedEmote.Code, redemption.UserName, removedEmote.Code))
