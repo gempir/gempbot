@@ -34,7 +34,7 @@ export function UserPermissions({ userConfig, setUserConfig, errorMessage, loadi
                 continue
             }
 
-            perms[perm.User] = { Editor: perm.Editor, Prediction: perm.Prediction };
+            perms[perm.User.toLowerCase()] = { Editor: perm.Editor, Prediction: perm.Prediction };
         }
 
         setUserConfig({ ...userConfig, Permissions: perms })
