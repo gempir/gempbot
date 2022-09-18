@@ -312,7 +312,7 @@ type bttvDashboardResponse struct {
 		Live           bool      `json:"live"`
 		Sharing        bool      `json:"sharing"`
 		Approvalstatus string    `json:"approvalStatus"`
-	} `json:"channelEmotes"`
+	} `json:"liveEmotes"`
 	Sharedemotes []struct {
 		ID             string    `json:"id"`
 		Code           string    `json:"code"`
