@@ -129,13 +129,14 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 
 	emoteID, err := GetSevenTvEmoteId(redemption.UserInput)
 	if err == nil {
+		log.Infof("Seen 7tv emote link %s", emoteID)
 		added, removed, settingErr := ec.setSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
 		addedEmote, err := ec.sevenTvClient.GetEmote(added)
-		if err != nil {
+		if err != nil && len(added) > 0 {
 			log.Error("Error fetching added emote: " + err.Error())
 		}
 		removedEmote, err := ec.sevenTvClient.GetEmote(removed)
-		if err != nil {
+		if err != nil && len(removed) > 0 {
 			log.Error("Error fetching removed emote: " + err.Error())
 		}
 
