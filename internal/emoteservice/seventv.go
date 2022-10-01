@@ -2,7 +2,9 @@ package emoteservice
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/internal/log"
@@ -13,18 +15,21 @@ import (
 const DefaultSevenTvApiBaseUrl = "https://api.7tv.app/v2"
 const DefaultSevenTvV3ApiBaseUrl = "https://7tv.io/v3"
 const DefaultSevenTvGqlBaseUrl = "https://api.7tv.app/v2/gql"
+const DefaultSevenTvGqlV3BaseUrl = "https://api.7tv.app/v3/gql"
 
 type SevenTvClient struct {
-	store      store.Store
-	apiBaseUrl string
-	gqlBaseUrl string
+	store        store.Store
+	apiBaseUrl   string
+	gqlBaseUrl   string
+	gqlV3BaseUrl string
 }
 
 func NewSevenTvClient(store store.Store) *SevenTvClient {
 	return &SevenTvClient{
-		store:      store,
-		apiBaseUrl: DefaultSevenTvApiBaseUrl,
-		gqlBaseUrl: DefaultSevenTvGqlBaseUrl,
+		store:        store,
+		apiBaseUrl:   DefaultSevenTvApiBaseUrl,
+		gqlBaseUrl:   DefaultSevenTvGqlBaseUrl,
+		gqlV3BaseUrl: DefaultSevenTvGqlV3BaseUrl,
 	}
 }
 
@@ -56,7 +61,6 @@ type UserV3 struct {
 }
 
 func (c *SevenTvClient) GetUserV3(userID string) (UserV3, error) {
-	// first figure out the bttvUserId for the channel, might cache this later on
 	var userResp UserV3
 	err := requests.
 		URL(DefaultSevenTvV3ApiBaseUrl).
@@ -70,19 +74,18 @@ func (c *SevenTvClient) GetUserV3(userID string) (UserV3, error) {
 	return userResp, nil
 }
 
-func (c *SevenTvClient) GetTwitchConnection(userID string) (string, error) {
-	user, err := c.GetUserV3(userID)
+func (c *SevenTvClient) GetTwitchConnection(twitchUserID string) (ConnectionResponse, error) {
+	var resp ConnectionResponse
+	err := requests.
+		URL(DefaultSevenTvV3ApiBaseUrl).
+		Pathf("/v3/users/twitch/%s", twitchUserID).
+		ToJSON(&resp).
+		Fetch(context.Background())
 	if err != nil {
-		return "", err
+		return ConnectionResponse{}, err
 	}
 
-	for _, connection := range user.Connections {
-		if connection.Platform == "TWITCH" {
-			return connection.Username, nil
-		}
-	}
-
-	return "", fmt.Errorf("no twitch connection found for user %s", userID)
+	return resp, nil
 }
 
 func (c *SevenTvClient) GetEmote(emoteID string) (Emote, error) {
@@ -101,40 +104,90 @@ func (c *SevenTvClient) GetEmote(emoteID string) (Emote, error) {
 	return Emote{Code: emoteData.Name, ID: emoteData.ID}, err
 }
 
+type ChangeEmoteResponse struct {
+	Errors []struct {
+		Message    string   `json:"message"`
+		Path       []string `json:"path"`
+		Extensions struct {
+			Code   int `json:"code"`
+			Fields struct {
+			} `json:"fields"`
+			Message string `json:"message"`
+		} `json:"extensions"`
+	} `json:"errors"`
+	Data struct {
+		EmoteSet interface{} `json:"emoteSet"`
+	} `json:"data"`
+}
+
 func (c *SevenTvClient) RemoveEmote(channelUserID, emoteID string) error {
-	user, err := c.GetUser(channelUserID)
+	connection, err := c.GetTwitchConnection(channelUserID)
 	if err != nil {
-		return err
+		return errors.New("Could not find 7tv twitch connection for user " + err.Error())
 	}
 
-	var empty struct{}
+	var resp ChangeEmoteResponse
 	err = c.QuerySevenTvGQL(
-		`mutation RemoveChannelEmote($ch: String!, $em: String!, $re: String!) {removeChannelEmote(channel_id: $ch, emote_id: $em, reason: $re) {emote_ids}}`,
+		`mutation addEmote($emoteSet: ObjectID!, $emoteId: ObjectID!) {
+			emoteSet(id: $emoteSet) {
+				emotes(id: $emoteId, action: REMOVE) {
+					id
+					name
+				}
+			}
+		}`,
 		map[string]interface{}{
-			"ch": user.ID,
-			"re": "blocked emote",
-			"em": emoteID,
-		}, &empty,
+			"emoteId":  emoteID,
+			"emoteSet": connection.EmoteSet.ID,
+		}, &resp,
+		true,
 	)
+
+	if len(resp.Errors) > 0 {
+		log.Errorf("7tv GQL error: %v", resp)
+		errorMessages := make([]string, 0)
+		for _, err := range resp.Errors {
+			errorMessages = append(errorMessages, err.Message)
+		}
+
+		return errors.New(strings.Join(errorMessages, ", "))
+	}
 
 	return err
 }
 
-func (c *SevenTvClient) AddEmote(channelUserID string, emoteID string) error {
-	user, err := c.GetUser(channelUserID)
+func (c *SevenTvClient) AddEmote(channelUserID, emoteID string) error {
+	connection, err := c.GetTwitchConnection(channelUserID)
 	if err != nil {
-		return err
+		return errors.New("Could not find 7tv twitch connection for user " + err.Error())
 	}
 
-	var empty struct{}
+	var resp ChangeEmoteResponse
 	err = c.QuerySevenTvGQL(
-		`mutation AddChannelEmote($ch: String!, $em: String!, $re: String!) {addChannelEmote(channel_id: $ch, emote_id: $em, reason: $re) {emote_ids}}`,
+		`mutation addEmote($emoteSet: ObjectID!, $emoteId: ObjectID!) {
+			emoteSet(id: $emoteSet) {
+				emotes(id: $emoteId, action: ADD) {
+					id
+					name
+				}
+			}
+		}`,
 		map[string]interface{}{
-			"ch": user.ID,
-			"re": "bot.gempir.com redemption",
-			"em": emoteID,
-		}, &empty,
+			"emoteId":  emoteID,
+			"emoteSet": connection.EmoteSet.ID,
+		}, &resp,
+		true,
 	)
+
+	if len(resp.Errors) > 0 {
+		log.Errorf("7tv GQL error: %v", resp)
+		errorMessages := make([]string, 0)
+		for _, err := range resp.Errors {
+			errorMessages = append(errorMessages, err.Message)
+		}
+
+		return errors.New(strings.Join(errorMessages, ", "))
+	}
 
 	return err
 }
@@ -160,7 +213,7 @@ func (c *SevenTvClient) GetUser(channelID string) (User, error) {
 		}
 		emote_slots
 	}
-	`, map[string]interface{}{"id": channelID}, &userData)
+	`, map[string]interface{}{"id": channelID}, &userData, false)
 	if err != nil {
 		return User{}, err
 	}
@@ -173,11 +226,16 @@ func (c *SevenTvClient) GetUser(channelID string) (User, error) {
 	return User{ID: userData.Data.User.ID, Emotes: emotes, EmoteSlots: userData.Data.User.EmoteSlots}, nil
 }
 
-func (c *SevenTvClient) QuerySevenTvGQL(query string, variables map[string]interface{}, response interface{}) error {
+func (c *SevenTvClient) QuerySevenTvGQL(query string, variables map[string]interface{}, response interface{}, v3 bool) error {
 	gqlQuery := gqlQuery{Query: query, Variables: variables}
 
+	gqlBaseUrl := c.gqlBaseUrl
+	if v3 {
+		gqlBaseUrl = c.gqlV3BaseUrl
+	}
+
 	err := requests.
-		URL(c.gqlBaseUrl).
+		URL(gqlBaseUrl).
 		BodyJSON(gqlQuery).
 		Bearer(c.store.GetSevenTvToken(context.Background())).
 		ToJSON(&response).
