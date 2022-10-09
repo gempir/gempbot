@@ -56,7 +56,5 @@ func (db *Database) GetEmoteHistory(ctx context.Context, ownerTwitchID string, p
 
 	query.Offset((page * pageSize) - pageSize).Limit(pageSize).Order("updated_at desc").Find(&emoteHistory)
 
-	emoteHistory = []EmoteAdd{}
-
 	return emoteHistory
 }
