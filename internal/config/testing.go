@@ -18,6 +18,5 @@ func NewMockConfig() *Config {
 		BttvToken:         "bttvToken",
 		SevenTvToken:      "sevenTvToken",
 		Environment:       "environment",
-		NewrelicLicense:   "newrelicLicense",
 	}
 }
