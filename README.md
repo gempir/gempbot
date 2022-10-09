@@ -4,9 +4,9 @@
 - Frontend deployed on Vercel
 
 
-[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=492eee8f5c7f&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
+[![Flyio](https://fly.io/static/images/brand/logo.svg)](https://fly.io)
 
-- Backend on DigitalOcean apps
+- Backend on Fly.io 
 
 ## Website
 
