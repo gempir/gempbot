@@ -31,7 +31,6 @@ export NEXT_PUBLIC_TWITCH_CLIENT_ID
 export SECRET
 export TWITCH_CLIENT_SECRET
 export TWITCH_CLIENT_ID
-export NEWRELIC_LICENSE
 
 build_server:
 	go run main.go

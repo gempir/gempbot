@@ -24,7 +24,6 @@ type Config struct {
 	DbPassword        string `json:"DbPassword"`
 	DbName            string `json:"DbName"`
 	Environment       string `json:"environment"`
-	NewrelicLicense   string `json:"newrelicLicense"`
 }
 
 func FromEnv() *Config {
@@ -54,7 +53,6 @@ func FromEnv() *Config {
 		BttvToken:         Getenv("BTTV_TOKEN"),
 		SevenTvToken:      Getenv("SEVEN_TV_TOKEN"),
 		Environment:       Getenv("VERCEL_ENV"),
-		NewrelicLicense:   Getenv("NEWRELIC_LICENSE"),
 	}
 }
 
