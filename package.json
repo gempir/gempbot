@@ -13,10 +13,12 @@
     "react-dom": "^17.0.2",
     "react-hook-form": "^7.15.3",
     "react-use": "^17.3.1",
+    "react-use-websocket": "^4.2.0",
     "vercel-plugin-go": "^1.0.0-canary.1",
     "zustand": "^3.5.10"
   },
   "devDependencies": {
+    "@types/node": "18.11.0",
     "@types/react": "^17.0.20",
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.5",

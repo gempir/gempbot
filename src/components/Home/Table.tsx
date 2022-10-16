@@ -5,7 +5,7 @@ import { Emote } from "../Emote/Emote";
 export function Table({ channel, added, removeable, blockable }: { channel?: string, added: boolean, removeable: boolean, blockable: boolean }) {
     const [history, fetch, loading, page, increasePage, decreasePage, remove, block] = useEmotehistory(added, channel);
 
-    return <div className="p-4 bg-gray-800 rounded shadow relative select-none relative">
+    return <div className="p-4 bg-gray-800 rounded shadow relative select-none">
         <div className="text-2xl flex gap-5 w-full" onClick={fetch}>
             <div className="flex gap-2 items-center">
                 <div onClick={decreasePage} className="cursor-pointer hover:text-blue-500">
