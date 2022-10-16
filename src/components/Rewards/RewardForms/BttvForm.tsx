@@ -23,7 +23,7 @@ const defaultReward = {
     Type: RewardTypes.Bttv,
     Title: "BetterTTV Emote",
     Cost: 10000,
-    Prompt: "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. powered by bot.gempir.com",
+    Prompt: "Add a BetterTTV emote! In the text field, send a link to the BetterTTV emote. Powered by bot.gempir.com",
     BackgroundColor: "",
     IsMaxPerStreamEnabled: false,
     MaxPerStream: 0,

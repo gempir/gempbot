@@ -123,7 +123,7 @@ type ChangeEmoteResponse struct {
 func (c *SevenTvClient) RemoveEmote(channelUserID, emoteID string) error {
 	connection, err := c.GetTwitchConnection(channelUserID)
 	if err != nil {
-		return errors.New("Could not find 7tv twitch connection for user " + err.Error())
+		return errors.New("Could not find 7TV twitch connection for user " + err.Error())
 	}
 
 	var resp ChangeEmoteResponse
@@ -159,7 +159,7 @@ func (c *SevenTvClient) RemoveEmote(channelUserID, emoteID string) error {
 func (c *SevenTvClient) AddEmote(channelUserID, emoteID string) error {
 	connection, err := c.GetTwitchConnection(channelUserID)
 	if err != nil {
-		return errors.New("Could not find 7tv twitch connection for user " + err.Error())
+		return errors.New("Could not find 7TV twitch connection for user " + err.Error())
 	}
 
 	var resp ChangeEmoteResponse
@@ -241,7 +241,7 @@ func (c *SevenTvClient) QuerySevenTvGQL(query string, variables map[string]inter
 		ToJSON(&response).
 		Fetch(context.Background())
 	if err != nil {
-		log.Infof("7tv query '%s' with '%v' resp: '%v'", query, variables, response)
+		log.Infof("7TV query '%s' with '%v' resp: '%v'", query, variables, response)
 		return err
 	}
 

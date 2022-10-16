@@ -152,7 +152,7 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 			}
 			if reward.Type == dto.REWARD_SEVENTV {
 				if !esm.emoteChief.VerifySeventvRedemption(reward, redemption) {
-					log.Infof("[%s] 7tv Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
+					log.Infof("[%s] 7TV Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
 					err := esm.ttlCache.Set(redemption.ID, false)
 					if err != nil {
 						log.Error(err)
@@ -162,8 +162,8 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 						log.Error(err)
 					}
 				} else {
-					log.Infof("[%s] 7tv Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
-					esm.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("A new 7tv emote is waiting for approval, redeemed by @%s", redemption.UserName))
+					log.Infof("[%s] 7TV Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
+					esm.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("A new 7TV emote is waiting for approval, redeemed by @%s", redemption.UserName))
 					return
 				}
 			}
