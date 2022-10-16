@@ -14,7 +14,7 @@ export function Teaser() {
             <div className="flex flex-wrap">
                 <div className="xl:w-1/4 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60">
                     <h2 className="text-lg sm:text-xl text-gray-100 font-medium title-font mb-2">Channel Point Rewards</h2>
-                    <p className="leading-relaxed text-base mb-4 text-gray-400">Allow viewers to add new 7tv/BetterTTV emotes to your chat</p>
+                    <p className="leading-relaxed text-base mb-4 text-gray-400">Allow viewers to add new 7TV/BetterTTV emotes to your chat</p>
                 </div>
                 <div className="xl:w-1/4 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60">
                     <h2 className="text-lg sm:text-xl text-gray-100 font-medium title-font mb-2">Predictions Announcements</h2>
