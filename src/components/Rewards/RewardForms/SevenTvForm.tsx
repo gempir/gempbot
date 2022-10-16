@@ -88,7 +88,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
                 <div className="flex items-center gap-5">
                     <>
                         <SevenTvLogo className={"w-16"} />
-                        <h3 className="text-xl font-bold">7tv Emote</h3>
+                        <h3 className="text-xl font-bold">7TV Emote</h3>
                     </>
                 </div>
                 <div className="text-gray-600">
@@ -100,7 +100,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
                 </div>
             </div>
             <p className="my-2 mb-4 text-gray-400">
-                <strong>Make sure <span className="text-green-600">gempbot</span> is 7tv editor</strong><br />
+                <strong>Make sure <span className="text-green-600">gempbot</span> is 7TV editor</strong><br />
                 This will swap out emotes constantly. The amount of slots it manages is configurable and the oldest added emote by the bot will be removed first.
             </p>
             <label className="block my-3">
