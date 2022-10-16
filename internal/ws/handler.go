@@ -56,7 +56,7 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		input := string(message)
-		log.Infof("recv: %d %s", mt, input)
+		log.Debugf("recv: %d %s", mt, input)
 	}
 }
 
