@@ -35,6 +35,9 @@ export TWITCH_CLIENT_ID
 build_server:
 	go run main.go
 
+web: 
+	yarn dev
+
 migrate:
 	go run cmd/migrate/main.go
 
