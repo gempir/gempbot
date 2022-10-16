@@ -22,9 +22,9 @@ interface SevenTvRewardForm {
 const defaultReward = {
     OwnerTwitchID: "",
     Type: RewardTypes.SevenTv,
-    Title: "7tv Emote",
+    Title: "7TV Emote",
     Cost: 10000,
-    Prompt: "Add a 7tv emote! In the text field, send a link to the 7tv emote. powered by bot.gempir.com",
+    Prompt: "Add a 7TV emote! In the text field, send a link to the 7TV emote. Powered by bot.gempir.com",
     BackgroundColor: "",
     IsMaxPerStreamEnabled: false,
     MaxPerStream: 0,
