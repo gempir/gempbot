@@ -13,6 +13,7 @@ import (
 type WsHandler struct {
 	upgrader   websocket.Upgrader
 	authClient *auth.Auth
+	clients    map[string]*websocket.Conn
 }
 
 func NewWsHandler(authClient *auth.Auth) *WsHandler {
@@ -44,20 +45,29 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("ws upgrade failed: %s", err)
 		return
 	}
-	defer conn.Close()
+
+	h.clients[apiResp.Data.UserID] = conn
+	defer func() {
+		delete(h.clients, apiResp.Data.UserID)
+		conn.Close()
+	}()
 
 	h.writeMessage(conn, WsMessage{"Authenticated you as " + apiResp.Data.Login})
 
-	// Continuosly read and write message
 	for {
-		mt, message, err := conn.ReadMessage()
+		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Errorf("ws read failed: %s", err)
 			break
 		}
-		input := string(message)
-		log.Debugf("recv: %d %s", mt, input)
+		h.handleMessage(message)
 	}
+}
+
+func (h *WsHandler) handleMessage(byteMessage []byte) {
+	message := string(byteMessage)
+
+	log.Infof("Received message: %s", message)
 }
 
 func (h *WsHandler) writeMessage(conn *websocket.Conn, message WsMessage) {
