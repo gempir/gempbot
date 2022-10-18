@@ -26,6 +26,7 @@ func NewWsHandler(authClient *auth.Auth) *WsHandler {
 			},
 		},
 		authClient: authClient,
+		clients:    make(map[string]*websocket.Conn),
 	}
 }
 
@@ -64,10 +65,35 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *WsHandler) handleMessage(byteMessage []byte) {
-	message := string(byteMessage)
+type TimeChanged struct {
+	Action  string  `json:"action"`
+	Seconds float32 `json:"seconds"`
+}
 
-	log.Infof("Received message: %s", message)
+type BaseMessage struct {
+	Action string `json:"action"`
+}
+
+func (h *WsHandler) handleMessage(byteMessage []byte) {
+	log.Infof("Received message: %s", byteMessage)
+
+	var baseMessage BaseMessage
+	err := json.Unmarshal(byteMessage, &baseMessage)
+	if err != nil {
+		log.Errorf("Failed to unmarshal message: %s", err)
+		return
+	}
+
+	switch baseMessage.Action {
+	case "TIME_CHANGED":
+		var msg TimeChanged
+		err := json.Unmarshal(byteMessage, &msg)
+		if err != nil {
+			log.Errorf("Failed to unmarshal TimeChanged message: %s", err)
+			return
+		}
+		log.Infof("new time is %v", msg.Seconds)
+	}
 }
 
 func (h *WsHandler) writeMessage(conn *websocket.Conn, message WsMessage) {

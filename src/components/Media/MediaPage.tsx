@@ -5,15 +5,15 @@ export function MediaPage(): JSX.Element {
     const { lastJsonMessage, sendJsonMessage } = useWs();
 
     const onPlayerReady: YouTubeProps['onReady'] = (event) => {
-        sendJsonMessage({ action: WsAction.TIME_CHANGED, payload: event.target.getCurrentTime() });
+        sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime() });
     }
 
     const onPlay: YouTubeProps['onPlay'] = (event) => {
-        sendJsonMessage({ action: WsAction.TIME_CHANGED, payload: event.target.getCurrentTime() });
+        sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime() });
     }
 
     const onStateChange: YouTubeProps['onStateChange'] = (event) => {
-        sendJsonMessage({ action: WsAction.TIME_CHANGED, payload: event.target.getCurrentTime() });
+        sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime() });
     }
 
     const opts: YouTubeProps['opts'] = {
