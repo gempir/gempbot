@@ -101,8 +101,8 @@ func (c *Client) SetAppAccessToken(ctx context.Context, token helix.AccessCreden
 
 func setOrUpdateAccessToken(client *helix.Client, db store.Store) store.AppAccessToken {
 	token, err := db.GetAppAccessToken()
-	if err != nil || time.Since(token.UpdatedAt) > 24*time.Hour {
-		log.Info("App AccessToken not found or older than 24hours")
+	if err != nil || time.Since(token.UpdatedAt) > 2*time.Hour {
+		log.Info("App AccessToken not found or older than 2hours")
 		resp, err := client.RequestAppAccessToken(scopes)
 		if err != nil {
 			panic(err)
