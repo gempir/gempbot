@@ -15,7 +15,6 @@ type Config struct {
 	WebBaseUrl        string `json:"webBaseUrl"`
 	WebhookApiBaseUrl string `json:"webhookApiBaseUrl"`
 	CookieDomain      string `json:"cookieDomain"`
-	BttvToken         string `json:"bttvToken"`
 	DSN               string `json:"DSN"`
 }
 
@@ -28,7 +27,6 @@ func FromEnv() *Config {
 		CookieDomain: Getenv("COOKIE_DOMAIN"),
 		Username:     Getenv("TWITCH_USERNAME"),
 		OAuth:        Getenv("TWITCH_OAUTH"),
-		BttvToken:    Getenv("BTTV_TOKEN"),
 		DSN:          Getenv("DSN"),
 	}
 }

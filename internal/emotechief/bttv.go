@@ -22,6 +22,8 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 		return nil, dto.EMOTE_ADD_ADD, "", "", errors.New("Emote is blocked")
 	}
 
+	bttvToken := e.db.GetBttvToken(context.Background())
+
 	addedEmote, err = getBttvEmote(emoteId)
 	if err != nil {
 		return
@@ -50,7 +52,7 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 	err = requests.
 		URL(BTTV_API).
 		Pathf("/3/account/dashboards").
-		Bearer(e.cfg.BttvToken).
+		Bearer(bttvToken).
 		ToJSON(&dashboards).
 		Fetch(context.Background())
 	if err != nil {
@@ -137,6 +139,8 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 }
 
 func (e *EmoteChief) RemoveBttvEmote(channelUserID, emoteID string) (*bttvEmoteResponse, error) {
+	bttvToken := e.db.GetBttvToken(context.Background())
+
 	var userResp bttvUserResponse
 	err := requests.
 		URL(BTTV_API).
@@ -152,7 +156,7 @@ func (e *EmoteChief) RemoveBttvEmote(channelUserID, emoteID string) (*bttvEmoteR
 	err = requests.
 		URL(BTTV_API).
 		Pathf("/3/emotes/%s/shared/%s", emoteID, bttvUserId).
-		Bearer(e.cfg.BttvToken).
+		Bearer(bttvToken).
 		Method(http.MethodDelete).
 		Fetch(context.Background())
 	if err != nil {
@@ -171,12 +175,14 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 		return nil, nil, err
 	}
 
+	bttvToken := e.db.GetBttvToken(context.Background())
+
 	// do we need to remove the emote?
 	if removalTargetEmoteId != "" {
 		err = requests.
 			URL(BTTV_API).
 			Pathf("/3/emotes/%s/shared/%s", removalTargetEmoteId, bttvUserId).
-			Bearer(e.cfg.BttvToken).
+			Bearer(bttvToken).
 			Method(http.MethodDelete).
 			Fetch(context.Background())
 		if err != nil {
@@ -193,7 +199,7 @@ func (e *EmoteChief) SetBttvEmote(channelUserID, emoteId, channel string, slots 
 	err = requests.
 		URL(BTTV_API).
 		Pathf("/3/emotes/%s/shared/%s", emoteId, bttvUserId).
-		Bearer(e.cfg.BttvToken).
+		Bearer(bttvToken).
 		Method(http.MethodPut).
 		Fetch(context.Background())
 	if err != nil {

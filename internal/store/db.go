@@ -21,6 +21,7 @@ type Store interface {
 	SaveUserAccessToken(ctx context.Context, ownerId string, accessToken string, refreshToken string, scopes string) error
 	GetAllUserAccessToken() []UserAccessToken
 	GetSevenTvToken(ctx context.Context) string
+	GetBttvToken(ctx context.Context) string
 }
 
 type Database struct {

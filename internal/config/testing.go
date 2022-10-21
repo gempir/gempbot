@@ -10,6 +10,5 @@ func NewMockConfig() *Config {
 		CookieDomain:      "https://test.gempir.com",
 		Username:          "username",
 		OAuth:             "oauth",
-		BttvToken:         "bttvToken",
 	}
 }
