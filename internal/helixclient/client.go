@@ -74,20 +74,25 @@ func (c *Client) StartRefreshTokenRoutine() {
 		}
 	}()
 
+	c.refreshUserAccessTokens()
 	go func() {
 		for range time.NewTicker(3 * time.Hour).C {
-			tokens := c.db.GetAllUserAccessToken()
-			for _, token := range tokens {
-				err := c.RefreshToken(token)
-				if err != nil {
-					log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
-				} else {
-					log.Infof("refreshed token for user %s", token.OwnerTwitchID)
-				}
-				time.Sleep(time.Millisecond * 500)
-			}
+			c.refreshUserAccessTokens()
 		}
 	}()
+}
+
+func (c *Client) refreshUserAccessTokens() {
+	tokens := c.db.GetAllUserAccessToken()
+	for _, token := range tokens {
+		err := c.RefreshToken(token)
+		if err != nil {
+			log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
+		} else {
+			log.Infof("refreshed token for user %s", token.OwnerTwitchID)
+		}
+		time.Sleep(time.Millisecond * 500)
+	}
 }
 
 func (c *Client) SetAppAccessToken(ctx context.Context, token helix.AccessCredentials) {
@@ -101,8 +106,8 @@ func (c *Client) SetAppAccessToken(ctx context.Context, token helix.AccessCreden
 
 func setOrUpdateAccessToken(client *helix.Client, db store.Store) store.AppAccessToken {
 	token, err := db.GetAppAccessToken()
-	if err != nil || time.Since(token.UpdatedAt) > 2*time.Hour {
-		log.Info("App AccessToken not found or older than 2hours")
+	if err != nil || time.Since(token.UpdatedAt) > 24*time.Hour {
+		log.Info("App AccessToken not found or older than 24 hours")
 		resp, err := client.RequestAppAccessToken(scopes)
 		if err != nil {
 			panic(err)
