@@ -6,10 +6,11 @@ kill_timeout = 5
 processes = []
 
 [env]
-  VERCEL_ENV = "production"
-  NEXT_PUBLIC_API_BASE_URL = "https://gempbot-api.gempir.com"
-  NEXT_PUBLIC_BASE_URL = "https://bot.gempir.com"
+  TWITCH_USERNAME = "gempbot"
   COOKIE_DOMAIN = "gempir.com"
+  NEXT_PUBLIC_BASE_URL = "https://bot.gempir.com"
+  NEXT_PUBLIC_API_BASE_URL = "https://gempbot-api.gempir.com"
+  NEXT_PUBLIC_TWITCH_CLIENT_ID = "il5oqz0li81219qvw2hs7umntr493e"
 
 [experimental]
   allowed_public_ports = []
