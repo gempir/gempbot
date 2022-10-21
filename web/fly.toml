@@ -7,9 +7,10 @@ processes = []
 
 [build]
   [build.args]
-    NEXT_PUBLIC_API_BASE_URL = "https://gempbot-api.gempir.com"
-    NEXT_PUBLIC_TWITCH_CLIENT_ID = "7ex2fcx0zjznrb3o20gl10f53ury1j"
-    NEXT_PUBLIC_BASE_URL = "https://gempbot-web.fly.dev"
+      NEXT_PUBLIC_BASE_URL = "https://gempbot-web.fly.dev"
+      NEXT_PUBLIC_API_BASE_URL = "https://gempbot-api.gempir.com"
+      NEXT_PUBLIC_TWITCH_CLIENT_ID = "il5oqz0li81219qvw2hs7umntr493e"
+
 
 [env]
   PORT = "8080"
