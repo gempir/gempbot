@@ -12,7 +12,7 @@ processes = []
     NEXT_PUBLIC_BASE_URL = "https://gempbot-web.fly.dev"
 
 [env]
-  PORT = "3000"
+  PORT = "8080"
 
 [experimental]
   allowed_public_ports = []
@@ -20,7 +20,7 @@ processes = []
 
 [[services]]
   http_checks = []
-  internal_port = 3000
+  internal_port = 8080
   processes = ["app"]
   protocol = "tcp"
   script_checks = []
