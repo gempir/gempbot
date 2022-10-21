@@ -67,7 +67,6 @@ func NewClient(cfg *config.Config, db store.Store) *Client {
 // StartRefreshTokenRoutine refresh our token
 func (c *Client) StartRefreshTokenRoutine() {
 	setOrUpdateAccessToken(c.Client, c.db)
-
 	go func() {
 		for range time.NewTicker(12 * time.Hour).C {
 			setOrUpdateAccessToken(c.Client, c.db)
@@ -85,13 +84,15 @@ func (c *Client) StartRefreshTokenRoutine() {
 func (c *Client) refreshUserAccessTokens() {
 	tokens := c.db.GetAllUserAccessToken()
 	for _, token := range tokens {
-		err := c.RefreshToken(token)
-		if err != nil {
-			log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
-		} else {
-			log.Infof("refreshed token for user %s", token.OwnerTwitchID)
+		if time.Since(token.UpdatedAt) > 3*time.Hour {
+			err := c.RefreshToken(token)
+			if err != nil {
+				log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
+			} else {
+				log.Infof("refreshed token for user %s", token.OwnerTwitchID)
+			}
+			time.Sleep(time.Millisecond * 500)
 		}
-		time.Sleep(time.Millisecond * 500)
 	}
 }
 
