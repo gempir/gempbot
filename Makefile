@@ -38,6 +38,9 @@ build_server:
 migrate:
 	go run cmd/migrate/main.go
 
+proxy:
+	flyctl proxy 5432 -a gempbot-db
+
 test:
 	go test ./internal/...
 

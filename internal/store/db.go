@@ -9,6 +9,7 @@ import (
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/go-sql-driver/mysql"
 	gormMysql "gorm.io/driver/mysql"
+	gormPostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -26,7 +27,8 @@ type Store interface {
 }
 
 type Database struct {
-	Client *gorm.DB
+	Client     *gorm.DB
+	PsqlClient *gorm.DB
 }
 
 func NewDatabase(cfg *config.Config) *Database {
@@ -51,18 +53,36 @@ func NewDatabase(cfg *config.Config) *Database {
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
-		panic("failed to connect database")
+		panic("failed to connect mysql database " + err.Error())
 	}
 	log.Infof("connected on %s:3306 to %s", cfg.DbHost, cfg.DbName)
 
+	psql, err := gorm.Open(gormPostgres.Open(cfg.DSN), &gorm.Config{
+		Logger:                                   logger.Default.LogMode(logger.Info),
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic("failed to connect psql database " + err.Error())
+	}
+
 	return &Database{
-		Client: pdb,
+		Client:     pdb,
+		PsqlClient: psql,
 	}
 }
 
 func (db *Database) Migrate() {
 	log.Info("Migrating schema")
 	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{})
+	if err != nil {
+		panic("Failed to migrate, " + err.Error())
+	}
+	log.Info("Finished migrating schema")
+}
+
+func (db *Database) MigratePsql() {
+	log.Info("Migrating schema")
+	err := db.PsqlClient.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{})
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())
 	}
