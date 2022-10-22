@@ -1,18 +1,10 @@
 #!make
-.PHONY: migrate server
+.PHONY: *
 include .env
 include .env.development
 
-export TWITCH_OAUTH
-export SECRET
-export TWITCH_CLIENT_SECRET
-
-export TWITCH_USERNAME
-export NEXT_PUBLIC_BASE_URL
-export NEXT_PUBLIC_API_BASE_URL
-export NEXT_PUBLIC_TWITCH_CLIENT_ID
-export DSN
-
+export $(shell sed 's/=.*//' .env)
+export $(shell sed 's/=.*//' .env.development)
 
 build_server:
 	go run main.go
