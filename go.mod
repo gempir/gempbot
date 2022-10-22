@@ -8,6 +8,7 @@ require (
 	github.com/gempir/go-twitch-irc/v3 v3.0.0-beta.2
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
+	github.com/gorilla/websocket v1.4.2
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/nicklaw5/helix/v2 v2.2.1
 	github.com/rs/cors v1.8.0

@@ -15,6 +15,9 @@ export DSN
 build_server:
 	go run main.go
 
+web: 
+	yarn dev
+
 migrate:
 	go run main.go migrate
 

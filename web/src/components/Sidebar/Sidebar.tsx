@@ -4,7 +4,7 @@ import { Login } from "./Login";
 import { Managing } from "./Managing";
 import Link from "next/link";
 import React from "react";
-import { HomeIcon, GiftIcon, AdjustmentsIcon, BanIcon, ChatAlt2Icon } from "@heroicons/react/solid";
+import { HomeIcon, GiftIcon, AdjustmentsIcon, BanIcon, ChatAlt2Icon, PlayIcon } from "@heroicons/react/solid";
 
 export function Sidebar() {
     const [userConfig] = useUserConfig();
@@ -19,6 +19,9 @@ export function Sidebar() {
             </Link>
             <Link href="/bot" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><ChatAlt2Icon className="h-6" /> Bot</a>
+            </Link>
+            <Link href="/media" >
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><PlayIcon className="h-6" /> Media</a>
             </Link>
             <Link href="/rewards" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><GiftIcon className="h-6" /> Rewards</a>

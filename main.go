@@ -16,6 +16,7 @@ import (
 	"github.com/gempir/gempbot/internal/server"
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/user"
+	"github.com/gempir/gempbot/internal/ws"
 	"github.com/rs/cors"
 )
 
@@ -45,7 +46,9 @@ func main() {
 	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager, seventvClient)
+	wsHandler := ws.NewWsHandler(authClient)
+
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager, seventvClient, wsHandler)
 
 	mux := http.NewServeMux()
 
@@ -62,6 +65,7 @@ func main() {
 	mux.HandleFunc("/api/reward", apiHandlers.RewardHandler)
 	mux.HandleFunc("/api/subscriptions", apiHandlers.SubscriptionsHandler)
 	mux.HandleFunc("/api/userconfig", apiHandlers.UserConfigHandler)
+	mux.HandleFunc("/api/ws", wsHandler.HandleWs)
 
 	handler := cors.New(cors.Options{
 		AllowedOrigins:   []string{cfg.WebBaseUrl},
