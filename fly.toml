@@ -17,7 +17,7 @@ processes = []
   auto_rollback = true
 
 [deploy]
-  release_command = "gempbot migrate"
+  release_command = "/gempbot migrate"
 
 [[services]]
   http_checks = []

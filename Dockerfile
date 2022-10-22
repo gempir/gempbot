@@ -8,6 +8,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o gempbot main.go
 
 FROM alpine:latest  
 RUN apk --no-cache add ca-certificates
-COPY --from=0 /go/src/github.com/gempir/gempbot/gempbot .
-CMD ["./gempbot"]
+COPY --from=0 /go/src/github.com/gempir/gempbot/gempbot /gempbot
+CMD /gempbot
 EXPOSE 3010
