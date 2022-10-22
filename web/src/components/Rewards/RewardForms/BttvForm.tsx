@@ -82,6 +82,7 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
     }, [reward, setValue]);
 
     return (
+        // @ts-ignore
         <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl p-4 bg-gray-800 rounded shadow">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-5">
