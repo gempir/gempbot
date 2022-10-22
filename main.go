@@ -31,8 +31,6 @@ func main() {
 		return
 	}
 
-	os.Exit(0)
-
 	helixClient := helixclient.NewClient(cfg, db)
 	go helixClient.StartRefreshTokenRoutine()
 
