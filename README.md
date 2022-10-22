@@ -6,6 +6,10 @@
 
 # Server
 
-Frontend and backend deployed on fly.io with postgres database cluster
+Frontend deployed on Vercel
+![Vercel](https://vercelbadge.vercel.app/api/gempir/gempbot?style=for-the-badge)
+
+
+Backend with postgres database cluster deployed on fly.io
 
 [![Flyio](https://fly.io/static/images/brand/logo.svg)](https://fly.io)
