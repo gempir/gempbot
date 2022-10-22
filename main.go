@@ -27,8 +27,11 @@ func main() {
 	argsWithoutProg := os.Args[1:]
 	if len(argsWithoutProg) == 1 && argsWithoutProg[0] == "migrate" {
 		db.Migrate()
+		os.Exit(0)
 		return
 	}
+
+	os.Exit(0)
 
 	helixClient := helixclient.NewClient(cfg, db)
 	go helixClient.StartRefreshTokenRoutine()
