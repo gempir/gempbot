@@ -68,6 +68,7 @@ export function UserPermissions({ userConfig, setUserConfig, errorMessage, loadi
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [addCounter]);
 
+    // @ts-ignore
     return <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-gray-800 rounded shadow relative">
         <h2 className="mb-4 text-xl">Permissions</h2>
         <table className="w-full">
