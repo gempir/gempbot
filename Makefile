@@ -10,12 +10,13 @@ export NEXT_PUBLIC_BASE_URL
 export NEXT_PUBLIC_API_BASE_URL
 export NEXT_PUBLIC_TWITCH_CLIENT_ID
 export TWITCH_CLIENT_SECRET
+export DSN
 
 build_server:
 	go run main.go
 
 migrate:
-	go run cmd/migrate/main.go
+	go run main.go migrate
 
 proxy:
 	flyctl proxy 5432 -a gempbot-db

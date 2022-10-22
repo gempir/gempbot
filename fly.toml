@@ -16,6 +16,9 @@ processes = []
   allowed_public_ports = []
   auto_rollback = true
 
+[deploy]
+  release_command = "gempbot migrate"
+
 [[services]]
   http_checks = []
   internal_port = 3010
