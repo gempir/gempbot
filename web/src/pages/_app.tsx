@@ -11,7 +11,7 @@ export default function App({ Component, pageProps }: { Component: any; pageProp
 
     return <>
         <Head>
-            <title>gempbot - fly.io</title>
+            <title>gempbot</title>
             <link rel="icon" href="/favicon.ico" />
         </Head>
         <style jsx global>{`
