@@ -1,27 +1,27 @@
-# fly.toml file generated for gempbot on 2022-10-09T12:38:17+02:00
+# fly.toml file generated for gempbot-web on 2022-10-20T22:15:48+02:00
 
-app = "gempbot"
+app = "gempbot-web"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
 
+[build]
+  [build.args]
+      NEXT_PUBLIC_BASE_URL = "https://bot.gempir.com"
+      NEXT_PUBLIC_API_BASE_URL = "https://gempbot-api.gempir.com"
+      NEXT_PUBLIC_TWITCH_CLIENT_ID = "il5oqz0li81219qvw2hs7umntr493e"
+
+
 [env]
-  TWITCH_USERNAME = "gempbot"
-  COOKIE_DOMAIN = "gempir.com"
-  NEXT_PUBLIC_BASE_URL = "https://bot.gempir.com"
-  NEXT_PUBLIC_API_BASE_URL = "https://gempbot-api.gempir.com"
-  NEXT_PUBLIC_TWITCH_CLIENT_ID = "il5oqz0li81219qvw2hs7umntr493e"
+  PORT = "8080"
 
 [experimental]
   allowed_public_ports = []
   auto_rollback = true
 
-[deploy]
-  release_command = "gempbot migrate"
-
 [[services]]
   http_checks = []
-  internal_port = 3010
+  internal_port = 8080
   processes = ["app"]
   protocol = "tcp"
   script_checks = []

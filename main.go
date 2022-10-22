@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gempir/gempbot/internal/auth"
 	"github.com/gempir/gempbot/internal/bot"
@@ -22,6 +23,13 @@ import (
 func main() {
 	cfg := config.FromEnv()
 	db := store.NewDatabase(cfg)
+
+	argsWithoutProg := os.Args[1:]
+	if len(argsWithoutProg) == 1 && argsWithoutProg[0] == "migrate" {
+		db.Migrate()
+		return
+	}
+
 	helixClient := helixclient.NewClient(cfg, db)
 	go helixClient.StartRefreshTokenRoutine()
 

@@ -2,13 +2,11 @@ package store
 
 import (
 	"context"
-	"time"
 
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/log"
-	"github.com/go-sql-driver/mysql"
-	gormMysql "gorm.io/driver/mysql"
+	gormPostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -23,40 +21,27 @@ type Store interface {
 	SaveUserAccessToken(ctx context.Context, ownerId string, accessToken string, refreshToken string, scopes string) error
 	GetAllUserAccessToken() []UserAccessToken
 	GetSevenTvToken(ctx context.Context) string
+	GetBttvToken(ctx context.Context) string
 }
 
 type Database struct {
-	Client *gorm.DB
+	Client     *gorm.DB
+	PsqlClient *gorm.DB
 }
 
 func NewDatabase(cfg *config.Config) *Database {
-	if cfg.DbHost == "" {
-		panic("No database host specified")
-	}
-
-	mysqlConfig := mysql.Config{
-		User:                 cfg.DbUsername,
-		Passwd:               cfg.DbPassword,
-		Addr:                 cfg.DbHost + ":3306",
-		Net:                  "tcp",
-		DBName:               cfg.DbName,
-		Loc:                  time.Local,
-		ParseTime:            true,
-		AllowNativePasswords: true,
-		TLSConfig:            "true",
-	}
-
-	pdb, err := gorm.Open(gormMysql.Open(mysqlConfig.FormatDSN()), &gorm.Config{
+	psql, err := gorm.Open(gormPostgres.Open(cfg.DSN), &gorm.Config{
 		Logger:                                   logger.Default.LogMode(logger.Info),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
-		panic("failed to connect database")
+		panic("failed to connect psql database " + err.Error())
 	}
-	log.Infof("connected on %s:3306 to %s", cfg.DbHost, cfg.DbName)
+
+	log.Infof("connected on postgres")
 
 	return &Database{
-		Client: pdb,
+		Client: psql,
 	}
 }
 

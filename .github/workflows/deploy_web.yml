@@ -1,4 +1,4 @@
-name: Fly Deploy
+name: Fly Web Deploy
 
 on: 
   push:
@@ -16,4 +16,5 @@ jobs:
         - uses: actions/checkout@v2
         - uses: superfly/flyctl-actions/setup-flyctl@master
         - name: flyctl deploy
+          working-directory: ./web
           run: flyctl deploy --remote-only

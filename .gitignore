@@ -1,21 +1,22 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 .vscode
+.idea
 
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
+web/node_modules
+web/.pnp
+web/.pnp.js
 
 # testing
 /coverage
 coverage.out
 
 # next.js
-/.next/
-/out/
+web/.next/
+web/out/
 
 # production
-/build
+web/build
 
 # misc
 .DS_Store
@@ -35,7 +36,7 @@ yarn-error.log*
 key.txt
 
 # vercel
-.vercel
+web/.vercel
 
 
 # Binaries

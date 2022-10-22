@@ -56,3 +56,7 @@ func (s *MockStore) GetAllUserAccessToken() []UserAccessToken {
 func (s *MockStore) GetSevenTvToken(ctx context.Context) string {
 	return "7tvApiToken"
 }
+
+func (s *MockStore) GetBttvToken(ctx context.Context) string {
+	return "BttvToken"
+}
