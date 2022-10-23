@@ -9,13 +9,15 @@ import (
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/media"
 	"github.com/gorilla/websocket"
+	"github.com/puzpuzpuz/xsync"
 )
 
 type WsHandler struct {
 	upgrader     websocket.Upgrader
 	authClient   *auth.Auth
-	clients      map[string]*websocket.Conn
+	clients      *xsync.MapOf[string, *websocket.Conn]
 	mediaManager *media.MediaManager
+	writeQueues  *xsync.MapOf[string, chan []byte]
 }
 
 func NewWsHandler(authClient *auth.Auth, mediaManager *media.MediaManager) *WsHandler {
@@ -29,7 +31,8 @@ func NewWsHandler(authClient *auth.Auth, mediaManager *media.MediaManager) *WsHa
 		},
 		authClient:   authClient,
 		mediaManager: mediaManager,
-		clients:      make(map[string]*websocket.Conn),
+		clients:      xsync.NewMapOf[*websocket.Conn](),
+		writeQueues:  xsync.NewMapOf[chan []byte](),
 	}
 }
 
@@ -50,9 +53,17 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.clients[apiResp.Data.UserID] = conn
+	h.clients.Store(apiResp.Data.UserID, conn)
+	writeQueue := make(chan []byte)
+	h.writeQueues.Store(apiResp.Data.UserID, writeQueue)
+	go startWriter(conn, writeQueue)
+	h.mediaManager.RegisterWriter(apiResp.Data.UserID, func(message []byte) {
+		writeQueue <- message
+	})
+
 	defer func() {
-		delete(h.clients, apiResp.Data.UserID)
+		h.clients.Delete(apiResp.Data.UserID)
+		h.writeQueues.Delete(apiResp.Data.UserID)
 		conn.Close()
 	}()
 
@@ -64,7 +75,18 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 			log.Errorf("ws read failed: %s", err)
 			break
 		}
-		h.handleMessage(message)
+		h.handleMessage(apiResp.Data.UserID, message)
+	}
+}
+
+func startWriter(conn *websocket.Conn, writeQueue chan []byte) {
+	for {
+		message := <-writeQueue
+		err := conn.WriteMessage(websocket.TextMessage, message)
+		if err != nil {
+			log.Errorf("Failed to write message %s", err.Error())
+			return
+		}
 	}
 }
 
@@ -78,7 +100,7 @@ type BaseMessage struct {
 	Action string `json:"action"`
 }
 
-func (h *WsHandler) handleMessage(byteMessage []byte) {
+func (h *WsHandler) handleMessage(userId string, byteMessage []byte) {
 	var baseMessage BaseMessage
 	err := json.Unmarshal(byteMessage, &baseMessage)
 	if err != nil {
@@ -94,7 +116,7 @@ func (h *WsHandler) handleMessage(byteMessage []byte) {
 			log.Errorf("Failed to unmarshal TimeChanged message: %s", err)
 			return
 		}
-		h.mediaManager.HandleTimeChange("1", msg.VideoId, msg.Seconds)
+		h.mediaManager.HandleTimeChange(userId, msg.VideoId, msg.Seconds)
 	}
 }
 
