@@ -16,7 +16,7 @@ migrate:
 	go run main.go migrate
 
 proxy:
-	flyctl proxy 5432 -a gempbot-db
+	flyctl proxy 5433 -a gempbot-db
 
 test:
 	go test ./internal/...
