@@ -13,6 +13,7 @@ import (
 	"github.com/gempir/gempbot/internal/eventsub"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
+	"github.com/gempir/gempbot/internal/media"
 	"github.com/gempir/gempbot/internal/server"
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/user"
@@ -47,7 +48,8 @@ func main() {
 	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 
-	wsHandler := ws.NewWsHandler(authClient)
+	mediaManager := media.NewMediaManager(db)
+	wsHandler := ws.NewWsHandler(authClient, mediaManager)
 
 	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager, seventvClient, wsHandler)
 

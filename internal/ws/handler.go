@@ -7,16 +7,18 @@ import (
 	"github.com/gempir/gempbot/internal/api"
 	"github.com/gempir/gempbot/internal/auth"
 	"github.com/gempir/gempbot/internal/log"
+	"github.com/gempir/gempbot/internal/media"
 	"github.com/gorilla/websocket"
 )
 
 type WsHandler struct {
-	upgrader   websocket.Upgrader
-	authClient *auth.Auth
-	clients    map[string]*websocket.Conn
+	upgrader     websocket.Upgrader
+	authClient   *auth.Auth
+	clients      map[string]*websocket.Conn
+	mediaManager *media.MediaManager
 }
 
-func NewWsHandler(authClient *auth.Auth) *WsHandler {
+func NewWsHandler(authClient *auth.Auth, mediaManager *media.MediaManager) *WsHandler {
 	return &WsHandler{
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -25,8 +27,9 @@ func NewWsHandler(authClient *auth.Auth) *WsHandler {
 				return true
 			},
 		},
-		authClient: authClient,
-		clients:    make(map[string]*websocket.Conn),
+		authClient:   authClient,
+		mediaManager: mediaManager,
+		clients:      make(map[string]*websocket.Conn),
 	}
 }
 
@@ -68,6 +71,7 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 type TimeChanged struct {
 	Action  string  `json:"action"`
 	Seconds float32 `json:"seconds"`
+	VideoId string  `json:"videoId"`
 }
 
 type BaseMessage struct {
@@ -75,8 +79,6 @@ type BaseMessage struct {
 }
 
 func (h *WsHandler) handleMessage(byteMessage []byte) {
-	log.Infof("Received message: %s", byteMessage)
-
 	var baseMessage BaseMessage
 	err := json.Unmarshal(byteMessage, &baseMessage)
 	if err != nil {
@@ -92,7 +94,7 @@ func (h *WsHandler) handleMessage(byteMessage []byte) {
 			log.Errorf("Failed to unmarshal TimeChanged message: %s", err)
 			return
 		}
-		log.Infof("new time is %v", msg.Seconds)
+		h.mediaManager.HandleTimeChange("1", msg.VideoId, msg.Seconds)
 	}
 }
 
