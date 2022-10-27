@@ -68,14 +68,14 @@ func NewClient(cfg *config.Config, db store.Store) *Client {
 func (c *Client) StartRefreshTokenRoutine() {
 	setOrUpdateAccessToken(c.Client, c.db)
 	go func() {
-		for range time.NewTicker(12 * time.Hour).C {
+		for range time.NewTicker(1 * time.Hour).C {
 			setOrUpdateAccessToken(c.Client, c.db)
 		}
 	}()
 
 	c.refreshUserAccessTokens()
 	go func() {
-		for range time.NewTicker(3 * time.Hour).C {
+		for range time.NewTicker(1 * time.Hour).C {
 			c.refreshUserAccessTokens()
 		}
 	}()
