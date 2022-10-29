@@ -19,7 +19,7 @@ import (
 
 func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, slots int) (addedEmote *bttvEmoteResponse, emoteAddType dto.EmoteChangeType, bttvUserId string, removalTargetEmoteId string, err error) {
 	if e.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_BTTV) {
-		return nil, dto.EMOTE_ADD_ADD, "", "", errors.New("Emote is blocked")
+		return nil, dto.EMOTE_ADD_ADD, "", "", errors.New("emote is blocked")
 	}
 
 	bttvToken := e.db.GetBttvToken(context.Background())
@@ -30,7 +30,7 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 	}
 
 	if !addedEmote.Sharing {
-		err = errors.New("Emote is not shared")
+		err = errors.New("emote is not shared")
 		return
 	}
 
@@ -66,7 +66,7 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 		}
 	}
 	if dbCfg.ID == "" {
-		err = errors.New("No permission to moderate, add gempbot as BetterTTV editor")
+		err = errors.New("no permission to moderate, add gempbot as BetterTTV editor")
 		return
 	}
 	sharedEmotesLimit := dbCfg.Limits.Sharedemotes
@@ -86,29 +86,29 @@ func (e *EmoteChief) VerifySetBttvEmote(channelUserID, emoteId, channel string, 
 
 	for _, emote := range dashboard.Sharedemotes {
 		if emote.ID == emoteId {
-			err = errors.New("Emote already added")
+			err = errors.New("emote already added")
 			return
 		}
 		if emote.Code == addedEmote.Code {
-			err = fmt.Errorf("Emote code \"%s\" already added", addedEmote.Code)
+			err = fmt.Errorf("emote code \"%s\" already added", addedEmote.Code)
 			return
 		}
 	}
 
 	for _, emote := range dashboard.Channelemotes {
 		if emote.ID == emoteId {
-			err = fmt.Errorf("Emote \"%s\" already a channel emote", emote.Code)
+			err = fmt.Errorf("emote \"%s\" already a channel emote", emote.Code)
 			return
 		}
 		if emote.Code == addedEmote.Code {
-			err = fmt.Errorf("Emote code \"%s\" already a channel emote", addedEmote.Code)
+			err = fmt.Errorf("emote code \"%s\" already a channel emote", addedEmote.Code)
 			return
 		}
 	}
-	log.Infof("Current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
+	log.Infof("current shared emotes: %d/%d", len(dashboard.Sharedemotes), sharedEmotesLimit)
 
 	emotesAdded := e.db.GetEmoteAdded(channelUserID, dto.REWARD_BTTV, slots)
-	log.Infof("Total Previous emotes %d in %s", len(emotesAdded), channelUserID)
+	log.Infof("total Previous emotes %d in %s", len(emotesAdded), channelUserID)
 
 	if len(emotesAdded) > 0 {
 		oldestEmote := emotesAdded[len(emotesAdded)-1]

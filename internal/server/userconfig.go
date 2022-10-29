@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/gempir/gempbot/internal/api"
@@ -42,7 +42,7 @@ func (a *Api) UserConfigHandler(w http.ResponseWriter, r *http.Request) {
 		return
 
 	} else if r.Method == http.MethodPost {
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Errorf("Failed reading update body: %s", err)
 			http.Error(w, "Failure saving body "+err.Error(), http.StatusInternalServerError)

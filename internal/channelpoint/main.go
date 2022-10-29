@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"time"
 
 	"github.com/gempir/gempbot/internal/config"
@@ -276,7 +275,7 @@ func createTwitchRewardConfigFromRequestBody(body rewardRequestBody) TwitchRewar
 }
 
 func CreateRewardFromBody(body io.ReadCloser) (Reward, error) {
-	bodyBytes, err := ioutil.ReadAll(body)
+	bodyBytes, err := io.ReadAll(body)
 	if err != nil {
 		return nil, err
 	}

@@ -94,7 +94,7 @@ func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store
 	token, err := a.db.GetUserAccessToken(claims.UserID)
 	if err != nil {
 		log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
-		return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("Failed to get userAccessTokenData: %s", err.Error()))
+		return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("failed to get userAccessTokenData: %s", err.Error()))
 	}
 
 	success, resp, err := a.helixClient.Client.ValidateToken(token.AccessToken)
@@ -113,7 +113,7 @@ func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store
 			refreshedToken, err := a.db.GetUserAccessToken(claims.UserID)
 			if err != nil {
 				log.Errorf("Failed to get userAccessTokenData: %s", err.Error())
-				return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("Failed to get userAccessTokenData: %s", err.Error()))
+				return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("failed to get userAccessTokenData: %s", err.Error()))
 			}
 
 			success, resp, err = a.helixClient.Client.ValidateToken(refreshedToken.AccessToken)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/gempir/gempbot/internal/api"
@@ -44,7 +44,7 @@ func (a *Api) BotConfigHandler(w http.ResponseWriter, r *http.Request) {
 		api.WriteJson(w, cfg, http.StatusOK)
 		return
 	} else if r.Method == http.MethodPost {
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Errorf("Failed reading update body: %s", err)
 			api.WriteJson(w, fmt.Errorf("Failure unmarshalling config "+err.Error()), http.StatusInternalServerError)

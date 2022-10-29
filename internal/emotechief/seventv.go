@@ -17,7 +17,7 @@ var sevenTvRegex = regexp.MustCompile(`https?:\/\/(?:next\.)?7tv.app\/emotes\/(\
 
 func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (emoteAddType dto.EmoteChangeType, removalTargetEmoteId string, err error) {
 	if ec.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_SEVENTV) {
-		return dto.EMOTE_ADD_ADD, "", errors.New("Emote is blocked")
+		return dto.EMOTE_ADD_ADD, "", errors.New("emote is blocked")
 	}
 
 	nextEmote, err := ec.sevenTvClient.GetEmote(emoteId)
@@ -32,7 +32,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 
 	for _, emote := range user.Emotes {
 		if emote.Code == nextEmote.Code {
-			return dto.EMOTE_ADD_ADD, "", fmt.Errorf("Emote code \"%s\" already added", nextEmote.Code)
+			return dto.EMOTE_ADD_ADD, "", fmt.Errorf("emote code \"%s\" already added", nextEmote.Code)
 		}
 	}
 	log.Infof("Current 7TV emotes: %d/%d", len(user.Emotes), user.EmoteSlots)

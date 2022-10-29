@@ -3,7 +3,7 @@ package eventsub
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -52,7 +52,7 @@ type eventSubNotification struct {
 }
 
 func (esm *EventsubManager) HandleWebhook(w http.ResponseWriter, r *http.Request) (event []byte, apiErr api.Error) {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Error(err)
 		return []byte{}, api.NewApiError(http.StatusBadRequest, err)
