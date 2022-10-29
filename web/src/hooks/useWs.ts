@@ -4,6 +4,7 @@ import { useStore } from "../store";
 export enum WsAction {
     TIME_CHANGED = "TIME_CHANGED",
     JOIN = "JOIN",
+    DEBUG = "DEBUG",
 }
 
 export function useWs(onMessage = (event: MessageEvent<any>) => { }) {

@@ -7,7 +7,7 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
-func (c *Client) CreateEventSubSubscription(userID string, webHookUrl string, subType string) (*helix.EventSubSubscriptionsResponse, error) {
+func (c *HelixClient) CreateEventSubSubscription(userID string, webHookUrl string, subType string) (*helix.EventSubSubscriptionsResponse, error) {
 	c.Client.SetAppAccessToken(c.AppAccessToken.AccessToken)
 	c.Client.SetUserAccessToken("")
 	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
@@ -24,7 +24,7 @@ func (c *Client) CreateEventSubSubscription(userID string, webHookUrl string, su
 	return response, err
 }
 
-func (c *Client) CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string) (*helix.EventSubSubscriptionsResponse, error) {
+func (c *HelixClient) CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string) (*helix.EventSubSubscriptionsResponse, error) {
 	c.Client.SetAppAccessToken(c.AppAccessToken.AccessToken)
 	c.Client.SetUserAccessToken("")
 	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
@@ -41,7 +41,7 @@ func (c *Client) CreateRewardEventSubSubscription(userID, webHookUrl, subType, r
 	return response, err
 }
 
-func (c *Client) GetAllSubscriptions(eventType string) []helix.EventSubSubscription {
+func (c *HelixClient) GetAllSubscriptions(eventType string) []helix.EventSubSubscription {
 	subs := []helix.EventSubSubscription{}
 
 	resp, err := c.Client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{Type: eventType})
@@ -61,4 +61,12 @@ func (c *Client) GetAllSubscriptions(eventType string) []helix.EventSubSubscript
 	}
 
 	return subs
+}
+
+func (c *HelixClient) RemoveEventSubSubscription(id string) (*helix.RemoveEventSubSubscriptionParamsResponse, error) {
+	return c.Client.RemoveEventSubSubscription(id)
+}
+
+func (c *HelixClient) GetEventSubSubscriptions(params *helix.EventSubSubscriptionsParams) (*helix.EventSubSubscriptionsResponse, error) {
+	return c.Client.GetEventSubSubscriptions(params)
 }

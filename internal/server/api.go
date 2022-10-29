@@ -17,7 +17,7 @@ import (
 type Api struct {
 	db                          *store.Database
 	cfg                         *config.Config
-	helixClient                 *helixclient.Client
+	helixClient                 helixclient.Client
 	userAdmin                   *user.UserAdmin
 	authClient                  *auth.Auth
 	bot                         *bot.Bot
@@ -29,7 +29,7 @@ type Api struct {
 	wsHandler                   *ws.WsHandler
 }
 
-func NewApi(cfg *config.Config, db *store.Database, helixClient *helixclient.Client, userAdmin *user.UserAdmin, authClient *auth.Auth, bot *bot.Bot, emoteChief *emotechief.EmoteChief, eventsubManager *eventsub.EventsubManager, eventsubSubscriptionManager *eventsub.SubscriptionManager, channelPointManager *channelpoint.ChannelPointManager, sevenTvClient emoteservice.ApiClient, wsHandler *ws.WsHandler) *Api {
+func NewApi(cfg *config.Config, db *store.Database, helixClient helixclient.Client, userAdmin *user.UserAdmin, authClient *auth.Auth, bot *bot.Bot, emoteChief *emotechief.EmoteChief, eventsubManager *eventsub.EventsubManager, eventsubSubscriptionManager *eventsub.SubscriptionManager, channelPointManager *channelpoint.ChannelPointManager, sevenTvClient emoteservice.ApiClient, wsHandler *ws.WsHandler) *Api {
 	return &Api{
 		db:                          db,
 		cfg:                         cfg,

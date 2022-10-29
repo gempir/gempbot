@@ -17,11 +17,11 @@ import (
 type UserAdmin struct {
 	cfg         *config.Config
 	db          *store.Database
-	helixClient *helixclient.Client
+	helixClient helixclient.Client
 	chatClient  *chat.ChatClient
 }
 
-func NewUserAdmin(cfg *config.Config, db *store.Database, helixClient *helixclient.Client, chatClient *chat.ChatClient) *UserAdmin {
+func NewUserAdmin(cfg *config.Config, db *store.Database, helixClient helixclient.Client, chatClient *chat.ChatClient) *UserAdmin {
 	return &UserAdmin{cfg, db, helixClient, chatClient}
 }
 

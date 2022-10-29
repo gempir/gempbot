@@ -13,7 +13,7 @@ import (
 func (a *Api) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 
-	resp, err := a.helixClient.Client.RequestUserAccessToken(code)
+	resp, err := a.helixClient.RequestUserAccessToken(code)
 	if err != nil || resp.StatusCode >= 400 {
 		log.Errorf("failed to request userAccessToken: %s %s", err, resp.ErrorMessage)
 		a.dashboardRedirect(w, r, "")
@@ -21,7 +21,7 @@ func (a *Api) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// validate
-	success, validateResp, err := a.helixClient.Client.ValidateToken(resp.Data.AccessToken)
+	success, validateResp, err := a.helixClient.ValidateToken(resp.Data.AccessToken)
 	if !success || err != nil {
 		fmt.Fprintf(w, "failed to veryify new Token %s", err)
 		return

@@ -76,7 +76,7 @@ type CreateCustomRewardResponseDataItem struct {
 	CooldownExpiresAt                 interface{} `json:"cooldown_expires_at"`
 }
 
-func (c *Client) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (CreateCustomRewardResponseDataItem, error) {
+func (c *HelixClient) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (CreateCustomRewardResponseDataItem, error) {
 	log.Infof("Updating Reward for user %s reward title: %s", userID, reward.Title)
 
 	var response CreateCustomRewardResponse
@@ -133,7 +133,7 @@ type UpdateRedemptionStatusResponse struct {
 	} `json:"data"`
 }
 
-func (c *Client) UpdateRedemptionStatus(broadcasterID, rewardID string, redemptionID string, statusSuccess bool) error {
+func (c *HelixClient) UpdateRedemptionStatus(broadcasterID, rewardID string, redemptionID string, statusSuccess bool) error {
 	token, err := c.db.GetUserAccessToken(broadcasterID)
 	if err != nil {
 		return fmt.Errorf("failed to get userAccess token to update redemption status for %s", broadcasterID)
@@ -205,7 +205,7 @@ func (c *Client) UpdateRedemptionStatus(broadcasterID, rewardID string, redempti
 	return nil
 }
 
-func (c *Client) DeleteReward(userID string, userAccessToken string, rewardID string) error {
+func (c *HelixClient) DeleteReward(userID string, userAccessToken string, rewardID string) error {
 	method := http.MethodDelete
 	reqUrl, err := url.Parse("https://api.twitch.tv/helix/channel_points/custom_rewards")
 	if err != nil {

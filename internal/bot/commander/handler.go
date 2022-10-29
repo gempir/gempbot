@@ -19,11 +19,11 @@ import (
 type Handler struct {
 	cfg         *config.Config
 	db          *store.Database
-	helixClient *helixclient.Client
+	helixClient helixclient.Client
 	chatSay     func(channel, message string)
 }
 
-func NewHandler(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, chatSay func(channel, message string)) *Handler {
+func NewHandler(cfg *config.Config, helixClient helixclient.Client, db *store.Database, chatSay func(channel, message string)) *Handler {
 	return &Handler{
 		cfg:         cfg,
 		db:          db,
@@ -71,9 +71,9 @@ func (h *Handler) lockOrCancelPrediction(payload dto.CommandPayload, status stri
 		h.handleError(payload.Msg, errors.New("no api token, broadcaster needs to login again in dashboard"))
 		return
 	}
-	h.helixClient.Client.SetUserAccessToken(token.AccessToken)
-	resp, err = h.helixClient.Client.EndPrediction(&helix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: status})
-	h.helixClient.Client.SetUserAccessToken("")
+	h.helixClient.SetUserAccessToken(token.AccessToken)
+	resp, err = h.helixClient.EndPrediction(&helix.EndPredictionParams{BroadcasterID: payload.Msg.RoomID, ID: prediction.ID, Status: status})
+	h.helixClient.SetUserAccessToken("")
 
 	if err != nil {
 		log.Error(err)

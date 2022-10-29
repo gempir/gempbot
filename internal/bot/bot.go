@@ -17,13 +17,13 @@ type Bot struct {
 	startTime   time.Time
 	cfg         *config.Config
 	db          *store.Database
-	helixClient *helixclient.Client
+	helixClient helixclient.Client
 	listener    *commander.Listener
 	Done        chan bool
 	ChatClient  *chat.ChatClient
 }
 
-func NewBot(cfg *config.Config, db *store.Database, helixClient *helixclient.Client) *Bot {
+func NewBot(cfg *config.Config, db *store.Database, helixClient helixclient.Client) *Bot {
 	chatClient := chat.NewClient(cfg)
 
 	handler := commander.NewHandler(cfg, helixClient, db, chatClient.Say)

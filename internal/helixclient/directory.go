@@ -5,7 +5,7 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
-func (c *Client) GetTopChannels() []string {
+func (c *HelixClient) GetTopChannels() []string {
 	response, err := c.Client.GetStreams(&helix.StreamsParams{Type: "live", First: 100})
 	if err != nil {
 		log.Error(err.Error())

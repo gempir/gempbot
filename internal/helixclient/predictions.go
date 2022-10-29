@@ -8,7 +8,7 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
-func (c *Client) GetPredictions(params *helix.PredictionsParams) (*helix.PredictionsResponse, error) {
+func (c *HelixClient) GetPredictions(params *helix.PredictionsParams) (*helix.PredictionsResponse, error) {
 	token, err := c.db.GetUserAccessToken(params.BroadcasterID)
 	if err != nil {
 		return &helix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
@@ -31,7 +31,7 @@ func (c *Client) GetPredictions(params *helix.PredictionsParams) (*helix.Predict
 	return resp, nil
 }
 
-func (c *Client) EndPrediction(params *helix.EndPredictionParams) (*helix.PredictionsResponse, error) {
+func (c *HelixClient) EndPrediction(params *helix.EndPredictionParams) (*helix.PredictionsResponse, error) {
 	token, err := c.db.GetUserAccessToken(params.BroadcasterID)
 	if err != nil {
 		return &helix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")
@@ -54,7 +54,7 @@ func (c *Client) EndPrediction(params *helix.EndPredictionParams) (*helix.Predic
 	return resp, nil
 }
 
-func (c *Client) CreatePrediction(params *helix.CreatePredictionParams) (*helix.PredictionsResponse, error) {
+func (c *HelixClient) CreatePrediction(params *helix.CreatePredictionParams) (*helix.PredictionsResponse, error) {
 	token, err := c.db.GetUserAccessToken(params.BroadcasterID)
 	if err != nil {
 		return &helix.PredictionsResponse{}, fmt.Errorf("bot has no access token, broadcaster must login")

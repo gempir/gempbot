@@ -40,7 +40,7 @@ func (t *TokenClaims) Valid() error {
 	return nil
 }
 
-func NewAuth(cfg *config.Config, db *store.Database, helixClient *helixclient.Client) *Auth {
+func NewAuth(cfg *config.Config, db *store.Database, helixClient helixclient.Client) *Auth {
 	return &Auth{
 		cfg:         cfg,
 		db:          db,
@@ -49,7 +49,7 @@ func NewAuth(cfg *config.Config, db *store.Database, helixClient *helixclient.Cl
 }
 
 type Auth struct {
-	helixClient *helixclient.Client
+	helixClient helixclient.Client
 	db          *store.Database
 	cfg         *config.Config
 }
@@ -62,6 +62,21 @@ func (a *Auth) AttemptAuth(r *http.Request, w http.ResponseWriter) (helix.Valida
 	}
 
 	return resp, token, nil
+}
+
+func (a *Auth) CanAuthenticate(r *http.Request) bool {
+	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if scToken != "" {
+		return true
+	}
+
+	for _, cookie := range r.Cookies() {
+		if cookie.Name == "scToken" {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
@@ -97,7 +112,7 @@ func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store
 		return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("failed to get userAccessTokenData: %s", err.Error()))
 	}
 
-	success, resp, err := a.helixClient.Client.ValidateToken(token.AccessToken)
+	success, resp, err := a.helixClient.ValidateToken(token.AccessToken)
 	if !success || err != nil {
 		if err != nil {
 			log.Errorf("token did not validate: %s", err)
@@ -116,7 +131,7 @@ func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store
 				return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("failed to get userAccessTokenData: %s", err.Error()))
 			}
 
-			success, resp, err = a.helixClient.Client.ValidateToken(refreshedToken.AccessToken)
+			success, resp, err = a.helixClient.ValidateToken(refreshedToken.AccessToken)
 			if !success || err != nil {
 				if err != nil {
 					log.Errorf("refreshed Token did not validate: %s", err)

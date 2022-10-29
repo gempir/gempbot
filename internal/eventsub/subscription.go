@@ -13,10 +13,10 @@ import (
 type SubscriptionManager struct {
 	cfg         *config.Config
 	db          *store.Database
-	helixClient *helixclient.Client
+	helixClient helixclient.Client
 }
 
-func NewSubscriptionManager(cfg *config.Config, db *store.Database, helixClient *helixclient.Client) *SubscriptionManager {
+func NewSubscriptionManager(cfg *config.Config, db *store.Database, helixClient helixclient.Client) *SubscriptionManager {
 	return &SubscriptionManager{
 		helixClient: helixClient,
 		db:          db,
@@ -73,7 +73,7 @@ func (esm *SubscriptionManager) SubscribeRewardRedemptionUpdate(userID, rewardId
 }
 
 func (esm *SubscriptionManager) RemoveSubscription(subscriptionID string) error {
-	response, err := esm.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
+	response, err := esm.helixClient.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
 		return err
 	}

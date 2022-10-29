@@ -15,11 +15,11 @@ import (
 
 type ChannelPointManager struct {
 	cfg         *config.Config
-	helixClient *helixclient.Client
+	helixClient helixclient.Client
 	db          *store.Database
 }
 
-func NewChannelPointManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database) *ChannelPointManager {
+func NewChannelPointManager(cfg *config.Config, helixClient helixclient.Client, db *store.Database) *ChannelPointManager {
 	return &ChannelPointManager{
 		cfg:         cfg,
 		helixClient: helixClient,

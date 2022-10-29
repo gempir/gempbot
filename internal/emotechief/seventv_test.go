@@ -37,7 +37,7 @@ func TestCanGetSevenTvEmoteFromMessage(t *testing.T) {
 }
 
 func TestCanNotVerifySevenTvEmoteRedemption(t *testing.T) {
-	ec := emotechief.NewEmoteChief(config.NewMockConfig(), &store.Database{}, &helixclient.Client{}, chat.NewClient(config.NewMockConfig()), emoteservice.NewSevenTvClient(store.NewMockStore()))
+	ec := emotechief.NewEmoteChief(config.NewMockConfig(), &store.Database{}, helixclient.NewMockClient(), chat.NewClient(config.NewMockConfig()), emoteservice.NewSevenTvClient(store.NewMockStore()))
 
 	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
@@ -51,7 +51,7 @@ func TestCanNotVerifySevenTvEmoteRedemption(t *testing.T) {
 
 func TestCanVerifySevenTvEmoteRedemption(t *testing.T) {
 	cfg := config.NewMockConfig()
-	ec := emotechief.NewEmoteChief(cfg, store.NewMockStore(), &helixclient.Client{}, chat.NewClient(cfg), emoteservice.NewMockApiClient())
+	ec := emotechief.NewEmoteChief(cfg, store.NewMockStore(), helixclient.NewMockClient(), chat.NewClient(cfg), emoteservice.NewMockApiClient())
 
 	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
