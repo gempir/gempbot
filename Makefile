@@ -9,6 +9,9 @@ export $(shell sed 's/=.*//' .env.development)
 build_server:
 	go run main.go
 
+staticcheck:
+	staticcheck ./...
+
 web: 
 	yarn dev
 

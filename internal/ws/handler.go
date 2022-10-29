@@ -57,7 +57,7 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 	writeQueue := make(chan []byte)
 	h.writeQueues.Store(apiResp.Data.UserID, writeQueue)
 	go startWriter(conn, writeQueue)
-	h.mediaManager.RegisterWriter(apiResp.Data.UserID, func(message []byte) {
+	connectionId := h.mediaManager.RegisterConnection(apiResp.Data.UserID, func(message []byte) {
 		writeQueue <- message
 	})
 
@@ -75,7 +75,7 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 			log.Errorf("ws read failed: %s", err)
 			break
 		}
-		h.handleMessage(apiResp.Data.UserID, message)
+		h.handleMessage(connectionId, apiResp.Data.UserID, message)
 	}
 }
 
@@ -96,11 +96,16 @@ type TimeChanged struct {
 	VideoId string  `json:"videoId"`
 }
 
+type Join struct {
+	Action  string `json:"action"`
+	Channel string `json:"channel"`
+}
+
 type BaseMessage struct {
 	Action string `json:"action"`
 }
 
-func (h *WsHandler) handleMessage(userId string, byteMessage []byte) {
+func (h *WsHandler) handleMessage(connectionId string, userId string, byteMessage []byte) {
 	var baseMessage BaseMessage
 	err := json.Unmarshal(byteMessage, &baseMessage)
 	if err != nil {
@@ -116,7 +121,15 @@ func (h *WsHandler) handleMessage(userId string, byteMessage []byte) {
 			log.Errorf("Failed to unmarshal TimeChanged message: %s", err)
 			return
 		}
-		h.mediaManager.HandleTimeChange(userId, msg.VideoId, msg.Seconds)
+		h.mediaManager.HandleTimeChange(connectionId, userId, msg.VideoId, msg.Seconds)
+	case "JOIN":
+		var msg Join
+		err := json.Unmarshal(byteMessage, &msg)
+		if err != nil {
+			log.Errorf("Failed to unmarshal Join message: %s", err)
+			return
+		}
+		h.mediaManager.HandleJoin(connectionId, userId, msg.Channel)
 	}
 }
 

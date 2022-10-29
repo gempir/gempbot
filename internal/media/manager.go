@@ -1,7 +1,11 @@
 package media
 
 import (
+	"encoding/json"
+
+	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
+	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync"
 )
 
@@ -12,49 +16,91 @@ const (
 )
 
 type MediaManager struct {
-	db      store.Store
-	states  *xsync.MapOf[string, *MediaPlayerState]
-	writers *xsync.MapOf[string, func(message []byte)]
+	db          store.Store
+	rooms       *xsync.MapOf[string, *Room]
+	connections *xsync.MapOf[string, *Connection]
 }
 
-type MediaPlayerState struct {
+type Connection struct {
+	id     string
+	writer func(message []byte)
+}
+
+type Room struct {
 	MediaType      MEDIA_TYPE
 	CurrentVideoId string
 	CurrentTime    float32
+	users          *xsync.MapOf[string, *Connection]
 }
 
 func NewMediaManager(db store.Store) *MediaManager {
 	return &MediaManager{
-		db:      db,
-		states:  xsync.NewMapOf[*MediaPlayerState](),
-		writers: xsync.NewMapOf[func(message []byte)](),
+		db:          db,
+		rooms:       xsync.NewMapOf[*Room](),
+		connections: xsync.NewMapOf[*Connection](),
 	}
 }
 
-func (m *MediaManager) HandleTimeChange(userID string, videoId string, currentTime float32) {
-	state := m.getState(userID)
+func (m *MediaManager) HandleJoin(connectionId string, userID string, channel string) {
+	joinChannelId := channel
+	if channel == "" {
+		joinChannelId = userID
+	}
+
+	connection, ok := m.connections.Load(connectionId)
+	if !ok {
+		return
+	}
+
+	room, ok := m.rooms.Load(connectionId)
+	if !ok {
+		room = &Room{users: xsync.NewMapOf[*Connection]()}
+		m.rooms.Store(joinChannelId, room)
+	}
+
+	room.users.Store(connectionId, connection)
+}
+
+type TimeChangedMessage struct {
+	Action      string  `json:"action"`
+	VideoId     string  `json:"videoId"`
+	CurrentTime float32 `json:"currentTime"`
+}
+
+func (m *MediaManager) HandleTimeChange(connectionId string, userID string, videoId string, currentTime float32) {
+	state := m.getRoom(userID)
 
 	state.CurrentTime = currentTime
 	state.CurrentVideoId = videoId
 
-	// writer, ok := m.writers.Load(userID)
-	// if !ok {
-	// 	return
-	// }
-	// writer([]byte("time change"))
+	resultMessage, err := json.Marshal(TimeChangedMessage{CurrentTime: currentTime, VideoId: videoId, Action: "TIME_CHANGED"})
+	if err != nil {
+		log.Error(err)
+	}
+
+	state.users.Range(func(key string, conn *Connection) bool {
+		if conn.id != connectionId {
+			conn.writer(resultMessage)
+		}
+		return true
+	})
 }
 
-func (m *MediaManager) getState(channelId string) *MediaPlayerState {
-	state, ok := m.states.Load(channelId)
+func (m *MediaManager) getRoom(channelId string) *Room {
+	state, ok := m.rooms.Load(channelId)
 	if ok {
 		return state
 	}
 
-	newState := &MediaPlayerState{MediaType: MEDIA_TYPE_YOUTUBE}
-	m.states.Store(channelId, newState)
+	newState := &Room{MediaType: MEDIA_TYPE_YOUTUBE}
+	m.rooms.Store(channelId, newState)
 	return newState
 }
 
-func (m *MediaManager) RegisterWriter(userID string, writeFunc func(message []byte)) {
-	m.writers.Store(userID, writeFunc)
+func (m *MediaManager) RegisterConnection(userID string, writeFunc func(message []byte)) string {
+	connectionId := uuid.NewString()
+
+	m.connections.Store(connectionId, &Connection{writer: writeFunc, id: connectionId})
+
+	return connectionId
 }

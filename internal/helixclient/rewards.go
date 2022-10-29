@@ -136,7 +136,7 @@ type UpdateRedemptionStatusResponse struct {
 func (c *Client) UpdateRedemptionStatus(broadcasterID, rewardID string, redemptionID string, statusSuccess bool) error {
 	token, err := c.db.GetUserAccessToken(broadcasterID)
 	if err != nil {
-		return fmt.Errorf("Failed to get userAccess token to update redemption status for %s", broadcasterID)
+		return fmt.Errorf("failed to get userAccess token to update redemption status for %s", broadcasterID)
 	}
 
 	request := UpdateRedemptionStatusRequest{}
@@ -186,10 +186,10 @@ func (c *Client) UpdateRedemptionStatus(broadcasterID, rewardID string, redempti
 		var response ErrorResponse
 		err = json.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			return fmt.Errorf("Failed to unmarshal redemption status error response: %s", err.Error())
+			return fmt.Errorf("failed to unmarshal redemption status error response: %s", err.Error())
 		}
 
-		return fmt.Errorf("Failed update redemption: %s", response.Message)
+		return fmt.Errorf("failed update redemption: %s", response.Message)
 	}
 
 	var response UpdateRedemptionStatusResponse
@@ -239,10 +239,10 @@ func (c *Client) DeleteReward(userID string, userAccessToken string, rewardID st
 		var response ErrorResponse
 		err = json.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			return fmt.Errorf("Failed to unmarshal reward error response: %s", err.Error())
+			return fmt.Errorf("failed to unmarshal reward error response: %s", err.Error())
 		}
 
-		return fmt.Errorf("Failed to create reward: %s", response.Message)
+		return fmt.Errorf("failed to create reward: %s", response.Message)
 	}
 
 	return nil

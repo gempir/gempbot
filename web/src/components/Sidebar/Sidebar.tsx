@@ -8,6 +8,7 @@ import { HomeIcon, GiftIcon, AdjustmentsIcon, BanIcon, ChatAlt2Icon, PlayIcon } 
 
 export function Sidebar() {
     const [userConfig] = useUserConfig();
+    const isDev = useStore(state => state.baseUrl).includes("localhost");
     const loggedIn = useStore(state => Boolean(state.scToken));
 
     return <div className="p-4 bg-gray-800 px-6 shadow flex flex-col relative h-screen">
@@ -20,9 +21,9 @@ export function Sidebar() {
             <Link href="/bot" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><ChatAlt2Icon className="h-6" /> Bot</a>
             </Link>
-            <Link href="/media" >
+            {isDev && <Link href="/media" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><PlayIcon className="h-6" /> Media</a>
-            </Link>
+            </Link>}
             <Link href="/rewards" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><GiftIcon className="h-6" /> Rewards</a>
             </Link>
