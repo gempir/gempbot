@@ -21,14 +21,14 @@ import (
 
 type EventsubManager struct {
 	cfg         *config.Config
-	helixClient *helixclient.Client
+	helixClient helixclient.Client
 	db          *store.Database
 	emoteChief  *emotechief.EmoteChief
 	chatClient  *chat.ChatClient
 	ttlCache    *ttlcache.Cache
 }
 
-func NewEventsubManager(cfg *config.Config, helixClient *helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventsubManager {
+func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventsubManager {
 	cache := ttlcache.NewCache()
 	err := cache.SetTTL(time.Second * 60)
 	if err != nil {
@@ -241,7 +241,7 @@ func (esm *EventsubManager) SubscribeChannelPoints(userID string) {
 }
 
 func (esm *EventsubManager) RemoveEventSubSubscription(subscriptionID string) error {
-	response, err := esm.helixClient.Client.RemoveEventSubSubscription(subscriptionID)
+	response, err := esm.helixClient.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
 		return err
 	}
@@ -254,7 +254,7 @@ func (esm *EventsubManager) RemoveEventSubSubscription(subscriptionID string) er
 
 func (esm *EventsubManager) RemoveAllEventSubSubscriptions(userID string) {
 	// @TODO rework using the DB so we don't need to query literally every sub
-	resp, err := esm.helixClient.Client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
+	resp, err := esm.helixClient.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
 	if err != nil {
 		log.Errorf("Failed to get subscriptions: %s", err)
 		return
@@ -270,7 +270,7 @@ func (esm *EventsubManager) RemoveAllEventSubSubscriptions(userID string) {
 		}
 		log.Infof("Getting next subscriptions cursor: %s", cursor)
 
-		nextResp, err := esm.helixClient.Client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{After: cursor})
+		nextResp, err := esm.helixClient.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{After: cursor})
 		if err != nil {
 			log.Errorf("Failed to get subscriptions: %s", err)
 		}

@@ -32,7 +32,7 @@ func chunkBy(items []string, chunkSize int) (chunks [][]string) {
 }
 
 // GetUsersByUserIds receive userData for given ids
-func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error) {
+func (c *HelixClient) GetUsersByUserIds(userIDs []string) (map[string]UserData, error) {
 	var filteredUserIDs []string
 
 	for _, id := range userIDs {
@@ -97,7 +97,7 @@ func (c *Client) GetUsersByUserIds(userIDs []string) (map[string]UserData, error
 }
 
 // GetUsersByUsernames fetches userdata from helix
-func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, error) {
+func (c *HelixClient) GetUsersByUsernames(usernames []string) (map[string]UserData, error) {
 	var filteredUsernames []string
 
 	for _, username := range usernames {
@@ -159,7 +159,7 @@ func (c *Client) GetUsersByUsernames(usernames []string) (map[string]UserData, e
 	return result, nil
 }
 
-func (c *Client) GetUserByUsername(username string) (UserData, error) {
+func (c *HelixClient) GetUserByUsername(username string) (UserData, error) {
 	result, err := c.GetUsersByUsernames([]string{username})
 	if err != nil || len(result) != 1 {
 		return UserData{}, err
@@ -168,7 +168,7 @@ func (c *Client) GetUserByUsername(username string) (UserData, error) {
 	return result[username], nil
 }
 
-func (c *Client) GetUserByUserID(userID string) (UserData, error) {
+func (c *HelixClient) GetUserByUserID(userID string) (UserData, error) {
 	result, err := c.GetUsersByUserIds([]string{userID})
 	if err != nil || len(result) != 1 {
 		return UserData{}, err

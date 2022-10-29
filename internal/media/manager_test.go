@@ -3,12 +3,13 @@ package media
 import (
 	"testing"
 
+	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCanRegisterConnectionAndHandleJoin(t *testing.T) {
-	mgr := NewMediaManager(store.NewMockStore())
+	mgr := NewMediaManager(store.NewMockStore(), helixclient.NewMockClient())
 
 	connId := mgr.RegisterConnection("conn1", func(message []byte) {})
 	mgr.HandleJoin(connId, "userId1", "")
@@ -23,7 +24,7 @@ func TestCanRegisterConnectionAndHandleJoin(t *testing.T) {
 }
 
 func TestAbortsJoinWhenNoConnectionFound(t *testing.T) {
-	mgr := NewMediaManager(store.NewMockStore())
+	mgr := NewMediaManager(store.NewMockStore(), helixclient.NewMockClient())
 
 	mgr.HandleJoin("conn1", "userId1", "")
 
@@ -32,14 +33,14 @@ func TestAbortsJoinWhenNoConnectionFound(t *testing.T) {
 }
 
 func TestCanCreateRoom(t *testing.T) {
-	mgr := NewMediaManager(store.NewMockStore())
+	mgr := NewMediaManager(store.NewMockStore(), helixclient.NewMockClient())
 
 	_ = mgr.getRoom("userId1")
 	assert.Equal(t, 1, mgr.rooms.Size())
 }
 
 func TestCanGetExistingRoom(t *testing.T) {
-	mgr := NewMediaManager(store.NewMockStore())
+	mgr := NewMediaManager(store.NewMockStore(), helixclient.NewMockClient())
 
 	room := mgr.getRoom("userId1")
 	room.CurrentTime = 10
@@ -50,7 +51,7 @@ func TestCanGetExistingRoom(t *testing.T) {
 }
 
 func TestCanHandleTimeChange(t *testing.T) {
-	mgr := NewMediaManager(store.NewMockStore())
+	mgr := NewMediaManager(store.NewMockStore(), helixclient.NewMockClient())
 
 	connId := mgr.RegisterConnection("conn1", func(message []byte) {})
 	mgr.HandleJoin(connId, "userId1", "")

@@ -3,6 +3,7 @@ package media
 import (
 	"encoding/json"
 
+	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/google/uuid"
@@ -17,6 +18,7 @@ const (
 
 type MediaManager struct {
 	db          store.Store
+	helixClient helixclient.Client
 	rooms       *xsync.MapOf[string, *Room]
 	connections *xsync.MapOf[string, *Connection]
 }
@@ -33,9 +35,10 @@ type Room struct {
 	users          *xsync.MapOf[string, *Connection]
 }
 
-func NewMediaManager(db store.Store) *MediaManager {
+func NewMediaManager(db store.Store, helixClient helixclient.Client) *MediaManager {
 	return &MediaManager{
 		db:          db,
+		helixClient: helixClient,
 		rooms:       xsync.NewMapOf[*Room](),
 		connections: xsync.NewMapOf[*Connection](),
 	}

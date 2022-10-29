@@ -13,8 +13,32 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
+type Client interface {
+	StartRefreshTokenRoutine()
+	RefreshToken(token store.UserAccessToken) error
+	GetTopChannels() []string
+	CreateEventSubSubscription(userID string, webHookUrl string, subType string) (*helix.EventSubSubscriptionsResponse, error)
+	CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string) (*helix.EventSubSubscriptionsResponse, error)
+	RemoveEventSubSubscription(id string) (*helix.RemoveEventSubSubscriptionParamsResponse, error)
+	GetEventSubSubscriptions(params *helix.EventSubSubscriptionsParams) (*helix.EventSubSubscriptionsResponse, error)
+	GetAllSubscriptions(eventType string) []helix.EventSubSubscription
+	GetPredictions(params *helix.PredictionsParams) (*helix.PredictionsResponse, error)
+	EndPrediction(params *helix.EndPredictionParams) (*helix.PredictionsResponse, error)
+	CreatePrediction(params *helix.CreatePredictionParams) (*helix.PredictionsResponse, error)
+	CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (CreateCustomRewardResponseDataItem, error)
+	UpdateRedemptionStatus(broadcasterID, rewardID string, redemptionID string, statusSuccess bool) error
+	DeleteReward(userID string, userAccessToken string, rewardID string) error
+	GetUsersByUserIds(userIDs []string) (map[string]UserData, error)
+	GetUsersByUsernames(usernames []string) (map[string]UserData, error)
+	GetUserByUsername(username string) (UserData, error)
+	GetUserByUserID(userID string) (UserData, error)
+	SetUserAccessToken(token string)
+	ValidateToken(accessToken string) (bool, *helix.ValidateTokenResponse, error)
+	RequestUserAccessToken(code string) (*helix.UserAccessTokenResponse, error)
+}
+
 // Client wrapper for helix
-type Client struct {
+type HelixClient struct {
 	clientID       string
 	clientSecret   string
 	eventSubSecret string
@@ -41,7 +65,7 @@ const TWITCH_API = "https://api.twitch.tv/"
 var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions moderation:read"}
 
 // NewClient Create helix client
-func NewClient(cfg *config.Config, db store.Store) *Client {
+func NewClient(cfg *config.Config, db store.Store) *HelixClient {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
@@ -53,7 +77,7 @@ func NewClient(cfg *config.Config, db store.Store) *Client {
 
 	token := setOrUpdateAccessToken(client, db)
 
-	return &Client{
+	return &HelixClient{
 		clientID:       cfg.ClientID,
 		clientSecret:   cfg.ClientSecret,
 		eventSubSecret: cfg.Secret,
@@ -65,7 +89,7 @@ func NewClient(cfg *config.Config, db store.Store) *Client {
 }
 
 // StartRefreshTokenRoutine refresh our token
-func (c *Client) StartRefreshTokenRoutine() {
+func (c *HelixClient) StartRefreshTokenRoutine() {
 	setOrUpdateAccessToken(c.Client, c.db)
 	go func() {
 		for range time.NewTicker(1 * time.Hour).C {
@@ -81,7 +105,7 @@ func (c *Client) StartRefreshTokenRoutine() {
 	}()
 }
 
-func (c *Client) refreshUserAccessTokens() {
+func (c *HelixClient) refreshUserAccessTokens() {
 	tokens := c.db.GetAllUserAccessToken()
 	for _, token := range tokens {
 		if time.Since(token.UpdatedAt) > 3*time.Hour {
@@ -96,7 +120,7 @@ func (c *Client) refreshUserAccessTokens() {
 	}
 }
 
-func (c *Client) SetAppAccessToken(ctx context.Context, token helix.AccessCredentials) {
+func (c *HelixClient) SetAppAccessToken(ctx context.Context, token helix.AccessCredentials) {
 	c.AppAccessToken = token
 	c.Client.SetAppAccessToken(token.AccessToken)
 	err := c.db.SaveAppAccessToken(ctx, token.AccessToken, token.RefreshToken, strings.Join(token.Scopes, " "), token.ExpiresIn)
@@ -127,7 +151,7 @@ func setOrUpdateAccessToken(client *helix.Client, db store.Store) store.AppAcces
 	return token
 }
 
-func (c *Client) RefreshToken(token store.UserAccessToken) error {
+func (c *HelixClient) RefreshToken(token store.UserAccessToken) error {
 	resp, err := c.Client.RefreshUserAccessToken(token.RefreshToken)
 	if err != nil {
 		return err
@@ -139,4 +163,16 @@ func (c *Client) RefreshToken(token store.UserAccessToken) error {
 	}
 
 	return nil
+}
+
+func (c *HelixClient) SetUserAccessToken(token string) {
+	c.Client.SetUserAccessToken(token)
+}
+
+func (c *HelixClient) ValidateToken(accessToken string) (bool, *helix.ValidateTokenResponse, error) {
+	return c.Client.ValidateToken(accessToken)
+}
+
+func (c *HelixClient) RequestUserAccessToken(code string) (*helix.UserAccessTokenResponse, error) {
+	return c.Client.RequestUserAccessToken(code)
 }

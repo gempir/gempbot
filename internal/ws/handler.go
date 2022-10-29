@@ -9,15 +9,12 @@ import (
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/media"
 	"github.com/gorilla/websocket"
-	"github.com/puzpuzpuz/xsync"
 )
 
 type WsHandler struct {
 	upgrader     websocket.Upgrader
 	authClient   *auth.Auth
-	clients      *xsync.MapOf[string, *websocket.Conn]
 	mediaManager *media.MediaManager
-	writeQueues  *xsync.MapOf[string, chan []byte]
 }
 
 func NewWsHandler(authClient *auth.Auth, mediaManager *media.MediaManager) *WsHandler {
@@ -31,8 +28,6 @@ func NewWsHandler(authClient *auth.Auth, mediaManager *media.MediaManager) *WsHa
 		},
 		authClient:   authClient,
 		mediaManager: mediaManager,
-		clients:      xsync.NewMapOf[*websocket.Conn](),
-		writeQueues:  xsync.NewMapOf[chan []byte](),
 	}
 }
 
@@ -41,10 +36,14 @@ type WsMessage struct {
 }
 
 func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
-	apiResp, _, apiErr := h.authClient.AttemptAuth(r, w)
-	if apiErr != nil {
-		api.WriteJson(w, "Auth error: "+apiErr.Error(), http.StatusUnauthorized)
-		return
+	userId := ""
+	if r.Header.Get("Authorization") != "" {
+		apiResp, _, apiErr := h.authClient.AttemptAuth(r, w)
+		if apiErr != nil {
+			api.WriteJson(w, "Auth error: "+apiErr.Error(), http.StatusUnauthorized)
+			return
+		}
+		userId = apiResp.Data.UserID
 	}
 
 	conn, err := h.upgrader.Upgrade(w, r, nil)
@@ -53,21 +52,17 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.clients.Store(apiResp.Data.UserID, conn)
 	writeQueue := make(chan []byte)
-	h.writeQueues.Store(apiResp.Data.UserID, writeQueue)
-	go startWriter(conn, writeQueue)
-	connectionId := h.mediaManager.RegisterConnection(apiResp.Data.UserID, func(message []byte) {
+
+	connectionId := h.mediaManager.RegisterConnection(userId, func(message []byte) {
 		writeQueue <- message
 	})
 
+	go startWriter(conn, writeQueue)
+
 	defer func() {
-		h.clients.Delete(apiResp.Data.UserID)
-		h.writeQueues.Delete(apiResp.Data.UserID)
 		conn.Close()
 	}()
-
-	h.writeMessage(conn, WsMessage{"Authenticated you as " + apiResp.Data.Login})
 
 	for {
 		_, message, err := conn.ReadMessage()
@@ -75,7 +70,8 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 			log.Errorf("ws read failed: %s", err)
 			break
 		}
-		h.handleMessage(connectionId, apiResp.Data.UserID, message)
+
+		h.handleMessage(connectionId, userId, message)
 	}
 }
 
@@ -130,24 +126,5 @@ func (h *WsHandler) handleMessage(connectionId string, userId string, byteMessag
 			return
 		}
 		h.mediaManager.HandleJoin(connectionId, userId, msg.Channel)
-	}
-}
-
-func (h *WsHandler) writeMessage(conn *websocket.Conn, message WsMessage) {
-	if conn == nil {
-		log.Error("Can't write on nil conn")
-		return
-	}
-
-	result, err := json.Marshal(message)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	err = conn.WriteMessage(websocket.TextMessage, result)
-	if err != nil {
-		log.Error(err)
-		return
 	}
 }

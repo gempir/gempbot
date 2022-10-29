@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
 import { useWs, WsAction } from "../../hooks/useWs";
 
-export function MediaPage(): JSX.Element {
+export function MediaPage({ channel }: { channel: string }): JSX.Element {
     const player = useRef<YouTube | null>(null);
 
     const onPlayerReady: YouTubeProps['onReady'] = (event) => {
@@ -41,7 +41,7 @@ export function MediaPage(): JSX.Element {
     const { lastJsonMessage, sendJsonMessage, getWebSocket } = useWs(handleWsMessage);
 
     useEffect(() => {
-        sendJsonMessage({ action: WsAction.JOIN, channel: "" });
+        sendJsonMessage({ action: WsAction.JOIN, channel: channel });
     }, []);
 
     return <div className="p-4 w-full max-h-screen flex gap-4">

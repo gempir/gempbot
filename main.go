@@ -48,7 +48,7 @@ func main() {
 	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 
-	mediaManager := media.NewMediaManager(db)
+	mediaManager := media.NewMediaManager(db, helixClient)
 	wsHandler := ws.NewWsHandler(authClient, mediaManager)
 
 	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager, seventvClient, wsHandler)
