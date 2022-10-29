@@ -1,8 +1,9 @@
-import { useWs, WsAction } from "../../hooks/useWs";
+import { useEffect, useRef } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
+import { useWs, WsAction } from "../../hooks/useWs";
 
 export function MediaPage(): JSX.Element {
-    const { lastJsonMessage, sendJsonMessage } = useWs();
+    const player = useRef<YouTube | null>(null);
 
     const onPlayerReady: YouTubeProps['onReady'] = (event) => {
         sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'] });
@@ -25,10 +26,28 @@ export function MediaPage(): JSX.Element {
         },
     };
 
+    const handleWsMessage = (event: MessageEvent<any>): void => {
+        console.log("ev", event);
+        const data = JSON.parse(event.data);
+
+        if (data.action === WsAction.TIME_CHANGED) {
+            if (player.current) {
+                console.log(player.current.getInternalPlayer());
+                player.current.getInternalPlayer().seekTo(data.currentTime);
+            }
+        }
+    };
+
+    const { lastJsonMessage, sendJsonMessage, getWebSocket } = useWs(handleWsMessage);
+
+    useEffect(() => {
+        sendJsonMessage({ action: WsAction.JOIN, channel: "" });
+    }, []);
+
     return <div className="p-4 w-full max-h-screen flex gap-4">
         <div className="p-4 bg-gray-800 rounded shadow relative">
             {JSON.stringify(lastJsonMessage)}
-            <YouTube className="my-4" videoId="TjAa0wOe5k4" opts={opts} onReady={onPlayerReady} onPlay={onPlay} onStateChange={onStateChange} />
+            <YouTube ref={player} className="my-4" videoId="TjAa0wOe5k4" opts={opts} onReady={onPlayerReady} onPlay={onPlay} onStateChange={onStateChange} />
         </div>
     </div>;
 }

@@ -57,7 +57,7 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 	writeQueue := make(chan []byte)
 	h.writeQueues.Store(apiResp.Data.UserID, writeQueue)
 	go startWriter(conn, writeQueue)
-	h.mediaManager.RegisterWriter(apiResp.Data.UserID, func(message []byte) {
+	h.mediaManager.RegisterConnection(apiResp.Data.UserID, func(message []byte) {
 		writeQueue <- message
 	})
 
@@ -96,6 +96,11 @@ type TimeChanged struct {
 	VideoId string  `json:"videoId"`
 }
 
+type Join struct {
+	Action  string `json:"action"`
+	Channel string `json:"channel"`
+}
+
 type BaseMessage struct {
 	Action string `json:"action"`
 }
@@ -117,6 +122,14 @@ func (h *WsHandler) handleMessage(userId string, byteMessage []byte) {
 			return
 		}
 		h.mediaManager.HandleTimeChange(userId, msg.VideoId, msg.Seconds)
+	case "JOIN":
+		var msg Join
+		err := json.Unmarshal(byteMessage, &msg)
+		if err != nil {
+			log.Errorf("Failed to unmarshal Join message: %s", err)
+			return
+		}
+		h.mediaManager.HandleJoin(userId, msg.Channel)
 	}
 }
 
