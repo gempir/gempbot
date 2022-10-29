@@ -3,7 +3,7 @@ import YouTube, { YouTubeProps } from "react-youtube";
 import { useWs, WsAction } from "../../hooks/useWs";
 import { useStore } from "../../store";
 
-export function MediaPage({ channel }: { channel: string }): JSX.Element {
+export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
     const isLoggedIn = useStore(state => Boolean(state.scToken));
     const player = useRef<YouTube | null>(null);
 
