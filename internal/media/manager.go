@@ -5,6 +5,7 @@ import (
 
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
+	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync"
 )
 
@@ -21,6 +22,7 @@ type MediaManager struct {
 }
 
 type Connection struct {
+	id     string
 	writer func(message []byte)
 }
 
@@ -39,24 +41,24 @@ func NewMediaManager(db store.Store) *MediaManager {
 	}
 }
 
-func (m *MediaManager) HandleJoin(userID string, channel string) {
+func (m *MediaManager) HandleJoin(connectionId string, userID string, channel string) {
 	joinChannelId := channel
 	if channel == "" {
 		joinChannelId = userID
 	}
 
-	connection, ok := m.connections.Load(userID)
+	connection, ok := m.connections.Load(connectionId)
 	if !ok {
 		return
 	}
 
-	room, ok := m.rooms.Load(joinChannelId)
+	room, ok := m.rooms.Load(connectionId)
 	if !ok {
 		room = &Room{users: xsync.NewMapOf[*Connection]()}
 		m.rooms.Store(joinChannelId, room)
 	}
 
-	room.users.Store(userID, connection)
+	room.users.Store(connectionId, connection)
 }
 
 type TimeChangedMessage struct {
@@ -65,7 +67,7 @@ type TimeChangedMessage struct {
 	CurrentTime float32 `json:"currentTime"`
 }
 
-func (m *MediaManager) HandleTimeChange(userID string, videoId string, currentTime float32) {
+func (m *MediaManager) HandleTimeChange(connectionId string, userID string, videoId string, currentTime float32) {
 	state := m.getRoom(userID)
 
 	state.CurrentTime = currentTime
@@ -77,7 +79,9 @@ func (m *MediaManager) HandleTimeChange(userID string, videoId string, currentTi
 	}
 
 	state.users.Range(func(key string, conn *Connection) bool {
-		conn.writer(resultMessage)
+		if conn.id != connectionId {
+			conn.writer(resultMessage)
+		}
 		return true
 	})
 }
@@ -93,6 +97,10 @@ func (m *MediaManager) getRoom(channelId string) *Room {
 	return newState
 }
 
-func (m *MediaManager) RegisterConnection(userID string, writeFunc func(message []byte)) {
-	m.connections.Store(userID, &Connection{writer: writeFunc})
+func (m *MediaManager) RegisterConnection(userID string, writeFunc func(message []byte)) string {
+	connectionId := uuid.NewString()
+
+	m.connections.Store(connectionId, &Connection{writer: writeFunc, id: connectionId})
+
+	return connectionId
 }
