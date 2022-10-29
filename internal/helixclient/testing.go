@@ -74,7 +74,10 @@ func (m *MockHelixClient) GetUsersByUsernames(usernames []string) (map[string]Us
 }
 
 func (m *MockHelixClient) GetUserByUsername(username string) (UserData, error) {
-	return UserData{}, nil
+	return UserData{
+		ID:    "123",
+		Login: "testusergempir",
+	}, nil
 }
 
 func (m *MockHelixClient) GetUserByUserID(userID string) (UserData, error) {

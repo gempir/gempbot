@@ -26,7 +26,7 @@ func TestCanRegisterConnectionAndHandleJoin(t *testing.T) {
 func TestAbortsJoinWhenNoConnectionFound(t *testing.T) {
 	mgr := NewMediaManager(store.NewMockStore(), helixclient.NewMockClient())
 
-	mgr.HandleJoin("conn1", "userId1", "")
+	mgr.HandleJoin("conn1", "userId1", "channel")
 
 	assert.Equal(t, 0, mgr.connections.Size())
 	assert.Equal(t, 0, mgr.rooms.Size())
