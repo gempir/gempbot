@@ -15,10 +15,11 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
-func CreateApiToken(secret, userID string) string {
+func CreateApiToken(secret string, resp *helix.ValidateTokenResponse) string {
 	expirationTime := time.Now().Add(365 * 24 * time.Hour)
 	claims := &TokenClaims{
-		UserID: userID,
+		UserID: resp.Data.UserID,
+		Login:  resp.Data.Login,
 		StandardClaims: jwt.StandardClaims{
 			// In JWT, the expiry time is expressed as unix milliseconds
 			ExpiresAt: expirationTime.Unix(),
@@ -33,6 +34,7 @@ func CreateApiToken(secret, userID string) string {
 
 type TokenClaims struct {
 	UserID         string
+	Login          string
 	StandardClaims jwt.StandardClaims
 }
 

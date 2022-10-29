@@ -27,7 +27,7 @@ func (a *Api) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := auth.CreateApiToken(a.cfg.Secret, validateResp.Data.UserID)
+	token := auth.CreateApiToken(a.cfg.Secret, validateResp)
 
 	err = a.db.SaveUserAccessToken(r.Context(), validateResp.Data.UserID, resp.Data.AccessToken, resp.Data.RefreshToken, strings.Join(resp.Data.Scopes, " "))
 	if err != nil {
