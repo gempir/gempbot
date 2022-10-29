@@ -24,6 +24,7 @@ func FromEnv() *Config {
 		ClientSecret: Getenv("TWITCH_CLIENT_SECRET"),
 		Secret:       Getenv("SECRET"),
 		WebBaseUrl:   Getenv("NEXT_PUBLIC_BASE_URL"),
+		WebhookApiBaseUrl: Getenv("NEXT_PUBLIC_API_BASE_URL"),
 		CookieDomain: Getenv("COOKIE_DOMAIN"),
 		Username:     Getenv("TWITCH_USERNAME"),
 		OAuth:        Getenv("TWITCH_OAUTH"),
