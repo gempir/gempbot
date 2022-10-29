@@ -37,7 +37,7 @@ type WsMessage struct {
 
 func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 	userId := ""
-	if r.Header.Get("Authorization") != "" {
+	if h.authClient.CanAuthenticate(r) {
 		apiResp, _, apiErr := h.authClient.AttemptAuth(r, w)
 		if apiErr != nil {
 			api.WriteJson(w, "Auth error: "+apiErr.Error(), http.StatusUnauthorized)

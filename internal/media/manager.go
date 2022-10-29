@@ -16,6 +16,11 @@ const (
 	MEDIA_TYPE_YOUTUBE MEDIA_TYPE = "youtube"
 )
 
+type DebugMessage struct {
+	Action  string `json:"string"`
+	Message string `json:"message"`
+}
+
 type MediaManager struct {
 	db          store.Store
 	helixClient helixclient.Client
@@ -45,9 +50,15 @@ func NewMediaManager(db store.Store, helixClient helixclient.Client) *MediaManag
 }
 
 func (m *MediaManager) HandleJoin(connectionId string, userID string, channel string) {
-	joinChannelId := channel
+	var joinChannelId string
 	if channel == "" {
 		joinChannelId = userID
+	} else {
+		res, err := m.helixClient.GetUserByUsername(channel)
+		if err != nil {
+			return
+		}
+		joinChannelId = res.ID
 	}
 
 	connection, ok := m.connections.Load(connectionId)
@@ -55,11 +66,17 @@ func (m *MediaManager) HandleJoin(connectionId string, userID string, channel st
 		return
 	}
 
-	room, ok := m.rooms.Load(connectionId)
+	room, ok := m.rooms.Load(joinChannelId)
 	if !ok {
 		room = newRoom()
 		m.rooms.Store(joinChannelId, room)
 	}
+
+	resultMessage, err := json.Marshal(DebugMessage{Action: "DEBUG", Message: "joined room " + joinChannelId})
+	if err != nil {
+		log.Error(err)
+	}
+	connection.writer(resultMessage)
 
 	room.users.Store(connectionId, connection)
 }
@@ -71,6 +88,11 @@ type TimeChangedMessage struct {
 }
 
 func (m *MediaManager) HandleTimeChange(connectionId string, userID string, videoId string, currentTime float32) {
+	if userID == "" {
+		log.Errorf("missing userID time %f on connection %s", currentTime, connectionId)
+		return
+	}
+
 	state := m.getRoom(userID)
 
 	state.CurrentTime = currentTime

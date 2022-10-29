@@ -1,19 +1,33 @@
 import { useEffect, useRef } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
 import { useWs, WsAction } from "../../hooks/useWs";
+import { useStore } from "../../store";
 
 export function MediaPage({ channel }: { channel: string }): JSX.Element {
+    const isLoggedIn = useStore(state => Boolean(state.scToken));
     const player = useRef<YouTube | null>(null);
 
     const onPlayerReady: YouTubeProps['onReady'] = (event) => {
+        if (!isLoggedIn) {
+            return;
+        }
+
         sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'] });
     }
 
     const onPlay: YouTubeProps['onPlay'] = (event) => {
+        if (!isLoggedIn) {
+            return;
+        }
+
         sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'] });
     }
 
     const onStateChange: YouTubeProps['onStateChange'] = (event) => {
+        if (!isLoggedIn) {
+            return;
+        }
+
         sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'] });
     }
 
@@ -27,7 +41,6 @@ export function MediaPage({ channel }: { channel: string }): JSX.Element {
     };
 
     const handleWsMessage = (event: MessageEvent<any>): void => {
-        console.log("ev", event);
         const data = JSON.parse(event.data);
 
         if (data.action === WsAction.TIME_CHANGED) {
@@ -36,9 +49,12 @@ export function MediaPage({ channel }: { channel: string }): JSX.Element {
                 player.current.getInternalPlayer().seekTo(data.currentTime);
             }
         }
+        if (data.action === WsAction.DEBUG) {
+            console.log(data);
+        }
     };
 
-    const { lastJsonMessage, sendJsonMessage, getWebSocket } = useWs(handleWsMessage);
+    const { lastJsonMessage, sendJsonMessage } = useWs(handleWsMessage);
 
     useEffect(() => {
         sendJsonMessage({ action: WsAction.JOIN, channel: channel });
