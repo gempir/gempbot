@@ -54,7 +54,7 @@ func (m *MediaManager) HandleJoin(connectionId string, userID string, channel st
 
 	room, ok := m.rooms.Load(connectionId)
 	if !ok {
-		room = &Room{users: xsync.NewMapOf[*Connection]()}
+		room = newRoom()
 		m.rooms.Store(joinChannelId, room)
 	}
 
@@ -76,6 +76,7 @@ func (m *MediaManager) HandleTimeChange(connectionId string, userID string, vide
 	resultMessage, err := json.Marshal(TimeChangedMessage{CurrentTime: currentTime, VideoId: videoId, Action: "TIME_CHANGED"})
 	if err != nil {
 		log.Error(err)
+		return
 	}
 
 	state.users.Range(func(key string, conn *Connection) bool {
@@ -87,14 +88,15 @@ func (m *MediaManager) HandleTimeChange(connectionId string, userID string, vide
 }
 
 func (m *MediaManager) getRoom(channelId string) *Room {
-	state, ok := m.rooms.Load(channelId)
+	room, ok := m.rooms.Load(channelId)
 	if ok {
-		return state
+		return room
 	}
 
-	newState := &Room{MediaType: MEDIA_TYPE_YOUTUBE}
-	m.rooms.Store(channelId, newState)
-	return newState
+	newRoom := newRoom()
+	m.rooms.Store(channelId, newRoom)
+
+	return newRoom
 }
 
 func (m *MediaManager) RegisterConnection(userID string, writeFunc func(message []byte)) string {
@@ -103,4 +105,11 @@ func (m *MediaManager) RegisterConnection(userID string, writeFunc func(message 
 	m.connections.Store(connectionId, &Connection{writer: writeFunc, id: connectionId})
 
 	return connectionId
+}
+
+func newRoom() *Room {
+	return &Room{
+		users:     xsync.NewMapOf[*Connection](),
+		MediaType: MEDIA_TYPE_YOUTUBE,
+	}
 }

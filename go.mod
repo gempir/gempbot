@@ -12,7 +12,7 @@ require (
 	github.com/puzpuzpuz/xsync v1.5.0
 	github.com/rs/cors v1.8.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	gorm.io/driver/postgres v1.4.5
 	gorm.io/gorm v1.24.1-0.20221019064659-5dd2bb482755
 )

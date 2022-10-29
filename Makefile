@@ -9,6 +9,9 @@ export $(shell sed 's/=.*//' .env.development)
 build_server:
 	go run main.go
 
+test:
+	go test ./internal/...
+
 staticcheck:
 	staticcheck ./...
 
@@ -20,9 +23,6 @@ migrate:
 
 proxy:
 	flyctl proxy 5433 -a gempbot-db
-
-test:
-	go test ./internal/...
 
 docker: 
 	docker build . -t gempbot
