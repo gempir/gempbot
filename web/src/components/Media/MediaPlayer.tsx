@@ -71,6 +71,6 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
     }
 
     return <div>
-        <ReactPlayer ref={player} muted={true} url={url} playing={playing} onPause={handlePause} onSeek={handleSeek} onPlay={handlePlay} controls={isChannelOwner.current} />
+        <ReactPlayer controls={true} ref={player} volume={0} pip={true} url={url} playing={playing} onPause={handlePause} onSeek={handleSeek} onPlay={handlePlay} />
     </div>
 }
