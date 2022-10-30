@@ -16,7 +16,6 @@
     "react-player": "^2.11.0",
     "react-use": "^17.3.1",
     "react-use-websocket": "^4.2.0",
-    "react-youtube": "^10.0.0",
     "vercel-plugin-go": "^1.0.0-canary.1",
     "zustand": "^3.5.10"
   },
