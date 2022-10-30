@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Link from "next/link";
 import 'tailwindcss/tailwind.css';
 import { Sidebar } from "../components/Sidebar/Sidebar";
 import { StoreProvider, useCreateStore } from "../store";
@@ -21,9 +22,14 @@ export default function App({ Component, pageProps }: { Component: any; pageProp
             }
         `}</style>
         <main>
-            <div className="flex" style={{scrollbarGutter: "stable"}}>
+            <div className="flex" style={{ scrollbarGutter: "stable" }}>
                 <Sidebar />
                 <Component {...pageProps} />
+            </div>
+            <div className="absolute bottom-3 text-center right-3 mx-auto hover:text-blue-500">
+                <Link href="/privacy">
+                    <a>Privacy</a>
+                </Link>
             </div>
         </main>
     </StoreProvider>

@@ -11,6 +11,10 @@ export function Sidebar() {
     const isDev = useStore(state => state.baseUrl).includes("localhost");
     const loggedIn = useStore(state => Boolean(state.scToken));
 
+    if (!loggedIn) {
+        return null;
+    }
+
     return <div className="p-4 bg-gray-800 px-6 shadow flex flex-col relative h-screen">
         <Login />
         {loggedIn && <>
@@ -33,11 +37,6 @@ export function Sidebar() {
             <Link href="/blocks" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><BanIcon className="h-6" /> Blocks</a>
             </Link>
-            <div className="absolute bottom-3 text-center left-0 right-0 mx-auto hover:text-blue-500">
-                <Link href="/privacy">
-                    <a>Privacy</a>
-                </Link>
-            </div>
         </>}
     </div>;
 }

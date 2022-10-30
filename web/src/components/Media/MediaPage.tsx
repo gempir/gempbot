@@ -15,7 +15,7 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
     const player = useRef<YouTube | null>(null);
 
     const onPlayerReady: YouTubeProps['onReady'] = (event) => {
-        if (!isChannelOwner.current) {
+        if (!isChannelOwner.current || [PlayerState.BUFFERING, PlayerState.CUED, PlayerState.ENDED, PlayerState.UNSTARTED].includes(event.target.getPlayerState())) {
             return;
         }
 
@@ -23,15 +23,15 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
     }
 
     const onPlay: YouTubeProps['onPlay'] = (event) => {
-        if (!isChannelOwner.current) {
+        if (!isChannelOwner.current || [PlayerState.BUFFERING, PlayerState.CUED, PlayerState.ENDED, PlayerState.UNSTARTED].includes(event.target.getPlayerState())) {
             return;
         }
 
-        sendJsonMessage({ action: WsAction.PLAYER_STATE, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'], state: event.target.getPlayerState()  });
+        sendJsonMessage({ action: WsAction.PLAYER_STATE, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'], state: event.target.getPlayerState() });
     }
 
     const onStateChange: YouTubeProps['onStateChange'] = (event) => {
-        if (!isChannelOwner.current) {
+        if (!isChannelOwner.current || [PlayerState.BUFFERING, PlayerState.CUED, PlayerState.ENDED, PlayerState.UNSTARTED].includes(event.target.getPlayerState())) {
             return;
         }
 
@@ -45,6 +45,7 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
             // https://developers.google.com/youtube/player_parameters
             controls: isChannelOwner ? 1 : 0,
             autoplay: 1,
+            mute: 1, // mute for now because this allows autoplay
         },
     };
 
@@ -54,7 +55,7 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
         if (data.action === WsAction.PLAYER_STATE) {
             if (player.current) {
                 player.current.getInternalPlayer().seekTo(data.currentTime);
-                
+
                 if (data.state === PlayerState.PLAYING) {
                     player.current.getInternalPlayer().playVideo();
                 }
