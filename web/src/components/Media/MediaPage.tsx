@@ -5,10 +5,17 @@ import { useStore } from "../../store";
 
 export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
     const isLoggedIn = useStore(state => Boolean(state.scToken));
+    const tokenContent = useStore(state => state.scTokenContent);
+    const isChannelOwner = useRef(tokenContent?.Login === channel || channel === "");
+
+    useEffect(() => { 
+        isChannelOwner.current = tokenContent?.Login === channel || channel === "";
+    }, [channel, tokenContent?.Login]);
+
     const player = useRef<YouTube | null>(null);
 
     const onPlayerReady: YouTubeProps['onReady'] = (event) => {
-        if (!isLoggedIn) {
+        if (!isChannelOwner.current) {
             return;
         }
 
@@ -16,7 +23,7 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
     }
 
     const onPlay: YouTubeProps['onPlay'] = (event) => {
-        if (!isLoggedIn) {
+        if (!isChannelOwner.current) {
             return;
         }
 
@@ -24,7 +31,7 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
     }
 
     const onStateChange: YouTubeProps['onStateChange'] = (event) => {
-        if (!isLoggedIn) {
+        if (!isChannelOwner.current) {
             return;
         }
 

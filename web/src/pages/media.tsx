@@ -6,4 +6,4 @@ export default function Media() {
     return <MediaPage />
 }
 
-Media.getInitialProps = initializeStore
+export const getServerSideProps = initializeStore;

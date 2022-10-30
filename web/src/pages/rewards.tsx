@@ -6,4 +6,4 @@ export default function Rewards() {
     return <RewardsPage />
 }
 
-Rewards.getInitialProps = initializeStore
+export const getServerSideProps = initializeStore;

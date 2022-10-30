@@ -48,6 +48,8 @@ export function useEmotehistory(added: boolean, channel?: string): [Array<Emoteh
     const [emotehistory, setEmotehistory] = useState<Array<EmotehistoryItem>>([]);
     const [loading, setLoading] = useState(false);
     const managing = useStore(state => state.managing);
+    const apiBaseUrl = useStore(state => state.apiBaseUrl);
+    const scToken = useStore(state => state.scToken);
 
     const fetchPredictions = () => {
         setLoading(true);
@@ -62,7 +64,7 @@ export function useEmotehistory(added: boolean, channel?: string): [Array<Emoteh
         if (added) {
             searchParams.append("added", "1");
         }
-        doFetch(Method.GET, endPoint, searchParams).then((resp) => {
+        doFetch({apiBaseUrl, managing, scToken }, Method.GET, endPoint, searchParams).then((resp) => {
             if (currentPage !== pageRef.current) {
                 throw new Error("Page changed");
             }
@@ -93,7 +95,7 @@ export function useEmotehistory(added: boolean, channel?: string): [Array<Emoteh
         const endPoint = "/api/emotehistory";
         const searchParams = new URLSearchParams();
         searchParams.append("emoteId", emoteId);
-        doFetch(Method.DELETE, endPoint, searchParams).then(() => {
+        doFetch({apiBaseUrl, managing, scToken }, Method.DELETE, endPoint, searchParams).then(() => {
             fetchPredictions();
         });
     };
@@ -103,7 +105,7 @@ export function useEmotehistory(added: boolean, channel?: string): [Array<Emoteh
         const endPoint = "/api/emotehistory";
         const searchParams = new URLSearchParams();
         searchParams.append("emoteId", emoteId);
-        doFetch(Method.PATCH, endPoint, searchParams).then(() => {
+        doFetch({apiBaseUrl, managing, scToken }, Method.PATCH, endPoint, searchParams).then(() => {
             fetchPredictions();
         });
     };

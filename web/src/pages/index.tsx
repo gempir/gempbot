@@ -15,4 +15,4 @@ export default function Home() {
     </div>
 }
 
-Home.getInitialProps = initializeStore
+export const getServerSideProps = initializeStore;

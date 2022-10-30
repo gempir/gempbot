@@ -6,4 +6,4 @@ export default function Permissions() {
     return <PermissionsPage />
 }
 
-Permissions.getInitialProps = initializeStore
+export const getServerSideProps = initializeStore;
