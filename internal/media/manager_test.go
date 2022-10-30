@@ -43,11 +43,11 @@ func TestCanGetExistingRoom(t *testing.T) {
 	mgr := NewMediaManager(store.NewMockStore(), helixclient.NewMockClient())
 
 	room := mgr.getRoom("userId1")
-	room.CurrentTime = 10
+	room.Time = 10
 	assert.Equal(t, 1, mgr.rooms.Size())
 
 	room = mgr.getRoom("userId1")
-	assert.Equal(t, float32(10), room.CurrentTime)
+	assert.Equal(t, float32(10), room.Time)
 }
 
 func TestCanHandlePlayerStateChange(t *testing.T) {
@@ -58,5 +58,5 @@ func TestCanHandlePlayerStateChange(t *testing.T) {
 
 	mgr.HandlePlayerState("conn1", "userId1", PLAYING, "videoId1", 10)
 	room := mgr.getRoom("userId1")
-	assert.Equal(t, float32(10), room.CurrentTime)
+	assert.Equal(t, float32(10), room.Time)
 }

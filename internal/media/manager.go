@@ -10,15 +10,11 @@ import (
 	"github.com/puzpuzpuz/xsync"
 )
 
-type PlayerState int
+type PlayerState string
 
 const (
-	UNSTARTED PlayerState = -1
-	ENDED     PlayerState = 0
-	PLAYING   PlayerState = 1
-	PAUSED    PlayerState = 2
-	BUFFERING PlayerState = 3
-	CUED      PlayerState = 5
+	PLAYING PlayerState = "PLAYING"
+	PAUSED  PlayerState = "PAUSED"
 )
 
 type MEDIA_TYPE string
@@ -45,11 +41,11 @@ type Connection struct {
 }
 
 type Room struct {
-	MediaType      MEDIA_TYPE
-	CurrentVideoId string
-	CurrentTime    float32
-	State          PlayerState
-	users          *xsync.MapOf[string, *Connection]
+	MediaType MEDIA_TYPE
+	Url       string
+	Time      float32
+	State     PlayerState
+	users     *xsync.MapOf[string, *Connection]
 }
 
 func NewMediaManager(db store.Store, helixClient helixclient.Client) *MediaManager {
@@ -90,22 +86,22 @@ func (m *MediaManager) HandleJoin(connectionId string, userID string, channel st
 }
 
 type PlayerStateMessage struct {
-	Action      string      `json:"action"`
-	VideoId     string      `json:"videoId"`
-	CurrentTime float32     `json:"currentTime"`
-	State       PlayerState `json:"state"`
+	Action string      `json:"action"`
+	Url    string      `json:"url"`
+	Time   float32     `json:"time"`
+	State  PlayerState `json:"state"`
 }
 
-func (m *MediaManager) HandlePlayerState(connectionId string, userID string, state PlayerState, videoId string, currentTime float32) {
+func (m *MediaManager) HandlePlayerState(connectionId string, userID string, state PlayerState, url string, time float32) {
 	if userID == "" {
-		log.Errorf("missing userID time %f on connection %s", currentTime, connectionId)
+		log.Errorf("missing userID time %f on connection %s", time, connectionId)
 		return
 	}
 
 	roomState := m.getRoom(userID)
 
-	roomState.CurrentTime = currentTime
-	roomState.CurrentVideoId = videoId
+	roomState.Time = time
+	roomState.Url = url
 	roomState.State = state
 
 	conns := []*Connection{}
@@ -116,7 +112,7 @@ func (m *MediaManager) HandlePlayerState(connectionId string, userID string, sta
 		return true
 	})
 
-	if roomState.CurrentVideoId != "" {
+	if roomState.Url != "" {
 		sendPlayerState(conns, roomState)
 	}
 }
@@ -143,8 +139,10 @@ func (m *MediaManager) RegisterConnection(userID string, writeFunc func(message 
 
 func newRoom() *Room {
 	return &Room{
-		users:     xsync.NewMapOf[*Connection](),
-		MediaType: MEDIA_TYPE_YOUTUBE,
+		users: xsync.NewMapOf[*Connection](),
+		Url:   "https://www.youtube.com/watch?v=wzE2nsjsHhg",
+		Time:  0,
+		State: PAUSED,
 	}
 }
 
@@ -162,9 +160,9 @@ func sendPlayerState(connections []*Connection, room *Room) {
 
 func newPlayerStateMessage(room *Room) PlayerStateMessage {
 	return PlayerStateMessage{
-		Action:      "PLAYER_STATE",
-		VideoId:     room.CurrentVideoId,
-		CurrentTime: room.CurrentTime,
-		State:       room.State,
+		Action: "PLAYER_STATE",
+		Url:    room.Url,
+		Time:   room.Time,
+		State:  room.State,
 	}
 }
