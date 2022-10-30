@@ -86,10 +86,11 @@ func startWriter(conn *websocket.Conn, writeQueue chan []byte) {
 	}
 }
 
-type TimeChanged struct {
-	Action  string  `json:"action"`
-	Seconds float32 `json:"seconds"`
-	VideoId string  `json:"videoId"`
+type PlayerStateMessage struct {
+	Action  string            `json:"action"`
+	Seconds float32           `json:"seconds"`
+	VideoId string            `json:"videoId"`
+	State   media.PlayerState `json:"state"`
 }
 
 type Join struct {
@@ -110,14 +111,14 @@ func (h *WsHandler) handleMessage(connectionId string, userId string, byteMessag
 	}
 
 	switch baseMessage.Action {
-	case "TIME_CHANGED":
-		var msg TimeChanged
+	case "PLAYER_STATE":
+		var msg PlayerStateMessage
 		err := json.Unmarshal(byteMessage, &msg)
 		if err != nil {
-			log.Errorf("Failed to unmarshal TimeChanged message: %s", err)
+			log.Errorf("Failed to unmarshal PlayerState message: %s", err)
 			return
 		}
-		h.mediaManager.HandleTimeChange(connectionId, userId, msg.VideoId, msg.Seconds)
+		h.mediaManager.HandlePlayerState(connectionId, userId, msg.State, msg.VideoId, msg.Seconds)
 	case "JOIN":
 		var msg Join
 		err := json.Unmarshal(byteMessage, &msg)

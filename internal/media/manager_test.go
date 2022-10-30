@@ -50,13 +50,13 @@ func TestCanGetExistingRoom(t *testing.T) {
 	assert.Equal(t, float32(10), room.CurrentTime)
 }
 
-func TestCanHandleTimeChange(t *testing.T) {
+func TestCanHandlePlayerStateChange(t *testing.T) {
 	mgr := NewMediaManager(store.NewMockStore(), helixclient.NewMockClient())
 
 	connId := mgr.RegisterConnection("conn1", func(message []byte) {})
 	mgr.HandleJoin(connId, "userId1", "")
 
-	mgr.HandleTimeChange("conn1", "userId1", "videoId1", 10)
+	mgr.HandlePlayerState("conn1", "userId1", PLAYING, "videoId1", 10)
 	room := mgr.getRoom("userId1")
 	assert.Equal(t, float32(10), room.CurrentTime)
 }

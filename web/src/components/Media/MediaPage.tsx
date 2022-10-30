@@ -2,13 +2,13 @@ import { useEffect, useRef } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
 import { useWs, WsAction } from "../../hooks/useWs";
 import { useStore } from "../../store";
+import { PlayerState } from "../../types/Media";
 
 export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
-    const isLoggedIn = useStore(state => Boolean(state.scToken));
     const tokenContent = useStore(state => state.scTokenContent);
     const isChannelOwner = useRef(tokenContent?.Login === channel || channel === "");
 
-    useEffect(() => { 
+    useEffect(() => {
         isChannelOwner.current = tokenContent?.Login === channel || channel === "";
     }, [channel, tokenContent?.Login]);
 
@@ -19,7 +19,7 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
             return;
         }
 
-        sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'] });
+        sendJsonMessage({ action: WsAction.PLAYER_STATE, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'], state: event.target.getPlayerState() });
     }
 
     const onPlay: YouTubeProps['onPlay'] = (event) => {
@@ -27,7 +27,7 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
             return;
         }
 
-        sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'] });
+        sendJsonMessage({ action: WsAction.PLAYER_STATE, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'], state: event.target.getPlayerState()  });
     }
 
     const onStateChange: YouTubeProps['onStateChange'] = (event) => {
@@ -35,25 +35,32 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
             return;
         }
 
-        sendJsonMessage({ action: WsAction.TIME_CHANGED, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'] });
+        sendJsonMessage({ action: WsAction.PLAYER_STATE, seconds: event.target.getCurrentTime(), videoId: event.target.getVideoData()['video_id'], state: event.target.getPlayerState() });
     }
 
     const opts: YouTubeProps['opts'] = {
-        height: '720',
-        width: '1280',
+        height: '450',
+        width: '800',
         playerVars: {
             // https://developers.google.com/youtube/player_parameters
-            autoplay: 0,
+            controls: isChannelOwner ? 1 : 0,
+            autoplay: 1,
         },
     };
 
     const handleWsMessage = (event: MessageEvent<any>): void => {
         const data = JSON.parse(event.data);
 
-        if (data.action === WsAction.TIME_CHANGED) {
+        if (data.action === WsAction.PLAYER_STATE) {
             if (player.current) {
-                console.log(player.current.getInternalPlayer());
                 player.current.getInternalPlayer().seekTo(data.currentTime);
+                
+                if (data.state === PlayerState.PLAYING) {
+                    player.current.getInternalPlayer().playVideo();
+                }
+                if (data.state === PlayerState.PAUSED) {
+                    player.current.getInternalPlayer().pauseVideo();
+                }
             }
         }
         if (data.action === WsAction.DEBUG) {

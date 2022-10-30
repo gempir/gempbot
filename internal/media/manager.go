@@ -10,6 +10,17 @@ import (
 	"github.com/puzpuzpuz/xsync"
 )
 
+type PlayerState int
+
+const (
+	UNSTARTED PlayerState = -1
+	ENDED     PlayerState = 0
+	PLAYING   PlayerState = 1
+	PAUSED    PlayerState = 2
+	BUFFERING PlayerState = 3
+	CUED      PlayerState = 5
+)
+
 type MEDIA_TYPE string
 
 const (
@@ -37,6 +48,7 @@ type Room struct {
 	MediaType      MEDIA_TYPE
 	CurrentVideoId string
 	CurrentTime    float32
+	State          PlayerState
 	users          *xsync.MapOf[string, *Connection]
 }
 
@@ -72,44 +84,41 @@ func (m *MediaManager) HandleJoin(connectionId string, userID string, channel st
 		m.rooms.Store(joinChannelId, room)
 	}
 
-	resultMessage, err := json.Marshal(DebugMessage{Action: "DEBUG", Message: "joined room " + joinChannelId})
-	if err != nil {
-		log.Error(err)
-	}
-	connection.writer(resultMessage)
+	sendPlayerState([]*Connection{connection}, room)
 
 	room.users.Store(connectionId, connection)
 }
 
-type TimeChangedMessage struct {
-	Action      string  `json:"action"`
-	VideoId     string  `json:"videoId"`
-	CurrentTime float32 `json:"currentTime"`
+type PlayerStateMessage struct {
+	Action      string      `json:"action"`
+	VideoId     string      `json:"videoId"`
+	CurrentTime float32     `json:"currentTime"`
+	State       PlayerState `json:"state"`
 }
 
-func (m *MediaManager) HandleTimeChange(connectionId string, userID string, videoId string, currentTime float32) {
+func (m *MediaManager) HandlePlayerState(connectionId string, userID string, state PlayerState, videoId string, currentTime float32) {
 	if userID == "" {
 		log.Errorf("missing userID time %f on connection %s", currentTime, connectionId)
 		return
 	}
 
-	state := m.getRoom(userID)
+	roomState := m.getRoom(userID)
 
-	state.CurrentTime = currentTime
-	state.CurrentVideoId = videoId
+	roomState.CurrentTime = currentTime
+	roomState.CurrentVideoId = videoId
+	roomState.State = state
 
-	resultMessage, err := json.Marshal(TimeChangedMessage{CurrentTime: currentTime, VideoId: videoId, Action: "TIME_CHANGED"})
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	state.users.Range(func(key string, conn *Connection) bool {
+	conns := []*Connection{}
+	roomState.users.Range(func(key string, conn *Connection) bool {
 		if conn.id != connectionId {
-			conn.writer(resultMessage)
+			conns = append(conns, conn)
 		}
 		return true
 	})
+
+	if roomState.CurrentVideoId != "" {
+		sendPlayerState(conns, roomState)
+	}
 }
 
 func (m *MediaManager) getRoom(channelId string) *Room {
@@ -136,5 +145,26 @@ func newRoom() *Room {
 	return &Room{
 		users:     xsync.NewMapOf[*Connection](),
 		MediaType: MEDIA_TYPE_YOUTUBE,
+	}
+}
+
+func sendPlayerState(connections []*Connection, room *Room) {
+	resultMessage, err := json.Marshal(newPlayerStateMessage(room))
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	for _, conn := range connections {
+		conn.writer(resultMessage)
+	}
+}
+
+func newPlayerStateMessage(room *Room) PlayerStateMessage {
+	return PlayerStateMessage{
+		Action:      "PLAYER_STATE",
+		VideoId:     room.CurrentVideoId,
+		CurrentTime: room.CurrentTime,
+		State:       room.State,
 	}
 }

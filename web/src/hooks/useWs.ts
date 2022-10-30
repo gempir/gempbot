@@ -2,7 +2,7 @@ import useWebSocket from "react-use-websocket";
 import { useStore } from "../store";
 
 export enum WsAction {
-    TIME_CHANGED = "TIME_CHANGED",
+    PLAYER_STATE = "PLAYER_STATE",
     JOIN = "JOIN",
     DEBUG = "DEBUG",
 }
