@@ -84,7 +84,7 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
                         className="cursor-pointer"
                         min={0}
                         max={1}
-                        step={0.05}
+                        step={0.01}
                         value={volume}
                         onChange={event => {
                             setVolume(event.target.valueAsNumber)
