@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid';
 import ReactPlayer from 'react-player';
 import { useWs, WsAction } from "../../hooks/useWs";
 import { useStore } from "../../store";
@@ -16,6 +17,7 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
 
     const [url, setUrl] = useState("https://www.youtube.com/watch?v=wzE2nsjsHhg");
     const [playing, setPlaying] = useState(false);
+    const [volume, setVolume] = useState(0);
 
     const { sendJsonMessage } = useWs(handleWsMessage);
 
@@ -71,6 +73,27 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
     }
 
     return <div>
-        <ReactPlayer controls={true} ref={player} volume={0} pip={true} url={url} playing={playing} onPause={handlePause} onSeek={handleSeek} onPlay={handlePlay} />
+        <div className="mb-4">
+            <div className="p-4 bg-gray-800 rounded shadow flex items-center">
+                <div className="flex gap-2 items-center">
+                    <div onClick={() => setVolume(vol => vol > 0 ? 0 : 1)} className="cursor-pointer hover:text-blue-500">
+                        {volume > 0 ? <SpeakerWaveIcon className="h-6 w-6" /> : <SpeakerXMarkIcon className="h-6 w-6" />}
+                    </div>
+                    <input
+                        type="range"
+                        className="cursor-pointer"
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={volume}
+                        onChange={event => {
+                            setVolume(event.target.valueAsNumber)
+                        }}
+                    />
+                    {Math.round(volume * 100)}%
+                </div>
+            </div>
+        </div>
+        <ReactPlayer controls={true} ref={player} muted={volume === 0} volume={volume} pip={true} url={url} playing={playing} onPause={handlePause} onSeek={handleSeek} onPlay={handlePlay} />
     </div>
 }
