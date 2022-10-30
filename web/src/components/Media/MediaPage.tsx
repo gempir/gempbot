@@ -3,6 +3,7 @@ import YouTube, { YouTubeProps } from "react-youtube";
 import { useWs, WsAction } from "../../hooks/useWs";
 import { useStore } from "../../store";
 import { PlayerState } from "../../types/Media";
+import { MediaQueue } from "./MediaQueue";
 
 export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
     const tokenContent = useStore(state => state.scTokenContent);
@@ -43,7 +44,7 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
         width: '800',
         playerVars: {
             // https://developers.google.com/youtube/player_parameters
-            controls: isChannelOwner ? 1 : 0,
+            modestbranding: 1,
             autoplay: 1,
             mute: 1, // mute for now because this allows autoplay
         },
@@ -69,16 +70,14 @@ export function MediaPage({ channel = "" }: { channel?: string }): JSX.Element {
         }
     };
 
-    const { lastJsonMessage, sendJsonMessage } = useWs(handleWsMessage);
+    const { sendJsonMessage } = useWs(handleWsMessage);
 
     useEffect(() => {
         sendJsonMessage({ action: WsAction.JOIN, channel: channel });
     }, []);
 
-    return <div className="p-4 w-full max-h-screen flex gap-4">
-        <div className="p-4 bg-gray-800 rounded shadow relative">
-            {JSON.stringify(lastJsonMessage)}
-            <YouTube ref={player} className="my-4" videoId="TjAa0wOe5k4" opts={opts} onReady={onPlayerReady} onPlay={onPlay} onStateChange={onStateChange} />
-        </div>
+    return <div className="p-4 w-full flex gap-4">
+        <YouTube ref={player} className="" videoId="TjAa0wOe5k4" opts={opts} onReady={onPlayerReady} onPlay={onPlay} onStateChange={onStateChange} />
+        <MediaQueue />
     </div>;
 }
