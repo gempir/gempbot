@@ -2,7 +2,7 @@ import React from "react";
 import { UserConfig } from "../../hooks/useUserConfig";
 import { setCookie } from "../../service/cookie";
 import { useStore } from "../../store";
-import { UserGroupIcon } from "@heroicons/react/solid";
+import { UserGroupIcon } from "@heroicons/react/24/solid";
 
 
 export function Managing({ userConfig }: { userConfig: UserConfig | null | undefined }) {

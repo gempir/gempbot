@@ -1,4 +1,4 @@
-import { XIcon } from "@heroicons/react/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Permission, SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
@@ -82,7 +82,7 @@ export function UserPermissions({ userConfig, setUserConfig, errorMessage, loadi
             </thead>
             <tbody>
                 {Object.keys(perms).map((user, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                    <th className="hover:text-red-600 cursor-pointer" onClick={() => removeRow(user, index)}><XIcon className="h-6" /></th>
+                    <th className="hover:text-red-600 cursor-pointer" onClick={() => removeRow(user, index)}><XMarkIcon className="h-6" /></th>
                     <th className="p-1"><input {...register(`permissions.${index}.User`)} className="p-1 bg-transparent leading-6" type="text" defaultValue={user} autoComplete={"off"} spellCheck={false} /> </th>
                     <th className="p-1"><input {...register(`permissions.${index}.Editor`)} className="p-1 bg-transparent leading-6" type="checkbox" defaultChecked={perms[user].Editor} /></th>
                     <th className="p-1"><input {...register(`permissions.${index}.Prediction`)} className="p-1 bg-transparent leading-6" type="checkbox" defaultChecked={perms[user].Prediction} /></th>

@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, ChevronRightIcon, MinusCircleIcon, RefreshIcon, StopIcon } from "@heroicons/react/solid";
+import { ChevronLeftIcon, ChevronRightIcon, MinusCircleIcon, ArrowPathIcon, StopIcon } from "@heroicons/react/24/solid";
 import { useEmotehistory } from "../../hooks/useEmotehistory";
 import { Emote } from "../Emote/Emote";
 
@@ -18,7 +18,7 @@ export function Table({ channel, added, removeable, blockable }: { channel?: str
                     <ChevronRightIcon className="h-6" />
                 </div>
             </div>
-            <RefreshIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+            <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
         </div>
         {history.length === 0 && !loading && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-5xl text-slate-600">nothing yet</div>}
         <table className="w-full table-auto">

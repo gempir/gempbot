@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { useStore } from "../../store";
-import { UserIcon } from "@heroicons/react/solid";
+import { UserIcon } from "@heroicons/react/24/solid";
 
 export function Login() {
     const apiBaseUrl = useStore(state => state.apiBaseUrl);

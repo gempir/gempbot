@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, ChevronRightIcon, RefreshIcon, XIcon } from "@heroicons/react/solid";
+import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import React, { useState } from "react";
 import { useBlocks } from "../../hooks/useBlocks";
 import { EmoteType } from "../../hooks/useEmotehistory";
@@ -35,7 +35,7 @@ export function Blocks() {
                             <ChevronRightIcon className="h-6" />
                         </div>
                     </div>
-                    <RefreshIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+                    <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
                 </div>
             </div>
             <table className={"w-full" + (loading ? " animate-pulse opacity-10" : "")}>
@@ -50,7 +50,7 @@ export function Blocks() {
                 </thead>
                 <tbody>
                     {blocks.map(block => <tr key={block.ChannelTwitchID + block.EmoteID + block.EmoteID}>
-                        <th className="hover:text-red-600 cursor-pointer" onClick={() => deleteBlock(block)}><XIcon className="h-6" /></th>
+                        <th className="hover:text-red-600 cursor-pointer" onClick={() => deleteBlock(block)}><XMarkIcon className="h-6" /></th>
                         <th><Emote id={block.EmoteID} type={block.Type} /></th>
                         <th>{block.EmoteID}</th>
                         <th>{block.Type}</th>

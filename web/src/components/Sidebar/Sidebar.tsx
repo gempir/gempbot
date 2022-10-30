@@ -4,7 +4,7 @@ import { Login } from "./Login";
 import { Managing } from "./Managing";
 import Link from "next/link";
 import React from "react";
-import { HomeIcon, GiftIcon, AdjustmentsIcon, BanIcon, ChatAlt2Icon, PlayIcon } from "@heroicons/react/solid";
+import { HomeIcon, GiftIcon, AdjustmentsHorizontalIcon, NoSymbolIcon, ChatBubbleLeftIcon, PlayIcon } from "@heroicons/react/24/solid";
 
 export function Sidebar() {
     const [userConfig] = useUserConfig();
@@ -23,7 +23,7 @@ export function Sidebar() {
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 "><HomeIcon className="h-6" /> Home</a>
             </Link>
             <Link href="/bot" >
-                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><ChatAlt2Icon className="h-6" /> Bot</a>
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><ChatBubbleLeftIcon className="h-6" /> Bot</a>
             </Link>
             {isDev && <Link href="/media" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><PlayIcon className="h-6" /> Media</a>
@@ -32,10 +32,10 @@ export function Sidebar() {
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><GiftIcon className="h-6" /> Rewards</a>
             </Link>
             <Link href="/permissions" >
-                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><AdjustmentsIcon className="h-6" /> Permissions</a>
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><AdjustmentsHorizontalIcon className="h-6" /> Permissions</a>
             </Link>
             <Link href="/blocks" >
-                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><BanIcon className="h-6" /> Blocks</a>
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><NoSymbolIcon className="h-6" /> Blocks</a>
             </Link>
         </>}
     </div>;
