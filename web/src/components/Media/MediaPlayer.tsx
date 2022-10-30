@@ -5,8 +5,6 @@ import { useStore } from "../../store";
 import { PlayerState } from "../../types/Media";
 
 export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
-    const [url, setUrl] = useState("https://www.youtube.com/watch?v=TjAa0wOe5k4");
-    const [playing, setPlaying] = useState(false);
     const player = useRef<ReactPlayer | null>(null);
 
     const tokenContent = useStore(state => state.scTokenContent);
@@ -16,12 +14,17 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
         isChannelOwner.current = tokenContent?.Login === channel || channel === "";
     }, [channel, tokenContent?.Login]);
 
-    const handleWsMessage = (event: MessageEvent<any>): void => {
+    const [url, setUrl] = useState("https://www.youtube.com/watch?v=wzE2nsjsHhg");
+    const [playing, setPlaying] = useState(false);
+
+    const { sendJsonMessage } = useWs(handleWsMessage);
+
+    function handleWsMessage(event: MessageEvent<any>): void {
         const data = JSON.parse(event.data);
 
         if (data.action === WsAction.PLAYER_STATE) {
             if (player.current) {
-                player.current.seekTo(data.currentTime, "seconds");
+                player.current.seekTo(data.time, "seconds");
 
                 if (data.state === PlayerState.PLAYING) {
                     setPlaying(true);
@@ -29,19 +32,17 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
                 if (data.state === PlayerState.PAUSED) {
                     setPlaying(false);
                 }
+                setUrl(data.url);
             }
         }
         if (data.action === WsAction.DEBUG) {
             console.log(data);
         }
-    };
-
-    const { sendJsonMessage } = useWs(handleWsMessage);
+    }
 
     useEffect(() => {
         sendJsonMessage({ action: WsAction.JOIN, channel: channel });
     }, []);
-
 
     const handlePause = () => {
         if (!isChannelOwner.current) {
@@ -49,8 +50,16 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
         }
 
         const time = player.current?.getCurrentTime()
+        sendJsonMessage({ action: WsAction.PLAYER_STATE, time: time, url: url, state: PlayerState.PAUSED });
+    }
 
-        sendJsonMessage({ action: WsAction.PLAYER_STATE, seconds: time, videoId: "", state: PlayerState.PAUSED });
+    const handlePlay = () => {
+        if (!isChannelOwner.current) {
+            return;
+        }
+
+        const time = player.current?.getCurrentTime()
+        sendJsonMessage({ action: WsAction.PLAYER_STATE, time: time, url: url, state: PlayerState.PLAYING });
     }
 
     const handleSeek = (seconds: number) => {
@@ -58,10 +67,10 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
             return;
         }
 
-        sendJsonMessage({ action: WsAction.PLAYER_STATE, seconds: seconds, videoId: "", state: PlayerState.PLAYING });
+        sendJsonMessage({ action: WsAction.PLAYER_STATE, time: seconds, url: url, state: PlayerState.PLAYING });
     }
 
     return <div>
-        <ReactPlayer ref={player} url={url} playing={playing} onPause={handlePause} onSeek={handleSeek} controls={isChannelOwner.current} />
+        <ReactPlayer ref={player} muted={true} url={url} playing={playing} onPause={handlePause} onSeek={handleSeek} onPlay={handlePlay} controls={isChannelOwner.current} />
     </div>
 }
