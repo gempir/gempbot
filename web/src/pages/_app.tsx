@@ -1,15 +1,12 @@
 import Head from "next/head";
-import React, { useEffect } from "react";
-import { Sidebar } from "../components/Sidebar/Sidebar";
 import 'tailwindcss/tailwind.css';
-import { useStore } from "../store";
+import { Sidebar } from "../components/Sidebar/Sidebar";
+import { StoreProvider, useCreateStore } from "../store";
 
 export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
-    useEffect(() => {
-        useStore.setState(pageProps.store);
-    }, []);
+    const createStore = useCreateStore(pageProps.store);
 
-    return <>
+    return <StoreProvider createStore={createStore}>
         <Head>
             <title>gempbot</title>
             <link rel="icon" href="/favicon.ico" />
@@ -29,5 +26,5 @@ export default function App({ Component, pageProps }: { Component: any; pageProp
                 <Component {...pageProps} />
             </div>
         </main>
-    </>
+    </StoreProvider>
 }

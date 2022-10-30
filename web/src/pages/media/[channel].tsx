@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import React from "react";
 import { MediaPage } from "../../components/Media/MediaPage";
 import { initializeStore } from "../../service/initializeStore";
 
@@ -10,4 +9,4 @@ export default function MediaChannel() {
     return <MediaPage channel={String(channel)} />
 }
 
-MediaChannel.getInitialProps = initializeStore
+export const getServerSideProps = initializeStore;

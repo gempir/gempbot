@@ -180,4 +180,4 @@ export default function Privacy() {
     );
 }
 
-Privacy.getInitialProps = initializeStore;
+export const getServerSideProps = initializeStore;

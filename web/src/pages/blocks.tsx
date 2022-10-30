@@ -6,4 +6,4 @@ export default function Blocks() {
     return <BlocksPage />
 }
 
-Blocks.getInitialProps = initializeStore
+export const getServerSideProps = initializeStore;

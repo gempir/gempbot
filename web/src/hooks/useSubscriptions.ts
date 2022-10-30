@@ -10,6 +10,8 @@ export function useSubscribtions(): [() => void, () => void, SubscriptionStatus,
     const managing = useStore(state => state.managing);
     const [loading, setLoading] = useState(true);
     const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>({ predictions: false });
+    const apiBaseUrl = useStore(state => state.apiBaseUrl);
+    const scToken = useStore(state => state.scToken);
 
     const executeSubscriptions = (method: Method) => {
         const endPoint = "/api/subscriptions";
@@ -18,7 +20,7 @@ export function useSubscribtions(): [() => void, () => void, SubscriptionStatus,
             searchParams.append("managing", managing);
         }
 
-        return doFetch(method, endPoint, searchParams);
+        return doFetch({apiBaseUrl, managing, scToken }, method, endPoint, searchParams);
     };
 
     const subscribe = () => {

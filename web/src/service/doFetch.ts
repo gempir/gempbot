@@ -1,4 +1,3 @@
-import { useStore } from "../store";
 
 export enum Method {
     GET = "GET",
@@ -12,9 +11,13 @@ export enum RejectReason {
     NotFound = '{"message":"Not Found"}'
 }
 
-export async function doFetch(method: Method, path: string, params: URLSearchParams = new URLSearchParams(), body: any = undefined) {
-    const { apiBaseUrl, managing, scToken } = useStore.getState();
+export interface FetchOptions {
+    apiBaseUrl?: string;
+    managing?: string;
+    scToken?: string;
+}
 
+export async function doFetch({ apiBaseUrl, managing, scToken }: FetchOptions, method: Method, path: string, params: URLSearchParams = new URLSearchParams(), body: any = undefined) {
     const headers: Record<string, string> = { 'content-type': 'application/json' }
     if (scToken) {
         headers['Authorization'] = `Bearer ${scToken}`
@@ -40,9 +43,6 @@ export async function doFetch(method: Method, path: string, params: URLSearchPar
 
     return window.fetch(url.toString(), config)
         .then(async response => {
-            if (response.status === 401) {
-                useStore.setState({ scToken: undefined });
-            }
             if (response.ok) {
                 const text = await response.text();
                 return text !== "" ? JSON.parse(text) : null

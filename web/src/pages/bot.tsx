@@ -6,4 +6,4 @@ export default function Bot() {
     return <BotPage />
 }
 
-Bot.getInitialProps = initializeStore
+export const getServerSideProps = initializeStore;

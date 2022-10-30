@@ -49,6 +49,7 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
     const [changeCounter, setChangeCounter] = useState(0);
     const managing = useStore(state => state.managing);
     const scToken = useStore(state => state.scToken);
+    const apiBaseUrl = useStore(state => state.apiBaseUrl);
 
     const fetchConfig = () => {
         if (!scToken) {
@@ -56,7 +57,7 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
         }
 
         let endPoint = "/api/userconfig";
-        doFetch(Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig)).then(() => setLoading(false)).catch(setError);
+        doFetch({ apiBaseUrl, managing, scToken }, Method.GET, endPoint).then((userConfig) => setUserConfig(userConfig)).then(() => setLoading(false)).catch(setError);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -66,10 +67,10 @@ export function useUserConfig(): [UserConfig | null | undefined, SetUserConfig, 
         if (changeCounter && userConfig) {
             let endPoint = "/api/userconfig";
             setLoading(true);
-            doFetch(Method.POST, endPoint, undefined, userConfig).then(fetchConfig).then(() => setError(undefined)).catch(error => setError(JSON.parse(error).message)).finally(() =>setLoading(false));
+            doFetch({ apiBaseUrl, managing, scToken }, Method.POST, endPoint, undefined, userConfig).then(fetchConfig).then(() => setError(undefined)).catch(error => setError(JSON.parse(error).message)).finally(() => setLoading(false));
         } else if (changeCounter && userConfig === null) {
             setLoading(true);
-            doFetch(Method.DELETE, "/api/userconfig").finally(() =>setLoading(false));
+            doFetch({ apiBaseUrl, managing, scToken }, Method.DELETE, "/api/userconfig").finally(() => setLoading(false));
         }
     }, 100, [changeCounter]);
 

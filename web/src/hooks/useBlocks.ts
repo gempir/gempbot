@@ -35,6 +35,8 @@ export function useBlocks(): Return {
     const [blocks, setBlocks] = useState<Array<Block>>([]);
     const [loading, setLoading] = useState(false);
     const managing = useStore(state => state.managing);
+    const apiBaseUrl = useStore(state => state.apiBaseUrl);
+    const scToken = useStore(state => state.scToken);
 
     const fetchBlocks = () => {
         setLoading(true);
@@ -44,7 +46,7 @@ export function useBlocks(): Return {
         const endPoint = "/api/blocks";
         const searchParams = new URLSearchParams();
         searchParams.append("page", page.toString());
-        doFetch(Method.GET, endPoint, searchParams).then((resp) => {
+        doFetch({apiBaseUrl, managing, scToken}, Method.GET, endPoint, searchParams).then((resp) => {
             if (currentPage !== pageRef.current) {
                 throw new Error("Page changed");
             }
@@ -66,7 +68,7 @@ export function useBlocks(): Return {
 
         const endPoint = "/api/blocks";
         const searchParams = new URLSearchParams();
-        doFetch(Method.PATCH, endPoint, searchParams, { emoteIds: emoteIds, type: type }).then(fetchBlocks).catch(err => {
+        doFetch({apiBaseUrl, managing, scToken}, Method.PATCH, endPoint, searchParams, { emoteIds: emoteIds, type: type }).then(fetchBlocks).catch(err => {
             setLoading(false);
             throw err;
         });
@@ -77,7 +79,7 @@ export function useBlocks(): Return {
 
         const endPoint = "/api/blocks";
         const searchParams = new URLSearchParams();
-        doFetch(Method.DELETE, endPoint, searchParams, block).then(fetchBlocks).catch(err => {
+        doFetch({apiBaseUrl, managing, scToken}, Method.DELETE, endPoint, searchParams, block).then(fetchBlocks).catch(err => {
             setLoading(false);
             throw err;
         });
