@@ -28,6 +28,7 @@ func main() {
 	argsWithoutProg := os.Args[1:]
 	if len(argsWithoutProg) == 1 && argsWithoutProg[0] == "migrate" {
 		db.Migrate()
+		db.Client.Exec("select setval(pg_get_serial_sequence('emote_adds', 'id'), (select max(id) from emote_adds));")
 		os.Exit(0)
 		return
 	}

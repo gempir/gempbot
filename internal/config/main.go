@@ -19,16 +19,21 @@ type Config struct {
 }
 
 func FromEnv() *Config {
+	webhookApiBaseUrl := Getenv("WEBHOOK_API_BASE_URL")
+	if webhookApiBaseUrl == "" {
+		webhookApiBaseUrl = Getenv("NEXT_PUBLIC_API_BASE_URL")
+	}
+
 	return &Config{
-		ClientID:     Getenv("NEXT_PUBLIC_TWITCH_CLIENT_ID"),
-		ClientSecret: Getenv("TWITCH_CLIENT_SECRET"),
-		Secret:       Getenv("SECRET"),
-		WebBaseUrl:   Getenv("NEXT_PUBLIC_BASE_URL"),
-		WebhookApiBaseUrl: Getenv("NEXT_PUBLIC_API_BASE_URL"),
-		CookieDomain: Getenv("COOKIE_DOMAIN"),
-		Username:     Getenv("TWITCH_USERNAME"),
-		OAuth:        Getenv("TWITCH_OAUTH"),
-		DSN:          Getenv("DSN"),
+		ClientID:          Getenv("NEXT_PUBLIC_TWITCH_CLIENT_ID"),
+		ClientSecret:      Getenv("TWITCH_CLIENT_SECRET"),
+		Secret:            Getenv("SECRET"),
+		WebBaseUrl:        Getenv("NEXT_PUBLIC_BASE_URL"),
+		WebhookApiBaseUrl: webhookApiBaseUrl,
+		CookieDomain:      Getenv("COOKIE_DOMAIN"),
+		Username:          Getenv("TWITCH_USERNAME"),
+		OAuth:             Getenv("TWITCH_OAUTH"),
+		DSN:               Getenv("DSN"),
 	}
 }
 
