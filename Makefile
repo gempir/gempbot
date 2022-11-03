@@ -22,7 +22,7 @@ migrate:
 	go run main.go migrate
 
 proxy:
-	flyctl proxy 5433 -a gempbot-db
+	flyctl proxy 5000:5432 -a gempbot-db
 
 docker: 
 	docker build . -t gempbot
