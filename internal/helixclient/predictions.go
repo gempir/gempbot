@@ -22,6 +22,11 @@ func (c *HelixClient) GetPredictions(params *helix.PredictionsParams) (*helix.Pr
 		return resp, fmt.Errorf("could not get active predictions: %s", resp.ErrorMessage)
 	}
 	if resp.StatusCode == http.StatusUnauthorized {
+		err := c.refreshUserAccessToken(params.BroadcasterID)
+		if err == nil {
+			return c.GetPredictions(params)
+		}
+
 		return resp, fmt.Errorf("bot failed to manage predictions, broadcaster must login %s", resp.ErrorMessage)
 	}
 	if len(resp.Data.Predictions) < 1 {
@@ -45,6 +50,11 @@ func (c *HelixClient) EndPrediction(params *helix.EndPredictionParams) (*helix.P
 		return resp, fmt.Errorf("could not set prediction outcome: %s", resp.ErrorMessage)
 	}
 	if resp.StatusCode == http.StatusUnauthorized {
+		err := c.refreshUserAccessToken(params.BroadcasterID)
+		if err == nil {
+			return c.EndPrediction(params)
+		}
+
 		return resp, fmt.Errorf("bot failed to manage predictions, broadcaster must login %s", resp.ErrorMessage)
 	}
 	if resp.StatusCode >= http.StatusBadRequest {
@@ -68,6 +78,11 @@ func (c *HelixClient) CreatePrediction(params *helix.CreatePredictionParams) (*h
 		return resp, fmt.Errorf("could not create prediction: %s", resp.ErrorMessage)
 	}
 	if resp.StatusCode == http.StatusUnauthorized {
+		err := c.refreshUserAccessToken(params.BroadcasterID)
+		if err == nil {
+			return c.CreatePrediction(params)
+		}
+
 		return resp, fmt.Errorf("bot failed to manage predictions, broadcaster must login %s", resp.ErrorMessage)
 	}
 	if resp.StatusCode >= http.StatusBadRequest {

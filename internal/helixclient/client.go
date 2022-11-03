@@ -120,6 +120,23 @@ func (c *HelixClient) refreshUserAccessTokens() {
 	}
 }
 
+func (c *HelixClient) refreshUserAccessToken(userID string) error {
+	token, err := c.db.GetUserAccessToken(userID)
+	if err != nil {
+		return err
+	}
+	if time.Since(token.UpdatedAt) > 3*time.Hour {
+		err := c.RefreshToken(token)
+		if err != nil {
+			return err
+		} else {
+			log.Infof("refreshed token for user %s", token.OwnerTwitchID)
+		}
+	}
+
+	return nil
+}
+
 func (c *HelixClient) SetAppAccessToken(ctx context.Context, token helix.AccessCredentials) {
 	c.AppAccessToken = token
 	c.Client.SetAppAccessToken(token.AccessToken)

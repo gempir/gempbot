@@ -1,6 +1,7 @@
 package helixclient
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/gempir/gempbot/internal/log"
@@ -20,6 +21,12 @@ func (c *HelixClient) CreateEventSubSubscription(userID string, webHookUrl strin
 			Version:   "1",
 		},
 	)
+	if response.StatusCode == http.StatusUnauthorized {
+		err := c.refreshUserAccessToken(userID)
+		if err == nil {
+			return c.CreateEventSubSubscription(userID, webHookUrl, subType)
+		}
+	}
 
 	return response, err
 }
@@ -37,6 +44,12 @@ func (c *HelixClient) CreateRewardEventSubSubscription(userID, webHookUrl, subTy
 			Version:   "1",
 		},
 	)
+	if response.StatusCode == http.StatusUnauthorized {
+		err := c.refreshUserAccessToken(userID)
+		if err == nil {
+			return c.CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID)
+		}
+	}
 
 	return response, err
 }
