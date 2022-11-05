@@ -139,6 +139,10 @@ func (m *MediaManager) RegisterConnection(userID string, writeFunc func(message 
 	return connectionId
 }
 
+func (m *MediaManager) DeregisterConnection(connectionId string) {
+	m.connections.Delete(connectionId)
+}
+
 func newRoom() *Room {
 	return &Room{
 		users: xsync.NewMapOf[*Connection](),

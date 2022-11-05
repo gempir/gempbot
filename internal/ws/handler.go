@@ -67,7 +67,8 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Errorf("ws read failed: %s", err)
+			log.Errorf("Client Disconnected %s %s %s", userId, connectionId, err)
+			h.mediaManager.DeregisterConnection(connectionId)
 			break
 		}
 

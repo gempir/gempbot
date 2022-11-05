@@ -11,6 +11,9 @@ export function useWs(onMessage = (event: MessageEvent<any>) => { }) {
     const wsApiBaseUrl = useStore(store => store.apiBaseUrl).replace('https://', 'wss://').replace('http://', 'ws://');
 
     return useWebSocket(wsApiBaseUrl + "/api/ws", {
-        onMessage: onMessage
+        onMessage: onMessage,
+        shouldReconnect: (closeEvent) => true,
+        reconnectAttempts: 10,
+        reconnectInterval: 3000,
     });
 }
