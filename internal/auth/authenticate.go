@@ -121,7 +121,7 @@ func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store
 		}
 
 		// Token might be expired, let's try refreshing
-		if resp.Error == "Unauthorized" {
+		if resp.Error == "Unauthorized" || resp.ErrorMessage == "invalid access token" {
 			err := a.helixClient.RefreshToken(token)
 			if err != nil {
 				return helix.ValidateTokenResponse{}, store.UserAccessToken{}, api.NewApiError(http.StatusUnauthorized, fmt.Errorf("failed to refresh token"))
