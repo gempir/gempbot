@@ -7,6 +7,7 @@ import (
 	"github.com/gempir/gempbot/internal/bot/commander"
 	"github.com/gempir/gempbot/internal/chat"
 	"github.com/gempir/gempbot/internal/config"
+	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
@@ -41,8 +42,16 @@ func NewBot(cfg *config.Config, db *store.Database, helixClient helixclient.Clie
 	}
 }
 
+func (b *Bot) RegisterCommand(command string, handler func(dto.CommandPayload)) {
+	b.listener.RegisterCommand(command, handler)
+}
+
 func (b *Bot) Say(channel string, message string) {
 	go b.ChatClient.Say(channel, message)
+}
+
+func (c *Bot) Reply(channel string, parentMsgId string, message string) {
+	c.ChatClient.Reply(channel, parentMsgId, message)
 }
 
 func (b *Bot) Join(channel string) {

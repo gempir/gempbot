@@ -60,3 +60,11 @@ func (s *MockStore) GetSevenTvToken(ctx context.Context) string {
 func (s *MockStore) GetBttvToken(ctx context.Context) string {
 	return "BttvToken"
 }
+
+func (s *MockStore) AddToQueue(queueItem MediaQueue) error {
+	return nil
+}
+
+func (s *MockStore) GetAllMediaCommandsBotConfig() []BotConfig {
+	return []BotConfig{}
+}

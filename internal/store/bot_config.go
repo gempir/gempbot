@@ -10,6 +10,7 @@ import (
 type BotConfig struct {
 	OwnerTwitchID string `gorm:"primaryKey"`
 	JoinBot       bool   `gorm:"index"`
+	MediaCommands bool
 }
 
 func (db *Database) SaveBotConfig(ctx context.Context, botCfg BotConfig) error {
@@ -36,4 +37,12 @@ func (db *Database) GetBotConfig(userID string) (BotConfig, error) {
 	}
 
 	return botConfig, nil
+}
+
+func (db *Database) GetAllMediaCommandsBotConfig() []BotConfig {
+	var botConfigs []BotConfig
+
+	db.Client.Where("media_commands = true").Find(&botConfigs)
+
+	return botConfigs
 }

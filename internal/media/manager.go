@@ -2,9 +2,12 @@ package media
 
 import (
 	"encoding/json"
+	"regexp"
 
+	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
+	"github.com/gempir/gempbot/internal/store"
 	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync"
 )
@@ -14,6 +17,10 @@ type PlayerState string
 const (
 	PLAYING PlayerState = "PLAYING"
 	PAUSED  PlayerState = "PAUSED"
+)
+
+var (
+	YOUTUBE_REGEX = regexp.MustCompile(`^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$`)
 )
 
 type MEDIA_TYPE string
@@ -28,10 +35,12 @@ type DebugMessage struct {
 }
 
 type MediaManager struct {
-	storage     storage
-	helixClient helixclient.Client
-	rooms       *xsync.MapOf[string, *Room]
-	connections *xsync.MapOf[string, *Connection]
+	storage                   storage
+	helixClient               helixclient.Client
+	rooms                     *xsync.MapOf[string, *Room]
+	connections               *xsync.MapOf[string, *Connection]
+	bot                       mediaBot
+	commandsActivatedChannels map[string]bool
 }
 
 type Connection struct {
@@ -48,15 +57,59 @@ type Room struct {
 }
 
 type storage interface {
+	AddToQueue(queueItem store.MediaQueue) error
+	GetAllMediaCommandsBotConfig() []store.BotConfig
 }
 
-func NewMediaManager(storage storage, helixClient helixclient.Client) *MediaManager {
-	return &MediaManager{
-		storage:     storage,
-		helixClient: helixClient,
-		rooms:       xsync.NewMapOf[*Room](),
-		connections: xsync.NewMapOf[*Connection](),
+type mediaBot interface {
+	RegisterCommand(command string, handler func(dto.CommandPayload))
+	Say(channel string, message string)
+	Reply(channel string, parentMsgId, message string)
+}
+
+func NewMediaManager(storage storage, helixClient helixclient.Client, bot mediaBot) *MediaManager {
+
+	commandsActivatedChannels := make(map[string]bool)
+	commandActivatedCfgs := storage.GetAllMediaCommandsBotConfig()
+	for _, cfg := range commandActivatedCfgs {
+		if cfg.MediaCommands {
+			commandsActivatedChannels[cfg.OwnerTwitchID] = true
+		}
 	}
+
+	mm := &MediaManager{
+		storage:                   storage,
+		helixClient:               helixClient,
+		rooms:                     xsync.NewMapOf[*Room](),
+		connections:               xsync.NewMapOf[*Connection](),
+		commandsActivatedChannels: commandsActivatedChannels,
+		bot:                       bot,
+	}
+
+	bot.RegisterCommand("sr", mm.handleSongRequest)
+
+	return mm
+}
+
+func (m *MediaManager) handleSongRequest(payload dto.CommandPayload) {
+	if _, ok := m.commandsActivatedChannels[payload.Msg.RoomID]; !ok {
+		return
+	}
+
+	if !YOUTUBE_REGEX.MatchString(payload.Query) {
+		m.bot.Reply(payload.Msg.Channel, payload.Msg.ID, "invalid youtube url")
+		return
+	}
+
+	m.AddUrlToQueue(payload.Query, payload.Msg.User.ID, payload.Msg.RoomID)
+}
+
+func (m *MediaManager) AddUrlToQueue(url string, authorID string, channelID string) {
+	m.storage.AddToQueue(store.MediaQueue{
+		ChannelTwitchId: channelID,
+		Author:          authorID,
+		Url:             url,
+	})
 }
 
 func (m *MediaManager) HandleJoin(connectionId string, userID string, channel string) {

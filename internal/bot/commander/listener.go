@@ -35,6 +35,10 @@ func NewListener(db *store.Database, predictionsHandler *Handler, chatSay func(c
 	}
 }
 
+func (l *Listener) RegisterCommand(command string, handler func(dto.CommandPayload)) {
+	l.commands[command] = handler
+}
+
 func (l *Listener) RegisterDefaultCommands() {
 	l.commands[dto.CmdNameStatus] = l.handleStatus
 	l.commands[dto.CmdNamePrediction] = l.handlePrediction

@@ -26,6 +26,10 @@ func (c *ChatClient) Say(channel string, message string) {
 	c.ircClient.Say(channel, message)
 }
 
+func (c *ChatClient) Reply(channel string, parentMsgId string, message string) {
+	c.ircClient.Reply(channel, parentMsgId, message)
+}
+
 func (c *ChatClient) Join(channel string) {
 	log.Infof("JOIN %s", channel)
 	c.ircClient.Join(channel)

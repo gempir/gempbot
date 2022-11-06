@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.11.0
 	github.com/carlmjohnson/requests v0.21.13
-	github.com/gempir/go-twitch-irc/v3 v3.0.0-beta.2
+	github.com/gempir/go-twitch-irc/v3 v3.2.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/websocket v1.4.2
 	github.com/nicklaw5/helix/v2 v2.2.1
@@ -19,6 +19,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/gempir/go-twitch-irc v1.1.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
