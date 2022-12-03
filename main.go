@@ -76,7 +76,7 @@ func main() {
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	}).Handler(mux)
-	err := http.ListenAndServe("127.0.0.1:3010", handler)
+	err := http.ListenAndServe(":3010", handler)
 	if err != nil {
 		log.Fatal(err)
 	}
