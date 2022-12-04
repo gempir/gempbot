@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
@@ -13,13 +14,15 @@ import (
 type ElectionManager struct {
 	db          store.Store
 	helixclient helixclient.Client
+	cpm         *channelpoint.ChannelPointManager
 }
 
-func NewElectionManager(db store.Store, helixClient helixclient.Client) *ElectionManager {
+func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager) *ElectionManager {
 
 	return &ElectionManager{
 		db:          db,
 		helixclient: helixClient,
+		cpm:         cpm,
 	}
 }
 
@@ -52,11 +55,10 @@ func (em *ElectionManager) runElection(election store.Election) {
 		return
 	}
 
-	reward := helixclient.CreateCustomRewardRequest{
+	reward := channelpoint.TwitchRewardConfig{
 		Title:                             "Nominate a 7TV Emote",
 		Prompt:                            fmt.Sprintf("Nominate a 7TV Emote for the next election. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours),
 		Cost:                              election.NominationCost,
-		IsEnabled:                         true,
 		IsUserInputRequired:               true,
 		BackgroundColor:                   "#29D8F6",
 		IsMaxPerStreamEnabled:             false,
@@ -64,20 +66,30 @@ func (em *ElectionManager) runElection(election store.Election) {
 		MaxPerStream:                      0,
 		MaxPerUserPerStream:               0,
 		IsGlobalCooldownEnabled:           false,
-		GlobalCoolDownSeconds:             0,
 		ShouldRedemptionsSkipRequestQueue: false,
 	}
 
-	resp, err := em.helixclient.CreateOrUpdateReward(election.ChannelTwitchID, token.AccessToken, reward, election.ChannelPointRewardID)
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
+	newReward, err := em.cpm.CreateOrUpdateChannelPointReward(election.ChannelTwitchID, reward, election.ChannelPointRewardID)
 
-	election.ChannelPointRewardID = resp.ID
+	// a.eventsubSubscriptionManager.SubscribeRewardRedemptionAdd(userID, config.ID)
+	// if config.ApproveOnly {
+	// 	a.eventsubSubscriptionManager.SubscribeRewardRedemptionUpdate(userID, config.ID)
+	// }
+
+	// err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelPointRewardID, newReward))
+	// if err != nil {
+	// 	log.Error(err.Error())
+	// 	return
+	// }
+
+	election.ChannelPointRewardID = newReward.ID
 	err = em.db.CreateOrUpdateElection(context.Background(), election)
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
+}
+
+func (em *ElectionManager) nominate(channelTwitchID string, userTwitchID string, input string) {
+	log.Infof("nominate %s channel %s user: %s", input, channelTwitchID, userTwitchID)
 }

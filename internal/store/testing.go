@@ -84,3 +84,7 @@ func (s *MockStore) DeleteElection(ctx context.Context, channelTwitchID string) 
 func (s *MockStore) GetAllElections(ctx context.Context) ([]Election, error) {
 	return []Election{}, nil
 }
+
+func (s *MockStore) SaveReward(reward ChannelPointReward) error {
+	return nil
+}
