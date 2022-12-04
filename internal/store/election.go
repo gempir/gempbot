@@ -6,13 +6,14 @@ import (
 )
 
 type Election struct {
-	ID              uint   `gorm:"primarykey,autoIncrement"`
-	ChannelTwitchID string `gorm:"index"`
-	Hours           int
-	NominationCost  int
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	LastRunAt       *time.Time
+	ID                   uint   `gorm:"primarykey,autoIncrement"`
+	ChannelTwitchID      string `gorm:"index"`
+	Hours                int
+	NominationCost       int
+	ChannelPointRewardID string
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
+	LastRunAt            *time.Time
 }
 
 func (db *Database) GetAllElections(ctx context.Context) ([]Election, error) {
@@ -26,6 +27,10 @@ func (db *Database) GetAllElections(ctx context.Context) ([]Election, error) {
 }
 
 func (db *Database) CreateOrUpdateElection(ctx context.Context, election Election) error {
+	if election.Hours < 1 {
+		election.Hours = 1
+	}
+
 	res := db.Client.WithContext(ctx).Save(&election)
 	if res.Error != nil {
 		return res.Error

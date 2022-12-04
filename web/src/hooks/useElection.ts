@@ -29,6 +29,9 @@ export function useElection(): [Election, (election: Election) => void, () => vo
             if (reason !== RejectReason.NotFound) {
                 throw new Error(reason);
             }
+            if (reason === RejectReason.NotFound) {
+                setElection(defaultElection);
+            }
         }).finally(() => setLoading(false));
     }
 

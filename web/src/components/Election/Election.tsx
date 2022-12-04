@@ -1,5 +1,5 @@
 import { useUserConfig } from "../../hooks/useUserConfig";
-import { NewElection } from "./NewElection";
+import { ElectionForm } from "./ElectionForm";
 
 export function Election() {
     const [userCfg, setUserConfig, , loading, errorMessage] = useUserConfig();
@@ -8,6 +8,6 @@ export function Election() {
     }
 
     return <div className="p-4">
-        <NewElection />
+        <ElectionForm />
     </div>;
 }

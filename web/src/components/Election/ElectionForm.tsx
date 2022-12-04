@@ -7,7 +7,7 @@ type FormValues = {
     NominationCost: number;
 };
 
-export function NewElection() {
+export function ElectionForm() {
     const [election, setElection, deleteElection, errorMessage, loading] = useElection();
     const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>();
     const onSubmit: SubmitHandler<FormValues> = data => {
@@ -22,7 +22,16 @@ export function NewElection() {
 
 
     return <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-gray-800 rounded shadow relative flex flex-col">
-        <h2 className="mb-5 text-xl font-bold">Create a new 7TV emote election</h2>
+        <div className="mb-5 flex items-center justify-between gap-3">
+            <h2 className="text-xl font-bold">Create a new 7TV emote election</h2>
+            <div className="min-w-[5rem] min-h-[42px] text-right">
+                {election?.ID &&
+                    <div className="bg-red-700 hover:bg-red-600 p-2 rounded shadow mt-3 text-gray-100 inline-block cursor-pointer" onClick={deleteElection}>
+                        Delete
+                    </div>
+                }
+            </div>
+        </div>
         {errorMessage && <div className="bg-red-500 text-white p-2 rounded mb-5">{errorMessage}</div>}
         <label>
             Every
