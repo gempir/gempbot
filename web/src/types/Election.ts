@@ -4,4 +4,5 @@ export interface Election {
     NominationCost: number
     CreatedAt?: Date
     UpdatedAt?: Date
+    LastRunAt?: Date
 }

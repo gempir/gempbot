@@ -18,7 +18,14 @@ export function useElection(): [Election, (election: Election) => void, () => vo
 
     const fetchElection = () => {
         setLoading(true);
-        doFetch({ apiBaseUrl, managing, scToken }, Method.GET, "/api/election").then(setElection).catch(reason => {
+        doFetch({ apiBaseUrl, managing, scToken }, Method.GET, "/api/election").then(resp => setElection(
+            {
+                ...resp,
+                CreatedAt: new Date(resp.CreatedAt ?? null),
+                UpdatedAt: new Date(resp.UpdatedAt ?? null),
+                LastRunAt: new Date(resp.LastRunAt ?? null),
+            }
+        )).catch(reason => {
             if (reason !== RejectReason.NotFound) {
                 throw new Error(reason);
             }

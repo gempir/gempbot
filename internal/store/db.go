@@ -25,6 +25,7 @@ type Store interface {
 	CreateOrUpdateElection(ctx context.Context, election Election) error
 	GetElection(ctx context.Context, channelTwitchID string) (Election, error)
 	DeleteElection(ctx context.Context, channelTwitchID string) error
+	GetAllElections(ctx context.Context) ([]Election, error)
 }
 
 type Database struct {

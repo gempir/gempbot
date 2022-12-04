@@ -22,7 +22,7 @@ export function NewElection() {
 
 
     return <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-gray-800 rounded shadow relative flex flex-col">
-        <h2 className="mb-5 text-xl font-bold">Create a new 7tv emote election</h2>
+        <h2 className="mb-5 text-xl font-bold">Create a new 7TV emote election</h2>
         {errorMessage && <div className="bg-red-500 text-white p-2 rounded mb-5">{errorMessage}</div>}
         <label>
             Every

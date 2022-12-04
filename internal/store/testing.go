@@ -80,3 +80,7 @@ func (s *MockStore) GetElection(ctx context.Context, channelTwitchID string) (El
 func (s *MockStore) DeleteElection(ctx context.Context, channelTwitchID string) error {
 	return nil
 }
+
+func (s *MockStore) GetAllElections(ctx context.Context) ([]Election, error) {
+	return []Election{}, nil
+}

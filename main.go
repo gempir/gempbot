@@ -8,6 +8,7 @@ import (
 	"github.com/gempir/gempbot/internal/bot"
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/config"
+	"github.com/gempir/gempbot/internal/election"
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/eventsub"
@@ -47,6 +48,8 @@ func main() {
 	eventsubManager := eventsub.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
 	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
+	electionManager := election.NewElectionManager(db)
+	go electionManager.StartElectionManagerRoutine()
 
 	mediaManager := media.NewMediaManager(db, helixClient, bot)
 	wsHandler := ws.NewWsHandler(authClient, mediaManager)

@@ -12,6 +12,17 @@ type Election struct {
 	NominationCost  int
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	LastRunAt       *time.Time
+}
+
+func (db *Database) GetAllElections(ctx context.Context) ([]Election, error) {
+	var elections []Election
+	res := db.Client.WithContext(ctx).Find(&elections)
+	if res.Error != nil {
+		return elections, res.Error
+	}
+
+	return elections, nil
 }
 
 func (db *Database) CreateOrUpdateElection(ctx context.Context, election Election) error {
