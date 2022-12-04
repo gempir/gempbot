@@ -1,10 +1,10 @@
 #!make
 .PHONY: *
-include .env
 include .env.development
+include .env
 
-export $(shell sed 's/=.*//' .env)
 export $(shell sed 's/=.*//' .env.development)
+export $(shell sed 's/=.*//' .env)
 
 build_server:
 	go run main.go
