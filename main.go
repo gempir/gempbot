@@ -66,6 +66,7 @@ func main() {
 	mux.HandleFunc("/api/emotehistory", apiHandlers.EmoteHistoryHandler)
 	mux.HandleFunc("/api/eventsub", apiHandlers.EventSubHandler)
 	mux.HandleFunc("/api/reward", apiHandlers.RewardHandler)
+	mux.HandleFunc("/api/election", apiHandlers.ElectionHandler)
 	mux.HandleFunc("/api/subscriptions", apiHandlers.SubscriptionsHandler)
 	mux.HandleFunc("/api/userconfig", apiHandlers.UserConfigHandler)
 	mux.HandleFunc("/api/ws", wsHandler.HandleWs)

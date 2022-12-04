@@ -68,3 +68,15 @@ func (s *MockStore) AddToQueue(queueItem MediaQueue) error {
 func (s *MockStore) GetAllMediaCommandsBotConfig() []BotConfig {
 	return []BotConfig{}
 }
+
+func (s *MockStore) CreateOrUpdateElection(ctx context.Context, election Election) error {
+	return nil
+}
+
+func (s *MockStore) GetElection(ctx context.Context, channelTwitchID string) (Election, error) {
+	return Election{}, nil
+}
+
+func (s *MockStore) DeleteElection(ctx context.Context, channelTwitchID string) error {
+	return nil
+}
