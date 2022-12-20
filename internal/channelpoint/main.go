@@ -185,6 +185,30 @@ func (r *TimeoutReward) GetAdditionalOptions() interface{} {
 	return r.TimeoutAdditionalOptions
 }
 
+type ElectionReward struct {
+	TwitchRewardConfig
+	ElectionRewardAdditionalOptions
+}
+
+type ElectionRewardAdditionalOptions struct {
+}
+
+func (r *ElectionReward) GetType() dto.RewardType {
+	return dto.REWARD_ELECTION
+}
+
+func (r *ElectionReward) GetConfig() TwitchRewardConfig {
+	return r.TwitchRewardConfig
+}
+
+func (r *ElectionReward) SetConfig(config TwitchRewardConfig) {
+	r.TwitchRewardConfig = config
+}
+
+func (r *ElectionReward) GetAdditionalOptions() interface{} {
+	return r.ElectionRewardAdditionalOptions
+}
+
 func MarshallReward(reward Reward) string {
 	js, err := json.Marshal(reward)
 	if err != nil {
@@ -318,6 +342,10 @@ func CreateRewardFromBody(body io.ReadCloser) (Reward, error) {
 		}, nil
 	case dto.REWARD_TIMEOUT:
 		return &TimeoutReward{
+			TwitchRewardConfig: createTwitchRewardConfigFromRequestBody(data),
+		}, nil
+	case dto.REWARD_ELECTION:
+		return &ElectionReward{
 			TwitchRewardConfig: createTwitchRewardConfigFromRequestBody(data),
 		}, nil
 	}

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gempir/gempbot/internal/channelpoint"
+	"github.com/gempir/gempbot/internal/eventsub"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
@@ -15,14 +16,15 @@ type ElectionManager struct {
 	db          store.Store
 	helixclient helixclient.Client
 	cpm         *channelpoint.ChannelPointManager
+	esm         *eventsub.SubscriptionManager
 }
 
-func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager) *ElectionManager {
-
+func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsub.SubscriptionManager) *ElectionManager {
 	return &ElectionManager{
 		db:          db,
 		helixclient: helixClient,
 		cpm:         cpm,
+		esm:         esm,
 	}
 }
 
@@ -49,7 +51,7 @@ func (em *ElectionManager) checkElections() {
 }
 
 func (em *ElectionManager) runElection(election store.Election) {
-	token, err := em.db.GetUserAccessToken(election.ChannelTwitchID)
+	_, err := em.db.GetUserAccessToken(election.ChannelTwitchID)
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -70,17 +72,19 @@ func (em *ElectionManager) runElection(election store.Election) {
 	}
 
 	newReward, err := em.cpm.CreateOrUpdateChannelPointReward(election.ChannelTwitchID, reward, election.ChannelPointRewardID)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 
-	// a.eventsubSubscriptionManager.SubscribeRewardRedemptionAdd(userID, config.ID)
-	// if config.ApproveOnly {
-	// 	a.eventsubSubscriptionManager.SubscribeRewardRedemptionUpdate(userID, config.ID)
-	// }
+	electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: reward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
+	err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelPointRewardID, electionReward))
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 
-	// err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelPointRewardID, newReward))
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	return
-	// }
+	em.esm.SubscribeRewardRedemptionAdd(election.ChannelTwitchID, newReward.ID)
 
 	election.ChannelPointRewardID = newReward.ID
 	err = em.db.CreateOrUpdateElection(context.Background(), election)
