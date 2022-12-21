@@ -27,6 +27,7 @@ type Store interface {
 	DeleteElection(ctx context.Context, channelTwitchID string) error
 	GetAllElections(ctx context.Context) ([]Election, error)
 	SaveReward(reward ChannelPointReward) error
+	CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error
 }
 
 type Database struct {
@@ -52,7 +53,7 @@ func NewDatabase(cfg *config.Config) *Database {
 
 func (db *Database) Migrate() {
 	log.Info("Migrating schema")
-	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{}, MediaPlayer{}, MediaQueue{}, Election{})
+	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{}, MediaPlayer{}, MediaQueue{}, Election{}, Nomination{})
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())
 	}

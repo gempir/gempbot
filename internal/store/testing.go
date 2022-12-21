@@ -88,3 +88,7 @@ func (s *MockStore) GetAllElections(ctx context.Context) ([]Election, error) {
 func (s *MockStore) SaveReward(reward ChannelPointReward) error {
 	return nil
 }
+
+func (s *MockStore) CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error {
+	return nil
+}

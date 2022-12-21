@@ -41,7 +41,7 @@ func (db *Database) CreateOrUpdateElection(ctx context.Context, election Electio
 
 func (db *Database) GetElection(ctx context.Context, channelTwitchID string) (Election, error) {
 	var election Election
-	res := db.Client.WithContext(ctx).Where("channel_twitch_id = ?", channelTwitchID).First(&election)
+	res := db.Client.WithContext(ctx).Where("channel_twitch_id = ?", channelTwitchID).Order("updated_at desc").First(&election)
 	if res.Error != nil {
 		return election, res.Error
 	}

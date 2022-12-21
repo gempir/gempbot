@@ -7,6 +7,8 @@ import (
 
 	"github.com/gempir/gempbot/internal/bot"
 	"github.com/gempir/gempbot/internal/channelpoint"
+	"github.com/gempir/gempbot/internal/emotechief"
+	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/eventsubsubscription"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
@@ -15,20 +17,22 @@ import (
 )
 
 type ElectionManager struct {
-	db          store.Store
-	helixclient helixclient.Client
-	cpm         *channelpoint.ChannelPointManager
-	esm         *eventsubsubscription.SubscriptionManager
-	bot         *bot.Bot
+	db            store.Store
+	helixclient   helixclient.Client
+	cpm           *channelpoint.ChannelPointManager
+	esm           *eventsubsubscription.SubscriptionManager
+	bot           *bot.Bot
+	sevenTvClient emoteservice.ApiClient
 }
 
-func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsubsubscription.SubscriptionManager, bot *bot.Bot) *ElectionManager {
+func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsubsubscription.SubscriptionManager, bot *bot.Bot, sevenTvClient emoteservice.ApiClient) *ElectionManager {
 	return &ElectionManager{
-		db:          db,
-		helixclient: helixClient,
-		cpm:         cpm,
-		esm:         esm,
-		bot:         bot,
+		db:            db,
+		helixclient:   helixClient,
+		cpm:           cpm,
+		esm:           esm,
+		bot:           bot,
+		sevenTvClient: sevenTvClient,
 	}
 }
 
@@ -78,7 +82,7 @@ func (em *ElectionManager) runElection(election store.Election) {
 	}
 
 	electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: newReward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
-	err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelPointRewardID, electionReward))
+	err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelTwitchID, electionReward))
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -100,5 +104,39 @@ func (em *ElectionManager) runElection(election store.Election) {
 }
 
 func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) {
+	election, err := em.db.GetElection(context.Background(), reward.OwnerTwitchID)
+	if err != nil {
+		log.Error(err.Error())
+		// refund
+		return
+	}
+
+	emoteID, err := emotechief.GetSevenTvEmoteId(redemption.UserInput)
+	if err != nil {
+		log.Error(err.Error())
+		// refund
+		return
+	}
+
+	emote, err := em.sevenTvClient.GetEmote(emoteID)
+	if err != nil {
+		log.Error(err.Error())
+		// refund
+		return
+	}
+
+	err = em.db.CreateOrIncrementNomination(context.Background(), store.Nomination{
+		EmoteID:         emoteID,
+		ChannelTwitchID: reward.OwnerTwitchID,
+		ElectionID:      election.ID,
+		EmoteCode:       emote.Code,
+		NominatedBy:     redemption.UserID,
+	})
+	if err != nil {
+		log.Error(err.Error())
+		// refund
+		return
+	}
+
 	log.Infof("nominate %s %s", redemption.UserLogin, redemption.UserInput)
 }
