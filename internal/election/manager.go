@@ -56,6 +56,7 @@ func (em *ElectionManager) checkElections() {
 
 func (em *ElectionManager) runElection(election store.Election) {
 	reward := channelpoint.TwitchRewardConfig{
+		Enabled:                           true,
 		Title:                             "Nominate a 7TV Emote",
 		Prompt:                            fmt.Sprintf("Nominate a 7TV Emote for the next election. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours),
 		Cost:                              election.NominationCost,

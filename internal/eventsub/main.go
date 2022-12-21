@@ -167,6 +167,9 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 					return
 				}
 			}
+			if reward.Type == dto.REWARD_ELECTION {
+				log.Info("Received election nomination")
+			}
 		} else {
 			if reward.Type == dto.REWARD_BTTV {
 				esm.emoteChief.HandleBttvRedemption(reward, redemption, true)
