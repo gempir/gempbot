@@ -7,21 +7,22 @@ import (
 
 	"github.com/gempir/gempbot/internal/bot"
 	"github.com/gempir/gempbot/internal/channelpoint"
-	"github.com/gempir/gempbot/internal/eventsub"
+	"github.com/gempir/gempbot/internal/eventsubsubscription"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type ElectionManager struct {
 	db          store.Store
 	helixclient helixclient.Client
 	cpm         *channelpoint.ChannelPointManager
-	esm         *eventsub.SubscriptionManager
+	esm         *eventsubsubscription.SubscriptionManager
 	bot         *bot.Bot
 }
 
-func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsub.SubscriptionManager, bot *bot.Bot) *ElectionManager {
+func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsubsubscription.SubscriptionManager, bot *bot.Bot) *ElectionManager {
 	return &ElectionManager{
 		db:          db,
 		helixclient: helixClient,
@@ -76,7 +77,7 @@ func (em *ElectionManager) runElection(election store.Election) {
 		return
 	}
 
-	electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: reward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
+	electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: newReward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
 	err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelPointRewardID, electionReward))
 	if err != nil {
 		log.Error(err.Error())
@@ -98,6 +99,6 @@ func (em *ElectionManager) runElection(election store.Election) {
 	em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ A new Election has begun. Nominate a 7TV Emote with channel points. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours))
 }
 
-func (em *ElectionManager) nominate(channelTwitchID string, userTwitchID string, input string) {
-	log.Infof("nominate %s channel %s user: %s", input, channelTwitchID, userTwitchID)
+func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) {
+	log.Infof("nominate %s %s", redemption.UserLogin, redemption.UserInput)
 }

@@ -11,7 +11,8 @@ import (
 	"github.com/gempir/gempbot/internal/election"
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/emoteservice"
-	"github.com/gempir/gempbot/internal/eventsub"
+	"github.com/gempir/gempbot/internal/eventsubsubscription"
+	"github.com/gempir/gempbot/internal/eventsubmanager"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/media"
@@ -45,14 +46,14 @@ func main() {
 	seventvClient := emoteservice.NewSevenTvClient(db)
 
 	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, bot.ChatClient, seventvClient)
-	eventsubManager := eventsub.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
-	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
+	eventsubSubscriptionManager := eventsubsubscription.NewSubscriptionManager(cfg, db, helixClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 	electionManager := election.NewElectionManager(db, helixClient, channelPointManager, eventsubSubscriptionManager, bot)
 	go electionManager.StartElectionManagerRoutine()
 
 	mediaManager := media.NewMediaManager(db, helixClient, bot)
 	wsHandler := ws.NewWsHandler(authClient, mediaManager)
+	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient, electionManager)
 
 	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager, seventvClient, wsHandler)
 

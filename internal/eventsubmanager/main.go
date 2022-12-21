@@ -1,4 +1,4 @@
-package eventsub
+package eventsubmanager
 
 import (
 	"encoding/json"
@@ -12,6 +12,7 @@ import (
 	"github.com/gempir/gempbot/internal/chat"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/dto"
+	"github.com/gempir/gempbot/internal/election"
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
@@ -20,15 +21,16 @@ import (
 )
 
 type EventsubManager struct {
-	cfg         *config.Config
-	helixClient helixclient.Client
-	db          *store.Database
-	emoteChief  *emotechief.EmoteChief
-	chatClient  *chat.ChatClient
-	ttlCache    *ttlcache.Cache
+	cfg             *config.Config
+	helixClient     helixclient.Client
+	db              *store.Database
+	emoteChief      *emotechief.EmoteChief
+	chatClient      *chat.ChatClient
+	ttlCache        *ttlcache.Cache
+	electionManager *election.ElectionManager
 }
 
-func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventsubManager {
+func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient, electionManager *election.ElectionManager) *EventsubManager {
 	cache := ttlcache.NewCache()
 	err := cache.SetTTL(time.Second * 60)
 	if err != nil {
@@ -36,12 +38,13 @@ func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *
 	}
 
 	return &EventsubManager{
-		cfg:         cfg,
-		helixClient: helixClient,
-		db:          db,
-		emoteChief:  emoteChief,
-		chatClient:  bot,
-		ttlCache:    cache,
+		cfg:             cfg,
+		helixClient:     helixClient,
+		db:              db,
+		emoteChief:      emoteChief,
+		chatClient:      bot,
+		ttlCache:        cache,
+		electionManager: electionManager,
 	}
 }
 
@@ -167,9 +170,6 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 					return
 				}
 			}
-			if reward.Type == dto.REWARD_ELECTION {
-				log.Info("Received election nomination")
-			}
 		} else {
 			if reward.Type == dto.REWARD_BTTV {
 				esm.emoteChief.HandleBttvRedemption(reward, redemption, true)
@@ -178,6 +178,9 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 			if reward.Type == dto.REWARD_SEVENTV {
 				esm.emoteChief.HandleSeventvRedemption(reward, redemption, true)
 				return
+			}
+			if reward.Type == dto.REWARD_ELECTION {
+				esm.electionManager.Nominate(reward, redemption)
 			}
 		}
 	}
