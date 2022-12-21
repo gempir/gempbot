@@ -48,7 +48,7 @@ func main() {
 	eventsubManager := eventsub.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
 	eventsubSubscriptionManager := eventsub.NewSubscriptionManager(cfg, db, helixClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
-	electionManager := election.NewElectionManager(db, helixClient, channelPointManager, eventsubSubscriptionManager)
+	electionManager := election.NewElectionManager(db, helixClient, channelPointManager, eventsubSubscriptionManager, bot)
 	go electionManager.StartElectionManagerRoutine()
 
 	mediaManager := media.NewMediaManager(db, helixClient, bot)

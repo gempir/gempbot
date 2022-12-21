@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gempir/gempbot/internal/bot"
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/eventsub"
 	"github.com/gempir/gempbot/internal/helixclient"
@@ -17,21 +18,24 @@ type ElectionManager struct {
 	helixclient helixclient.Client
 	cpm         *channelpoint.ChannelPointManager
 	esm         *eventsub.SubscriptionManager
+	bot         *bot.Bot
 }
 
-func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsub.SubscriptionManager) *ElectionManager {
+func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsub.SubscriptionManager, bot *bot.Bot) *ElectionManager {
 	return &ElectionManager{
 		db:          db,
 		helixclient: helixClient,
 		cpm:         cpm,
 		esm:         esm,
+		bot:         bot,
 	}
 }
 
 func (em *ElectionManager) StartElectionManagerRoutine() {
-	for range time.NewTicker(1 * time.Minute).C {
-		em.checkElections()
-	}
+	em.checkElections()
+	// for range time.NewTicker(1 * time.Second).C {
+	// 	em.checkElections()
+	// }
 }
 
 func (em *ElectionManager) checkElections() {
@@ -51,12 +55,6 @@ func (em *ElectionManager) checkElections() {
 }
 
 func (em *ElectionManager) runElection(election store.Election) {
-	_, err := em.db.GetUserAccessToken(election.ChannelTwitchID)
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-
 	reward := channelpoint.TwitchRewardConfig{
 		Title:                             "Nominate a 7TV Emote",
 		Prompt:                            fmt.Sprintf("Nominate a 7TV Emote for the next election. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours),
@@ -87,11 +85,16 @@ func (em *ElectionManager) runElection(election store.Election) {
 	em.esm.SubscribeRewardRedemptionAdd(election.ChannelTwitchID, newReward.ID)
 
 	election.ChannelPointRewardID = newReward.ID
+	// debug code, enable later
+	// time := time.Now()
+	// election.LastRunAt = &time
 	err = em.db.CreateOrUpdateElection(context.Background(), election)
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
+
+	em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ A new Election has begun. Nominate a 7TV Emote with channel points. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours))
 }
 
 func (em *ElectionManager) nominate(channelTwitchID string, userTwitchID string, input string) {

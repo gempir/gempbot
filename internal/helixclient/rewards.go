@@ -2,15 +2,14 @@ package helixclient
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/internal/log"
 )
 
@@ -77,28 +76,50 @@ type CreateCustomRewardResponseDataItem struct {
 }
 
 func (c *HelixClient) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (CreateCustomRewardResponseDataItem, error) {
-	log.Infof("Updating Reward for user %s reward title: %s", userID, reward.Title)
+	log.Infof("Creating/Updating Reward for user %s reward title: %s", userID, reward.Title)
 
-	var response CreateCustomRewardResponse
-
-	req := requests.
-		URL(TWITCH_API).
-		Path("/helix/channel_points/custom_rewards").
-		Bearer(userAccessToken).
-		Header("client-id", c.clientID).
-		Param("broadcaster_id", userID).
-		BodyJSON(reward).ToJSON(&response)
+	url := fmt.Sprintf("%s%s", TWITCH_API, "helix/channel_points/custom_rewards?broadcaster_id="+userID)
+	method := http.MethodPost
 
 	if rewardID != "" {
-		req = req.Param("id", rewardID).Method(http.MethodPatch)
-	} else {
-		req = req.Method(http.MethodPost)
+		method = http.MethodPatch
+		url += fmt.Sprintf("&id=%s", rewardID)
 	}
 
-	err := req.Fetch(context.Background())
+	reqBody, err := json.Marshal(reward)
 	if err != nil {
-		log.Error(err)
-		return CreateCustomRewardResponseDataItem{}, err
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to marshall request: %w", err)
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to make request: %w", err)
+	}
+
+	req.Header.Add("Client-ID", c.clientID)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", userAccessToken))
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to make http call to create/update reward: %w", err)
+	}
+
+	var response CreateCustomRewardResponse
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to read response body: %w", err)
+	}
+	if rewardID != "" && resp.StatusCode != http.StatusCreated {
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to create reward: %s", respBody)
+	}
+	if rewardID == "" && resp.StatusCode != http.StatusOK {
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to update reward: %s", respBody)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to decode response: %w resp: %s", err, respBody)
 	}
 
 	if len(response.Data) != 1 {
