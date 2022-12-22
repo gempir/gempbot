@@ -1,4 +1,4 @@
-package eventsub
+package eventsubmanager
 
 import (
 	"encoding/json"

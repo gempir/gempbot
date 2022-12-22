@@ -22,6 +22,15 @@ type Store interface {
 	GetAllUserAccessToken() []UserAccessToken
 	GetSevenTvToken(ctx context.Context) string
 	GetBttvToken(ctx context.Context) string
+	CreateOrUpdateElection(ctx context.Context, election Election) error
+	GetElection(ctx context.Context, channelTwitchID string) (Election, error)
+	DeleteElection(ctx context.Context, channelTwitchID string) error
+	GetAllElections(ctx context.Context) ([]Election, error)
+	SaveReward(reward ChannelPointReward) error
+	CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error
+	GetTopVotedNominated(ctx context.Context, channelTwitchID string, electionID uint) (Nomination, error)
+	GetNominations(ctx context.Context, channelTwitchID string, electionID uint, page int, pageSize int) ([]Nomination, error)
+	GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error)
 }
 
 type Database struct {
@@ -47,7 +56,7 @@ func NewDatabase(cfg *config.Config) *Database {
 
 func (db *Database) Migrate() {
 	log.Info("Migrating schema")
-	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{}, MediaPlayer{}, MediaQueue{})
+	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{}, MediaPlayer{}, MediaQueue{}, Election{}, Nomination{})
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())
 	}

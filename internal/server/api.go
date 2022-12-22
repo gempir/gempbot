@@ -7,7 +7,8 @@ import (
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/emoteservice"
-	"github.com/gempir/gempbot/internal/eventsub"
+	"github.com/gempir/gempbot/internal/eventsubmanager"
+	"github.com/gempir/gempbot/internal/eventsubsubscription"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/user"
@@ -22,14 +23,14 @@ type Api struct {
 	authClient                  *auth.Auth
 	bot                         *bot.Bot
 	emoteChief                  *emotechief.EmoteChief
-	eventsubManager             *eventsub.EventsubManager
-	eventsubSubscriptionManager *eventsub.SubscriptionManager
+	eventsubManager             *eventsubmanager.EventsubManager
+	eventsubSubscriptionManager *eventsubsubscription.SubscriptionManager
 	channelPointManager         *channelpoint.ChannelPointManager
 	sevenTvClient               emoteservice.ApiClient
 	wsHandler                   *ws.WsHandler
 }
 
-func NewApi(cfg *config.Config, db *store.Database, helixClient helixclient.Client, userAdmin *user.UserAdmin, authClient *auth.Auth, bot *bot.Bot, emoteChief *emotechief.EmoteChief, eventsubManager *eventsub.EventsubManager, eventsubSubscriptionManager *eventsub.SubscriptionManager, channelPointManager *channelpoint.ChannelPointManager, sevenTvClient emoteservice.ApiClient, wsHandler *ws.WsHandler) *Api {
+func NewApi(cfg *config.Config, db *store.Database, helixClient helixclient.Client, userAdmin *user.UserAdmin, authClient *auth.Auth, bot *bot.Bot, emoteChief *emotechief.EmoteChief, eventsubManager *eventsubmanager.EventsubManager, eventsubSubscriptionManager *eventsubsubscription.SubscriptionManager, channelPointManager *channelpoint.ChannelPointManager, sevenTvClient emoteservice.ApiClient, wsHandler *ws.WsHandler) *Api {
 	return &Api{
 		db:                          db,
 		cfg:                         cfg,

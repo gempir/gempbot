@@ -50,6 +50,16 @@ func (b *Bot) Say(channel string, message string) {
 	go b.ChatClient.Say(channel, message)
 }
 
+func (b *Bot) SayByChannelID(channelID string, message string) {
+	userData, err := b.helixClient.GetUserByUserID(channelID)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	go b.ChatClient.Say(userData.Login, message)
+}
+
 func (c *Bot) Reply(channel string, parentMsgId string, message string) {
 	c.ChatClient.Reply(channel, parentMsgId, message)
 }

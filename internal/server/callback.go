@@ -15,7 +15,11 @@ func (a *Api) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := a.helixClient.RequestUserAccessToken(code)
 	if err != nil || resp.StatusCode >= 400 {
-		log.Errorf("failed to request userAccessToken: %s %s", err, resp.ErrorMessage)
+		if err != nil {
+			log.Errorf("failed to request user access token: %s %s", err.Error(), resp.ErrorMessage)
+		} else {
+			log.Errorf("failed to request userAccessToken: %s", resp.ErrorMessage)
+		}
 		a.dashboardRedirect(w, r, "")
 		return
 	}

@@ -12,4 +12,4 @@ Frontend deployed on Vercel
 
 Backend with postgres database cluster deployed on fly.io
 
-[![Flyio](https://fly.io/static/images/brand/logo.svg)](https://fly.io)
+[![Flyio](https://fly.io/static/images/brand/logo-landscape.svg)](https://fly.io)
