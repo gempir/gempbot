@@ -51,15 +51,23 @@ func (em *ElectionManager) checkElections() {
 	}
 
 	for _, election := range elections {
-		if election.LastRunAt == nil || time.Since(*election.LastRunAt) > time.Duration(election.Hours)*time.Hour {
-			log.Infof("stopping any previous election and starting election for channel %s", election.ChannelTwitchID)
-			em.runElection(election)
+		if election.LastRunAt == nil {
+			log.Infof("Starting election for channel %s", election.ChannelTwitchID)
+			em.startElection(election)
+			time.Sleep(1 * time.Second)
+		} else if election.LastRunAt != nil && time.Since(*election.LastRunAt) > time.Duration(election.Hours)*time.Hour {
+			log.Infof("Stopping election for channel %s", election.ChannelTwitchID)
+			em.stopElection(election)
 			time.Sleep(1 * time.Second)
 		}
 	}
 }
 
-func (em *ElectionManager) runElection(election store.Election) {
+func (em *ElectionManager) stopElection(election store.Election) {
+
+}
+
+func (em *ElectionManager) startElection(election store.Election) {
 	reward := channelpoint.TwitchRewardConfig{
 		Enabled:                           true,
 		Title:                             "Nominate a 7TV Emote",
@@ -77,26 +85,25 @@ func (em *ElectionManager) runElection(election store.Election) {
 
 	newReward, err := em.cpm.CreateOrUpdateChannelPointReward(election.ChannelTwitchID, reward, election.ChannelPointRewardID)
 	if err != nil {
-		log.Error(err.Error())
+		log.Errorf("Failed to create/updated reward %s", err.Error())
 		return
 	}
 
 	electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: newReward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
 	err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelTwitchID, electionReward))
 	if err != nil {
-		log.Error(err.Error())
+		log.Errorf("Failed to save reward %s", err.Error())
 		return
 	}
 
 	em.esm.SubscribeRewardRedemptionAdd(election.ChannelTwitchID, newReward.ID)
 
 	election.ChannelPointRewardID = newReward.ID
-	// debug code, enable later
-	// time := time.Now()
-	// election.LastRunAt = &time
+	time := time.Now()
+	election.LastRunAt = &time
 	err = em.db.CreateOrUpdateElection(context.Background(), election)
 	if err != nil {
-		log.Error(err.Error())
+		log.Errorf("Failed to create/update election %s", err.Error())
 		return
 	}
 
@@ -106,22 +113,31 @@ func (em *ElectionManager) runElection(election store.Election) {
 func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) {
 	election, err := em.db.GetElection(context.Background(), reward.OwnerTwitchID)
 	if err != nil {
-		log.Error(err.Error())
-		// refund
+		log.Errorf("failed to find election, refunding. %s", err.Error())
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
 		return
 	}
 
 	emoteID, err := emotechief.GetSevenTvEmoteId(redemption.UserInput)
 	if err != nil {
-		log.Error(err.Error())
-		// refund
+		log.Errorf("failed to parse emote, refunding. %s", err.Error())
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
 		return
 	}
 
 	emote, err := em.sevenTvClient.GetEmote(emoteID)
 	if err != nil {
-		log.Error(err.Error())
-		// refund
+		log.Errorf("failed to find emote, refunding. %s", err.Error())
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
 		return
 	}
 
@@ -133,10 +149,11 @@ func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption 
 		NominatedBy:     redemption.UserID,
 	})
 	if err != nil {
-		log.Error(err.Error())
-		// refund
+		log.Errorf("failed to update nomination, refunding. %s", err.Error())
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
 		return
 	}
-
-	log.Infof("nominate %s %s", redemption.UserLogin, redemption.UserInput)
 }
