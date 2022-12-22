@@ -124,7 +124,13 @@ func (em *ElectionManager) startElection(election store.Election) {
 		return
 	}
 
-	em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ A new Election has begun. Nominate a 7TV Emote with channel points. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours))
+	userData, err := em.helixclient.GetUserByUserID(election.ChannelTwitchID)
+	if err != nil {
+		log.Errorf("Failed to get user data %s", err.Error())
+		return
+	}
+
+	em.bot.Say(userData.Login, fmt.Sprintf("🗳️ A new Election has begun. Nominate a 7TV Emote with channel points. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel. Checkout bot.gempir.com/nominations/%s", election.Hours, userData.Login))
 }
 
 func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) {

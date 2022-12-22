@@ -13,7 +13,7 @@ func (a *Api) NominationsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", http.StatusMethodNotAllowed)
 		return
 	}
-	pageSize := 10
+	pageSize := 20
 	page := 1
 	if r.URL.Query().Get("page") != "" {
 		page = 1
