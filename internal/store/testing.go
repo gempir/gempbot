@@ -92,3 +92,15 @@ func (s *MockStore) SaveReward(reward ChannelPointReward) error {
 func (s *MockStore) CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error {
 	return nil
 }
+
+func (s *MockStore) GetTopVotedNominated(ctx context.Context, channelTwitchID string, electionID uint) (Nomination, error) {
+	return Nomination{}, nil
+}
+
+func (s *MockStore) GetNominations(ctx context.Context, channelTwitchID string, electionID uint, page int, pageSize int) ([]Nomination, error) {
+	return []Nomination{}, nil
+}
+
+func (s *MockStore) GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error) {
+	return Election{}, nil
+}

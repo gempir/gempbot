@@ -13,7 +13,17 @@ type Election struct {
 	ChannelPointRewardID string
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
-	LastRunAt            *time.Time
+	StartedRunAt         *time.Time
+}
+
+func (db *Database) GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error) {
+	var election Election
+	res := db.Client.WithContext(ctx).Where("channel_twitch_id = ? AND started_run_at IS NOT NULL", channelTwitchID).Order("updated_at desc").First(&election)
+	if res.Error != nil {
+		return election, res.Error
+	}
+
+	return election, nil
 }
 
 func (db *Database) GetAllElections(ctx context.Context) ([]Election, error) {
