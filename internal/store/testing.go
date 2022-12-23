@@ -119,3 +119,7 @@ func (s *MockStore) GetChannelPointReward(userID string, rewardType dto.RewardTy
 func (s *MockStore) CreateNominationVote(ctx context.Context, vote NominationVote) error {
 	return nil
 }
+
+func (s *MockStore) ClearNominationEmote(ctx context.Context, channelTwitchID string, emoteID string) error {
+	return nil
+}

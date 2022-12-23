@@ -32,6 +32,7 @@ type Store interface {
 	GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error)
 	GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error)
 	ClearNominations(ctx context.Context, channelTwitchID string) error
+	ClearNominationEmote(ctx context.Context, channelTwitchID string, emoteID string) error
 	DeleteChannelPointRewardById(userID string, rewardID string)
 	GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error)
 	CreateNominationVote(ctx context.Context, vote NominationVote) error

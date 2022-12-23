@@ -57,13 +57,13 @@ func (em *ElectionManager) checkElections() {
 			time.Sleep(1 * time.Second)
 		} else if election.StartedRunAt != nil && time.Since(*election.StartedRunAt) > time.Duration(election.Hours)*time.Hour {
 			log.Infof("Stopping election for channel %s", election.ChannelTwitchID)
-			em.stopElection(election)
+			em.stopElection(election, false)
 			time.Sleep(1 * time.Second)
 		}
 	}
 }
 
-func (em *ElectionManager) stopElection(election store.Election) {
+func (em *ElectionManager) stopElection(election store.Election, prevBlocked bool) {
 	success := true
 
 	nomination, err := em.db.GetTopVotedNominated(context.Background(), election.ChannelTwitchID)
@@ -72,11 +72,25 @@ func (em *ElectionManager) stopElection(election store.Election) {
 		return
 	}
 
-	err = em.sevenTvClient.AddEmote(election.ChannelTwitchID, nomination.EmoteID)
-	if err != nil {
-		log.Errorf("Failed to add emote %s", err.Error())
-		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ Failed to add %s error: %s", nomination.EmoteCode, err.Error()))
-		success = false
+	isBlocked := em.db.IsEmoteBlocked(election.ChannelTwitchID, nomination.EmoteID, dto.REWARD_SEVENTV)
+	if isBlocked {
+		err := em.db.ClearNominationEmote(context.Background(), election.ChannelTwitchID, nomination.EmoteID)
+		if err != nil {
+			log.Errorf("Failed to clear nomination emote %s", err.Error())
+		}
+		if !prevBlocked {
+			em.stopElection(election, true)
+			return
+		}
+	}
+
+	if !isBlocked {
+		err = em.sevenTvClient.AddEmote(election.ChannelTwitchID, nomination.EmoteID)
+		if err != nil {
+			log.Errorf("Failed to add emote %s", err.Error())
+			em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ Failed to add %s error: %s", nomination.EmoteCode, err.Error()))
+			success = false
+		}
 	}
 
 	election.StartedRunAt = nil
@@ -99,7 +113,11 @@ func (em *ElectionManager) stopElection(election store.Election) {
 	}
 
 	if success {
-		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s nominated by %s has won the election with %d votes!", nomination.EmoteCode, nomination.NominatedBy, len(nomination.Votes)))
+		extra := ""
+		if prevBlocked {
+			extra = "Because the top emote was blocked, the second place emote was added instead."
+		}
+		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s nominated by %s has won the election with %d votes! %s", nomination.EmoteCode, nomination.NominatedBy, len(nomination.Votes), extra))
 	}
 }
 
