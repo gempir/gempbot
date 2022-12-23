@@ -29,11 +29,12 @@ type Store interface {
 	SaveReward(reward ChannelPointReward) error
 	CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error
 	GetTopVotedNominated(ctx context.Context, channelTwitchID string) (Nomination, error)
-	GetNominations(ctx context.Context, channelTwitchID string, page int, pageSize int) ([]Nomination, error)
+	GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error)
 	GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error)
 	ClearNominations(ctx context.Context, channelTwitchID string) error
 	DeleteChannelPointRewardById(userID string, rewardID string)
 	GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error)
+	CreateNominationVote(ctx context.Context, vote NominationVote) error
 }
 
 type Database struct {
@@ -59,7 +60,7 @@ func NewDatabase(cfg *config.Config) *Database {
 
 func (db *Database) Migrate() {
 	log.Info("Migrating schema")
-	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{}, MediaPlayer{}, MediaQueue{}, Election{}, Nomination{})
+	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{}, MediaPlayer{}, MediaQueue{}, Election{}, Nomination{}, NominationVote{})
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())
 	}

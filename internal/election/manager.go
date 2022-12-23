@@ -92,7 +92,7 @@ func (em *ElectionManager) stopElection(election store.Election) {
 	}
 
 	if success {
-		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s has won the election with %d votes!", nomination.EmoteCode, nomination.Votes))
+		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s has won the election with %d votes!", nomination.EmoteCode, len(nomination.Votes)))
 	}
 }
 

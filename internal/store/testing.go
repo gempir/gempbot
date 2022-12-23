@@ -97,7 +97,7 @@ func (s *MockStore) GetTopVotedNominated(ctx context.Context, channelTwitchID st
 	return Nomination{}, nil
 }
 
-func (s *MockStore) GetNominations(ctx context.Context, channelTwitchID string, page int, pageSize int) ([]Nomination, error) {
+func (s *MockStore) GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error) {
 	return []Nomination{}, nil
 }
 
@@ -114,4 +114,8 @@ func (s *MockStore) DeleteChannelPointRewardById(userID string, rewardID string)
 
 func (s *MockStore) GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error) {
 	return ChannelPointReward{}, nil
+}
+
+func (s *MockStore) CreateNominationVote(ctx context.Context, vote NominationVote) error {
+	return nil
 }

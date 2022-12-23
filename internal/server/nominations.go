@@ -8,15 +8,35 @@ import (
 	"github.com/gempir/gempbot/internal/store"
 )
 
+func (a *Api) NominationVoteHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "", http.StatusMethodNotAllowed)
+		return
+	}
+
+	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
+	if apiErr != nil {
+		return
+	}
+	userID := authResp.Data.UserID
+
+	user, err := a.helixClient.GetUserByUsername(r.URL.Query().Get("channel"))
+	if err != nil {
+		http.Error(w, "user not found", http.StatusBadRequest)
+		return
+	}
+
+	err = a.db.CreateNominationVote(r.Context(), store.NominationVote{EmoteID: r.URL.Query().Get("emoteID"), ChannelTwitchID: user.ID, VoteBy: userID})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func (a *Api) NominationsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "", http.StatusMethodNotAllowed)
 		return
-	}
-	pageSize := 20
-	page := 1
-	if r.URL.Query().Get("page") != "" {
-		page = 1
 	}
 	channel := r.URL.Query().Get("channel")
 	if channel == "" {
@@ -35,7 +55,7 @@ func (a *Api) NominationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nominations, err := a.db.GetNominations(r.Context(), user.ID, page, pageSize)
+	nominations, err := a.db.GetNominations(r.Context(), user.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
