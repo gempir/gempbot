@@ -31,7 +31,7 @@ func (a *Api) NominationsHandler(w http.ResponseWriter, r *http.Request) {
 
 	election, err := a.db.GetActiveElection(r.Context(), user.ID)
 	if err != nil {
-		http.Error(w, "no active election", http.StatusBadRequest)
+		api.WriteJson(w, []store.Nomination{}, http.StatusOK)
 		return
 	}
 

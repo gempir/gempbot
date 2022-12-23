@@ -7,6 +7,7 @@ import (
 
 	"github.com/gempir/gempbot/internal/bot"
 	"github.com/gempir/gempbot/internal/channelpoint"
+	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/eventsubsubscription"
@@ -152,6 +153,16 @@ func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption 
 	emoteID, err := emotechief.GetSevenTvEmoteId(redemption.UserInput)
 	if err != nil {
 		log.Errorf("failed to parse emote, refunding. %s", err.Error())
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		return
+	}
+
+	isBlocked := em.db.IsEmoteBlocked(redemption.BroadcasterUserID, emoteID, dto.REWARD_SEVENTV)
+	if isBlocked {
+		log.Errorf("Emote is blocked, refunding. %s", err.Error())
 		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
 		if err != nil {
 			log.Error(err.Error())
