@@ -82,6 +82,11 @@ func (em *ElectionManager) stopElection(election store.Election) {
 		return
 	}
 
+	err = em.db.ClearNominations(context.Background(), election.ChannelTwitchID, election.ID)
+	if err != nil {
+		log.Errorf("Failed to clear nominations %s", err.Error())
+	}
+
 	em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s has won the election with %d votes!", nomination.EmoteCode, nomination.Votes))
 }
 

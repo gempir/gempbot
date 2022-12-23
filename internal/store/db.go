@@ -31,6 +31,7 @@ type Store interface {
 	GetTopVotedNominated(ctx context.Context, channelTwitchID string, electionID uint) (Nomination, error)
 	GetNominations(ctx context.Context, channelTwitchID string, electionID uint, page int, pageSize int) ([]Nomination, error)
 	GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error)
+	ClearNominations(ctx context.Context, channelTwitchID string, electionID uint) error
 }
 
 type Database struct {

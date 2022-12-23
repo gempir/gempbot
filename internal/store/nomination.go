@@ -16,6 +16,15 @@ type Nomination struct {
 	UpdatedAt       time.Time
 }
 
+func (s *Database) ClearNominations(ctx context.Context, channelTwitchID string, electionID uint) error {
+	res := s.Client.WithContext(ctx).Where("channel_twitch_id = ? AND election_id = ?", channelTwitchID, electionID).Delete(&Nomination{})
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
 func (db *Database) GetNominations(ctx context.Context, channelTwitchID string, electionID uint, page int, pageSize int) ([]Nomination, error) {
 	var nominations []Nomination
 	res := db.Client.WithContext(ctx).Where("channel_twitch_id = ? AND election_id = ?", channelTwitchID, electionID).Order("votes desc").Offset((page - 1) * pageSize).Limit(pageSize).Find(&nominations)

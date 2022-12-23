@@ -104,3 +104,7 @@ func (s *MockStore) GetNominations(ctx context.Context, channelTwitchID string, 
 func (s *MockStore) GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error) {
 	return Election{}, nil
 }
+
+func (s *MockStore) ClearNominations(ctx context.Context, channelTwitchID string, electionID uint) error {
+	return nil
+}
