@@ -40,6 +40,20 @@ func (db *Database) ClearNominations(ctx context.Context, channelTwitchID string
 	return nil
 }
 
+func (s *Database) ClearNominationEmote(ctx context.Context, channelTwitchID string, emoteID string) error {
+	res := s.Client.WithContext(ctx).Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).Delete(&Nomination{})
+	if res.Error != nil {
+		log.Error(res.Error)
+	}
+
+	res = s.Client.WithContext(ctx).Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).Delete(&NominationVote{})
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
 func (db *Database) CreateNominationVote(ctx context.Context, vote NominationVote) error {
 	res := db.Client.WithContext(ctx).Clauses(clause.OnConflict{
 		UpdateAll: true,
