@@ -101,6 +101,7 @@ func (db *Database) CreateOrIncrementNomination(ctx context.Context, nomination 
 	db.Client.WithContext(ctx).Preload("Votes").Where("emote_id = ? AND channel_twitch_id = ?", nomination.EmoteID, nomination.ChannelTwitchID).First(&prevNom)
 	if len(prevNom.Votes) > 0 {
 		nomination = prevNom
+		nomination.CreatedAt = time.Now()
 		nomination.Votes = append(nomination.Votes, NominationVote{EmoteID: nomination.EmoteID, ChannelTwitchID: nomination.ChannelTwitchID, VoteBy: nomination.NominatedBy})
 	} else {
 		nomination.Votes = []NominationVote{{EmoteID: nomination.EmoteID, ChannelTwitchID: nomination.ChannelTwitchID, VoteBy: nomination.NominatedBy}}
