@@ -112,10 +112,15 @@ func (em *ElectionManager) startElection(election store.Election) {
 			log.Warnf("Failed to delete previous election reward, this might be okay %s", err.Error())
 		}
 
+		user, err := em.helixclient.GetUserByUserID(election.ChannelTwitchID)
+		if err != nil {
+			log.Errorf("Failed to get user %s", err.Error())
+		}
+
 		reward := channelpoint.TwitchRewardConfig{
 			Enabled:                           true,
 			Title:                             "Nominate a 7TV Emote",
-			Prompt:                            fmt.Sprintf("Nominate a 7TV Emote for the next election. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours),
+			Prompt:                            fmt.Sprintf("Nominate a 7TV Emote (Link) for the next election. Every %d hours the winner emote will be added to the channel. https://bot.gempir.com/nominations/%s", election.Hours, user.Login),
 			Cost:                              election.NominationCost,
 			IsUserInputRequired:               true,
 			BackgroundColor:                   "#29D8F6",
