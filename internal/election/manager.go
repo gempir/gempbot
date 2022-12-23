@@ -91,8 +91,15 @@ func (em *ElectionManager) stopElection(election store.Election) {
 		log.Errorf("Failed to clear nominations %s", err.Error())
 	}
 
+	user, err := em.helixclient.GetUserByUserID(nomination.NominatedBy)
+	if err != nil {
+		log.Errorf("Failed to get user %s", err.Error())
+	} else {
+		nomination.NominatedBy = user.DisplayName
+	}
+
 	if success {
-		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s has won the election with %d votes!", nomination.EmoteCode, len(nomination.Votes)))
+		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s nominated by %s has won the election with %d votes!", nomination.EmoteCode, nomination.NominatedBy, len(nomination.Votes)))
 	}
 }
 
