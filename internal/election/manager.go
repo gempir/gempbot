@@ -64,6 +64,8 @@ func (em *ElectionManager) checkElections() {
 }
 
 func (em *ElectionManager) stopElection(election store.Election) {
+	success := true
+
 	nomination, err := em.db.GetTopVotedNominated(context.Background(), election.ChannelTwitchID)
 	if err != nil {
 		log.Errorf("Failed to get top voted nomination %s", err.Error())
@@ -73,7 +75,8 @@ func (em *ElectionManager) stopElection(election store.Election) {
 	err = em.sevenTvClient.AddEmote(election.ChannelTwitchID, nomination.EmoteID)
 	if err != nil {
 		log.Errorf("Failed to add emote %s", err.Error())
-		return
+		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ Failed to add %s error: %s", nomination.EmoteCode, err.Error()))
+		success = false
 	}
 
 	election.StartedRunAt = nil
@@ -88,44 +91,49 @@ func (em *ElectionManager) stopElection(election store.Election) {
 		log.Errorf("Failed to clear nominations %s", err.Error())
 	}
 
-	em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s has won the election with %d votes!", nomination.EmoteCode, nomination.Votes))
+	if success {
+		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s has won the election with %d votes!", nomination.EmoteCode, nomination.Votes))
+	}
 }
 
 func (em *ElectionManager) startElection(election store.Election) {
-	err := em.cpm.DeleteElectionReward(election.ChannelTwitchID)
+
+	_, err := em.db.GetChannelPointReward(election.ChannelTwitchID, dto.REWARD_ELECTION)
 	if err != nil {
-		log.Warnf("Failed to delete previous election reward, this might be okay %s", err.Error())
-	}
+		err := em.cpm.DeleteElectionReward(election.ChannelTwitchID)
+		if err != nil {
+			log.Warnf("Failed to delete previous election reward, this might be okay %s", err.Error())
+		}
 
-	reward := channelpoint.TwitchRewardConfig{
-		Enabled:                           true,
-		Title:                             "Nominate a 7TV Emote",
-		Prompt:                            fmt.Sprintf("Nominate a 7TV Emote for the next election. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours),
-		Cost:                              election.NominationCost,
-		IsUserInputRequired:               true,
-		BackgroundColor:                   "#29D8F6",
-		IsMaxPerStreamEnabled:             false,
-		IsMaxPerUserPerStreamEnabled:      false,
-		MaxPerStream:                      0,
-		MaxPerUserPerStream:               0,
-		IsGlobalCooldownEnabled:           false,
-		ShouldRedemptionsSkipRequestQueue: false,
-	}
+		reward := channelpoint.TwitchRewardConfig{
+			Enabled:                           true,
+			Title:                             "Nominate a 7TV Emote",
+			Prompt:                            fmt.Sprintf("Nominate a 7TV Emote for the next election. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel.", election.Hours),
+			Cost:                              election.NominationCost,
+			IsUserInputRequired:               true,
+			BackgroundColor:                   "#29D8F6",
+			IsMaxPerStreamEnabled:             false,
+			IsMaxPerUserPerStreamEnabled:      false,
+			MaxPerStream:                      0,
+			MaxPerUserPerStream:               0,
+			IsGlobalCooldownEnabled:           false,
+			ShouldRedemptionsSkipRequestQueue: false,
+		}
 
-	newReward, err := em.cpm.CreateOrUpdateChannelPointReward(election.ChannelTwitchID, reward, reward.ID)
-	if err != nil {
-		log.Errorf("Failed to create/updated reward %s", err.Error())
-		return
-	}
+		newReward, err := em.cpm.CreateOrUpdateChannelPointReward(election.ChannelTwitchID, reward, reward.ID)
+		if err != nil {
+			log.Errorf("Failed to create/updated reward %s", err.Error())
+			return
+		}
 
-	electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: newReward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
-	err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelTwitchID, electionReward))
-	if err != nil {
-		log.Errorf("Failed to save reward %s", err.Error())
-		return
+		electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: newReward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
+		err = em.db.SaveReward(channelpoint.CreateStoreRewardFromReward(election.ChannelTwitchID, electionReward))
+		if err != nil {
+			log.Errorf("Failed to save reward %s", err.Error())
+			return
+		}
+		em.esm.SubscribeRewardRedemptionAdd(election.ChannelTwitchID, newReward.ID)
 	}
-
-	em.esm.SubscribeRewardRedemptionAdd(election.ChannelTwitchID, newReward.ID)
 
 	time := time.Now()
 	election.StartedRunAt = &time

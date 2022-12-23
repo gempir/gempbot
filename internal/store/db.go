@@ -33,6 +33,7 @@ type Store interface {
 	GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error)
 	ClearNominations(ctx context.Context, channelTwitchID string) error
 	DeleteChannelPointRewardById(userID string, rewardID string)
+	GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error)
 }
 
 type Database struct {

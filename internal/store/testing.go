@@ -111,3 +111,7 @@ func (s *MockStore) ClearNominations(ctx context.Context, channelTwitchID string
 
 func (s *MockStore) DeleteChannelPointRewardById(userID string, rewardID string) {
 }
+
+func (s *MockStore) GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error) {
+	return ChannelPointReward{}, nil
+}
