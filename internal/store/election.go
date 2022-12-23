@@ -6,14 +6,12 @@ import (
 )
 
 type Election struct {
-	ID                   uint   `gorm:"primarykey,autoIncrement"`
-	ChannelTwitchID      string `gorm:"index"`
-	Hours                int
-	NominationCost       int
-	ChannelPointRewardID string
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
-	StartedRunAt         *time.Time
+	ChannelTwitchID string `gorm:"primarykey"`
+	Hours           int
+	NominationCost  int
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	StartedRunAt    *time.Time
 }
 
 func (db *Database) GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error) {

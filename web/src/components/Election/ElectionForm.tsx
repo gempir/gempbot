@@ -25,7 +25,7 @@ export function ElectionForm() {
         <div className="mb-5 flex items-start justify-between gap-3">
             <h2 className="text-xl font-bold">Create a new 7TV emote election</h2>
             <div className="min-w-[5rem] min-h-[42px] align-top text-right">
-                {election?.ID &&
+                {election?.ChannelTwitchID &&
                     <div className="bg-red-700 hover:bg-red-600 p-2 rounded shadow text-gray-100 inline-block cursor-pointer" onClick={deleteElection}>
                         Delete
                     </div>

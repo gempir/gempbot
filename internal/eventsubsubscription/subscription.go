@@ -30,6 +30,7 @@ func (esm *SubscriptionManager) SubscribeRewardRedemptionAdd(userID, rewardId st
 		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
 		helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
 		rewardId,
+		false,
 	)
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
@@ -54,6 +55,7 @@ func (esm *SubscriptionManager) SubscribeRewardRedemptionUpdate(userID, rewardId
 		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
 		helix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
 		rewardId,
+		false,
 	)
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)

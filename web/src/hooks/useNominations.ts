@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
-import { EmoteType } from "./useEmotehistory";
 
 interface RawNomination {
     EmoteID: string
     ChannelTwitchID: string
-    ElectionID: number
     Votes: number
     EmoteCode: string
     NominatedBy: string

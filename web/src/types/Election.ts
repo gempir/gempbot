@@ -1,7 +1,6 @@
 export interface Election {
-    ID?: number
+    ChannelTwitchID?: string
     Hours: number
-    ChannelPointRewardID?: string
     NominationCost: number
     CreatedAt?: Date
     UpdatedAt?: Date

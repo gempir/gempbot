@@ -29,13 +29,13 @@ func (a *Api) NominationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	election, err := a.db.GetActiveElection(r.Context(), user.ID)
+	_, err = a.db.GetActiveElection(r.Context(), user.ID)
 	if err != nil {
 		api.WriteJson(w, []store.Nomination{}, http.StatusOK)
 		return
 	}
 
-	nominations, err := a.db.GetNominations(r.Context(), user.ID, election.ID, page, pageSize)
+	nominations, err := a.db.GetNominations(r.Context(), user.ID, page, pageSize)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -64,7 +64,7 @@ func (em *ElectionManager) checkElections() {
 }
 
 func (em *ElectionManager) stopElection(election store.Election) {
-	nomination, err := em.db.GetTopVotedNominated(context.Background(), election.ChannelTwitchID, election.ID)
+	nomination, err := em.db.GetTopVotedNominated(context.Background(), election.ChannelTwitchID)
 	if err != nil {
 		log.Errorf("Failed to get top voted nomination %s", err.Error())
 		return
@@ -83,7 +83,7 @@ func (em *ElectionManager) stopElection(election store.Election) {
 		return
 	}
 
-	err = em.db.ClearNominations(context.Background(), election.ChannelTwitchID, election.ID)
+	err = em.db.ClearNominations(context.Background(), election.ChannelTwitchID)
 	if err != nil {
 		log.Errorf("Failed to clear nominations %s", err.Error())
 	}
@@ -92,6 +92,11 @@ func (em *ElectionManager) stopElection(election store.Election) {
 }
 
 func (em *ElectionManager) startElection(election store.Election) {
+	err := em.cpm.DeleteElectionReward(election.ChannelTwitchID)
+	if err != nil {
+		log.Warnf("Failed to delete previous election reward, this might be okay %s", err.Error())
+	}
+
 	reward := channelpoint.TwitchRewardConfig{
 		Enabled:                           true,
 		Title:                             "Nominate a 7TV Emote",
@@ -107,9 +112,10 @@ func (em *ElectionManager) startElection(election store.Election) {
 		ShouldRedemptionsSkipRequestQueue: false,
 	}
 
-	newReward, err := em.cpm.CreateOrUpdateChannelPointReward(election.ChannelTwitchID, reward, election.ChannelPointRewardID)
+	newReward, err := em.cpm.CreateOrUpdateChannelPointReward(election.ChannelTwitchID, reward, reward.ID)
 	if err != nil {
 		log.Errorf("Failed to create/updated reward %s", err.Error())
+		return
 	}
 
 	electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: newReward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
@@ -121,7 +127,6 @@ func (em *ElectionManager) startElection(election store.Election) {
 
 	em.esm.SubscribeRewardRedemptionAdd(election.ChannelTwitchID, newReward.ID)
 
-	election.ChannelPointRewardID = newReward.ID
 	time := time.Now()
 	election.StartedRunAt = &time
 	err = em.db.CreateOrUpdateElection(context.Background(), election)
@@ -140,10 +145,15 @@ func (em *ElectionManager) startElection(election store.Election) {
 }
 
 func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) {
-	election, err := em.db.GetElection(context.Background(), reward.OwnerTwitchID)
+	_, err := em.db.GetElection(context.Background(), reward.OwnerTwitchID)
 	if err != nil {
-		log.Errorf("failed to find election, refunding. %s", err.Error())
+		log.Errorf("failed to find election, refunding and deleting reward. %s", err.Error())
 		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		err = em.cpm.DeleteChannelPointReward(reward.OwnerTwitchID, reward.RewardID)
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -183,7 +193,6 @@ func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption 
 	err = em.db.CreateOrIncrementNomination(context.Background(), store.Nomination{
 		EmoteID:         emoteID,
 		ChannelTwitchID: reward.OwnerTwitchID,
-		ElectionID:      election.ID,
 		EmoteCode:       emote.Code,
 		NominatedBy:     redemption.UserID,
 	})

@@ -27,6 +27,41 @@ func NewChannelPointManager(cfg *config.Config, helixClient helixclient.Client, 
 	}
 }
 
+func (cpm *ChannelPointManager) DeleteElectionReward(userID string) error {
+	token, err := cpm.db.GetUserAccessToken(userID)
+	if err != nil {
+		return err
+	}
+
+	reward, err := cpm.db.GetChannelPointReward(userID, dto.REWARD_ELECTION)
+	if err != nil {
+		return err
+	}
+
+	err = cpm.helixClient.DeleteReward(userID, token.AccessToken, reward.RewardID)
+	if err != nil {
+		return err
+	}
+
+	cpm.db.DeleteChannelPointRewardById(userID, reward.RewardID)
+	return nil
+}
+
+func (cpm *ChannelPointManager) DeleteChannelPointReward(userID, rewardID string) error {
+	token, err := cpm.db.GetUserAccessToken(userID)
+	if err != nil {
+		return err
+	}
+
+	err = cpm.helixClient.DeleteReward(userID, token.AccessToken, rewardID)
+	if err != nil {
+		return err
+	}
+
+	cpm.db.DeleteChannelPointRewardById(userID, rewardID)
+	return nil
+}
+
 func (cpm *ChannelPointManager) CreateOrUpdateChannelPointReward(userID string, request TwitchRewardConfig, rewardID string) (TwitchRewardConfig, error) {
 	token, err := cpm.db.GetUserAccessToken(userID)
 	if err != nil {

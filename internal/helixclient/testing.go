@@ -25,7 +25,7 @@ func (m *MockHelixClient) CreateEventSubSubscription(userID string, webHookUrl s
 	return nil, nil
 }
 
-func (m *MockHelixClient) CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string) (*helix.EventSubSubscriptionsResponse, error) {
+func (m *MockHelixClient) CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string, retry bool) (*helix.EventSubSubscriptionsResponse, error) {
 	return nil, nil
 }
 

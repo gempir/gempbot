@@ -31,7 +31,7 @@ func (c *HelixClient) CreateEventSubSubscription(userID string, webHookUrl strin
 	return response, err
 }
 
-func (c *HelixClient) CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string) (*helix.EventSubSubscriptionsResponse, error) {
+func (c *HelixClient) CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string, retry bool) (*helix.EventSubSubscriptionsResponse, error) {
 	c.Client.SetAppAccessToken(c.AppAccessToken.AccessToken)
 	c.Client.SetUserAccessToken("")
 	// Twitch doesn't need a user token here, always an app token eventhough the user has to authenticate beforehand.
@@ -46,9 +46,10 @@ func (c *HelixClient) CreateRewardEventSubSubscription(userID, webHookUrl, subTy
 	)
 	if response.StatusCode == http.StatusUnauthorized {
 		err := c.refreshUserAccessToken(userID)
-		if err == nil {
-			return c.CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID)
+		if err == nil && !retry {
+			return c.CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID, true)
 		}
+		return response, err
 	}
 
 	return response, err

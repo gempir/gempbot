@@ -28,10 +28,11 @@ type Store interface {
 	GetAllElections(ctx context.Context) ([]Election, error)
 	SaveReward(reward ChannelPointReward) error
 	CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error
-	GetTopVotedNominated(ctx context.Context, channelTwitchID string, electionID uint) (Nomination, error)
-	GetNominations(ctx context.Context, channelTwitchID string, electionID uint, page int, pageSize int) ([]Nomination, error)
+	GetTopVotedNominated(ctx context.Context, channelTwitchID string) (Nomination, error)
+	GetNominations(ctx context.Context, channelTwitchID string, page int, pageSize int) ([]Nomination, error)
 	GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error)
-	ClearNominations(ctx context.Context, channelTwitchID string, electionID uint) error
+	ClearNominations(ctx context.Context, channelTwitchID string) error
+	DeleteChannelPointRewardById(userID string, rewardID string)
 }
 
 type Database struct {

@@ -63,6 +63,10 @@ func (db *Database) DeleteChannelPointReward(userID string, rewardType dto.Rewar
 	db.Client.Where("owner_twitch_id = ? AND type = ?", userID, rewardType).Delete(&ChannelPointReward{})
 }
 
+func (db *Database) DeleteChannelPointRewardById(userID string, rewardID string) {
+	db.Client.Where("owner_twitch_id = ? AND reward_id = ?", userID, rewardID).Delete(&ChannelPointReward{})
+}
+
 func (db *Database) GetDistinctRewardsPerUser() []ChannelPointReward {
 	var rewards []ChannelPointReward
 	db.Client.Distinct("owner_twitch_id").Find(&rewards)

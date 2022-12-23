@@ -50,7 +50,7 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 
 		api.WriteJson(w, nil, http.StatusOK)
 	} else if r.Method == http.MethodDelete {
-		reward, err := a.db.GetElection(r.Context(), userID)
+		election, err := a.db.GetElection(r.Context(), userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
@@ -62,13 +62,8 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if reward.ChannelPointRewardID != "" {
-			token, err := a.db.GetUserAccessToken(userID)
-			if err != nil {
-				http.Error(w, "no accessToken to delete reward", http.StatusInternalServerError)
-			}
-
-			err = a.helixClient.DeleteReward(reward.ChannelTwitchID, token.AccessToken, reward.ChannelPointRewardID)
+		if election.ChannelTwitchID != "" {
+			err = a.channelPointManager.DeleteElectionReward(userID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
