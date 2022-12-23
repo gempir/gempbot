@@ -5,7 +5,7 @@ import { useStore } from "../store";
 interface NominationVote {
     EmoteID: string
     ChannelTwitchID: string
-    VotedBy: string
+    VoteBy: string
 }
 
 interface RawNomination {

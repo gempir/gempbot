@@ -9,6 +9,7 @@ export function NominationsPage({ channel }: { channel: string }): JSX.Element {
     const { nominations, fetch, loading, makeVote } = useNominations(channel);
     const scToken = useStore(state => state.scToken);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
+    const scTokenContent = useStore(state => state.scTokenContent);
     const twitchClientId = useStore(state => state.twitchClientId);
     const url = createLoginUrl(apiBaseUrl, twitchClientId);
 
@@ -45,7 +46,7 @@ export function NominationsPage({ channel }: { channel: string }): JSX.Element {
                         <td className="text-center px-10">{item.Votes.length}</td>
                         <td className="text-center px-10">{item.NominatedBy}</td>
                         <td className="p-3 text-center whitespace-nowrap">{item.CreatedAt.toLocaleDateString()} {item.CreatedAt.toLocaleTimeString()}</td>
-                        <td className="text-center px-10"><ArrowUpCircleIcon onClick={() => handleVote(item.EmoteID)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} /></td>
+                        <td className="text-center px-10">{!item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) && <ArrowUpCircleIcon onClick={() => handleVote(item.EmoteID)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />}</td>
                     </tr>)}
                 </tbody>
             </table>

@@ -122,7 +122,6 @@ func (em *ElectionManager) stopElection(election store.Election, prevBlocked boo
 }
 
 func (em *ElectionManager) startElection(election store.Election) {
-
 	_, err := em.db.GetChannelPointReward(election.ChannelTwitchID, dto.REWARD_ELECTION)
 	if err != nil {
 		err := em.cpm.DeleteElectionReward(election.ChannelTwitchID)

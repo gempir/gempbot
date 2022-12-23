@@ -4,7 +4,7 @@ import createContext from 'zustand/context';
 
 export interface ScTokenContent {
     Login: string;
-    UserId: string;
+    UserID: string;
 }
 
 export interface Store {
