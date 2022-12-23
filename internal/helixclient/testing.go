@@ -53,8 +53,8 @@ func (m *MockHelixClient) CreatePrediction(params *helix.CreatePredictionParams)
 	return nil, nil
 }
 
-func (m *MockHelixClient) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (CreateCustomRewardResponseDataItem, error) {
-	return CreateCustomRewardResponseDataItem{}, nil
+func (m *MockHelixClient) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (*helix.ChannelCustomReward, error) {
+	return &helix.ChannelCustomReward{}, nil
 }
 
 func (m *MockHelixClient) UpdateRedemptionStatus(broadcasterID, rewardID string, redemptionID string, statusSuccess bool) error {

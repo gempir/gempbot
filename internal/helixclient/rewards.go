@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/gempir/gempbot/internal/log"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type CreateCustomRewardRequest struct {
@@ -75,58 +75,56 @@ type CreateCustomRewardResponseDataItem struct {
 	CooldownExpiresAt                 interface{} `json:"cooldown_expires_at"`
 }
 
-func (c *HelixClient) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (CreateCustomRewardResponseDataItem, error) {
+func (c *HelixClient) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (*helix.ChannelCustomReward, error) {
 	log.Infof("Creating/Updating Reward for user %s reward title: %s", userID, reward.Title)
 
-	url := fmt.Sprintf("%s%s", TWITCH_API, "helix/channel_points/custom_rewards?broadcaster_id="+userID)
-	method := http.MethodPost
+	var resp *helix.ChannelCustomRewardResponse
+	var err error
 
-	if rewardID != "" {
-		method = http.MethodPatch
-		url += fmt.Sprintf("&id=%s", rewardID)
+	c.Client.SetUserAccessToken(userAccessToken)
+	if rewardID == "" {
+		resp, err = c.Client.CreateCustomReward(&helix.ChannelCustomRewardsParams{
+			BroadcasterID:                userID,
+			Title:                        reward.Title,
+			Prompt:                       reward.Prompt,
+			Cost:                         reward.Cost,
+			IsEnabled:                    reward.IsEnabled,
+			BackgroundColor:              reward.BackgroundColor,
+			IsUserInputRequired:          reward.IsUserInputRequired,
+			IsMaxPerStreamEnabled:        reward.IsMaxPerStreamEnabled,
+			MaxPerStream:                 reward.MaxPerStream,
+			IsMaxPerUserPerStreamEnabled: reward.IsMaxPerUserPerStreamEnabled,
+			MaxPerUserPerStream:          reward.MaxPerUserPerStream,
+		})
+	} else {
+		resp, err = c.Client.UpdateCustomReward(&helix.UpdateChannelCustomRewardsParams{
+			BroadcasterID:                userID,
+			ID:                           rewardID,
+			Title:                        reward.Title,
+			Prompt:                       reward.Prompt,
+			Cost:                         reward.Cost,
+			BackgroundColor:              reward.BackgroundColor,
+			IsEnabled:                    reward.IsEnabled,
+			IsUserInputRequired:          reward.IsUserInputRequired,
+			IsMaxPerStreamEnabled:        reward.IsMaxPerStreamEnabled,
+			MaxPerStream:                 reward.MaxPerStream,
+			IsMaxPerUserPerStreamEnabled: reward.IsMaxPerUserPerStreamEnabled,
+			MaxPerUserPerStream:          reward.MaxPerUserPerStream,
+		})
 	}
-
-	reqBody, err := json.Marshal(reward)
+	c.Client.SetUserAccessToken("")
 	if err != nil {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to marshall request: %w", err)
+		return &helix.ChannelCustomReward{}, err
+	}
+	if resp.ResponseCommon.Error != "" {
+		return &helix.ChannelCustomReward{}, fmt.Errorf("%s", resp.ResponseCommon.ErrorMessage)
 	}
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
-	if err != nil {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to make request: %w", err)
+	if len(resp.Data.ChannelCustomRewards) != 1 {
+		return &helix.ChannelCustomReward{}, fmt.Errorf("none or multiple rewards returned")
 	}
 
-	req.Header.Add("Client-ID", c.clientID)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", userAccessToken))
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to make http call to create/update reward: %w", err)
-	}
-
-	var response CreateCustomRewardResponse
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to read response body: %w", err)
-	}
-	if rewardID != "" && resp.StatusCode != http.StatusCreated {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to create reward: %s", respBody)
-	}
-	if rewardID == "" && resp.StatusCode != http.StatusOK {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to update reward: %s", respBody)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-	if err != nil {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("failed to decode response: %w resp: %s", err, respBody)
-	}
-
-	if len(response.Data) != 1 {
-		return CreateCustomRewardResponseDataItem{}, fmt.Errorf("%d amount of rewards returned after creation invalid", len(response.Data))
-	}
-
-	return response.Data[0], nil
+	return &resp.Data.ChannelCustomRewards[0], err
 }
 
 type UpdateRedemptionStatusRequest struct {

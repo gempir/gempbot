@@ -18,6 +18,8 @@ require (
 	gorm.io/gorm v1.24.2
 )
 
+replace github.com/nicklaw5/helix/v2 v2.12.0 => github.com/gempir/helix/v2 v2.0.2-0.20221223221449-fe5671ac8ea7
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
