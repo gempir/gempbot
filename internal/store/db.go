@@ -60,7 +60,23 @@ func NewDatabase(cfg *config.Config) *Database {
 
 func (db *Database) Migrate() {
 	log.Info("Migrating schema")
-	err := db.Client.AutoMigrate(SystemConfig{}, ChannelPointReward{}, EventSubSubscription{}, UserAccessToken{}, AppAccessToken{}, EmoteAdd{}, BotConfig{}, Permission{}, EventSubMessage{}, EmoteBlock{}, MediaPlayer{}, MediaQueue{}, Election{}, Nomination{}, NominationVote{})
+	err := db.Client.AutoMigrate(
+		SystemConfig{},
+		ChannelPointReward{},
+		EventSubSubscription{},
+		UserAccessToken{},
+		AppAccessToken{},
+		EmoteAdd{},
+		BotConfig{},
+		Permission{},
+		EventSubMessage{},
+		EmoteBlock{},
+		MediaPlayer{},
+		MediaQueue{},
+		Election{},
+		Nomination{},
+		NominationVote{},
+	)
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())
 	}
