@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
 
@@ -26,7 +26,8 @@ export type Nomination = RawNomination & {
 interface Return {
     nominations: Array<Nomination>,
     fetch: () => void,
-    makeVote: (emoteID: string) => void,
+    vote: (emoteID: string) => void,
+    block: (emoteID: string) => void,
     loading: boolean,
 }
 
@@ -34,6 +35,7 @@ export function useNominations(channel: string): Return {
     const [nominations, setBlocks] = useState<Array<Nomination>>([]);
     const [loading, setLoading] = useState(false);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
+    const managing = useStore(state => state.managing);
     const scToken = useStore(state => state.scToken);
 
     const fetchNominations = () => {
@@ -52,7 +54,7 @@ export function useNominations(channel: string): Return {
             });
     };
 
-    const makeVote = (emoteID: string) => {
+    const vote = (emoteID: string) => {
         setLoading(true);
 
         const endPoint = "/api/nominations/vote";
@@ -62,25 +64,23 @@ export function useNominations(channel: string): Return {
         doFetch({ apiBaseUrl, scToken }, Method.POST, endPoint, searchParams).then(() => setLoading(false)).catch(err => {}).finally(fetchNominations);
     };
 
-    const interval = useRef<NodeJS.Timeout | null>(null);
+    const block = (emoteID: string) => {
+        setLoading(true);
 
-    useEffect(() => {
-        interval.current = setInterval(() => {
-            fetchNominations();
-        }, 10000);
-        return () => {
-            if (interval.current) {
-                clearInterval(interval.current);
-            }
-        };
-    }, []);
+        const endPoint = "/api/nominations/vote";
+        const searchParams = new URLSearchParams();
+        searchParams.append("channel", channel);
+        searchParams.append("emoteID", emoteID);
+        doFetch({ apiBaseUrl, scToken, managing }, Method.DELETE, endPoint, searchParams).then(() => setLoading(false)).catch(err => {}).finally(fetchNominations);
+    };
 
     useEffect(fetchNominations, []);
 
     return {
         nominations: nominations,
         fetch: fetchNominations,
-        makeVote: makeVote,
+        vote: vote,
+        block: block,
         loading: loading
     };
 }

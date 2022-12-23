@@ -1,4 +1,4 @@
-import { ArrowPathIcon, ArrowUpCircleIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon, ArrowUpCircleIcon, StopIcon } from "@heroicons/react/24/solid";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { EmoteType } from "../../hooks/useEmotehistory";
 import { useNominations } from "../../hooks/useNominations";
@@ -6,11 +6,12 @@ import { useStore } from "../../store";
 import { Emote } from "../Emote/Emote";
 
 export function NominationsPage({ channel }: { channel: string }): JSX.Element {
-    const { nominations, fetch, loading, makeVote } = useNominations(channel);
+    const { nominations, fetch, loading, vote, block } = useNominations(channel);
     const scToken = useStore(state => state.scToken);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
     const scTokenContent = useStore(state => state.scTokenContent);
     const twitchClientId = useStore(state => state.twitchClientId);
+    const managing = useStore(state => state.managing);
     const url = createLoginUrl(apiBaseUrl, twitchClientId);
 
     const handleVote = (emoteID: string) => {
@@ -19,8 +20,10 @@ export function NominationsPage({ channel }: { channel: string }): JSX.Element {
             window.location.href = url.toString();
         }
 
-        makeVote(emoteID);
+        vote(emoteID);
     };
+
+    const blockable = scTokenContent?.Login === channel || managing === channel;
 
     return <div className="p-4 w-full flex gap-4">
         <div className="p-4 bg-gray-800 rounded shadow relative select-none">
@@ -37,6 +40,7 @@ export function NominationsPage({ channel }: { channel: string }): JSX.Element {
                         <th className="min-w-[6em]">Nominated By</th>
                         <th className="min-w-[12em]">Created At</th>
                         <th className="min-w-[6em]"></th>
+                        {blockable && <th className="min-w-[6em]"></th>}
                     </tr>
                 </thead>
                 <tbody>
@@ -47,6 +51,9 @@ export function NominationsPage({ channel }: { channel: string }): JSX.Element {
                         <td className="text-center px-10">{item.NominatedBy}</td>
                         <td className="p-3 text-center whitespace-nowrap">{item.CreatedAt.toLocaleDateString()} {item.CreatedAt.toLocaleTimeString()}</td>
                         <td className="text-center px-10">{!item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) && <ArrowUpCircleIcon onClick={() => handleVote(item.EmoteID)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />}</td>
+                        {blockable && <td className="text-center px-5 cursor-pointer hover:text-blue-500 group" onClick={() => block(item.EmoteID)}>
+                            <StopIcon className="h-6 mx-auto" /><span className="absolute z-50 hidden p-2 mx-10 -my-12 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Block emote and remove it from election</span>
+                        </td>}
                     </tr>)}
                 </tbody>
             </table>
