@@ -241,4 +241,9 @@ func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption 
 		}
 		return
 	}
+
+	err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, true)
+	if err != nil {
+		log.Error(err.Error())
+	}
 }
