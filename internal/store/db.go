@@ -8,7 +8,6 @@ import (
 	"github.com/gempir/gempbot/internal/log"
 	gormPostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type Store interface {
@@ -45,7 +44,7 @@ type Database struct {
 
 func NewDatabase(cfg *config.Config) *Database {
 	psql, err := gorm.Open(gormPostgres.Open(cfg.DSN), &gorm.Config{
-		Logger:                                   logger.Default.LogMode(logger.Info),
+		Logger:                                   log.NewGormLogger(),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
