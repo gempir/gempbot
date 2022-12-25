@@ -1,3 +1,4 @@
+import { deleteCookie } from "./cookie";
 
 export enum Method {
     GET = "GET",
@@ -49,6 +50,9 @@ export async function doFetch({ apiBaseUrl, managing, scToken }: FetchOptions, m
             } else {
                 if (response.status === 404) {
                     return Promise.reject(RejectReason.NotFound);
+                }
+                if (response.status === 401) {
+                    deleteCookie('scToken');
                 }
 
                 const errorMessage = await response.text()

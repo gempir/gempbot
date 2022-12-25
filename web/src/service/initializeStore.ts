@@ -6,10 +6,10 @@ import { parseCookie } from "./cookie";
 export const initializeStore = (ctx: NextPageContext) => {
     const cookies = parseCookie(ctx.req?.headers.cookie ?? "");
 
-    let scTokenContent;
+    let scTokenContent = null;
     if (cookies.scToken) {
         try {
-            scTokenContent = jwt_decode<ScTokenContent | undefined>(cookies.scToken ?? "");
+            scTokenContent = jwt_decode<ScTokenContent | null>(cookies.scToken ?? "") ?? null;
         } catch (e) {
             console.error(e);
         }
@@ -18,9 +18,9 @@ export const initializeStore = (ctx: NextPageContext) => {
     return {
         props: {
             store: {
-                scTokenContent: scTokenContent ?? "",
-                scToken: cookies.scToken ?? "",
-                managing: cookies.managing ?? "",
+                scTokenContent: scTokenContent,
+                scToken: cookies.scToken ? cookies.scToken : null,
+                managing: cookies.managing ? cookies.managing : null,
                 twitchClientId: (process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ?? "").replaceAll('"', ''),
                 apiBaseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replaceAll('"', ''),
                 baseUrl: (process.env.NEXT_PUBLIC_BASE_URL ?? "").replaceAll('"', ''),

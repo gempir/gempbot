@@ -11,11 +11,11 @@ export interface Store {
     twitchClientId: string;
     apiBaseUrl: string;
     baseUrl: string;
-    scToken?: string;
-    scTokenContent: ScTokenContent | undefined;
+    scToken: string  | null;
+    scTokenContent: ScTokenContent  | null;
     setScToken: (token: string) => void;
-    setManaging: (managing: string) => void;
-    managing?: string;
+    setManaging: (managing: string | null) => void;
+    managing: string | null;
 }
 
 let store: any;
@@ -25,8 +25,8 @@ const initialState = {
     apiBaseUrl: "",
     baseUrl: "",
     scToken: "",
-    scTokenContent: undefined,
-    managing: undefined,
+    scTokenContent: null,
+    managing: null,
 }
 
 const zustandContext = createContext<Store>()
@@ -39,7 +39,7 @@ export const initializeStore = (preloadedState = {}) => {
         ...initialState,
         ...preloadedState,
         setScToken: (token: string) => set(state => ({ scToken: token })),
-        setManaging: (managing: string) => set(state => ({ managing: managing })),
+        setManaging: (managing: string | null) => set(state => ({ managing: managing })),
     }))
 }
 
