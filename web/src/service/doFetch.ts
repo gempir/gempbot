@@ -14,8 +14,8 @@ export enum RejectReason {
 
 export interface FetchOptions {
     apiBaseUrl?: string;
-    managing?: string;
-    scToken?: string;
+    managing: string | null;
+    scToken: string | null;
 }
 
 export async function doFetch({ apiBaseUrl, managing, scToken }: FetchOptions, method: Method, path: string, params: URLSearchParams = new URLSearchParams(), body: any = undefined) {
