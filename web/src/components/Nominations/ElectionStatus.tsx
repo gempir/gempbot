@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useElection } from "../../hooks/useElection";
 import { isSSR } from "../../service/isSSR";
 
-export function ElectionStatus(): JSX.Element | null {
-    const [election] = useElection();
+export function ElectionStatus({channel}: {channel: string}): JSX.Element | null {
+    const [election] = useElection(channel);
     const [renderAllowed, setRenderAllowed] = useState(false);
 
     useEffect(() => {

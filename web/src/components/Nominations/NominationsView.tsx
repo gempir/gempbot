@@ -28,7 +28,7 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
 
     return <div className="flex flex-col gap-3">
         <div className="p-4 bg-gray-800 rounded shadow relative select-none">
-            <ElectionStatus />
+            <ElectionStatus channel={channel} />
         </div>
         <div className="flex gap-3 min-h-[20em]">
             <div className="p-4 bg-gray-800 rounded shadow relative select-none">

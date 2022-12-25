@@ -26,6 +26,16 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
+		channel := r.URL.Query().Get("channel")
+		if channel != "" {
+			user, err := a.helixClient.GetUserByUsername(channel)
+			if err != nil {
+				http.Error(w, "user not found", http.StatusBadRequest)
+				return
+			}
+			userID = user.ID
+		}
+
 		reward, err := a.db.GetElection(r.Context(), userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

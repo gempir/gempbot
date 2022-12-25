@@ -13,7 +13,7 @@ const defaultElection: Election = {
     ChannelTwitchID: "",
 }
 
-export function useElection(): [Election, (election: Election) => void, () => void, string | null, boolean] {
+export function useElection(channel?: string): [Election, (election: Election) => void, () => void, string | null, boolean] {
     const [election, setElection] = useState<Election>(defaultElection);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -23,7 +23,13 @@ export function useElection(): [Election, (election: Election) => void, () => vo
 
     const fetchElection = () => {
         setLoading(true);
-        doFetch({ apiBaseUrl, managing, scToken }, Method.GET, "/api/election").then(resp => setElection(
+        let params = "";
+        if (channel) {
+            const searchParams = new URLSearchParams();
+            searchParams.append("channel", channel);
+            params = "?" + searchParams.toString();
+        }
+        doFetch({ apiBaseUrl, managing, scToken }, Method.GET, "/api/election" + params).then(resp => setElection(
             {
                 ...resp,
                 CreatedAt: dayjs(resp.CreatedAt),
