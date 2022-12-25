@@ -42,9 +42,9 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
                 <table className="w-full table-auto">
                     <thead>
                         <tr>
-                            <th className="min-w-[6em] max-w-[8em] text-left">Emote</th>
+                            <th className="text-left">Votes</th>
+                            <th className="min-w-[6em] max-w-[8em]">Emote</th>
                             <th className="min-w-[6em] max-w-[250px] truncate">Code</th>
-                            <th className="min-w-[6em]">Votes</th>
                             <th className="min-w-[6em]">Nominated By</th>
                             <th className="min-w-[12em]">Created At</th>
                             <th className="min-w-[6em]"></th>
@@ -53,9 +53,9 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
                     </thead>
                     <tbody>
                         {nominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                            <td className="pr-5 text-left"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
+                            <td className="text-center">{item.Votes.length}</td>
+                            <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.EmoteCode}</td>
-                            <td className="text-center px-10">{item.Votes.length}</td>
                             <td className="text-center px-10">{item.NominatedBy}</td>
                             <td className="p-3 text-center whitespace-nowrap">{item.CreatedAt.format('L LT')}</td>
                             <td className="text-center px-10">{!item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) && <ArrowUpCircleIcon onClick={() => handleVote(item.EmoteID)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />}</td>
