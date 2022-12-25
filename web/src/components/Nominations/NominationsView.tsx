@@ -32,14 +32,17 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
         </div>
         <div className="flex gap-3 min-h-[20em]">
             <div className="p-4 bg-gray-800 rounded shadow relative select-none">
-                <div className="text-2xl flex gap-5 w-full" onClick={fetch}>
-                    <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+                <div className="flex gap-5 items-center mb-5">
+                    <h2 className="text-xl">Nominations</h2>
+                    <div className="text-2xl flex gap-5 w-full select-none" onClick={fetch}>
+                        <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+                    </div>
                 </div>
                 {nominations.length === 0 && !loading && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-5xl text-slate-600">nothing yet</div>}
                 <table className="w-full table-auto">
                     <thead>
                         <tr>
-                            <th className="min-w-[6em] max-w-[8em]">Emote</th>
+                            <th className="min-w-[6em] max-w-[8em] text-left">Emote</th>
                             <th className="min-w-[6em] max-w-[250px] truncate">Code</th>
                             <th className="min-w-[6em]">Votes</th>
                             <th className="min-w-[6em]">Nominated By</th>
@@ -50,7 +53,7 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
                     </thead>
                     <tbody>
                         {nominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                            <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
+                            <td className="pr-5 text-left"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.EmoteCode}</td>
                             <td className="text-center px-10">{item.Votes.length}</td>
                             <td className="text-center px-10">{item.NominatedBy}</td>
