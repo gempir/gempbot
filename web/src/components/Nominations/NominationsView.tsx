@@ -39,7 +39,7 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
                     <thead>
                         <tr>
                             <th className="min-w-[6em] max-w-[8em]">Emote</th>
-                            <th className="min-w-[6em]">Code</th>
+                            <th className="min-w-[6em] max-w-xs">Code</th>
                             <th className="min-w-[6em]">Votes</th>
                             <th className="min-w-[6em]">Nominated By</th>
                             <th className="min-w-[12em]">Created At</th>
@@ -50,7 +50,7 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
                     <tbody>
                         {nominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
                             <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
-                            <td className="text-center px-10">{item.EmoteCode}</td>
+                            <td className="text-center px-10 max-w-xs">{item.EmoteCode}</td>
                             <td className="text-center px-10">{item.Votes.length}</td>
                             <td className="text-center px-10">{item.NominatedBy}</td>
                             <td className="p-3 text-center whitespace-nowrap">{item.CreatedAt.toLocaleDateString()} {item.CreatedAt.toLocaleTimeString()}</td>
