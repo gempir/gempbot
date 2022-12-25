@@ -60,23 +60,15 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 
 		api.WriteJson(w, nil, http.StatusOK)
 	} else if r.Method == http.MethodDelete {
-		election, err := a.db.GetElection(r.Context(), userID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		err = a.db.DeleteElection(r.Context(), userID)
+		err := a.db.DeleteElection(r.Context(), userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if election.ChannelTwitchID != "" {
-			err = a.channelPointManager.DeleteElectionReward(userID)
-			if err != nil {
-				log.Warnf("failed to delete election reward, probably ok: %s", err.Error())
-			}
+		err = a.channelPointManager.DeleteElectionReward(userID)
+		if err != nil {
+			log.Warnf("failed to delete election reward, probably ok: %s", err.Error())
 		}
 
 		api.WriteJson(w, nil, http.StatusOK)
