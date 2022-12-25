@@ -3,9 +3,15 @@ import Link from "next/link";
 import 'tailwindcss/tailwind.css';
 import { Sidebar } from "../components/Sidebar/Sidebar";
 import { StoreProvider, useCreateStore } from "../store";
+import * as localizedFormat from 'dayjs/plugin/localizedFormat';
+import dayjs from 'dayjs';
+
+// @ts-ignore
+dayjs.extend(localizedFormat);
 
 export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
     const createStore = useCreateStore(pageProps.store);
+
 
     return <StoreProvider createStore={createStore}>
         <Head>

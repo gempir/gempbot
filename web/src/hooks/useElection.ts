@@ -2,10 +2,15 @@ import { useEffect, useState } from "react";
 import { doFetch, Method, RejectReason } from "../service/doFetch";
 import { useStore } from "../store";
 import { Election } from "../types/Election";
+import dayjs from "dayjs";
 
 const defaultElection: Election = {
     Hours: 24,
     NominationCost: 1000,
+    CreatedAt: dayjs(),
+    UpdatedAt: dayjs(),
+    StartedRunAt: dayjs(),
+    ChannelTwitchID: "",
 }
 
 export function useElection(): [Election, (election: Election) => void, () => void, string | null, boolean] {
@@ -21,9 +26,9 @@ export function useElection(): [Election, (election: Election) => void, () => vo
         doFetch({ apiBaseUrl, managing, scToken }, Method.GET, "/api/election").then(resp => setElection(
             {
                 ...resp,
-                CreatedAt: new Date(resp.CreatedAt ?? null),
-                UpdatedAt: new Date(resp.UpdatedAt ?? null),
-                LastRunAt: new Date(resp.LastRunAt ?? null),
+                CreatedAt: dayjs(resp.CreatedAt),
+                UpdatedAt: dayjs(resp.UpdatedAt),
+                StartedRunAt: dayjs(resp.StartedRunAt),
             }
         )).catch(reason => {
             if (reason !== RejectReason.NotFound) {

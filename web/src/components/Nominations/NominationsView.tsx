@@ -4,6 +4,7 @@ import { EmoteType } from "../../hooks/useEmotehistory";
 import { useNominations } from "../../hooks/useNominations";
 import { useStore } from "../../store";
 import { Emote } from "../Emote/Emote";
+import { ElectionStatus } from "./ElectionStatus";
 
 export function NominationsView({ channel }: { channel: string }): JSX.Element {
     const { nominations, fetch, loading, vote, block } = useNominations(channel);
@@ -26,9 +27,9 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
     const blockable = scTokenContent?.Login === channel || managing === channel;
 
     return <div className="flex flex-col gap-3">
-        {/* <div className="p-4 bg-gray-800 rounded shadow relative select-none">
-            Election results evaluated at {}
-        </div> */}
+        <div className="p-4 bg-gray-800 rounded shadow relative select-none">
+            <ElectionStatus />
+        </div>
         <div className="flex gap-3 min-h-[20em]">
             <div className="p-4 bg-gray-800 rounded shadow relative select-none">
                 <div className="text-2xl flex gap-5 w-full" onClick={fetch}>
@@ -39,7 +40,7 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
                     <thead>
                         <tr>
                             <th className="min-w-[6em] max-w-[8em]">Emote</th>
-                            <th className="min-w-[6em] max-w-xs truncate">Code</th>
+                            <th className="min-w-[6em] max-w-[250px] truncate">Code</th>
                             <th className="min-w-[6em]">Votes</th>
                             <th className="min-w-[6em]">Nominated By</th>
                             <th className="min-w-[12em]">Created At</th>
@@ -50,10 +51,10 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
                     <tbody>
                         {nominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
                             <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
-                            <td className="text-center px-10 max-w-xs truncate">{item.EmoteCode}</td>
+                            <td className="text-center px-10 max-w-[250px] truncate">{item.EmoteCode}</td>
                             <td className="text-center px-10">{item.Votes.length}</td>
                             <td className="text-center px-10">{item.NominatedBy}</td>
-                            <td className="p-3 text-center whitespace-nowrap">{item.CreatedAt.toLocaleDateString()} {item.CreatedAt.toLocaleTimeString()}</td>
+                            <td className="p-3 text-center whitespace-nowrap">{item.CreatedAt.format('L LT')}</td>
                             <td className="text-center px-10">{!item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) && <ArrowUpCircleIcon onClick={() => handleVote(item.EmoteID)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />}</td>
                             {blockable && <td className="text-center px-5 cursor-pointer hover:text-blue-500 group" onClick={() => block(item.EmoteID)}>
                                 <StopIcon className="h-6 mx-auto" /><span className="absolute z-50 hidden p-2 mx-10 -my-12 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Block emote and remove it from election</span>

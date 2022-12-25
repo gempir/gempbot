@@ -1,3 +1,4 @@
+import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
@@ -19,8 +20,8 @@ interface RawNomination {
 }
 
 export type Nomination = RawNomination & {
-    CreatedAt: Date,
-    UpdatedAt: Date,
+    CreatedAt: Dayjs,
+    UpdatedAt: Dayjs,
 }
 
 interface Return {
@@ -46,7 +47,16 @@ export function useNominations(channel: string): Return {
         searchParams.append("channel", channel);
         doFetch({ apiBaseUrl }, Method.GET, endPoint, searchParams).then((resp) => {
             return resp
-        }).then(rawNoms => setBlocks(rawNoms.map((rawNom: RawNomination) => ({ ...rawNom, CreatedAt: new Date(rawNom.CreatedAt), UpdatedAt: new Date(rawNom.UpdatedAt) }))))
+        }).then(rawNoms => setBlocks(
+            rawNoms.map(
+                (rawNom: RawNomination) => (
+                    {
+                        ...rawNom,
+                        CreatedAt: dayjs(rawNom.CreatedAt),
+                        UpdatedAt: dayjs(rawNom.UpdatedAt)
+                    }
+                )
+            )))
             .then(() => setLoading(false)).catch(err => {
                 if (err.message !== "Page changed") {
                     throw err;
@@ -61,7 +71,7 @@ export function useNominations(channel: string): Return {
         const searchParams = new URLSearchParams();
         searchParams.append("channel", channel);
         searchParams.append("emoteID", emoteID);
-        doFetch({ apiBaseUrl, scToken }, Method.POST, endPoint, searchParams).then(() => setLoading(false)).catch(err => {}).finally(fetchNominations);
+        doFetch({ apiBaseUrl, scToken }, Method.POST, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
     };
 
     const block = (emoteID: string) => {
@@ -71,7 +81,7 @@ export function useNominations(channel: string): Return {
         const searchParams = new URLSearchParams();
         searchParams.append("channel", channel);
         searchParams.append("emoteID", emoteID);
-        doFetch({ apiBaseUrl, scToken, managing }, Method.DELETE, endPoint, searchParams).then(() => setLoading(false)).catch(err => {}).finally(fetchNominations);
+        doFetch({ apiBaseUrl, scToken, managing }, Method.DELETE, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
     };
 
     useEffect(fetchNominations, []);
