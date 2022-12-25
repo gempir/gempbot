@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gempir/gempbot/internal/auth"
 	"github.com/gempir/gempbot/internal/bot"
@@ -22,14 +21,10 @@ import (
 	"github.com/gempir/gempbot/internal/user"
 	"github.com/gempir/gempbot/internal/ws"
 	"github.com/rs/cors"
-	"github.com/sirupsen/logrus"
 )
 
 func main() {
 	cfg := config.FromEnv()
-	if !strings.Contains(cfg.WebBaseUrl, "localhost") {
-		log.SetLogFormatter(&logrus.JSONFormatter{})
-	}
 	db := store.NewDatabase(cfg)
 
 	argsWithoutProg := os.Args[1:]
