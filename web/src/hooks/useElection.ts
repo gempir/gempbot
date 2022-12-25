@@ -4,17 +4,8 @@ import { useStore } from "../store";
 import { Election } from "../types/Election";
 import dayjs from "dayjs";
 
-const defaultElection: Election = {
-    Hours: 24,
-    NominationCost: 1000,
-    CreatedAt: dayjs(),
-    UpdatedAt: dayjs(),
-    StartedRunAt: dayjs(),
-    ChannelTwitchID: "",
-}
-
-export function useElection(channel?: string): [Election, (election: Election) => void, () => void, string | null, boolean] {
-    const [election, setElection] = useState<Election>(defaultElection);
+export function useElection(channel?: string): [Election | undefined, (election: Election) => void, () => void, string | null, boolean] {
+    const [election, setElection] = useState<Election | undefined>();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const managing = useStore(state => state.managing);
@@ -41,7 +32,7 @@ export function useElection(channel?: string): [Election, (election: Election) =
                 throw new Error(reason);
             }
             if (reason === RejectReason.NotFound) {
-                setElection(defaultElection);
+                setElection(undefined);
             }
         }).finally(() => setLoading(false));
     }

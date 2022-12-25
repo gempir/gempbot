@@ -75,8 +75,7 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 		if election.ChannelTwitchID != "" {
 			err = a.channelPointManager.DeleteElectionReward(userID)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+				log.Warnf("failed to delete election reward, probably ok: %s", err.Error())
 			}
 		}
 
@@ -94,6 +93,7 @@ func readElectionBody(r *http.Request) (store.Election, error) {
 	if err := json.Unmarshal(bodyBytes, &data); err != nil {
 		return store.Election{}, err
 	}
+	data.StartedRunAt = nil
 
 	return data, nil
 }
