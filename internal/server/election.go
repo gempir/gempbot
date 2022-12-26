@@ -13,7 +13,7 @@ import (
 
 func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 	var userID string
-	if r.Method != http.MethodGet {
+	if r.Method != http.MethodGet || a.authClient.HasAuth(r) {
 		authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 		if apiErr != nil {
 			return

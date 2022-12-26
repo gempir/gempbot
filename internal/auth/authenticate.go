@@ -81,6 +81,10 @@ func (a *Auth) CanAuthenticate(r *http.Request) bool {
 	return false
 }
 
+func (a *Auth) HasAuth(r *http.Request) bool {
+	return r.Header.Get("Authorization") != ""
+}
+
 func (a *Auth) Authenticate(r *http.Request) (helix.ValidateTokenResponse, store.UserAccessToken, api.Error) {
 	scToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	for _, cookie := range r.Cookies() {
