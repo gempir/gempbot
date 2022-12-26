@@ -4,10 +4,11 @@ import { createLoginUrl } from "../../factory/createLoginUrl";
 import { EmoteType } from "../../hooks/useEmotehistory";
 import { useNominations } from "../../hooks/useNominations";
 import { useStore } from "../../store";
+import { Election } from "../../types/Election";
 import { Emote } from "../Emote/Emote";
 import { ElectionStatus } from "./ElectionStatus";
 
-export function NominationsView({ channel }: { channel: string }): JSX.Element {
+export function NominationsView({ channel, election }: { channel: string, election?: Election }): JSX.Element {
     const { nominations, fetch, loading, vote, block } = useNominations(channel);
     const scToken = useStore(state => state.scToken);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
@@ -30,7 +31,7 @@ export function NominationsView({ channel }: { channel: string }): JSX.Element {
 
     return <div className="flex flex-col gap-3">
         <div className="p-4 bg-gray-800 rounded shadow relative select-none">
-            <ElectionStatus channel={channel} />
+            <ElectionStatus election={election} />
         </div>
         <div className="flex gap-3 min-h-[20em]">
             <div className="p-4 bg-gray-800 rounded shadow relative select-none">

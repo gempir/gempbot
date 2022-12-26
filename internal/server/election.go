@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gempir/gempbot/internal/api"
 	"github.com/gempir/gempbot/internal/log"
@@ -36,19 +37,31 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 			userID = user.ID
 		}
 
-		reward, err := a.db.GetElection(r.Context(), userID)
+		election, err := a.db.GetElection(r.Context(), userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
-		api.WriteJson(w, reward, http.StatusOK)
+		api.WriteJson(w, election, http.StatusOK)
 	} else if r.Method == http.MethodPost {
+
 		newElection, err := readElectionBody(r)
 		if err != nil {
 			log.Error(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
+		}
+
+		prevElection, err := a.db.GetElection(r.Context(), userID)
+		if err == nil {
+			newElection.StartedRunAt = prevElection.StartedRunAt
+			newElection.CreatedAt = prevElection.CreatedAt
+			newElection.UpdatedAt = time.Now()
+		} else {
+			newElection.StartedRunAt = nil
+			newElection.CreatedAt = time.Now()
+			newElection.UpdatedAt = time.Now()
 		}
 
 		newElection.ChannelTwitchID = userID
@@ -64,6 +77,11 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		err = a.db.ClearNominations(r.Context(), userID)
+		if err != nil {
+			log.Warnf("failed to clear nominations, probably ok: %s", err.Error())
 		}
 
 		err = a.channelPointManager.DeleteElectionReward(userID)
@@ -85,7 +103,6 @@ func readElectionBody(r *http.Request) (store.Election, error) {
 	if err := json.Unmarshal(bodyBytes, &data); err != nil {
 		return store.Election{}, err
 	}
-	data.StartedRunAt = nil
 
 	return data, nil
 }
