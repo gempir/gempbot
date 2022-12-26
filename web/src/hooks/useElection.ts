@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { doFetch, Method, RejectReason } from "../service/doFetch";
+import { doFetch, FetchOptions, Method, RejectReason } from "../service/doFetch";
 import { useStore } from "../store";
 import { Election } from "../types/Election";
 import dayjs from "dayjs";
@@ -20,7 +20,11 @@ export function useElection(channel?: string): [Election | undefined, (election:
             searchParams.append("channel", channel);
             params = "?" + searchParams.toString();
         }
-        doFetch({ apiBaseUrl, managing, scToken }, Method.GET, "/api/election" + params).then(resp => setElection(
+        const options: FetchOptions = { apiBaseUrl, managing };
+        if (scToken) {
+            options.scToken = scToken;
+        }
+        doFetch(options, Method.GET, "/api/election" + params).then(resp => setElection(
             {
                 ...resp,
                 CreatedAt: resp.CreatedAt ? dayjs(resp.CreatedAt) : undefined,

@@ -12,17 +12,20 @@ import (
 )
 
 func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
-	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
-	if apiErr != nil {
-		return
-	}
-	userID := authResp.Data.UserID
-
-	if r.URL.Query().Get("managing") != "" {
-		userID, apiErr = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
+	var userID string
+	if r.Method != http.MethodGet {
+		authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 		if apiErr != nil {
-			http.Error(w, apiErr.Error(), apiErr.Status())
 			return
+		}
+		userID = authResp.Data.UserID
+
+		if r.URL.Query().Get("managing") != "" {
+			userID, apiErr = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
+			if apiErr != nil {
+				http.Error(w, apiErr.Error(), apiErr.Status())
+				return
+			}
 		}
 	}
 
