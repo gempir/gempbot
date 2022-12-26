@@ -9,7 +9,6 @@ type Election struct {
 	ChannelTwitchID string `gorm:"primarykey"`
 	Hours           int
 	NominationCost  int
-	SpecificTime    *time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	StartedRunAt    *time.Time

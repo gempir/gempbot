@@ -23,10 +23,9 @@ export function useElection(channel?: string): [Election | undefined, (election:
         doFetch({ apiBaseUrl, managing, scToken }, Method.GET, "/api/election" + params).then(resp => setElection(
             {
                 ...resp,
-                CreatedAt: resp.CreatedAt ? dayjs(resp.CreatedAt) : undefined,
-                UpdatedAt: resp.UpdatedAt ? dayjs(resp.UpdatedAt) : undefined,
-                StartedRunAt: resp.StartedRunAt ? dayjs(resp.StartedRunAt) : undefined,
-                SpecificTime: resp.SpecificTime ? dayjs(resp.SpecificTime) : undefined,
+                CreatedAt: dayjs(resp.CreatedAt),
+                UpdatedAt: dayjs(resp.UpdatedAt),
+                StartedRunAt: dayjs(resp.StartedRunAt),
             }
         )).catch(reason => {
             if (reason !== RejectReason.NotFound) {

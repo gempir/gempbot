@@ -38,7 +38,7 @@ func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *cha
 }
 
 func (em *ElectionManager) StartElectionManagerRoutine() {
-	for range time.NewTicker(30 * time.Second).C {
+	for range time.NewTicker(1 * time.Minute).C {
 		em.checkElections()
 	}
 }
@@ -52,25 +52,10 @@ func (em *ElectionManager) checkElections() {
 
 	for _, election := range elections {
 		if election.StartedRunAt == nil {
-			if election.SpecificTime != nil {
-				now := time.Now()
-				specificTime := time.Date(now.Year(), now.Month(), now.Day(), election.SpecificTime.Hour(), election.SpecificTime.Minute(), 0, 0, election.SpecificTime.Location())
-				if specificTime.After(now) || specificTime.Sub(now) < -1*time.Minute {
-					continue
-				}
-			}
 			log.Infof("Starting election for channel %s", election.ChannelTwitchID)
 			em.startElection(election)
 			time.Sleep(1 * time.Second)
 		} else if election.StartedRunAt != nil && time.Since(*election.StartedRunAt) > time.Duration(election.Hours)*time.Hour {
-			if election.SpecificTime != nil {
-				now := time.Now()
-				specificTime := time.Date(now.Year(), now.Month(), now.Day(), election.SpecificTime.Hour(), election.SpecificTime.Minute(), 0, 0, election.SpecificTime.Location())
-				if specificTime.After(now) || specificTime.Sub(now) < -1*time.Minute {
-					continue
-				}
-			}
-
 			log.Infof("Stopping election for channel %s", election.ChannelTwitchID)
 			em.stopElection(election, false)
 			time.Sleep(1 * time.Second)
