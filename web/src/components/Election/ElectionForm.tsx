@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import { useEffect } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useElection } from "../../hooks/useElection";
 import { Election } from "../../types/Election";
 
 type FormValues = {
