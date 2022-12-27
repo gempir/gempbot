@@ -1,0 +1,7 @@
+---
+
+- name: restart caddy
+  systemd:
+    daemon_reload: true
+    name: caddy
+    state: restarted

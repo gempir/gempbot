@@ -23,7 +23,7 @@ ansible:
 	python3 -m pip install jmespath
 
 provision:
-	cd ansible && ansible-playbook -i hosts playbook.yml --private-key=.ssh_key
+	cd ansible && OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES ansible-playbook -i hosts playbook.yml --private-key=.ssh_key
 
 migrate:
 	go run main.go migrate

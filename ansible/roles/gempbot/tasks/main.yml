@@ -11,9 +11,3 @@
   template:
     src: templates/service.j2
     dest: /etc/systemd/system/router.service
-
-- name: Install Router proxy config
-  template:
-    src: templates/Caddyfile.j2
-    dest: /etc/caddy/Caddyfile
-  notify: restart caddy

@@ -1,0 +1,30 @@
+- apt_key:
+    url: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"
+    state: present
+
+- name: Add Repository
+  apt_repository:
+    repo: "deb https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main"
+    state: "present"
+
+- name: Install
+  apt:
+    name: caddy
+    state: present
+
+- name: Permissions
+  file:
+    path: /etc/caddy
+    owner: caddy
+    group: caddy
+    mode: 0770
+    state: directory
+
+- name: Install config
+  template:
+    src: templates/Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    owner: caddy
+    group: caddy
+    mode: 0660
+  notify: restart caddy

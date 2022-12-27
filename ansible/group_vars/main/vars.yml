@@ -38,3 +38,5 @@ prometheus_scrape_configs:
 prometheus_postgres_dbname: gempbot
 
 node_exporter_arch: arm64
+
+caddy_config: "{{ lookup('template', 'templates/Caddyfile.j2') }}"
