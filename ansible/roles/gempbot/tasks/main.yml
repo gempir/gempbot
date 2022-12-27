@@ -7,7 +7,41 @@
       - gempbot
     append: yes
 
-- name: Install Router Service
+- name: Ensure home permissions
+  file:
+    path: /home/gempbot
+    state: directory
+    owner: gempbot
+    group: gempbot
+    recurse: yes
+    mode: 0770
+
+- name: Setup env file
+  template:
+    src: templates/env.j2
+    dest: /home/gempbot/.env
+    owner: gempbot
+    group: gempbot
+    mode: 0640
+
+- name: Install Service
   template:
     src: templates/service.j2
-    dest: /etc/systemd/system/router.service
+    dest: /etc/systemd/system/gempbot.service
+
+- name: Install Migrate Service
+  template:
+    src: templates/migrate.j2
+    dest: /etc/systemd/system/gempbot-migrate.service
+
+- name: ensure migrate service is enabled
+  systemd:
+    daemon_reload: true
+    name: gempbot-migrate
+    enabled: true
+
+- name: ensure service is enabled
+  systemd:
+    daemon_reload: true
+    name: gempbot
+    enabled: true

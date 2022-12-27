@@ -8,7 +8,7 @@ postgresql_databases:
   - name: gempbot
 postgresql_users:
   - name: gempbot
-    password: "{{ gempbot_postgres_password }}"
+    password: "{{ gempbotPostgresPassword }}"
 
 prometheus_global:
   scrape_interval: 15s
