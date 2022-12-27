@@ -18,6 +18,13 @@ staticcheck:
 web: 
 	yarn dev
 
+ansible:
+	cd ansible && ansible-vault decrypt ssh_key.vault --output=.ssh_key
+	python3 -m pip install jmespath
+
+provision:
+	cd ansible && ansible-playbook -i hosts playbook.yml --private-key=.ssh_key
+
 migrate:
 	go run main.go migrate
 

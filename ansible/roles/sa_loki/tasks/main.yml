@@ -1,0 +1,4 @@
+---
+# tasks file for sa_loki
+
+  - include_tasks: tasks_loki.yml

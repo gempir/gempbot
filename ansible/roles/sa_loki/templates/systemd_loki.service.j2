@@ -1,0 +1,40 @@
+# CI/CD managed
+# Do NOT modify this file by hand!
+
+[Unit]
+Description=Loki log collector
+After=network.target
+Requires=network.target
+
+[Service]
+#EnvironmentFile={{ loki_config_dir }}/loki_configuration
+
+ExecStart={{ loki_dir }}/loki -config.file {{loki_config_dir}}/config.yml $OPTIONS
+User={{loki_user|default('loki')}}
+Group={{loki_group|default('loki')}}
+
+{% if loki_config.startup|default({}) %}
+
+{% for key in loki_config.startup.env|default({}) %}
+Environment="{{key}}={{loki_config.startup.env[key]}}"
+{% endfor %}
+{% if loki_config.startup.execstop|default(False) %}
+ExecStop={{loki_config.startup.execstop}}
+{% endif %}
+
+{% if loki_config.startup.pidfile|default(False) %}
+PIDFile={{loki_config.startup.pidfile}}
+{% endif %}
+
+{% for line in loki_config.startup.extralines|default([]) %}
+{{ line|default('') }}
+{% endfor %}
+
+{% endif %}
+
+Restart=always
+RestartSec=5
+TimeoutSec=5
+
+[Install]
+WantedBy=multi-user.target
