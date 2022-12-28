@@ -1,2 +1,2 @@
 [main]
-o1.gempir.com
+o1.gempir.com ansible_port=22

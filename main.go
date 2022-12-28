@@ -57,11 +57,6 @@ func main() {
 
 	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, eventsubSubscriptionManager, channelPointManager, seventvClient, wsHandler)
 
-	go func() {
-		eventsubManager.RefreshAllEventsubSubscriptions()
-		eventsubSubscriptionManager.RefreshAllEventsubSubscriptions()
-	}()
-
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

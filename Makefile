@@ -20,10 +20,10 @@ web:
 
 deploy:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -o gempbot main.go
-	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot"
-	rsync -avz -e "ssh -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
-	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo chown gempbot:gempbot /home/gempbot/gempbot"
-	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl restart gempbot-migrate && sudo systemctl start gempbot"
+	ssh -p 22 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot"
+	rsync -avz -e "ssh -p 22 -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
+	ssh -p 22 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo chown gempbot:gempbot /home/gempbot/gempbot"
+	ssh -p 22 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl restart gempbot-migrate && sudo systemctl start gempbot"
 
 ansible:
 	cd ansible && ansible-vault decrypt ssh_key.vault --output=.ssh_key
@@ -34,9 +34,6 @@ provision:
 
 migrate:
 	go run main.go migrate
-
-proxy:
-	flyctl proxy 5000:5432 -a gempbot-db
 
 docker: 
 	docker build . -t gempbot
