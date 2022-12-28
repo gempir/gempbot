@@ -3,15 +3,16 @@
   hosts: all
   remote_user: ubuntu
   become: true
-  
+
   roles:
-    - {role: 'common', tags: ['common']}
-    - {role: 'geerlingguy.postgresql', tags: ['postgresql']}
-    - {role: 'caddy', tags: ['caddy']}
-    - {role: 'geerlingguy.node_exporter', tags: ['node_exporter']}
-    - {role: 'prometheus', tags: ['prometheus']}
-    - {role: 'prometheus-postgres', tags: ['prometheus-postgres']}
-    - {role: 'grafana', tags: ['grafana']}
-    - {role: 'sa_loki_promtail', tags: ['promtail']}
-    - {role: 'sa_loki', tags: ['loki']}
-    - {role: 'gempbot', tags: ['gempbot']}
+    - { role: "common", tags: ["common"] }
+    - { role: "geerlingguy.postgresql", tags: ["postgresql"] }
+    - { role: "caddy", tags: ["caddy"] }
+    - { role: "geerlingguy.node_exporter", tags: ["node_exporter"] }
+    - { role: "prometheus", tags: ["prometheus"] }
+    - { role: "prometheus-postgres", tags: ["prometheus-postgres"] }
+    - { role: "grafana", tags: ["grafana"] }
+    - { role: "sa_loki_promtail", tags: ["promtail"] }
+    - { role: "sa_loki", tags: ["loki"] }
+    - { role: "logtail", tags: ["logtail", "vector"] }
+    - { role: "gempbot", tags: ["gempbot"] }

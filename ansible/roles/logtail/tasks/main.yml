@@ -1,0 +1,9 @@
+---
+- name: Install vector config
+  template:
+    src: templates/vector.toml
+    dest: /etc/vector/vector.toml
+    owner: root
+    group: root
+  notify:
+    - restart vector

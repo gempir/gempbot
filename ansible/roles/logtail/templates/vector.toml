@@ -1,0 +1,10 @@
+[sources.journald]
+type = "journald"
+current_boot_only = true
+
+[sinks.logtail]
+type = "http"
+inputs = [ "journald" ]
+uri = "https://in.logtail.com/"
+encoding.codec = "json"
+request.headers.Authorization = "Bearer {{ logtailSourceToken }}"
