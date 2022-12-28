@@ -1,0 +1,9 @@
+---
+# handlers file for prometheus-postgres
+
+- name: restart prometheus-postgres
+  become: true
+  systemd:
+    daemon_reload: true
+    name: prometheus-postgres-exporter.service
+    state: restarted

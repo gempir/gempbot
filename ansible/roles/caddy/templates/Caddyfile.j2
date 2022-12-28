@@ -1,0 +1,14 @@
+{{ api_host }} {
+    reverse_proxy 127.0.0.1:3010
+}
+
+{{ grafana_host }} {
+    reverse_proxy 127.0.0.1:3000
+}
+
+{{ prometheus_host }} {
+    reverse_proxy 127.0.0.1:9090
+    basicauth /* {
+        gempir $2a$14$VGePH9nmnAUbC5D7aMm2GeL5slAoBFaa4BLjWASRS8gd7vd5d3ZVm
+    }
+}

@@ -1,0 +1,19 @@
+---
+# defaults file for prometheus-postgres
+
+prometheus_postgres_version: 0.9.0
+prometheus_postgres_sha256: >-
+  ff541bd3ee19c0ae003d71424a75edfcc8695e828dd20d5b4555ce433c89d60b
+
+prometheus_postgres_dbname: postgres
+prometheus_postgres_data_source_name: "user=postgres dbname=\
+  {{ prometheus_postgres_dbname }} host=/var/run/postgresql/ sslmode=disable"
+
+prometheus_postgres_port: 9187
+
+prometheus_postgres_query_filenames:
+  - queries-default.yml
+
+prometheus_postgres_query_directory: files/
+
+prometheus_postgres_system_user: postgres

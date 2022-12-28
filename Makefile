@@ -18,6 +18,20 @@ staticcheck:
 web: 
 	yarn dev
 
+deploy:
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -o gempbot main.go
+	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot"
+	rsync -avz -e "ssh -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
+	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo chown gempbot:gempbot /home/gempbot/gempbot"
+	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl restart gempbot-migrate && sudo systemctl start gempbot"
+
+ansible:
+	cd ansible && ansible-vault decrypt ssh_key.vault --output=.ssh_key
+	python3 -m pip install jmespath
+
+provision:
+	cd ansible && OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES ansible-playbook -i hosts playbook.yml --private-key=.ssh_key
+
 migrate:
 	go run main.go migrate
 

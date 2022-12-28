@@ -1,0 +1,14 @@
+[Unit]
+Description=gempbot-migrate
+After=network.target
+StartLimitBurst=10
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/home/gempbot/gempbot migrate
+WorkingDirectory=/home/gempbot
+EnvironmentFile=/home/gempbot/.env
+
+[Install]
+WantedBy=multi-user.target

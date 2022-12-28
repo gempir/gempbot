@@ -35,6 +35,10 @@ yarn-error.log*
 .env.production.local
 key.txt
 
+# ansible
+.vaultpass
+.ssh_key
+
 # vercel
 web/.vercel
 
