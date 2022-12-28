@@ -3,6 +3,7 @@ package election
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gempir/gempbot/internal/bot"
@@ -167,6 +168,14 @@ func (em *ElectionManager) startElection(election store.Election) {
 		newReward, err := em.cpm.CreateOrUpdateChannelPointReward(election.ChannelTwitchID, reward, reward.ID)
 		if err != nil {
 			log.Errorf("Failed to create/updated reward %s", err.Error())
+			if strings.Contains(err.Error(), "The broadcaster doesn't have partner or affiliate status") {
+				err := em.db.DeleteElection(context.Background(), election.ChannelTwitchID)
+				if err != nil {
+					log.Errorf("Failed to delete election %s", err.Error())
+					return
+				}
+				log.Infof("Deleted election because channel is not partner/affiliate: %s", election.ChannelTwitchID)
+			}
 			return
 		}
 
