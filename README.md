@@ -3,13 +3,3 @@
 ## Website
 
 [bot.gempir.com](https://bot.gempir.com)
-
-# Server
-
-Frontend deployed on Vercel
-![Vercel](https://vercelbadge.vercel.app/api/gempir/gempbot?style=for-the-badge)
-
-
-Backend with postgres database cluster deployed on fly.io
-
-[![Flyio](https://fly.io/static/images/brand/logo-landscape.svg)](https://fly.io)
