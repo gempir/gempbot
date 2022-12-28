@@ -1,4 +1,9 @@
-#Port 22
+Port 32022
+Protocol 2
+PasswordAuthentication no
+X11Forwarding no
+PermitRootLogin no
+
 #AddressFamily any
 #ListenAddress 0.0.0.0
 #ListenAddress ::
@@ -17,7 +22,7 @@
 # Authentication:
 
 #LoginGraceTime 2m
-PermitRootLogin yes
+
 #StrictModes yes
 #MaxAuthTries 6
 #MaxSessions 10
@@ -41,7 +46,6 @@ PermitRootLogin yes
 #IgnoreRhosts yes
 
 # To disable tunneled clear text passwords, change to no here!
-PasswordAuthentication no
 #PermitEmptyPasswords no
 
 # Change to yes to enable challenge-response passwords (beware issues with
@@ -74,7 +78,6 @@ UsePAM yes
 #AllowAgentForwarding yes
 #AllowTcpForwarding yes
 #GatewayPorts no
-X11Forwarding yes
 #X11DisplayOffset 10
 #X11UseLocalhost yes
 #PermitTTY yes

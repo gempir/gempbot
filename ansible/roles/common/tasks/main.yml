@@ -16,10 +16,16 @@
       - software-properties-common
     state: present
 
+- name: Ignore default ssh in UFW
+  ufw:
+    rule: deny
+    port: "22"
+    proto: tcp
+
 - name: Allow ssh in UFW
   ufw:
     rule: allow
-    port: "22"
+    port: "32022"
     proto: tcp
 
 - name: Allow http in UFW
