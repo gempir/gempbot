@@ -23,7 +23,7 @@ deploy:
 	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot"
 	rsync -avz -e "ssh -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
 	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo chown gempbot:gempbot /home/gempbot/gempbot"
-	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl start gempbot-migrate && sudo systemctl start gempbot"
+	ssh -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl restart gempbot-migrate && sudo systemctl start gempbot"
 
 ansible:
 	cd ansible && ansible-vault decrypt ssh_key.vault --output=.ssh_key
