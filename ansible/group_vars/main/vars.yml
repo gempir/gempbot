@@ -2,7 +2,8 @@
 web_host: bot.gempir.com
 cookie_domain: gempir.com
 api_host: bot-api.gempir.com
-grafana_host: grafana.gempir.com
+grafana_host: grafana.o.gempir.com
+prometheus_host: prometheus.o.gempir.com
 
 postgresql_databases:
   - name: gempbot
