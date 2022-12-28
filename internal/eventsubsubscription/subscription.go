@@ -2,6 +2,7 @@ package eventsubsubscription
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/helixclient"
@@ -21,6 +22,24 @@ func NewSubscriptionManager(cfg *config.Config, db *store.Database, helixClient 
 		helixClient: helixClient,
 		db:          db,
 		cfg:         cfg,
+	}
+}
+
+func (esm *SubscriptionManager) RefreshAllEventsubSubscriptions() {
+	subs := esm.db.GetAllSubscriptions()
+
+	log.Infof("Refreshing %d SubscriptionManager subscriptions", len(subs))
+	for _, sub := range subs {
+		if sub.Type == helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd {
+			_ = esm.RemoveSubscription(sub.SubscriptionID)
+			esm.SubscribeRewardRedemptionAdd(sub.TargetTwitchID, sub.ForeignID)
+			time.Sleep(time.Second * 1)
+		}
+		if sub.Type == helix.EventSubTypeChannelPointsCustomRewardUpdate {
+			_ = esm.RemoveSubscription(sub.SubscriptionID)
+			esm.SubscribeRewardRedemptionUpdate(sub.TargetTwitchID, sub.ForeignID)
+			time.Sleep(time.Second * 1)
+		}
 	}
 }
 
@@ -77,6 +96,7 @@ func (esm *SubscriptionManager) SubscribeRewardRedemptionUpdate(userID, rewardId
 func (esm *SubscriptionManager) RemoveSubscription(subscriptionID string) error {
 	response, err := esm.helixClient.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 

@@ -227,6 +227,29 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 	}
 }
 
+func (esm *EventsubManager) RefreshAllEventsubSubscriptions() {
+	subs := esm.db.GetAllSubscriptions()
+
+	log.Infof("Refreshing %d EventsubManager subscriptions", len(subs))
+	for _, sub := range subs {
+		if sub.Type == helix.EventSubTypeChannelPredictionBegin {
+			_ = esm.RemoveEventSubSubscription(sub.SubscriptionID)
+			esm.SubscribePredictionsBegin(sub.TargetTwitchID)
+			time.Sleep(time.Millisecond * 100)
+		}
+		if sub.Type == helix.EventSubTypeChannelPredictionEnd {
+			_ = esm.RemoveEventSubSubscription(sub.SubscriptionID)
+			esm.SubscribePredictionsEnd(sub.TargetTwitchID)
+			time.Sleep(time.Millisecond * 100)
+		}
+		if sub.Type == helix.EventSubTypeChannelPredictionLock {
+			_ = esm.RemoveEventSubSubscription(sub.SubscriptionID)
+			esm.SubscribePredictionsLock(sub.TargetTwitchID)
+			time.Sleep(time.Millisecond * 100)
+		}
+	}
+}
+
 func (esm *EventsubManager) SubscribeChannelPoints(userID string) {
 	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd, helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
 	if err != nil {
@@ -249,6 +272,7 @@ func (esm *EventsubManager) SubscribeChannelPoints(userID string) {
 func (esm *EventsubManager) RemoveEventSubSubscription(subscriptionID string) error {
 	response, err := esm.helixClient.RemoveEventSubSubscription(subscriptionID)
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 

@@ -12,6 +12,12 @@ import (
 )
 
 func (esm *EventsubManager) SubscribePredictions(userID string) {
+	esm.SubscribePredictionsBegin(userID)
+	esm.SubscribePredictionsLock(userID)
+	esm.SubscribePredictionsEnd(userID)
+}
+
+func (esm *EventsubManager) SubscribePredictionsBegin(userID string) {
 	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionBegin, "channel.prediction.begin")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
@@ -23,8 +29,10 @@ func (esm *EventsubManager) SubscribePredictions(userID string) {
 		log.Infof("new sub in %s %s", userID, sub.Type)
 		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
+}
 
-	response, err = esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionLock, "channel.prediction.lock")
+func (esm *EventsubManager) SubscribePredictionsLock(userID string) {
+	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionLock, "channel.prediction.lock")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
 		return
@@ -35,8 +43,10 @@ func (esm *EventsubManager) SubscribePredictions(userID string) {
 		log.Infof("new sub in %s %s", userID, sub.Type)
 		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
+}
 
-	response, err = esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionEnd, "channel.prediction.end")
+func (esm *EventsubManager) SubscribePredictionsEnd(userID string) {
+	response, err := esm.helixClient.CreateEventSubSubscription(userID, esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPredictionEnd, "channel.prediction.end")
 	if err != nil {
 		log.Errorf("Error subscribing: %s", err)
 		return
