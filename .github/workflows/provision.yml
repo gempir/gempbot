@@ -13,5 +13,6 @@ jobs:
           run: |
             touch .env
             echo "${{secrets.VAULT_PASSWORD}}" > ansible/.vaultpass
+            export ANSIBLE_HOST_KEY_CHECKING=False
             make ansible
             make provision
