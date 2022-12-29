@@ -234,7 +234,7 @@ func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption 
 
 	isBlocked := em.db.IsEmoteBlocked(redemption.BroadcasterUserID, emoteID, dto.REWARD_SEVENTV)
 	if isBlocked {
-		log.Errorf("Emote is blocked, refunding. %s", err.Error())
+		log.Infof("Emote is blocked, refunding")
 		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
 		if err != nil {
 			log.Error(err.Error())
