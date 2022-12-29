@@ -49,5 +49,8 @@ export function ElectionStatus({ election }: { election?: Election }): JSX.Eleme
         <div>
             <span className="text-gray-400">Duration</span> {!!election && <strong>{election.Hours} hours</strong>}
         </div>
+        <div>
+            <span className="text-gray-400">Top</span> {!!election && <strong>{election.EmoteAmount}</strong>}
+        </div>
     </div>;
 }

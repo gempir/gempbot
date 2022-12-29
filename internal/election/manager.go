@@ -73,40 +73,38 @@ func (em *ElectionManager) checkElections() {
 			}
 
 			log.Infof("Stopping election for channel %s", election.ChannelTwitchID)
-			em.stopElection(election, false)
+			em.stopElection(election)
 			time.Sleep(1 * time.Second)
 		}
 	}
 }
 
-func (em *ElectionManager) stopElection(election store.Election, prevBlocked bool) {
-	success := true
-
-	nomination, err := em.db.GetTopVotedNominated(context.Background(), election.ChannelTwitchID)
+func (em *ElectionManager) stopElection(election store.Election) {
+	log.Infof("Stopping election %v", election)
+	nominations, err := em.db.GetTopVotedNominated(context.Background(), election.ChannelTwitchID, election.EmoteAmount)
 	if err != nil {
 		log.Errorf("Failed to get top voted nomination %s", err.Error())
 		return
 	}
 
-	isBlocked := em.db.IsEmoteBlocked(election.ChannelTwitchID, nomination.EmoteID, dto.REWARD_SEVENTV)
-	if isBlocked {
-		err := em.db.ClearNominationEmote(context.Background(), election.ChannelTwitchID, nomination.EmoteID)
-		if err != nil {
-			log.Errorf("Failed to clear nomination emote %s", err.Error())
-		}
-		if !prevBlocked {
-			em.stopElection(election, true)
-			return
-		}
-	}
+	log.Infof("Nominations %v", nominations)
 
-	if !isBlocked {
+	nominationsAdded := []store.Nomination{}
+	nominatedByList := []string{}
+	for _, nomination := range nominations {
+		isBlocked := em.db.IsEmoteBlocked(election.ChannelTwitchID, nomination.EmoteID, dto.REWARD_SEVENTV)
+		if isBlocked {
+			log.Errorf("Emote %s is blocked in channel %s", nomination.EmoteCode, election.ChannelTwitchID)
+			continue
+		}
+
 		err = em.sevenTvClient.AddEmote(election.ChannelTwitchID, nomination.EmoteID)
 		if err != nil {
 			log.Errorf("Failed to add emote %s", err.Error())
-			em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ Failed to add %s error: %s", nomination.EmoteCode, err.Error()))
-			success = false
+			continue
 		}
+		nominationsAdded = append(nominationsAdded, nomination)
+		nominatedByList = append(nominatedByList, nomination.NominatedBy)
 	}
 
 	election.StartedRunAt = nil
@@ -121,20 +119,23 @@ func (em *ElectionManager) stopElection(election store.Election, prevBlocked boo
 		log.Errorf("Failed to clear nominations %s", err.Error())
 	}
 
-	user, err := em.helixclient.GetUserByUserID(nomination.NominatedBy)
+	users, err := em.helixclient.GetUsersByUserIds(nominatedByList)
 	if err != nil {
 		log.Errorf("Failed to get user %s", err.Error())
-	} else {
-		nomination.NominatedBy = user.DisplayName
 	}
 
-	if success {
-		extra := ""
-		if prevBlocked {
-			extra = "Because the top emote was blocked, the second place emote was added instead."
+	nominationStrings := []string{}
+	for _, nomination := range nominationsAdded {
+		var text string
+		text += fmt.Sprintf("[%d] %s ", len(nomination.Votes), nomination.EmoteCode)
+
+		if val, ok := users[nomination.NominatedBy]; ok {
+			text += fmt.Sprintf(" by %s", val.DisplayName)
 		}
-		em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ The emote %s nominated by %s has won the election with %d votes! %s", nomination.EmoteCode, nomination.NominatedBy, len(nomination.Votes), extra))
+		nominationStrings = append(nominationStrings, text)
 	}
+
+	em.bot.SayByChannelID(election.ChannelTwitchID, fmt.Sprintf("🗳️ Election round over. Adding Emotes: %s", strings.Join(nominationStrings, ", ")))
 }
 
 func (em *ElectionManager) startElection(election store.Election) {

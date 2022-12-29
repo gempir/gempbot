@@ -79,21 +79,25 @@ func (db *Database) GetNominations(ctx context.Context, channelTwitchID string) 
 	return nominations, nil
 }
 
-func (db *Database) GetTopVotedNominated(ctx context.Context, channelTwitchID string) (Nomination, error) {
+func (db *Database) GetTopVotedNominated(ctx context.Context, channelTwitchID string, count int) ([]Nomination, error) {
 	var votes []NominationVote
-	db.Client.WithContext(ctx).Raw("SELECT emote_id, COUNT(*) FROM nomination_votes WHERE channel_twitch_id = ? GROUP BY (emote_id) ORDER BY COUNT(*) DESC LIMIT 1", channelTwitchID).Scan(&votes)
+	db.Client.WithContext(ctx).Raw("SELECT emote_id, COUNT(*) FROM nomination_votes WHERE channel_twitch_id = ? GROUP BY (emote_id) ORDER BY COUNT(*) DESC LIMIT ?", channelTwitchID, count).Scan(&votes)
 
 	if len(votes) == 0 {
-		return Nomination{}, fmt.Errorf("no votes found for channel %s", channelTwitchID)
+		return []Nomination{}, fmt.Errorf("no votes found for channel %s", channelTwitchID)
 	}
 
-	var nomination Nomination
-	res := db.Client.WithContext(ctx).Preload("Votes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, votes[0].EmoteID).First(&nomination)
-	if res.Error != nil {
-		return nomination, res.Error
+	var nominations []Nomination
+	for _, vote := range votes {
+		var nom Nomination
+		res := db.Client.WithContext(ctx).Preload("Votes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, vote.EmoteID).First(&nom)
+		if res.Error != nil {
+			continue
+		}
+		nominations = append(nominations, nom)
 	}
 
-	return nomination, nil
+	return nominations, nil
 }
 
 func (db *Database) CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error {

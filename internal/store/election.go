@@ -7,8 +7,9 @@ import (
 
 type Election struct {
 	ChannelTwitchID string `gorm:"primarykey"`
-	Hours           int
-	NominationCost  int
+	Hours           int    `gorm:"default:24"`
+	NominationCost  int    `gorm:"default:1000"`
+	EmoteAmount     int    `gorm:"default:1"`
 	SpecificTime    *time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -38,6 +39,9 @@ func (db *Database) GetAllElections(ctx context.Context) ([]Election, error) {
 func (db *Database) CreateOrUpdateElection(ctx context.Context, election Election) error {
 	if election.Hours < 1 {
 		election.Hours = 1
+	}
+	if election.EmoteAmount < 1 {
+		election.EmoteAmount = 1
 	}
 
 	res := db.Client.WithContext(ctx).Save(&election)

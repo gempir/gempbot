@@ -6,12 +6,14 @@ import { Election } from "../../types/Election";
 type FormValues = {
     Hours: number;
     NominationCost: number;
+    EmoteAmount: number;
     SpecificTime: string | undefined;
 };
 
 const defaultElection = {
     Hours: 24,
     NominationCost: 1000,
+    EmoteAmount: 1,
     SpecificTime: undefined,
 }
 
@@ -39,6 +41,7 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
             ...election as Election,
             Hours: Number(data.Hours),
             NominationCost: Number(data.NominationCost),
+            EmoteAmount: Number(data.EmoteAmount),
             SpecificTime: specTime,
         });
     };
@@ -47,10 +50,12 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
         if (election) {
             setValue("Hours", election.Hours);
             setValue("NominationCost", election.NominationCost);
+            setValue("EmoteAmount", election.EmoteAmount);
             setValue("SpecificTime", election.SpecificTime?.format("HH:mm"));
         } else {
             setValue("Hours", defaultElection.Hours);
             setValue("NominationCost", defaultElection.NominationCost);
+            setValue("EmoteAmount", defaultElection.EmoteAmount);
             setValue("SpecificTime", defaultElection.SpecificTime);
         }
     }, [election]);
@@ -73,7 +78,7 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
         {electionErrorMessage && <div className="bg-red-500 text-white p-2 rounded mb-5">{electionErrorMessage}</div>}
         <label>
             Cooldown
-            <input defaultValue={election?.Hours ?? defaultElection.Hours} {...register("Hours", { required: true })} className="form-input border-none bg-gray-700 mx-2 py-2 rounded shadow" />
+            <input type="number" defaultValue={election?.Hours ?? defaultElection.Hours} {...register("Hours", { required: true })} className="form-input border-none bg-gray-700 mx-2 py-2 rounded shadow" />
             Hours
         </label>
         <br />
@@ -84,8 +89,13 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
         </label>
         <br />
         <label>
+            Top Emotes to add
+            <input type="number" defaultValue={election?.EmoteAmount ?? defaultElection.EmoteAmount} {...register("EmoteAmount", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+        </label>
+        <br />
+        <label>
             Nomination Cost
-            <input defaultValue={election?.NominationCost ?? defaultElection.NominationCost} {...register("NominationCost", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+            <input type="number" defaultValue={election?.NominationCost ?? defaultElection.NominationCost} {...register("NominationCost", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
         </label>
 
         <input type="submit" className={`hover:bg-gray-600 bg-gray-700 p-3 shadow rounded cursor-pointer font-bold mt-4 w-20 flex justify-center ${electionLoading ? "animate-pulse" : ""}`} />

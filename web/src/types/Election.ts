@@ -4,6 +4,7 @@ export interface Election {
     ChannelTwitchID: string
     Hours: number
     NominationCost: number
+    EmoteAmount: number
     CreatedAt: Dayjs
     UpdatedAt: Dayjs
     StartedRunAt?: Dayjs

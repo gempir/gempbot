@@ -93,8 +93,8 @@ func (s *MockStore) CreateOrIncrementNomination(ctx context.Context, nomination 
 	return nil
 }
 
-func (s *MockStore) GetTopVotedNominated(ctx context.Context, channelTwitchID string) (Nomination, error) {
-	return Nomination{}, nil
+func (s *MockStore) GetTopVotedNominated(ctx context.Context, channelTwitchID string, count int) ([]Nomination, error) {
+	return []Nomination{}, nil
 }
 
 func (s *MockStore) GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error) {
