@@ -13,5 +13,6 @@ jobs:
       steps:
         - uses: actions/checkout@v2
         - run: |
+            touch .env
             echo "${{secrets.SSH_PRIVATE_KEY}}" > ansible/.ssh_key
             make deploy
