@@ -18,4 +18,5 @@ jobs:
             playbook: playbook.yml
             directory: ./ansible
             key: ${{secrets.SSH_PRIVATE_KEY}}
-            inventory: hosts
+            options: |
+              --inventory hosts
