@@ -20,10 +20,10 @@ web:
 
 deploy:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -o gempbot main.go
-	ssh -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot"
-	rsync -avz -e "ssh -p 32022 -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
-	ssh -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo chown gempbot:gempbot /home/gempbot/gempbot"
-	ssh -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl restart gempbot-migrate && sudo systemctl start gempbot"
+	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot"
+	rsync -o StrictHostKeyChecking=no -avz -e "ssh -p 32022 -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
+	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo chown gempbot:gempbot /home/gempbot/gempbot"
+	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl restart gempbot-migrate && sudo systemctl start gempbot"
 
 ansible:
 	cd ansible && ansible-vault decrypt ssh_key.vault --output=.ssh_key

@@ -1,0 +1,17 @@
+name: Deploy
+
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+      name: Deploy app
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - run: |
+            echo "${{secrets.SSH_PRIVATE_KEY}}" > ansible/.ssh_key
+            make deploy
