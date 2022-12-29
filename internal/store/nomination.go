@@ -110,14 +110,16 @@ func (db *Database) GetTopVotedNominated(ctx context.Context, channelTwitchID st
 }
 
 func (db *Database) CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error {
+	inputNomination := nomination
 	var prevNom Nomination
 	db.Client.WithContext(ctx).Preload("Votes").Where("emote_id = ? AND channel_twitch_id = ?", nomination.EmoteID, nomination.ChannelTwitchID).First(&prevNom)
 	if len(prevNom.Votes) > 0 {
+		log.Infof("incrementing nomination %s", nomination.NominatedBy)
 		nomination = prevNom
 		nomination.CreatedAt = time.Now()
-		nomination.Votes = append(nomination.Votes, NominationVote{EmoteID: nomination.EmoteID, ChannelTwitchID: nomination.ChannelTwitchID, VoteBy: nomination.NominatedBy})
+		nomination.Votes = append(nomination.Votes, NominationVote{EmoteID: nomination.EmoteID, ChannelTwitchID: nomination.ChannelTwitchID, VoteBy: inputNomination.NominatedBy})
 	} else {
-		nomination.Votes = []NominationVote{{EmoteID: nomination.EmoteID, ChannelTwitchID: nomination.ChannelTwitchID, VoteBy: nomination.NominatedBy}}
+		nomination.Votes = []NominationVote{{EmoteID: nomination.EmoteID, ChannelTwitchID: nomination.ChannelTwitchID, VoteBy: inputNomination.NominatedBy}}
 	}
 
 	res := db.Client.WithContext(ctx).Save(&nomination)
