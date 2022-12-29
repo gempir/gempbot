@@ -21,7 +21,7 @@ web:
 deploy:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -o gempbot main.go
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot"
-	rsync -o -avz -e "ssh StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
+	rsync -avz -e "ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo chown gempbot:gempbot /home/gempbot/gempbot"
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl restart gempbot-migrate && sudo systemctl start gempbot"
 
