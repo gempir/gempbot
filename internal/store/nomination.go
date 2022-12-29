@@ -65,6 +65,15 @@ func (db *Database) CreateNominationVote(ctx context.Context, vote NominationVot
 	return nil
 }
 
+func (db *Database) RemoveNominationVote(ctx context.Context, vote NominationVote) error {
+	res := db.Client.WithContext(ctx).Where("emote_id = ? AND channel_twitch_id = ? AND vote_by = ?", vote.EmoteID, vote.ChannelTwitchID, vote.VoteBy).Delete(&NominationVote{})
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
 func (db *Database) GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error) {
 	var nominations []Nomination
 	res := db.Client.WithContext(ctx).Preload("Votes").Where("channel_twitch_id = ?", channelTwitchID).Find(&nominations)

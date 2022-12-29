@@ -35,6 +35,7 @@ type Store interface {
 	DeleteChannelPointRewardById(userID string, rewardID string)
 	GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error)
 	CreateNominationVote(ctx context.Context, vote NominationVote) error
+	RemoveNominationVote(ctx context.Context, vote NominationVote) error
 }
 
 type Database struct {

@@ -31,6 +31,14 @@ func (a *Api) NominationVoteHandler(w http.ResponseWriter, r *http.Request) {
 		api.WriteJson(w, "ok", http.StatusOK)
 	}
 	if r.Method == http.MethodDelete {
+		err = a.db.RemoveNominationVote(r.Context(), store.NominationVote{EmoteID: r.URL.Query().Get("emoteID"), ChannelTwitchID: user.ID, VoteBy: userID})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		api.WriteJson(w, "ok", http.StatusOK)
+	}
+	if r.Method == http.MethodPatch {
 		if r.URL.Query().Get("managing") != "" {
 			userID, apiErr = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
 			if apiErr != nil {

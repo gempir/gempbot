@@ -28,6 +28,7 @@ interface Return {
     nominations: Array<Nomination>,
     fetch: () => void,
     vote: (emoteID: string) => void,
+    unvote: (emoteID: string) => void,
     block: (emoteID: string) => void,
     loading: boolean,
 }
@@ -74,6 +75,16 @@ export function useNominations(channel: string): Return {
         doFetch({ apiBaseUrl, scToken }, Method.POST, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
     };
 
+    const unvote = (emoteID: string) => {
+        setLoading(true);
+
+        const endPoint = "/api/nominations/vote";
+        const searchParams = new URLSearchParams();
+        searchParams.append("channel", channel);
+        searchParams.append("emoteID", emoteID);
+        doFetch({ apiBaseUrl, scToken }, Method.DELETE, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
+    };
+
     const block = (emoteID: string) => {
         setLoading(true);
 
@@ -81,7 +92,7 @@ export function useNominations(channel: string): Return {
         const searchParams = new URLSearchParams();
         searchParams.append("channel", channel);
         searchParams.append("emoteID", emoteID);
-        doFetch({ apiBaseUrl, scToken, managing }, Method.DELETE, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
+        doFetch({ apiBaseUrl, scToken, managing }, Method.PATCH, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
     };
 
     useEffect(fetchNominations, []);
@@ -90,6 +101,7 @@ export function useNominations(channel: string): Return {
         nominations: nominations,
         fetch: fetchNominations,
         vote: vote,
+        unvote: unvote,
         block: block,
         loading: loading
     };

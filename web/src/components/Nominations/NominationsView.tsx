@@ -2,14 +2,14 @@ import { ArrowPathIcon, ArrowUpCircleIcon, StopIcon } from "@heroicons/react/24/
 import { useEffect } from "react";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { EmoteType } from "../../hooks/useEmotehistory";
-import { useNominations } from "../../hooks/useNominations";
+import { Nomination, useNominations } from "../../hooks/useNominations";
 import { useStore } from "../../store";
 import { Election } from "../../types/Election";
 import { Emote } from "../Emote/Emote";
 import { ElectionStatus } from "./ElectionStatus";
 
 export function NominationsView({ channel, election }: { channel: string, election?: Election }): JSX.Element {
-    const { nominations, fetch, loading, vote, block } = useNominations(channel);
+    const { nominations, fetch, loading, vote, unvote, block } = useNominations(channel);
     const scToken = useStore(state => state.scToken);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
     const scTokenContent = useStore(state => state.scTokenContent);
@@ -18,13 +18,17 @@ export function NominationsView({ channel, election }: { channel: string, electi
     const url = createLoginUrl(apiBaseUrl, twitchClientId);
     useEffect(fetch, [channel]);
 
-    const handleVote = (emoteID: string) => {
+    const handleVote = (nomination: Nomination) => {
         if (!scToken) {
             window.localStorage.setItem("redirect", window.location.pathname);
             window.location.href = url.toString();
         }
 
-        vote(emoteID);
+        if (nomination.Votes.some(value => value.VoteBy === scTokenContent?.UserID)) {
+            unvote(nomination.EmoteID);
+        } else {
+            vote(nomination.EmoteID);
+        }
     };
 
     const blockable = scTokenContent?.Login === channel || managing === channel;
@@ -59,7 +63,7 @@ export function NominationsView({ channel, election }: { channel: string, electi
                             <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.EmoteCode}</td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.NominatedBy}</td>
-                            <td className="text-center px-10">{!item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) && <ArrowUpCircleIcon onClick={() => handleVote(item.EmoteID)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />}</td>
+                            <td className="text-center px-10"><ArrowUpCircleIcon onClick={() => handleVote(item)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "" + (item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? "text-blue-600" : ""))} /></td>
                             {blockable && <td className="text-center px-5 cursor-pointer hover:text-blue-500 group" onClick={() => block(item.EmoteID)}>
                                 <StopIcon className="h-6 mx-auto" /><span className="absolute z-50 hidden p-2 mx-10 -my-12 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Block emote and remove it from election</span>
                             </td>}

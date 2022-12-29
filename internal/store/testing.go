@@ -120,6 +120,10 @@ func (s *MockStore) CreateNominationVote(ctx context.Context, vote NominationVot
 	return nil
 }
 
+func (s *MockStore) RemoveNominationVote(ctx context.Context, vote NominationVote) error {
+	return nil
+}
+
 func (s *MockStore) ClearNominationEmote(ctx context.Context, channelTwitchID string, emoteID string) error {
 	return nil
 }
