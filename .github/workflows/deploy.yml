@@ -1,6 +1,6 @@
 name: Deploy
 
-on: 
+on:
   workflow_dispatch:
   push:
     branches:
@@ -8,11 +8,13 @@ on:
 
 jobs:
   deploy:
-      name: Deploy app
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v2
-        - run: |
-            touch .env
-            echo "${{secrets.SSH_PRIVATE_KEY}}" > ansible/.ssh_key
-            make deploy
+    name: Deploy app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and Deploy
+        run: |
+          touch .env
+          echo "${{secrets.SSH_PRIVATE_KEY}}" > ansible/.ssh_key
+          chmod 600 ansible/.ssh_key
+          make deploy
