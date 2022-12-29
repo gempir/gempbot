@@ -27,6 +27,7 @@ deploy:
 
 ansible:
 	cd ansible && ansible-vault decrypt ssh_key.vault --output=.ssh_key
+	chmod 600 ansible/.ssh_key
 	python3 -m pip install jmespath
 
 provision:

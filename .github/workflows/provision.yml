@@ -9,15 +9,8 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v2
-        - name: prepare ansible
+        - name: Run ansible
           run: |
             echo "${{secrets.VAULT_PASSWORD}}" > ansible/.vaultpass
-            pip3 install jmespath
-        - name: Run playbook
-          uses: dawidd6/action-ansible-playbook@v2
-          with:
-            playbook: playbook.yml
-            directory: ./ansible
-            key: ${{secrets.SSH_PRIVATE_KEY}}
-            options: |
-              --inventory hosts
+            make ansible
+            make provision
