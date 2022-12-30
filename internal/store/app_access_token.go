@@ -25,7 +25,7 @@ func (db *Database) SaveAppAccessToken(ctx context.Context, accessToken string, 
 		return update.Error
 	}
 
-	update = db.Client.Where("updated_at < DATETIME('now', '-30 day')").Delete(&AppAccessToken{})
+	update = db.Client.Where("updated_at < (CURRENT_DATE - INTERVAL '10 days')").Delete(&AppAccessToken{})
 	if update.RowsAffected > 0 {
 		log.Infof("Deleted %d old app access tokens", update.RowsAffected)
 	}

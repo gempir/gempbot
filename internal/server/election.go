@@ -1,12 +1,16 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gempir/gempbot/internal/api"
+	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
 )
@@ -48,7 +52,6 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 
 		api.WriteJson(w, election, http.StatusOK)
 	} else if r.Method == http.MethodPost {
-
 		newElection, err := readElectionBody(r)
 		if err != nil {
 			log.Error(err)
@@ -73,6 +76,58 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		err = a.channelPointManager.DeleteElectionReward(newElection.ChannelTwitchID)
+		if err != nil {
+			log.Warnf("Failed to delete previous election reward, this might be okay %s", err.Error())
+		}
+
+		user, err := a.helixClient.GetUserByUserID(newElection.ChannelTwitchID)
+		if err != nil {
+			log.Errorf("Failed to get user %s", err.Error())
+		}
+
+		reward := channelpoint.TwitchRewardConfig{
+			Enabled:                           true,
+			Title:                             "Nominate a 7TV Emote",
+			Prompt:                            fmt.Sprintf("Nominate a 7TV Emote (Link) for the next election. Every %d hours the winner emote will be added to the channel. https://bot.gempir.com/nominations/%s", newElection.Hours, user.Login),
+			Cost:                              newElection.NominationCost,
+			IsUserInputRequired:               true,
+			BackgroundColor:                   "#29D8F6",
+			IsMaxPerStreamEnabled:             false,
+			IsMaxPerUserPerStreamEnabled:      false,
+			MaxPerStream:                      0,
+			MaxPerUserPerStream:               0,
+			IsGlobalCooldownEnabled:           false,
+			ShouldRedemptionsSkipRequestQueue: false,
+		}
+
+		newReward, err := a.channelPointManager.CreateOrUpdateChannelPointReward(newElection.ChannelTwitchID, reward, reward.ID)
+		if err != nil {
+			log.Errorf("Failed to create/updated reward %s", err.Error())
+			if strings.Contains(err.Error(), "The broadcaster doesn't have partner or affiliate status") {
+				err := a.db.DeleteElection(context.Background(), newElection.ChannelTwitchID)
+				if err != nil {
+					log.Errorf("Failed to delete election %s", err.Error())
+					http.Error(w, fmt.Sprintf("Failed to delete election %s", err.Error()), http.StatusInternalServerError)
+					return
+				}
+				http.Error(w, fmt.Sprintf("Deleted election because channel is not partner/affiliate: %s", newElection.ChannelTwitchID), http.StatusBadRequest)
+				log.Infof("Deleted election because channel is not partner/affiliate: %s", newElection.ChannelTwitchID)
+				return
+			}
+			http.Error(w, "Failed to save reward "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		electionReward := &channelpoint.ElectionReward{TwitchRewardConfig: newReward, ElectionRewardAdditionalOptions: channelpoint.ElectionRewardAdditionalOptions{}}
+		err = a.db.SaveReward(channelpoint.CreateStoreRewardFromReward(newElection.ChannelTwitchID, electionReward))
+		if err != nil {
+			log.Errorf("Failed to save reward %s", err.Error())
+			http.Error(w, "Failed to save reward "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		a.eventsubSubscriptionManager.SubscribeRewardRedemptionAdd(newElection.ChannelTwitchID, newReward.ID)
 
 		api.WriteJson(w, nil, http.StatusOK)
 	} else if r.Method == http.MethodDelete {
