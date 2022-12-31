@@ -19,6 +19,6 @@ export function Election() {
         <div>
             <ElectionForm election={election} setElection={setElection} deleteElection={deleteElection} electionErrorMessage={electionErrorMessage} electionLoading={electionLoading} />
         </div>
-        {channel && <NominationsView channel={channel} election={election} />}
+        {channel && <NominationsView showVotes channel={channel} election={election} />}
     </div>;
 }

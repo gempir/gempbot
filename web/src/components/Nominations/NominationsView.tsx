@@ -9,7 +9,7 @@ import { Election } from "../../types/Election";
 import { Emote } from "../Emote/Emote";
 import { ElectionStatus } from "./ElectionStatus";
 
-export function NominationsView({ channel, election }: { channel: string, election?: Election }): JSX.Element {
+export function NominationsView({ channel, election, showVotes = false }: { channel: string, election?: Election, showVotes?: boolean }): JSX.Element {
     const { nominations, fetch, loading, vote, unvote, block } = useNominations(channel);
     const scToken = useStore(state => state.scToken);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
@@ -59,7 +59,7 @@ export function NominationsView({ channel, election }: { channel: string, electi
                 <table className="w-full table-auto">
                     <thead>
                         <tr>
-                            {/* <th className="text-left">Votes</th> */}
+                            {showVotes && <th className="text-left">Votes</th>}
                             <th className="min-w-[6em] max-w-[8em]">Emote</th>
                             <th className="min-w-[6em] max-w-[250px] truncate">Code</th>
                             <th className="min-w-[6em] max-w-[250px] truncate">Nominated By</th>
@@ -68,8 +68,8 @@ export function NominationsView({ channel, election }: { channel: string, electi
                         </tr>
                     </thead>
                     <tbody>
-                        {shuffledNominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                            {/* <td className="text-center">{item.Votes.length}</td> */}
+                        {showVotes && shuffledNominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
+                            {<td className="text-center">{item.Votes.length}</td>}
                             <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.EmoteCode}</td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.NominatedBy}</td>
