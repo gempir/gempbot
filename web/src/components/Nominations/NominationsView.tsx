@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { EmoteType } from "../../hooks/useEmotehistory";
 import { Nomination, useNominations } from "../../hooks/useNominations";
+import { shuffleArray } from "../../service/shuffleArray";
 import { useStore } from "../../store";
 import { Election } from "../../types/Election";
 import { Emote } from "../Emote/Emote";
@@ -33,6 +34,9 @@ export function NominationsView({ channel, election }: { channel: string, electi
 
     const blockable = scTokenContent?.Login === channel || managing === channel;
 
+    const shuffledNominations = nominations.slice(0);
+    shuffleArray(shuffledNominations);
+
     return <div className="flex flex-col gap-3">
         <div className="p-4 bg-gray-800 rounded shadow relative select-none">
             <ElectionStatus election={election} />
@@ -51,11 +55,11 @@ export function NominationsView({ channel, election }: { channel: string, electi
                         </a>
                     </div>
                 </div>
-                {nominations.length === 0 && !loading && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-5xl text-slate-600">nothing yet</div>}
+                {shuffledNominations.length === 0 && !loading && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-5xl text-slate-600">nothing yet</div>}
                 <table className="w-full table-auto">
                     <thead>
                         <tr>
-                            <th className="text-left">Votes</th>
+                            {/* <th className="text-left">Votes</th> */}
                             <th className="min-w-[6em] max-w-[8em]">Emote</th>
                             <th className="min-w-[6em] max-w-[250px] truncate">Code</th>
                             <th className="min-w-[6em] max-w-[250px] truncate">Nominated By</th>
@@ -64,8 +68,8 @@ export function NominationsView({ channel, election }: { channel: string, electi
                         </tr>
                     </thead>
                     <tbody>
-                        {nominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                            <td className="text-center">{item.Votes.length}</td>
+                        {shuffledNominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
+                            {/* <td className="text-center">{item.Votes.length}</td> */}
                             <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.EmoteCode}</td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.NominatedBy}</td>
