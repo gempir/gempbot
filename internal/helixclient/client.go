@@ -97,28 +97,28 @@ func (c *HelixClient) StartRefreshTokenRoutine() {
 		}
 	}()
 
-	// c.refreshUserAccessTokens()
-	// go func() {
-	// 	for range time.NewTicker(1 * time.Hour).C {
-	// 		c.refreshUserAccessTokens()
-	// 	}
-	// }()
+	c.refreshUserAccessTokens()
+	go func() {
+		for range time.NewTicker(1 * time.Hour).C {
+			c.refreshUserAccessTokens()
+		}
+	}()
 }
 
-// func (c *HelixClient) refreshUserAccessTokens() {
-// 	tokens := c.db.GetAllUserAccessToken()
-// 	for _, token := range tokens {
-// 		if time.Since(token.UpdatedAt) > 3*time.Hour {
-// 			err := c.RefreshToken(token)
-// 			if err != nil {
-// 				log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
-// 			} else {
-// 				log.Infof("refreshed token for user %s", token.OwnerTwitchID)
-// 			}
-// 			time.Sleep(time.Millisecond * 500)
-// 		}
-// 	}
-// }
+func (c *HelixClient) refreshUserAccessTokens() {
+	tokens := c.db.GetAllUserAccessToken()
+	for _, token := range tokens {
+		if time.Since(token.UpdatedAt) > 3*time.Hour {
+			err := c.RefreshToken(token)
+			if err != nil {
+				log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
+			} else {
+				log.Infof("refreshed token for user %s", token.OwnerTwitchID)
+			}
+			time.Sleep(time.Millisecond * 500)
+		}
+	}
+}
 
 func (c *HelixClient) refreshUserAccessToken(userID string) error {
 	token, err := c.db.GetUserAccessToken(userID)
