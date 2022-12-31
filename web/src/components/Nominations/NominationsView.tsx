@@ -70,8 +70,8 @@ export function NominationsView({ channel, election, showVotes = false }: { chan
                         </tr>
                     </thead>
                     <tbody>
-                        {showVotes && shuffledNominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                            {<td className="text-center">{item.Votes.length}</td>}
+                        {shuffledNominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
+                            {showVotes && <td className="text-center">{item.Votes.length}</td>}
                             <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.EmoteCode}</td>
                             <td className="text-center px-10 max-w-[250px] truncate">{item.NominatedBy}</td>
