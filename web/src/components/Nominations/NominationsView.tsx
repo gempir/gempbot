@@ -1,4 +1,4 @@
-import { ArrowPathIcon, ArrowUpCircleIcon, StopIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon, ArrowUpCircleIcon, SquaresPlusIcon, StopIcon } from "@heroicons/react/24/solid";
 import { useEffect } from "react";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { EmoteType } from "../../hooks/useEmotehistory";
@@ -43,6 +43,12 @@ export function NominationsView({ channel, election }: { channel: string, electi
                     <h2 className="text-xl">Nominations</h2>
                     <div className="text-2xl flex gap-5 w-full select-none" onClick={fetch}>
                         <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+                    </div>
+                    <div>
+                        <a className={"relative group"} href={`https://twitch.tv/popout/${channel}/chat`} target="_blank" rel="noreferrer">
+                            <SquaresPlusIcon className="h-6 hover:text-blue-500 cursor-pointer" />
+                            <span className="absolute z-50 hidden p-2 mx-10 -my-10 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Nominate with Channel Points</span>
+                        </a>
                     </div>
                 </div>
                 {nominations.length === 0 && !loading && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-5xl text-slate-600">nothing yet</div>}
