@@ -51,21 +51,6 @@ func main() {
 	electionManager := election.NewElectionManager(db, helixClient, channelPointManager, eventsubSubscriptionManager, bot, seventvClient)
 	go electionManager.StartElectionManagerRoutine()
 
-	go func() {
-		go eventsubSubscriptionManager.RemoveSubscription("e587f4cd-ee4a-4326-8c02-0d85abcc194d")
-		go eventsubSubscriptionManager.RemoveSubscription("753a10fc-3f84-450c-b84c-4afd33996091")
-		go eventsubSubscriptionManager.RemoveSubscription("4ce501c7-7e98-430a-858b-95ce83023ac2")
-		go eventsubSubscriptionManager.RemoveSubscription("dac637ba-9dc4-4144-9918-b97e14d9df26")
-		go eventsubSubscriptionManager.RemoveSubscription("7a4ee1af-220d-4ece-abdf-87d59938c364")
-		go eventsubSubscriptionManager.RemoveSubscription("09fc7c36-186f-48bb-981b-ed99fbc6f9ce")
-		go eventsubSubscriptionManager.RemoveSubscription("fc58ee4e-3875-496c-ab25-2baae42d13a4")
-		go eventsubSubscriptionManager.RemoveSubscription("42c1eba4-fde1-4ab2-8075-67b9abd666c8")
-		go eventsubSubscriptionManager.RemoveSubscription("237d892f-286e-404d-a2cc-630781c5fe4b")
-		go eventsubSubscriptionManager.RemoveSubscription("0362eb95-1182-45e7-b93e-da1151ec83fc")
-		go eventsubSubscriptionManager.RemoveSubscription("b5e22f9d-2468-4454-a74e-c649f198fa2a")
-		go eventsubSubscriptionManager.RemoveSubscription("29bf821d-4d83-4b30-b8d5-7f18ba1d1384")
-	}()
-
 	mediaManager := media.NewMediaManager(db, helixClient, bot)
 	wsHandler := ws.NewWsHandler(authClient, mediaManager)
 	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient, electionManager)
