@@ -63,9 +63,9 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
         </div>
         <div className="flex gap-3 min-h-[20em]">
             <div className="p-4 bg-gray-800 rounded shadow relative select-none w-full">
-                <div className="flex gap-5 items-center mb-5">
+                <div className="flex gap-5 items-center mb-5 justify-start">
                     <h2 className="text-xl">Nominations</h2>
-                    <div className="text-2xl flex gap-5 w-full select-none" onClick={fetch}>
+                    <div className="text-2xl flex gap-5 select-none" onClick={fetch}>
                         <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
                     </div>
                     <div>
