@@ -47,12 +47,13 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
         }
     };
 
+    const rng = seedrandom(seed);
     const shuffledNominations = [...nominations].sort((a, b) => {
         if (a.EmoteID === b.EmoteID) {
             return 0;
         }
         return a.EmoteID < b.EmoteID ? -1 : 1;
-    }).sort((a, b) => 0.5 - seedrandom(seed)());
+    }).sort((a, b) => 0.5 - rng());
 
     const blockable = scTokenContent?.Login === channel || managing === channel;
 
