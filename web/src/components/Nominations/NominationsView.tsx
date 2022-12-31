@@ -35,7 +35,9 @@ export function NominationsView({ channel, election, showVotes = false }: { chan
     const blockable = scTokenContent?.Login === channel || managing === channel;
 
     const shuffledNominations = nominations.slice(0);
-    shuffleArray(shuffledNominations);
+    if (!showVotes) {
+        shuffleArray(shuffledNominations);
+    }
 
     return <div className="flex flex-col gap-3">
         <div className="p-4 bg-gray-800 rounded shadow relative select-none">
