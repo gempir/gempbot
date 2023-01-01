@@ -84,7 +84,6 @@ func (em *ElectionManager) stopElection(election store.Election) {
 	nominations, err := em.db.GetTopVotedNominated(context.Background(), election.ChannelTwitchID, election.EmoteAmount)
 	if err != nil {
 		log.Errorf("Failed to get top voted nomination %s", err.Error())
-		return
 	}
 
 	log.Infof("Nominations %v", nominations)
