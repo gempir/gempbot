@@ -58,11 +58,9 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
 
     const blockable = scTokenContent?.Login === channel || managing === channel;
 
-    return <div className="flex flex-col gap-3">
-        <div className="p-4 bg-gray-800 rounded shadow relative select-none">
-            <ElectionStatus election={election} />
-        </div>
-        <div className="flex gap-3 min-h-[20em]">
+    return <div className="flex flex-col gap-4">
+        <ElectionStatus election={election} />
+        <div className="flex gap-4 min-h-[20em]">
             <div className="p-4 bg-gray-800 rounded shadow relative select-none w-full">
                 <div className="flex gap-5 items-center mb-5 justify-start">
                     <h2 className="text-xl">Nominations</h2>
