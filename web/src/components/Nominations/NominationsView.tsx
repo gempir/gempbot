@@ -1,4 +1,5 @@
-import { ArrowPathIcon, ArrowUpCircleIcon, SquaresPlusIcon, StopIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon, ArrowUpCircleIcon, LinkIcon, SquaresPlusIcon, StopIcon } from "@heroicons/react/24/solid";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import seedrandom from "seedrandom";
 import { createLoginUrl } from "../../factory/createLoginUrl";
@@ -74,6 +75,16 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                             <span className="absolute z-50 hidden p-2 mx-10 -my-10 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Nominate with Channel Points</span>
                         </a>
                     </div>
+                    {tableMode &&
+                        <div>
+                            <a href={`/nominations/${channel}`} className={"relative group"} target="_blank" rel="noreferrer">
+                                <>
+                                    <LinkIcon className="h-6 hover:text-blue-500 cursor-pointer" />
+                                    <span className="absolute z-50 hidden p-2 mx-10 -my-10 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Public page</span>
+                                </>
+                            </a>
+                        </div>
+                    }
                 </div>
                 {tableMode && <>
                     {nominations.length === 0 && !loading && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-5xl text-slate-600">nothing yet</div>}
