@@ -116,7 +116,7 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                     <div className="flex flex-wrap gap-3 w-full">
                         {shuffledNominations.map((item, index) => <div onClick={(e) => handleVote(e, item)} className={`text-center p-3 cursor-pointer flex flex-col gap-3 border border-transparent hover:border-gray-500 group relative ${(item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? "hover:border-blue-600" : "")}`} key={index}>
                             <Emote size={2} id={item.EmoteID} type={EmoteType.SEVENTV} />
-                            <ArrowUpCircleIcon className={"h-6 absolute top-0 right-0 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "" + (item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? "text-blue-600" : ""))} />
+                            <ArrowUpCircleIcon className={"h-6 absolute top-0 right-0 hover:text-blue-500 cursor-pointer" + (loading ? " animate-spin" : "" + (item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? " text-blue-600" : " hidden group group-hover:block"))} />
                             <span className="absolute z-50 hidden p-2 -mx-4 -my-16 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">by {item.NominatedBy}</span>
                             <span className="truncate max-w-xs pb-1">{item.EmoteCode}</span>
                         </div>

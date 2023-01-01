@@ -17,10 +17,6 @@ func (m *MockHelixClient) RefreshToken(token store.UserAccessToken) error {
 	return nil
 }
 
-func (m *MockHelixClient) GetTopChannels() []string {
-	return []string{}
-}
-
 func (m *MockHelixClient) CreateEventSubSubscription(userID string, webHookUrl string, subType string) (*helix.EventSubSubscriptionsResponse, error) {
 	return nil, nil
 }

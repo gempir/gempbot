@@ -16,7 +16,6 @@ import (
 type Client interface {
 	StartRefreshTokenRoutine()
 	RefreshToken(token store.UserAccessToken) error
-	GetTopChannels() []string
 	CreateEventSubSubscription(userID string, webHookUrl string, subType string) (*helix.EventSubSubscriptionsResponse, error)
 	CreateRewardEventSubSubscription(userID, webHookUrl, subType, rewardID string, false bool) (*helix.EventSubSubscriptionsResponse, error)
 	RemoveEventSubSubscription(id string) (*helix.RemoveEventSubSubscriptionParamsResponse, error)
