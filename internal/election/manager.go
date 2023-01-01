@@ -152,7 +152,7 @@ func (em *ElectionManager) startElection(election store.Election) {
 		return
 	}
 
-	em.bot.Say(userData.Login, fmt.Sprintf("🗳️ A new Election has begun. Nominate a 7TV Emote with channel points. Every %d hours a new emote will be added to the channel. Each election will reset the nominations. The most voted one will be added to the channel. Checkout bot.gempir.com/nominations/%s", election.Hours, userData.Login))
+	em.bot.Say(userData.Login, fmt.Sprintf("🗳️ A new Election has begun. Nominate a 7TV Emote with channel points. Top voted nominations will be added. Each election will reset the nominations. The most voted one will be added to the channel. Checkout bot.gempir.com/nominations/%s", userData.Login))
 }
 
 func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) {

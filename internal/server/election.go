@@ -90,7 +90,7 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 		reward := channelpoint.TwitchRewardConfig{
 			Enabled:                           true,
 			Title:                             "Nominate a 7TV Emote",
-			Prompt:                            fmt.Sprintf("Nominate a 7TV Emote (Link) for the next election. Every %d hours the winner emote will be added to the channel. https://bot.gempir.com/nominations/%s", newElection.Hours, user.Login),
+			Prompt:                            fmt.Sprintf("Nominate a 7TV Emote (Link) for the next election. Top voted nominations will be added. https://bot.gempir.com/nominations/%s", user.Login),
 			Cost:                              newElection.NominationCost,
 			IsUserInputRequired:               true,
 			BackgroundColor:                   "#29D8F6",
