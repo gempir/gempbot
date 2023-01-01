@@ -15,7 +15,7 @@ export function Election() {
         return null;
     }
 
-    return <div className="p-4 flex gap-3">
+    return <div className="p-4 flex gap-4">
         <div>
             <ElectionForm election={election} setElection={setElection} deleteElection={deleteElection} electionErrorMessage={electionErrorMessage} electionLoading={electionLoading} />
         </div>

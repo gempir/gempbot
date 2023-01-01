@@ -67,7 +67,7 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
 
 
     return <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-gray-800 rounded shadow relative flex flex-col min-w-[28rem]">
-        <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="mb-5 flex items-start justify-between gap-4">
             <div>
                 <h2 className="text-xl font-bold">Create a new 7TV emote election</h2>
                 {election && election.CreatedAt && <div className="text-gray-400 text-sm">Created at {election.CreatedAt.format("L LT")}</div>}
