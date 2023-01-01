@@ -36,6 +36,9 @@ type Store interface {
 	GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error)
 	CreateNominationVote(ctx context.Context, vote NominationVote) error
 	RemoveNominationVote(ctx context.Context, vote NominationVote) error
+	GetNomination(ctx context.Context, channelTwitchID string, emoteID string) (Nomination, error)
+	RemoveNomination(ctx context.Context, channelTwitchID string, emoteID string) error
+	CountNominations(ctx context.Context, channelTwitchID string, userID string) (int, error)
 }
 
 type Database struct {

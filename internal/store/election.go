@@ -6,14 +6,15 @@ import (
 )
 
 type Election struct {
-	ChannelTwitchID string `gorm:"primarykey"`
-	Hours           int    `gorm:"default:24"`
-	NominationCost  int    `gorm:"default:1000"`
-	EmoteAmount     int    `gorm:"default:1"`
-	SpecificTime    *time.Time
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	StartedRunAt    *time.Time
+	ChannelTwitchID      string `gorm:"primarykey"`
+	Hours                int    `gorm:"default:24"`
+	NominationCost       int    `gorm:"default:1000"`
+	EmoteAmount          int    `gorm:"default:1"`
+	MaxNominationPerUser int    `gorm:"default:3"`
+	SpecificTime         *time.Time
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
+	StartedRunAt         *time.Time
 }
 
 func (db *Database) GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error) {
@@ -42,6 +43,9 @@ func (db *Database) CreateOrUpdateElection(ctx context.Context, election Electio
 	}
 	if election.EmoteAmount < 1 {
 		election.EmoteAmount = 1
+	}
+	if election.MaxNominationPerUser < 1 {
+		election.MaxNominationPerUser = 1
 	}
 
 	res := db.Client.WithContext(ctx).Save(&election)

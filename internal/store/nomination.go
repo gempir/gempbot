@@ -88,6 +88,40 @@ func (db *Database) GetNominations(ctx context.Context, channelTwitchID string) 
 	return nominations, nil
 }
 
+func (s *Database) RemoveNomination(ctx context.Context, channelTwitchID string, emoteID string) error {
+	res := s.Client.WithContext(ctx).Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).Delete(&Nomination{})
+	if res.Error != nil {
+		return res.Error
+	}
+
+	res = s.Client.WithContext(ctx).Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).Delete(&NominationVote{})
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
+func (s *Database) CountNominations(ctx context.Context, channelTwitchID string, userID string) (int, error) {
+	var count int64
+	res := s.Client.WithContext(ctx).Model(&Nomination{}).Where("channel_twitch_id = ? AND nominated_by = ?", channelTwitchID, userID).Count(&count)
+	if res.Error != nil {
+		return 0, res.Error
+	}
+
+	return int(count), nil
+}
+
+func (db *Database) GetNomination(ctx context.Context, channelTwitchID string, emoteID string) (Nomination, error) {
+	var nomination Nomination
+	res := db.Client.WithContext(ctx).Preload("Votes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).First(&nomination)
+	if res.Error != nil {
+		return nomination, res.Error
+	}
+
+	return nomination, nil
+}
+
 func (db *Database) GetTopVotedNominated(ctx context.Context, channelTwitchID string, count int) ([]Nomination, error) {
 	var votes []NominationVote
 	db.Client.WithContext(ctx).Raw("SELECT emote_id, COUNT(*) FROM nomination_votes WHERE channel_twitch_id = ? GROUP BY (emote_id) ORDER BY COUNT(*) DESC LIMIT ?", channelTwitchID, count).Scan(&votes)

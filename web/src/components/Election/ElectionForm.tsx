@@ -7,6 +7,7 @@ type FormValues = {
     Hours: number;
     NominationCost: number;
     EmoteAmount: number;
+    MaxNominationPerUser: number;
     SpecificTime: string | undefined;
 };
 
@@ -14,6 +15,7 @@ const defaultElection = {
     Hours: 24,
     NominationCost: 1000,
     EmoteAmount: 1,
+    MaxNominationPerUser: 3,
     SpecificTime: undefined,
 }
 
@@ -42,6 +44,7 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
             Hours: Number(data.Hours),
             NominationCost: Number(data.NominationCost),
             EmoteAmount: Number(data.EmoteAmount),
+            MaxNominationPerUser: Number(data.MaxNominationPerUser),
             SpecificTime: specTime,
         });
     };
@@ -51,11 +54,13 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
             setValue("Hours", election.Hours);
             setValue("NominationCost", election.NominationCost);
             setValue("EmoteAmount", election.EmoteAmount);
+            setValue("MaxNominationPerUser", election.MaxNominationPerUser);
             setValue("SpecificTime", election.SpecificTime?.format("HH:mm"));
         } else {
             setValue("Hours", defaultElection.Hours);
             setValue("NominationCost", defaultElection.NominationCost);
             setValue("EmoteAmount", defaultElection.EmoteAmount);
+            setValue("MaxNominationPerUser", defaultElection.MaxNominationPerUser);
             setValue("SpecificTime", defaultElection.SpecificTime);
         }
     }, [election]);
@@ -91,6 +96,11 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
         <label>
             Top Emotes to add
             <input type="number" defaultValue={election?.EmoteAmount ?? defaultElection.EmoteAmount} {...register("EmoteAmount", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
+        </label>
+        <br />
+        <label>
+            Max Nominations per User
+            <input type="number" defaultValue={election?.MaxNominationPerUser ?? defaultElection.MaxNominationPerUser} {...register("MaxNominationPerUser", { required: true })} className="form-input border-none bg-gray-700 mx-2 p-2 rounded shadow" />
         </label>
         <br />
         <label>

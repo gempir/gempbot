@@ -157,7 +157,7 @@ func (em *ElectionManager) startElection(election store.Election) {
 }
 
 func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent) {
-	_, err := em.db.GetElection(context.Background(), reward.OwnerTwitchID)
+	election, err := em.db.GetElection(context.Background(), reward.OwnerTwitchID)
 	if err != nil {
 		log.Errorf("failed to find election, refunding and deleting reward. %s", err.Error())
 		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
@@ -166,6 +166,25 @@ func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption 
 		}
 
 		err = em.cpm.DeleteChannelPointReward(reward.OwnerTwitchID, reward.RewardID)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		return
+	}
+
+	count, err := em.db.CountNominations(context.Background(), reward.OwnerTwitchID, redemption.UserID)
+	if err != nil {
+		log.Errorf("failed to count nominations, refunding. %s", err.Error())
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		return
+	}
+
+	if count >= election.MaxNominationPerUser {
+		log.Infof("Max nominations %d reached, refunding", election.MaxNominationPerUser)
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
 		if err != nil {
 			log.Error(err.Error())
 		}

@@ -127,3 +127,15 @@ func (s *MockStore) RemoveNominationVote(ctx context.Context, vote NominationVot
 func (s *MockStore) ClearNominationEmote(ctx context.Context, channelTwitchID string, emoteID string) error {
 	return nil
 }
+
+func (s *MockStore) GetNomination(ctx context.Context, channelTwitchID string, emoteID string) (Nomination, error) {
+	return Nomination{}, nil
+}
+
+func (s *MockStore) RemoveNomination(ctx context.Context, channelTwitchID string, emoteID string) error {
+	return nil
+}
+
+func (s *MockStore) CountNominations(ctx context.Context, channelTwitchID string, userID string) (int, error) {
+	return 0, nil
+}
