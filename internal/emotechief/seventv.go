@@ -71,7 +71,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	return
 }
 
-func (ec *EmoteChief) setSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmoteId string, removedEmoteID string, err error) {
+func (ec *EmoteChief) setSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, redeemedByUserID string, slots int) (addedEmoteId string, removedEmoteID string, err error) {
 	emoteAddType, removalTargetEmoteId, nextEmote, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
 		return "", "", err
@@ -92,7 +92,7 @@ func (ec *EmoteChief) setSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 		return "", removalTargetEmoteId, err
 	}
 
-	ec.db.AddEmoteLogEntry(context.Background(), store.EmoteLog{CreatedAt: time.Now(), EmoteID: emoteId, AddedBy: redeemedByUsername, Type: dto.REWARD_SEVENTV, EmoteCode: nextEmote.Code, ChannelTwitchID: channelUserID})
+	ec.db.AddEmoteLogEntry(context.Background(), store.EmoteLog{CreatedAt: time.Now(), EmoteID: emoteId, AddedBy: redeemedByUserID, Type: dto.REWARD_SEVENTV, EmoteCode: nextEmote.Code, ChannelTwitchID: channelUserID})
 
 	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteId, dto.EMOTE_ADD_ADD)
 
@@ -135,7 +135,7 @@ func (ec *EmoteChief) HandleSeventvRedemption(reward store.ChannelPointReward, r
 	emoteID, err := GetSevenTvEmoteId(redemption.UserInput)
 	if err == nil {
 		log.Infof("Seen 7TV emote link %s", emoteID)
-		added, removed, settingErr := ec.setSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, opts.Slots)
+		added, removed, settingErr := ec.setSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserName, redemption.UserID, opts.Slots)
 		addedEmote, err := ec.sevenTvClient.GetEmote(added)
 		if err != nil && len(added) > 0 {
 			log.Error("Error fetching added emote: " + err.Error())
