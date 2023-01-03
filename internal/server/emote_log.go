@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gempir/gempbot/internal/api"
+	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/log"
 )
 
@@ -50,7 +51,12 @@ func (a *Api) EmoteLogHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Has("text") {
 		logs := []string{}
 		for _, entry := range entries {
-			logs = append(logs, fmt.Sprintf("%s by %s", entry.EmoteCode, entry.AddedBy))
+			typeAdd := "🗳️"
+			if entry.Type == dto.REWARD_SEVENTV {
+				typeAdd = "🔄"
+			}
+
+			logs = append(logs, fmt.Sprintf("%s %s [] by %s", typeAdd, entry.EmoteCode, entry.AddedBy))
 		}
 		api.WriteText(w, strings.Join(logs, ", "), http.StatusOK)
 
