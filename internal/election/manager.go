@@ -97,6 +97,7 @@ func (em *ElectionManager) stopElection(election store.Election) {
 			continue
 		}
 
+		em.db.AddEmoteLogEntry(context.Background(), store.EmoteLog{CreatedAt: time.Now(), EmoteID: nomination.EmoteID, AddedBy: nomination.NominatedBy, Type: dto.REWARD_ELECTION, EmoteCode: nomination.EmoteCode, ChannelTwitchID: election.ChannelTwitchID})
 		err = em.sevenTvClient.AddEmote(election.ChannelTwitchID, nomination.EmoteID)
 		if err != nil {
 			log.Errorf("Failed to add emote %s", err.Error())

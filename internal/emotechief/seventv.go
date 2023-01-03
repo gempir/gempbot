@@ -1,13 +1,16 @@
 package emotechief
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
 	"regexp"
+	"time"
 
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/dto"
+	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/nicklaw5/helix/v2"
@@ -15,12 +18,12 @@ import (
 
 var sevenTvRegex = regexp.MustCompile(`https?:\/\/(?:next\.)?7tv.app\/emotes\/(\w*)`)
 
-func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (emoteAddType dto.EmoteChangeType, removalTargetEmoteId string, err error) {
+func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (emoteAddType dto.EmoteChangeType, removalTargetEmoteId string, nextEmote emoteservice.Emote, err error) {
 	if ec.db.IsEmoteBlocked(channelUserID, emoteId, dto.REWARD_SEVENTV) {
-		return dto.EMOTE_ADD_ADD, "", errors.New("emote is blocked")
+		return dto.EMOTE_ADD_ADD, "", emoteservice.Emote{}, errors.New("emote is blocked")
 	}
 
-	nextEmote, err := ec.sevenTvClient.GetEmote(emoteId)
+	nextEmote, err = ec.sevenTvClient.GetEmote(emoteId)
 	if err != nil {
 		return
 	}
@@ -32,7 +35,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 
 	for _, emote := range user.Emotes {
 		if emote.Code == nextEmote.Code {
-			return dto.EMOTE_ADD_ADD, "", fmt.Errorf("emote code \"%s\" already added", nextEmote.Code)
+			return dto.EMOTE_ADD_ADD, "", emoteservice.Emote{}, fmt.Errorf("emote code \"%s\" already added", nextEmote.Code)
 		}
 	}
 	log.Infof("Current 7TV emotes: %d/%d", len(user.Emotes), user.EmoteSlots)
@@ -57,7 +60,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 	emoteAddType = dto.EMOTE_ADD_REMOVED_PREVIOUS
 	if removalTargetEmoteId == "" && len(user.Emotes) >= user.EmoteSlots {
 		if len(user.Emotes) == 0 {
-			return dto.EMOTE_ADD_ADD, "", errors.New("emotes limit reached and can't find amount of emotes added to choose random")
+			return dto.EMOTE_ADD_ADD, "", emoteservice.Emote{}, errors.New("emotes limit reached and can't find amount of emotes added to choose random")
 		}
 
 		emoteAddType = dto.EMOTE_ADD_REMOVED_RANDOM
@@ -69,7 +72,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 }
 
 func (ec *EmoteChief) setSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, slots int) (addedEmoteId string, removedEmoteID string, err error) {
-	emoteAddType, removalTargetEmoteId, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
+	emoteAddType, removalTargetEmoteId, nextEmote, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
 		return "", "", err
 	}
@@ -88,6 +91,8 @@ func (ec *EmoteChief) setSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 	if err != nil {
 		return "", removalTargetEmoteId, err
 	}
+
+	ec.db.AddEmoteLogEntry(context.Background(), store.EmoteLog{CreatedAt: time.Now(), EmoteID: emoteId, AddedBy: redeemedByUsername, Type: dto.REWARD_SEVENTV, EmoteCode: nextEmote.Code, ChannelTwitchID: channelUserID})
 
 	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteId, dto.EMOTE_ADD_ADD)
 
@@ -109,7 +114,7 @@ func (ec *EmoteChief) VerifySeventvRedemption(reward store.ChannelPointReward, r
 
 	emoteID, err := GetSevenTvEmoteId(redemption.UserInput)
 	if err == nil {
-		_, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
+		_, _, _, err := ec.VerifySetSevenTvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, redemption.UserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("7TV error %s %s", redemption.BroadcasterUserLogin, err)
 			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add 7TV emote from @%s error: %s", redemption.UserName, err.Error()))
