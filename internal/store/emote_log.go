@@ -26,6 +26,6 @@ func (db *Database) GetEmoteLogEntries(ctx context.Context, channelTwitchID stri
 	}
 
 	var emoteLogs []EmoteLog
-	db.Client.Where("channel_twitch_id = ?", channelTwitchID).Order("created_at asc").Limit(limit).Find(&emoteLogs)
+	db.Client.Where("channel_twitch_id = ?", channelTwitchID).Order("created_at desc").Limit(limit).Find(&emoteLogs)
 	return emoteLogs
 }
