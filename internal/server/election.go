@@ -11,6 +11,7 @@ import (
 
 	"github.com/gempir/gempbot/internal/api"
 	"github.com/gempir/gempbot/internal/channelpoint"
+	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
 )
@@ -77,11 +78,6 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = a.channelPointManager.DeleteElectionReward(newElection.ChannelTwitchID)
-		if err != nil {
-			log.Warnf("Failed to delete previous election reward, this might be okay %s", err.Error())
-		}
-
 		user, err := a.helixClient.GetUserByUserID(newElection.ChannelTwitchID)
 		if err != nil {
 			log.Errorf("Failed to get user %s", err.Error())
@@ -102,7 +98,12 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 			ShouldRedemptionsSkipRequestQueue: false,
 		}
 
-		newReward, err := a.channelPointManager.CreateOrUpdateChannelPointReward(newElection.ChannelTwitchID, reward, reward.ID)
+		prevReward, err := a.db.GetChannelPointReward(newElection.ChannelTwitchID, dto.REWARD_ELECTION)
+		if err == nil {
+			log.Infof("Found previous reward %s", prevReward.RewardID)
+		}
+
+		newReward, err := a.channelPointManager.CreateOrUpdateChannelPointReward(newElection.ChannelTwitchID, reward, prevReward.RewardID)
 		if err != nil {
 			log.Errorf("Failed to create/updated reward %s", err.Error())
 			if strings.Contains(err.Error(), "The broadcaster doesn't have partner or affiliate status") {
