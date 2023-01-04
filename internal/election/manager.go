@@ -38,8 +38,13 @@ func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *cha
 	}
 }
 
+const CHECK_INTERVAL_SECONDS = 30
+
+// Will check minutes before and after the specific time
+const MINUTE_ROOM = 3
+
 func (em *ElectionManager) StartElectionManagerRoutine() {
-	for range time.NewTicker(30 * time.Second).C {
+	for range time.NewTicker(CHECK_INTERVAL_SECONDS * time.Second).C {
 		em.checkElections()
 	}
 }
@@ -56,18 +61,18 @@ func (em *ElectionManager) checkElections() {
 			if election.SpecificTime != nil {
 				now := time.Now()
 				specificTime := time.Date(now.Year(), now.Month(), now.Day(), election.SpecificTime.Hour(), election.SpecificTime.Minute(), 0, 0, election.SpecificTime.Location())
-				if specificTime.After(now) || specificTime.Sub(now) < -1*time.Minute {
+				if specificTime.Add(time.Minute*MINUTE_ROOM).After(now) || specificTime.Sub(now) < -MINUTE_ROOM*time.Minute {
 					continue
 				}
 			}
 			log.Infof("Starting election for channel %s", election.ChannelTwitchID)
 			em.startElection(election)
 			time.Sleep(1 * time.Second)
-		} else if election.StartedRunAt != nil && time.Since(*election.StartedRunAt) > time.Duration(election.Hours)*time.Hour {
+		} else if election.StartedRunAt != nil && time.Since(*election.StartedRunAt) > (time.Duration(election.Hours)*time.Hour)-(time.Second*CHECK_INTERVAL_SECONDS) {
 			if election.SpecificTime != nil {
 				now := time.Now()
 				specificTime := time.Date(now.Year(), now.Month(), now.Day(), election.SpecificTime.Hour(), election.SpecificTime.Minute(), 0, 0, election.SpecificTime.Location())
-				if specificTime.After(now) || specificTime.Sub(now) < -1*time.Minute {
+				if specificTime.Add(time.Minute*MINUTE_ROOM).After(now) || specificTime.Sub(now) < -MINUTE_ROOM*time.Minute {
 					continue
 				}
 			}
