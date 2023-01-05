@@ -103,8 +103,9 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                     <table className="w-full table-auto">
                         <thead>
                             <tr>
-                                <th className="text-left">Votes</th>
-                                <th className="text-center min-w-[8em]">Downvotes</th>
+                                <th className="text-left">Total</th>
+                                <th className="text-center min-w-[6em]">Votes</th>
+                                <th className="text-center min-w-[6em]">Downvotes</th>
                                 <th className="min-w-[6em] max-w-[8em]">Emote</th>
                                 <th className="min-w-[6em] max-w-[250px] truncate">Code</th>
                                 <th className="min-w-[6em] max-w-[250px] truncate">Nominated By</th>
@@ -115,6 +116,7 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                         </thead>
                         <tbody>
                             {nominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
+                                {tableMode && <td className="text-left">{item.Votes.length - item.Downvotes.length}</td>}
                                 {tableMode && <td className="text-center">{item.Votes.length}</td>}
                                 {tableMode && <td className="text-center">{item.Downvotes.length}</td>}
                                 <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
