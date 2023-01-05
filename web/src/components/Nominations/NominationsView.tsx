@@ -116,7 +116,7 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                         </thead>
                         <tbody>
                             {nominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                                {tableMode && <td className="text-left">{item.Votes.length - item.Downvotes.length}</td>}
+                                {tableMode && <td className="text-center">{item.Votes.length - item.Downvotes.length}</td>}
                                 {tableMode && <td className="text-center">{item.Votes.length}</td>}
                                 {tableMode && <td className="text-center">{item.Downvotes.length}</td>}
                                 <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
