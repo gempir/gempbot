@@ -132,7 +132,7 @@ func (em *ElectionManager) stopElection(election store.Election) {
 	nominationStrings := []string{}
 	for _, nomination := range nominationsAdded {
 		var text string
-		text += fmt.Sprintf("[%d] %s ", len(nomination.Votes), nomination.EmoteCode)
+		text += fmt.Sprintf("[⬆️%d|%d⬇️] %s ", len(nomination.Votes), len(nomination.Downvotes), nomination.EmoteCode)
 
 		if val, ok := users[nomination.NominatedBy]; ok {
 			text += fmt.Sprintf(" by %s", val.DisplayName)

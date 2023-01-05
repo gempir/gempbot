@@ -130,7 +130,7 @@ func (db *Database) GetTopVotedNominated(ctx context.Context, channelTwitchID st
 	var nominations []Nomination
 	for _, vote := range votes {
 		var nom Nomination
-		res := db.Client.WithContext(ctx).Preload("Votes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, vote.EmoteID).First(&nom)
+		res := db.Client.WithContext(ctx).Preload("Votes").Preload("Downvotes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, vote.EmoteID).First(&nom)
 		if res.Error != nil {
 			continue
 		}
