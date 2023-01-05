@@ -41,6 +41,8 @@ type Store interface {
 	CountNominations(ctx context.Context, channelTwitchID string, userID string) (int, error)
 	AddEmoteLogEntry(ctx context.Context, emoteLog EmoteLog)
 	GetEmoteLogEntries(ctx context.Context, channelTwitchID string, limit int) []EmoteLog
+	CreateNominationDownvote(ctx context.Context, downvote NominationDownvote) error
+	RemoveNominationDownvote(ctx context.Context, downvote NominationDownvote) error
 }
 
 type Database struct {
@@ -82,6 +84,7 @@ func (db *Database) Migrate() {
 		Election{},
 		Nomination{},
 		NominationVote{},
+		NominationDownvote{},
 		EmoteLog{},
 	)
 	if err != nil {

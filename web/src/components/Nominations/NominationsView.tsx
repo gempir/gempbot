@@ -1,4 +1,4 @@
-import { ArrowPathIcon, ArrowUpCircleIcon, LinkIcon, SquaresPlusIcon, StopIcon } from "@heroicons/react/24/solid";
+import { ArrowDownCircleIcon, ArrowPathIcon, ArrowUpCircleIcon, LinkIcon, SquaresPlusIcon, StopIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import seedrandom from "seedrandom";
@@ -11,7 +11,7 @@ import { Emote } from "../Emote/Emote";
 import { ElectionStatus } from "./ElectionStatus";
 
 export function NominationsView({ channel, election, tableMode = false }: { channel: string, election?: Election, tableMode?: boolean }): JSX.Element {
-    const { nominations, fetch, loading, vote, unvote, block } = useNominations(channel);
+    const { nominations, fetch, loading, vote, unvote, block, downvote, undownvote } = useNominations(channel);
     const scToken = useStore(state => state.scToken);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
     const scTokenContent = useStore(state => state.scTokenContent);
@@ -45,6 +45,20 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
             unvote(nomination.EmoteID);
         } else {
             vote(nomination.EmoteID);
+        }
+    };
+
+    const handleDownvote = (e: React.MouseEvent<HTMLDivElement | SVGSVGElement>, nomination: Nomination) => {
+        e.preventDefault();
+        if (!scToken) {
+            window.localStorage.setItem("redirect", window.location.pathname);
+            window.location.href = url.toString();
+        }
+
+        if (nomination.Downvotes.some(value => value.VoteBy === scTokenContent?.UserID)) {
+            undownvote(nomination.EmoteID);
+        } else {
+            downvote(nomination.EmoteID);
         }
     };
 
@@ -89,10 +103,12 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                     <table className="w-full table-auto">
                         <thead>
                             <tr>
-                                {tableMode && <th className="text-left">Votes</th>}
+                                <th className="text-left">Votes</th>
+                                <th className="text-center min-w-[8em]">Downvotes</th>
                                 <th className="min-w-[6em] max-w-[8em]">Emote</th>
                                 <th className="min-w-[6em] max-w-[250px] truncate">Code</th>
                                 <th className="min-w-[6em] max-w-[250px] truncate">Nominated By</th>
+                                <th className="min-w-[6em]"></th>
                                 <th className="min-w-[6em]"></th>
                                 {blockable && <th className="min-w-[6em]"></th>}
                             </tr>
@@ -100,10 +116,12 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                         <tbody>
                             {nominations.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
                                 {tableMode && <td className="text-center">{item.Votes.length}</td>}
+                                {tableMode && <td className="text-center">{item.Downvotes.length}</td>}
                                 <td className="text-center px-5"><Emote id={item.EmoteID} type={EmoteType.SEVENTV} /></td>
                                 <td className="text-center px-10 max-w-[250px] truncate">{item.EmoteCode}</td>
                                 <td className="text-center px-10 max-w-[250px] truncate">{item.NominatedBy}</td>
                                 <td className="text-center px-10"><ArrowUpCircleIcon onClick={(e) => handleVote(e, item)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "" + (item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? "text-blue-600" : ""))} /></td>
+                                <td className="text-center px-10"><ArrowDownCircleIcon onClick={(e) => handleDownvote(e, item)} className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "" + (item.Downvotes.some(value => value.VoteBy === scTokenContent?.UserID) ? "text-blue-600" : ""))} /></td>
                                 {blockable && <td className="text-center px-5 cursor-pointer hover:text-blue-500 group" onClick={() => block(item.EmoteID)}>
                                     <StopIcon className="h-6 mx-auto" /><span className="absolute z-50 hidden p-2 mx-10 -my-12 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">Block emote and remove it from election</span>
                                 </td>}
@@ -114,9 +132,10 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                 {!tableMode && <div className="w-full">
                     {shuffledNominations.length === 0 && !loading && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-5xl text-slate-600">nothing yet</div>}
                     <div className="flex flex-wrap gap-3 w-full">
-                        {shuffledNominations.map((item, index) => <div onClick={(e) => handleVote(e, item)} className={`text-center p-3 cursor-pointer flex flex-col gap-3 border border-transparent hover:border-gray-500 group relative ${(item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? "hover:border-blue-600" : "")}`} key={index}>
+                        {shuffledNominations.map((item, index) => <div className={`text-center p-3 cursor-pointer flex flex-col gap-3 border border-transparent hover:border-gray-500 group relative ${(item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? "hover:border-blue-600" : "")}`} key={index}>
                             <Emote size={2} id={item.EmoteID} type={EmoteType.SEVENTV} />
-                            <ArrowUpCircleIcon className={"h-6 absolute top-0 right-0 hover:text-blue-500 cursor-pointer" + (loading ? " animate-spin" : "" + (item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? " text-blue-600" : " hidden group group-hover:block"))} />
+                            <ArrowUpCircleIcon onClick={(e) => handleVote(e, item)} className={"h-6 absolute top-0 right-1 hover:text-blue-500 cursor-pointer group group-hover:block" + (loading ? " animate-spin" : "") + (item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? " text-blue-600 block" : " hidden")} />
+                            <ArrowDownCircleIcon onClick={(e) => handleDownvote(e, item)} className={"h-6 absolute bottom-10 right-1 hover:text-red-500 cursor-pointer group group-hover:block" + (loading ? " animate-spin" : "") + (item.Downvotes.some(value => value.VoteBy === scTokenContent?.UserID) ? " text-red-600 block" : " hidden")} />
                             <span className="absolute z-50 hidden p-2 -mx-4 -my-16 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">by {item.NominatedBy}</span>
                             <span className="truncate max-w-xs pb-1">{item.EmoteCode}</span>
                         </div>

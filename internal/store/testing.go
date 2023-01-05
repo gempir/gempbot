@@ -146,3 +146,11 @@ func (s *MockStore) AddEmoteLogEntry(ctx context.Context, emoteLog EmoteLog) {
 func (s *MockStore) GetEmoteLogEntries(ctx context.Context, channelTwitchID string, limit int) []EmoteLog {
 	return []EmoteLog{}
 }
+
+func (s *MockStore) CreateNominationDownvote(ctx context.Context, downvote NominationDownvote) error {
+	return nil
+}
+
+func (s *MockStore) RemoveNominationDownvote(ctx context.Context, downvote NominationDownvote) error {
+	return nil
+}

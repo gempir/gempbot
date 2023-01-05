@@ -9,6 +9,42 @@ import (
 	"github.com/gempir/gempbot/internal/store"
 )
 
+func (a *Api) NominationsBlockHandler(w http.ResponseWriter, r *http.Request) {
+	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
+	if apiErr != nil {
+		return
+	}
+	userID := authResp.Data.UserID
+
+	if r.Method == http.MethodDelete {
+		if r.URL.Query().Get("managing") != "" {
+			userID, apiErr = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
+			if apiErr != nil {
+				http.Error(w, apiErr.Error(), apiErr.Status())
+				return
+			}
+		}
+
+		emoteID := r.URL.Query().Get("emoteID")
+
+		err := a.db.ClearNominationEmote(r.Context(), userID, emoteID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = a.db.BlockEmotes(userID, []string{emoteID}, string(dto.REWARD_SEVENTV))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		api.WriteJson(w, "ok", http.StatusOK)
+		return
+	}
+
+	http.Error(w, "", http.StatusMethodNotAllowed)
+}
+
 func (a *Api) NominationVoteHandler(w http.ResponseWriter, r *http.Request) {
 	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
 	if apiErr != nil {
@@ -33,7 +69,7 @@ func (a *Api) NominationVoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodDelete {
 		nom, err := a.db.GetNomination(r.Context(), user.ID, r.URL.Query().Get("emoteID"))
 		if err == nil {
-			if nom.NominatedBy == user.ID {
+			if nom.NominatedBy == userID {
 				err = a.db.RemoveNomination(r.Context(), userID, r.URL.Query().Get("emoteID"))
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -51,30 +87,51 @@ func (a *Api) NominationVoteHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		api.WriteJson(w, "ok", http.StatusOK)
 	}
-	if r.Method == http.MethodPatch {
-		if r.URL.Query().Get("managing") != "" {
-			userID, apiErr = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
-			if apiErr != nil {
-				http.Error(w, apiErr.Error(), apiErr.Status())
+
+	http.Error(w, "", http.StatusMethodNotAllowed)
+}
+
+func (a *Api) NominationDownvoteHandler(w http.ResponseWriter, r *http.Request) {
+	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
+	if apiErr != nil {
+		return
+	}
+	userID := authResp.Data.UserID
+
+	user, err := a.helixClient.GetUserByUsername(r.URL.Query().Get("channel"))
+	if err != nil {
+		http.Error(w, "user not found", http.StatusBadRequest)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		nom, err := a.db.GetNomination(r.Context(), user.ID, r.URL.Query().Get("emoteID"))
+		if err == nil {
+			if nom.NominatedBy == userID {
+				err = a.db.RemoveNomination(r.Context(), userID, r.URL.Query().Get("emoteID"))
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				api.WriteJson(w, "ok", http.StatusOK)
 				return
 			}
 		}
 
-		emoteID := r.URL.Query().Get("emoteID")
-
-		err = a.db.ClearNominationEmote(r.Context(), userID, emoteID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		err = a.db.BlockEmotes(userID, []string{emoteID}, string(dto.REWARD_SEVENTV))
+		err = a.db.CreateNominationDownvote(r.Context(), store.NominationDownvote{EmoteID: r.URL.Query().Get("emoteID"), ChannelTwitchID: user.ID, VoteBy: userID})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		api.WriteJson(w, "ok", http.StatusOK)
-		return
+	}
+	if r.Method == http.MethodDelete {
+		err = a.db.RemoveNominationDownvote(r.Context(), store.NominationDownvote{EmoteID: r.URL.Query().Get("emoteID"), ChannelTwitchID: user.ID, VoteBy: userID})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		api.WriteJson(w, "ok", http.StatusOK)
 	}
 
 	http.Error(w, "", http.StatusMethodNotAllowed)

@@ -13,6 +13,7 @@ interface RawNomination {
     EmoteID: string
     ChannelTwitchID: string
     Votes: Array<NominationVote>
+    Downvotes: Array<NominationVote>
     EmoteCode: string
     NominatedBy: string
     CreatedAt: string
@@ -30,6 +31,8 @@ interface Return {
     vote: (emoteID: string) => void,
     unvote: (emoteID: string) => void,
     block: (emoteID: string) => void,
+    downvote: (emoteID: string) => void,
+    undownvote: (emoteID: string) => void,
     loading: boolean,
 }
 
@@ -85,14 +88,34 @@ export function useNominations(channel: string): Return {
         doFetch({ apiBaseUrl, scToken }, Method.DELETE, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
     };
 
-    const block = (emoteID: string) => {
+    const downvote = (emoteID: string) => {
         setLoading(true);
 
-        const endPoint = "/api/nominations/vote";
+        const endPoint = "/api/nominations/downvote";
         const searchParams = new URLSearchParams();
         searchParams.append("channel", channel);
         searchParams.append("emoteID", emoteID);
-        doFetch({ apiBaseUrl, scToken, managing }, Method.PATCH, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
+        doFetch({ apiBaseUrl, scToken }, Method.POST, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
+    };
+
+    const undownvote = (emoteID: string) => {
+        setLoading(true);
+
+        const endPoint = "/api/nominations/downvote";
+        const searchParams = new URLSearchParams();
+        searchParams.append("channel", channel);
+        searchParams.append("emoteID", emoteID);
+        doFetch({ apiBaseUrl, scToken }, Method.DELETE, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
+    };
+
+    const block = (emoteID: string) => {
+        setLoading(true);
+
+        const endPoint = "/api/nominations/block";
+        const searchParams = new URLSearchParams();
+        searchParams.append("channel", channel);
+        searchParams.append("emoteID", emoteID);
+        doFetch({ apiBaseUrl, scToken, managing }, Method.DELETE, endPoint, searchParams).then(() => setLoading(false)).catch(err => { }).finally(fetchNominations);
     };
 
     useEffect(fetchNominations, []);
@@ -103,6 +126,8 @@ export function useNominations(channel: string): Return {
         vote: vote,
         unvote: unvote,
         block: block,
+        downvote: downvote,
+        undownvote: undownvote,
         loading: loading
     };
 }
