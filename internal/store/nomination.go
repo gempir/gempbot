@@ -79,7 +79,7 @@ func (db *Database) GetNominations(ctx context.Context, channelTwitchID string) 
 	}
 
 	sort.Slice(nominations, func(i, j int) bool {
-		return len(nominations[i].Votes) > len(nominations[j].Votes)
+		return (len(nominations[i].Votes) - len(nominations[i].Downvotes)) > (len(nominations[j].Votes) - len(nominations[j].Downvotes))
 	})
 
 	return nominations, nil
