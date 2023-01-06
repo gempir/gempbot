@@ -57,7 +57,7 @@ func (a *Api) EmoteLogHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			name := entry.AddedBy
-			noPingChar := "\uE0000"
+			noPingChar := "\U000E0000"
 			noPingName := name[:1] + noPingChar + name[1:]
 
 			logs = append(logs, fmt.Sprintf("%s %s by %s", typeAdd, entry.EmoteCode, noPingName))
