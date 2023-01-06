@@ -56,7 +56,11 @@ func (a *Api) EmoteLogHandler(w http.ResponseWriter, r *http.Request) {
 				typeAdd = "🔄"
 			}
 
-			logs = append(logs, fmt.Sprintf("%s %s by %s", typeAdd, entry.EmoteCode, entry.AddedBy))
+			name := entry.AddedBy
+			noPingChar := "\uE0000"
+			noPingName := name[:1] + noPingChar + name[1:]
+
+			logs = append(logs, fmt.Sprintf("%s %s by %s", typeAdd, entry.EmoteCode, noPingName))
 		}
 		api.WriteText(w, strings.Join(logs, ", "), http.StatusOK)
 
