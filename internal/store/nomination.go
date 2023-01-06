@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"time"
 
@@ -111,7 +110,7 @@ func (s *Database) CountNominations(ctx context.Context, channelTwitchID string,
 
 func (db *Database) GetNomination(ctx context.Context, channelTwitchID string, emoteID string) (Nomination, error) {
 	var nomination Nomination
-	res := db.Client.WithContext(ctx).Preload("Votes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).First(&nomination)
+	res := db.Client.WithContext(ctx).Preload("Votes").Preload("Downvotes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).First(&nomination)
 	if res.Error != nil {
 		return nomination, res.Error
 	}
@@ -119,31 +118,10 @@ func (db *Database) GetNomination(ctx context.Context, channelTwitchID string, e
 	return nomination, nil
 }
 
-func (db *Database) GetTopVotedNominated(ctx context.Context, channelTwitchID string, count int) ([]Nomination, error) {
-	var votes []NominationVote
-	db.Client.WithContext(ctx).Raw("SELECT nv.emote_id, COUNT(nv.*) - COUNT(nd.*) as votecount FROM nomination_votes nv LEFT JOIN nomination_downvotes nd ON nv.emote_id = nd.emote_id AND nv.channel_twitch_id = nd.channel_twitch_id WHERE nv.channel_twitch_id = ? GROUP BY (nv.emote_id) ORDER BY votecount DESC LIMIT ?", channelTwitchID, count).Scan(&votes)
-
-	if len(votes) == 0 {
-		return []Nomination{}, fmt.Errorf("no votes found for channel %s", channelTwitchID)
-	}
-
-	var nominations []Nomination
-	for _, vote := range votes {
-		var nom Nomination
-		res := db.Client.WithContext(ctx).Preload("Votes").Preload("Downvotes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, vote.EmoteID).First(&nom)
-		if res.Error != nil {
-			continue
-		}
-		nominations = append(nominations, nom)
-	}
-
-	return nominations, nil
-}
-
 func (db *Database) CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error {
 	inputNomination := nomination
 	var prevNom Nomination
-	db.Client.WithContext(ctx).Preload("Votes").Where("emote_id = ? AND channel_twitch_id = ?", nomination.EmoteID, nomination.ChannelTwitchID).First(&prevNom)
+	db.Client.WithContext(ctx).Preload("Votes").Preload("Downvotes").Where("emote_id = ? AND channel_twitch_id = ?", nomination.EmoteID, nomination.ChannelTwitchID).First(&prevNom)
 	if len(prevNom.Votes) > 0 {
 		log.Infof("incrementing nomination %s", nomination.NominatedBy)
 		nomination = prevNom

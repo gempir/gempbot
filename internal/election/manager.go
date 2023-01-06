@@ -86,7 +86,7 @@ func (em *ElectionManager) checkElections() {
 
 func (em *ElectionManager) stopElection(election store.Election) {
 	log.Infof("Stopping election %v", election)
-	nominations, err := em.db.GetTopVotedNominated(context.Background(), election.ChannelTwitchID, election.EmoteAmount)
+	nominations, err := em.db.GetNominations(context.Background(), election.ChannelTwitchID)
 	if err != nil {
 		log.Errorf("Failed to get top voted nomination %s", err.Error())
 	}
@@ -102,14 +102,18 @@ func (em *ElectionManager) stopElection(election store.Election) {
 			continue
 		}
 
-		em.db.AddEmoteLogEntry(context.Background(), store.EmoteLog{CreatedAt: time.Now(), EmoteID: nomination.EmoteID, AddedBy: nomination.NominatedBy, Type: dto.REWARD_ELECTION, EmoteCode: nomination.EmoteCode, ChannelTwitchID: election.ChannelTwitchID})
 		err = em.sevenTvClient.AddEmote(election.ChannelTwitchID, nomination.EmoteID)
 		if err != nil {
 			log.Errorf("Failed to add emote %s", err.Error())
 			continue
 		}
+		em.db.AddEmoteLogEntry(context.Background(), store.EmoteLog{CreatedAt: time.Now(), EmoteID: nomination.EmoteID, AddedBy: nomination.NominatedBy, Type: dto.REWARD_ELECTION, EmoteCode: nomination.EmoteCode, ChannelTwitchID: election.ChannelTwitchID})
 		nominationsAdded = append(nominationsAdded, nomination)
 		nominatedByList = append(nominatedByList, nomination.NominatedBy)
+
+		if (len(nominationsAdded)) >= election.EmoteAmount {
+			break
+		}
 	}
 
 	election.StartedRunAt = nil

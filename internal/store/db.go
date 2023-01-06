@@ -27,7 +27,6 @@ type Store interface {
 	GetAllElections(ctx context.Context) ([]Election, error)
 	SaveReward(reward ChannelPointReward) error
 	CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error
-	GetTopVotedNominated(ctx context.Context, channelTwitchID string, count int) ([]Nomination, error)
 	GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error)
 	GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error)
 	ClearNominations(ctx context.Context, channelTwitchID string) error
