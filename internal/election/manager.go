@@ -210,6 +210,24 @@ func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption 
 		return
 	}
 
+	alreadyNominated, err := em.db.IsAlreadyNominated(context.Background(), reward.OwnerTwitchID, emoteID)
+	if err != nil {
+		log.Errorf("failed to check if emote is already nominated, refunding. %s", err.Error())
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		return
+	}
+	if alreadyNominated {
+		log.Infof("Emote is already nominated, refunding")
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		return
+	}
+
 	isBlocked := em.db.IsEmoteBlocked(redemption.BroadcasterUserID, emoteID, dto.REWARD_SEVENTV)
 	if isBlocked {
 		log.Infof("Emote is blocked, refunding")

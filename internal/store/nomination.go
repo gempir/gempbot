@@ -108,6 +108,16 @@ func (s *Database) CountNominations(ctx context.Context, channelTwitchID string,
 	return int(count), nil
 }
 
+func (s *Database) IsAlreadyNominated(ctx context.Context, channelTwitchID string, emoteID string) (bool, error) {
+	var count int64
+	res := s.Client.WithContext(ctx).Model(&Nomination{}).Where("channel_twitch_id = ? and emote_id = ?", channelTwitchID, emoteID).Count(&count)
+	if res.Error != nil {
+		return false, res.Error
+	}
+
+	return int(count) > 0, nil
+}
+
 func (db *Database) GetNomination(ctx context.Context, channelTwitchID string, emoteID string) (Nomination, error) {
 	var nomination Nomination
 	res := db.Client.WithContext(ctx).Preload("Votes").Preload("Downvotes").Where("channel_twitch_id = ? AND emote_id = ?", channelTwitchID, emoteID).First(&nomination)

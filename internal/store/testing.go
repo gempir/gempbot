@@ -150,3 +150,7 @@ func (s *MockStore) CreateNominationDownvote(ctx context.Context, downvote Nomin
 func (s *MockStore) RemoveNominationDownvote(ctx context.Context, downvote NominationDownvote) error {
 	return nil
 }
+
+func (s *MockStore) IsAlreadyNominated(ctx context.Context, channelTwitchID string, emoteID string) (bool, error) {
+	return false, nil
+}

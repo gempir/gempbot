@@ -42,6 +42,7 @@ type Store interface {
 	GetEmoteLogEntries(ctx context.Context, channelTwitchID string, limit int) []EmoteLog
 	CreateNominationDownvote(ctx context.Context, downvote NominationDownvote) error
 	RemoveNominationDownvote(ctx context.Context, downvote NominationDownvote) error
+	IsAlreadyNominated(ctx context.Context, channelTwitchID string, emoteID string) (bool, error)
 }
 
 type Database struct {
