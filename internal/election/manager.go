@@ -230,6 +230,27 @@ func (em *ElectionManager) Nominate(reward store.ChannelPointReward, redemption 
 		return
 	}
 
+	user, err := em.sevenTvClient.GetUser(redemption.BroadcasterUserID)
+	if err != nil {
+		log.Errorf("Failed to get 7tv channel emotes. %s", err.Error())
+		err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		return
+	}
+
+	for _, currentEmote := range user.Emotes {
+		if currentEmote.Code == emote.Code {
+			log.Error("emote already added, refunding")
+			err = em.helixclient.UpdateRedemptionStatus(reward.OwnerTwitchID, reward.RewardID, redemption.ID, false)
+			if err != nil {
+				log.Error(err.Error())
+			}
+			return
+		}
+	}
+
 	err = em.db.CreateOrIncrementNomination(context.Background(), store.Nomination{
 		EmoteID:         emoteID,
 		ChannelTwitchID: reward.OwnerTwitchID,
