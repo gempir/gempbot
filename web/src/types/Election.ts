@@ -6,6 +6,7 @@ export interface Election {
     NominationCost: number
     EmoteAmount: number
     MaxNominationPerUser: number
+    VoteAmount: number
     CreatedAt: Dayjs
     UpdatedAt: Dayjs
     StartedRunAt?: Dayjs

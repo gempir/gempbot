@@ -72,6 +72,9 @@ export function ElectionStatus({ election }: { election?: Election }): JSX.Eleme
 
     return <div className="flex gap-4">
         <div className="bg-gray-800 rounded p-4 shadow">
+            <span className="text-gray-400">Ending in ~</span> <strong>{countdown}</strong>
+        </div>
+        <div className="bg-gray-800 rounded p-4 shadow">
             <span className="text-gray-400">Start at ~</span> {startedAt?.format("L LT")}
         </div>
         <div className="bg-gray-800 rounded p-4 shadow">
@@ -81,7 +84,10 @@ export function ElectionStatus({ election }: { election?: Election }): JSX.Eleme
             <span className="text-gray-400">Top</span> {!!election && election.EmoteAmount}
         </div>
         <div className="bg-gray-800 rounded p-4 shadow">
-            <span className="text-gray-400">Ending in ~</span> <strong>{countdown}</strong>
+            <span className="text-gray-400">Max Nominations per User</span> {!!election && election.MaxNominationPerUser}
+        </div>
+        <div className="bg-gray-800 rounded p-4 shadow">
+            <span className="text-gray-400">Max Votes per User</span> {!!election && election.VoteAmount}
         </div>
     </div>;
 }

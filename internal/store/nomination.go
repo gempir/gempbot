@@ -188,3 +188,23 @@ func (db *Database) RemoveNominationDownvote(ctx context.Context, downvote Nomin
 
 	return nil
 }
+
+func (db *Database) CountNominationDownvotes(ctx context.Context, channelTwitchID string, votedBy string) (int, error) {
+	var count int64
+	res := db.Client.WithContext(ctx).Model(&NominationDownvote{}).Where("channel_twitch_id = ? AND vote_by = ?", channelTwitchID, votedBy).Count(&count)
+	if res.Error != nil {
+		return 0, res.Error
+	}
+
+	return int(count), nil
+}
+
+func (db *Database) CountNominationVotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error) {
+	var count int64
+	res := db.Client.WithContext(ctx).Model(&NominationVote{}).Where("channel_twitch_id = ? AND vote_by = ?", channelTwitchID, voteBy).Count(&count)
+	if res.Error != nil {
+		return 0, res.Error
+	}
+
+	return int(count), nil
+}

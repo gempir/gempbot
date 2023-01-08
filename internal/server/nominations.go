@@ -52,14 +52,33 @@ func (a *Api) NominationVoteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	userID := authResp.Data.UserID
 
-	user, err := a.helixClient.GetUserByUsername(r.URL.Query().Get("channel"))
+	channel, err := a.helixClient.GetUserByUsername(r.URL.Query().Get("channel"))
 	if err != nil {
 		http.Error(w, "user not found", http.StatusBadRequest)
 		return
 	}
 
+	emoteID := r.URL.Query().Get("emoteID")
+
 	if r.Method == http.MethodPost {
-		err = a.db.CreateNominationVote(r.Context(), store.NominationVote{EmoteID: r.URL.Query().Get("emoteID"), ChannelTwitchID: user.ID, VoteBy: userID})
+		count, err := a.db.CountNominationVotes(r.Context(), channel.ID, userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		election, err := a.db.GetElection(r.Context(), channel.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if count >= election.VoteAmount {
+			api.WriteJson(w, "max votes reached", http.StatusBadRequest)
+			return
+		}
+
+		err = a.db.CreateNominationVote(r.Context(), store.NominationVote{EmoteID: emoteID, ChannelTwitchID: channel.ID, VoteBy: userID})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -67,10 +86,10 @@ func (a *Api) NominationVoteHandler(w http.ResponseWriter, r *http.Request) {
 		api.WriteJson(w, "ok", http.StatusOK)
 	}
 	if r.Method == http.MethodDelete {
-		nom, err := a.db.GetNomination(r.Context(), user.ID, r.URL.Query().Get("emoteID"))
+		nom, err := a.db.GetNomination(r.Context(), channel.ID, emoteID)
 		if err == nil {
 			if nom.NominatedBy == userID {
-				err = a.db.RemoveNomination(r.Context(), userID, r.URL.Query().Get("emoteID"))
+				err = a.db.RemoveNomination(r.Context(), userID, emoteID)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -80,7 +99,7 @@ func (a *Api) NominationVoteHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		err = a.db.RemoveNominationVote(r.Context(), store.NominationVote{EmoteID: r.URL.Query().Get("emoteID"), ChannelTwitchID: user.ID, VoteBy: userID})
+		err = a.db.RemoveNominationVote(r.Context(), store.NominationVote{EmoteID: emoteID, ChannelTwitchID: channel.ID, VoteBy: userID})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -104,11 +123,30 @@ func (a *Api) NominationDownvoteHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	emoteID := r.URL.Query().Get("emoteID")
+
 	if r.Method == http.MethodPost {
-		nom, err := a.db.GetNomination(r.Context(), user.ID, r.URL.Query().Get("emoteID"))
+		count, err := a.db.CountNominationDownvotes(r.Context(), user.ID, userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		election, err := a.db.GetElection(r.Context(), user.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if count >= election.VoteAmount {
+			api.WriteJson(w, "max downvotes reached", http.StatusBadRequest)
+			return
+		}
+
+		nom, err := a.db.GetNomination(r.Context(), user.ID, emoteID)
 		if err == nil {
 			if nom.NominatedBy == userID {
-				err = a.db.RemoveNomination(r.Context(), userID, r.URL.Query().Get("emoteID"))
+				err = a.db.RemoveNomination(r.Context(), userID, emoteID)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -118,7 +156,7 @@ func (a *Api) NominationDownvoteHandler(w http.ResponseWriter, r *http.Request) 
 			}
 		}
 
-		err = a.db.CreateNominationDownvote(r.Context(), store.NominationDownvote{EmoteID: r.URL.Query().Get("emoteID"), ChannelTwitchID: user.ID, VoteBy: userID})
+		err = a.db.CreateNominationDownvote(r.Context(), store.NominationDownvote{EmoteID: emoteID, ChannelTwitchID: user.ID, VoteBy: userID})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -126,7 +164,7 @@ func (a *Api) NominationDownvoteHandler(w http.ResponseWriter, r *http.Request) 
 		api.WriteJson(w, "ok", http.StatusOK)
 	}
 	if r.Method == http.MethodDelete {
-		err = a.db.RemoveNominationDownvote(r.Context(), store.NominationDownvote{EmoteID: r.URL.Query().Get("emoteID"), ChannelTwitchID: user.ID, VoteBy: userID})
+		err = a.db.RemoveNominationDownvote(r.Context(), store.NominationDownvote{EmoteID: emoteID, ChannelTwitchID: user.ID, VoteBy: userID})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

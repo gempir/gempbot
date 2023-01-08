@@ -154,3 +154,11 @@ func (s *MockStore) RemoveNominationDownvote(ctx context.Context, downvote Nomin
 func (s *MockStore) IsAlreadyNominated(ctx context.Context, channelTwitchID string, emoteID string) (bool, error) {
 	return false, nil
 }
+
+func (s *MockStore) CountNominationDownvotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error) {
+	return 0, nil
+}
+
+func (s *MockStore) CountNominationVotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error) {
+	return 0, nil
+}

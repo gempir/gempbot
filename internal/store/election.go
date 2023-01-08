@@ -10,6 +10,7 @@ type Election struct {
 	Hours                int    `gorm:"default:24"`
 	NominationCost       int    `gorm:"default:1000"`
 	EmoteAmount          int    `gorm:"default:1"`
+	VoteAmount           int    `gorm:"default:3"`
 	MaxNominationPerUser int    `gorm:"default:3"`
 	SpecificTime         *time.Time
 	CreatedAt            time.Time
@@ -44,8 +45,11 @@ func (db *Database) CreateOrUpdateElection(ctx context.Context, election Electio
 	if election.EmoteAmount < 1 {
 		election.EmoteAmount = 1
 	}
-	if election.MaxNominationPerUser < 1 {
-		election.MaxNominationPerUser = 1
+	if election.MaxNominationPerUser < 3 {
+		election.MaxNominationPerUser = 3
+	}
+	if election.VoteAmount < 1 {
+		election.VoteAmount = 3
 	}
 
 	res := db.Client.WithContext(ctx).Save(&election)
