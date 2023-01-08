@@ -141,7 +141,7 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
                             <Emote size={2} id={item.EmoteID} type={EmoteType.SEVENTV} />
                             <ArrowUpCircleIcon onClick={(e) => handleVote(e, item)} className={"h-6 absolute top-0 right-1 hover:text-blue-500 cursor-pointer group" + (hideVotes ? "" : " group-hover:block") + (loading ? " animate-spin" : "") + (item.Votes.some(value => value.VoteBy === scTokenContent?.UserID) ? " text-blue-600 block" : " hidden")} />
                             <ArrowDownCircleIcon onClick={(e) => handleDownvote(e, item)} className={"h-6 absolute bottom-10 right-1 hover:text-red-500 cursor-pointer group" + (hideDownvotes ? "" : " group-hover:block") + (loading ? " animate-spin" : "") + (item.Downvotes.some(value => value.VoteBy === scTokenContent?.UserID) ? " text-red-600 block" : " hidden")} />
-                            <span className="absolute z-50 hidden p-2 -mx-4 -my-16 w-48 text-center bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">by {item.NominatedBy}</span>
+                            <span className="absolute z-50 hidden p-2 -mx-4 -my-14 text-center text-sm bg-black/75 text-white rounded tooltip-text group-hover:block pointer-events-none">by {item.NominatedBy}</span>
                             <span className="truncate max-w-xs pb-1">{item.EmoteCode}</span>
                         </div>
                         )}
