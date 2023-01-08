@@ -91,12 +91,12 @@ export function ElectionForm({ election, setElection, deleteElection, electionEr
             <input type="number" defaultValue={election?.Hours ?? defaultElection.Hours} {...register("Hours", { required: true })} className="form-input border-none bg-gray-700 mx-2 py-2 rounded shadow" />
             Hours
         </label>
-        <br />
+        {/* <br />
         <label>
             Specific Time
             <input type="time" defaultValue={election?.SpecificTime?.format("HH:mm")} {...register("SpecificTime", { required: false })} className="form-input border-none bg-gray-700 mx-2 py-2 rounded shadow" />
             <span className="text-gray-400">Optional</span>
-        </label>
+        </label> */}
         <br />
         <label>
             Top Emotes to add
