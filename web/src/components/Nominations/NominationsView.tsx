@@ -76,7 +76,7 @@ export function NominationsView({ channel, election, tableMode = false }: { chan
     const hideDownvotes = nominations.map(nom => nom.Downvotes.map(vote => vote.VoteBy == scTokenContent?.UserID)).flat().filter(Boolean).length >= (election?.VoteAmount ?? 3);
 
     return <div className="flex flex-col gap-4">
-        <ElectionStatus election={election} />
+        <ElectionStatus election={election} channel={channel} />
         <div className="flex gap-4 min-h-[20em]">
             <div className="p-4 bg-gray-800 rounded shadow relative select-none w-full">
                 <div className="flex gap-5 items-center mb-5 justify-start">

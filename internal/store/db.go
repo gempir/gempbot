@@ -39,7 +39,7 @@ type Store interface {
 	RemoveNomination(ctx context.Context, channelTwitchID string, emoteID string) error
 	CountNominations(ctx context.Context, channelTwitchID string, userID string) (int, error)
 	AddEmoteLogEntry(ctx context.Context, emoteLog EmoteLog)
-	GetEmoteLogEntries(ctx context.Context, channelTwitchID string, limit int) []EmoteLog
+	GetEmoteLogEntries(ctx context.Context, channelTwitchID string, limit int, page int) []EmoteLog
 	CreateNominationDownvote(ctx context.Context, downvote NominationDownvote) error
 	RemoveNominationDownvote(ctx context.Context, downvote NominationDownvote) error
 	CountNominationDownvotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error)

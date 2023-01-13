@@ -139,7 +139,7 @@ func (s *MockStore) CountNominations(ctx context.Context, channelTwitchID string
 func (s *MockStore) AddEmoteLogEntry(ctx context.Context, emoteLog EmoteLog) {
 }
 
-func (s *MockStore) GetEmoteLogEntries(ctx context.Context, channelTwitchID string, limit int) []EmoteLog {
+func (s *MockStore) GetEmoteLogEntries(ctx context.Context, channelTwitchID string, limit int, page int) []EmoteLog {
 	return []EmoteLog{}
 }
 

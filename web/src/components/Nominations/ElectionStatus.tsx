@@ -1,10 +1,11 @@
 import dayjs from "dayjs";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForceUpdate } from "../../hooks/useForceUpdate";
 import { isSSR } from "../../service/isSSR";
 import { Election } from "../../types/Election";
 
-export function ElectionStatus({ election }: { election?: Election }): JSX.Element | null {
+export function ElectionStatus({ election, channel }: { election?: Election, channel: string }): JSX.Element | null {
     const [renderAllowed, setRenderAllowed] = useState(false);
     const forceUpdate = useForceUpdate();
 
@@ -89,5 +90,8 @@ export function ElectionStatus({ election }: { election?: Election }): JSX.Eleme
         <div className="bg-gray-800 rounded p-4 shadow">
             <span className="text-gray-400">Max Votes per User</span> {!!election && election.VoteAmount}
         </div>
+        <Link href={`/emotelog/${channel}`} >
+            <span className="bg-blue-800 hover:bg-blue-700 rounded p-4 shadow cursor-pointer">Emotelog</span>
+        </Link>
     </div>;
 }

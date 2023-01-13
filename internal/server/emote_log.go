@@ -19,6 +19,11 @@ func (a *Api) EmoteLogHandler(w http.ResponseWriter, r *http.Request) {
 		limit, _ = strconv.Atoi(r.URL.Query().Get("limit"))
 	}
 
+	page := 1
+	if r.URL.Query().Get("page") != "" {
+		page, _ = strconv.Atoi(r.URL.Query().Get("page"))
+	}
+
 	if r.URL.Query().Get("channel") == "" {
 		api.WriteJson(w, fmt.Errorf("channel is required"), http.StatusBadRequest)
 		return
@@ -30,7 +35,7 @@ func (a *Api) EmoteLogHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entries := a.db.GetEmoteLogEntries(r.Context(), channel.ID, limit)
+	entries := a.db.GetEmoteLogEntries(r.Context(), channel.ID, limit, page)
 
 	users := []string{}
 	for _, entry := range entries {

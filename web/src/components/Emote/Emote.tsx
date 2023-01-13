@@ -2,7 +2,7 @@ import { EmoteType } from "../../hooks/useEmotehistory";
 
 export type EmoteSize = 1 | 2 | 3 | 4;
 
-export function Emote({ id, type, size = 1 }: { id: string, type: EmoteType, size?: EmoteSize }): JSX.Element {
+export function Emote({ id, type = EmoteType.SEVENTV, size = 1 }: { id: string, type?: EmoteType, size?: EmoteSize }): JSX.Element {
     let url = `https://cdn.betterttv.net/emote/${id}/${size}x`;
     let hrefUrl = `https://betterttv.com/emotes/${id}`;
 
