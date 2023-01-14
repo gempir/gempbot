@@ -195,31 +195,6 @@ func (r *SevenTvReward) SetConfig(config TwitchRewardConfig) {
 	r.TwitchRewardConfig = config
 }
 
-type TimeoutReward struct {
-	TwitchRewardConfig
-	TimeoutAdditionalOptions
-}
-
-type TimeoutAdditionalOptions struct {
-	Length int
-}
-
-func (r *TimeoutReward) GetType() dto.RewardType {
-	return dto.REWARD_TIMEOUT
-}
-
-func (r *TimeoutReward) GetConfig() TwitchRewardConfig {
-	return r.TwitchRewardConfig
-}
-
-func (r *TimeoutReward) SetConfig(config TwitchRewardConfig) {
-	r.TwitchRewardConfig = config
-}
-
-func (r *TimeoutReward) GetAdditionalOptions() interface{} {
-	return r.TimeoutAdditionalOptions
-}
-
 type ElectionReward struct {
 	TwitchRewardConfig
 	ElectionRewardAdditionalOptions
@@ -374,10 +349,6 @@ func CreateRewardFromBody(body io.ReadCloser) (Reward, error) {
 		return &SevenTvReward{
 			TwitchRewardConfig:       rewardConfig,
 			SevenTvAdditionalOptions: addOpts.AdditionalOptionsParsed,
-		}, nil
-	case dto.REWARD_TIMEOUT:
-		return &TimeoutReward{
-			TwitchRewardConfig: createTwitchRewardConfigFromRequestBody(data),
 		}, nil
 	case dto.REWARD_ELECTION:
 		return &ElectionReward{

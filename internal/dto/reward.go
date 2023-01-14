@@ -5,7 +5,6 @@ type RewardType string
 const (
 	REWARD_BTTV     RewardType = "bttv"
 	REWARD_SEVENTV  RewardType = "seventv"
-	REWARD_TIMEOUT  RewardType = "timeout"
 	REWARD_ELECTION RewardType = "election"
 )
 
