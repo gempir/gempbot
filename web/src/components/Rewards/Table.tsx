@@ -38,7 +38,6 @@ export function Table({ channel, added, removeable, blockable, title }: { channe
                 {history.map((item, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
                     <td className="text-center px-5"><Emote id={item.EmoteID} type={item.Type} /></td>
                     <td className="text-center px-10">{item.Type}</td>
-                    <td className="text-center px-10">{item.ChangeType}</td>
                     <td className="p-3 text-center whitespace-nowrap">{item.UpdatedAt.toLocaleDateString()} {item.UpdatedAt.toLocaleTimeString()}</td>
                     {removeable && !item.Blocked &&
                         <td className="text-center px-5 cursor-pointer hover:text-blue-500 group" onClick={() => remove(item.EmoteID)}>
