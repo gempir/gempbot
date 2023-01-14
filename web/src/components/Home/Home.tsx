@@ -1,7 +1,16 @@
-import { Emotehistory } from "./Emotehistory";
+import { useStore } from "../../store";
+import { EmoteLogPage } from "../EmoteLog/EmoteLogPage";
 
 export function Home() {
-    return <div className="p-4 w-full max-h-screen flex gap-4">
-        <Emotehistory />
+    const scTokenContent = useStore(state => state.scTokenContent);
+    const managing = useStore(state => state.managing);
+    const channel = managing ?? scTokenContent?.Login;
+
+    if (!channel) {
+        return null;
+    }
+
+    return <div>
+        <EmoteLogPage channel={channel} />
     </div>
 }

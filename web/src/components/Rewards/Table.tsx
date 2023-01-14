@@ -2,23 +2,26 @@ import { ChevronLeftIcon, ChevronRightIcon, MinusCircleIcon, ArrowPathIcon, Stop
 import { useEmotehistory } from "../../hooks/useEmotehistory";
 import { Emote } from "../Emote/Emote";
 
-export function Table({ channel, added, removeable, blockable }: { channel?: string, added: boolean, removeable: boolean, blockable: boolean }) {
+export function Table({ channel, added, removeable, blockable, title }: { channel?: string, added: boolean, removeable: boolean, blockable: boolean, title: string }) {
     const [history, fetch, loading, page, increasePage, decreasePage, remove, block] = useEmotehistory(added, channel);
 
-    return <div className="p-4 bg-gray-800 rounded shadow relative select-none">
-        <div className="text-2xl flex gap-5 w-full" onClick={fetch}>
-            <div className="flex gap-2 items-center">
-                <div onClick={decreasePage} className="cursor-pointer hover:text-blue-500">
-                    <ChevronLeftIcon className="h-6" />
+    return <div className="p-4 bg-gray-800 rounded shadow relative select-none min-w-[40rem] min-h-[20rem]">
+        <div className="flex gap-5 w-full items-center justify-between" onClick={fetch}>
+            <div className="text-2xl flex items-center gap-5">
+                <div className="flex gap-2 items-center">
+                    <div onClick={decreasePage} className="cursor-pointer hover:text-blue-500">
+                        <ChevronLeftIcon className="h-6" />
+                    </div>
+                    <div className="text-base w-4 text-center">
+                        {page}
+                    </div>
+                    <div onClick={increasePage} className="cursor-pointer hover:text-blue-500">
+                        <ChevronRightIcon className="h-6" />
+                    </div>
                 </div>
-                <div className="text-base w-4 text-center">
-                    {page}
-                </div>
-                <div onClick={increasePage} className="cursor-pointer hover:text-blue-500">
-                    <ChevronRightIcon className="h-6" />
-                </div>
+                <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
             </div>
-            <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
+            <h3 className="text-lg text-gray-400">{title}</h3>
         </div>
         {history.length === 0 && !loading && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-5xl text-slate-600">nothing yet</div>}
         <table className="w-full table-auto">
@@ -26,7 +29,6 @@ export function Table({ channel, added, removeable, blockable }: { channel?: str
                 <tr>
                     <th className="min-w-[6em] max-w-[8em]">Emote</th>
                     <th className="min-w-[6em]">Type</th>
-                    <th className="min-w-[6em]">Change Type</th>
                     <th className="min-w-[12em]">Updated At</th>
                     {removeable && <th className="min-w-[5em]">Remove</th>}
                     {blockable && <th className="min-w-[5em]">Block</th>}

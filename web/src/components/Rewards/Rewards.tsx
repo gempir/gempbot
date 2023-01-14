@@ -1,4 +1,5 @@
 import { useUserConfig } from "../../hooks/useUserConfig";
+import { Emotehistory } from "./Emotehistory";
 import { BttvForm } from "./RewardForms/BttvForm";
 import { SevenTvForm } from "./RewardForms/SevenTvForm";
 
@@ -11,5 +12,8 @@ export function Rewards() {
     return <div className="p-4 flex gap-5 items-start">
         <BttvForm userConfig={userCfg} />
         <SevenTvForm userConfig={userCfg} />
+        <div>
+            <Emotehistory />
+        </div>
     </div>;
 }
