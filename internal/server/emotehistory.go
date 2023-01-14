@@ -109,5 +109,5 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.WriteJson(w, a.db.GetEmoteHistory(r.Context(), userID, pageNumber, api.EMOTEHISTORY_PAGE_SIZE, r.URL.Query().Has("added")), http.StatusOK)
+	api.WriteJson(w, a.db.GetEmoteHistory(r.Context(), userID, pageNumber, 20, r.URL.Query().Has("added")), http.StatusOK)
 }

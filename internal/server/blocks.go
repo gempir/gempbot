@@ -37,7 +37,7 @@ func (a *Api) BlocksHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		blocks := a.db.GetEmoteBlocks(userID, pageNumber, api.BLOCKS_PAGE_SIZE)
+		blocks := a.db.GetEmoteBlocks(userID, pageNumber, 20)
 		api.WriteJson(w, blocks, http.StatusOK)
 		return
 	}
