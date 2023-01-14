@@ -11,7 +11,7 @@ import (
 	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/emoteservice"
-	"github.com/gempir/gempbot/internal/eventsubsubscription"
+	"github.com/gempir/gempbot/internal/eventsubmanager"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
@@ -22,20 +22,22 @@ type ElectionManager struct {
 	db            store.Store
 	helixclient   helixclient.Client
 	cpm           *channelpoint.ChannelPointManager
-	esm           *eventsubsubscription.SubscriptionManager
 	bot           *bot.Bot
 	sevenTvClient emoteservice.ApiClient
 }
 
-func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsubsubscription.SubscriptionManager, bot *bot.Bot, sevenTvClient emoteservice.ApiClient) *ElectionManager {
-	return &ElectionManager{
+func NewElectionManager(db store.Store, helixClient helixclient.Client, cpm *channelpoint.ChannelPointManager, esm *eventsubmanager.EventsubManager, bot *bot.Bot, sevenTvClient emoteservice.ApiClient) *ElectionManager {
+	mgr := &ElectionManager{
 		db:            db,
 		helixclient:   helixClient,
 		cpm:           cpm,
-		esm:           esm,
 		bot:           bot,
 		sevenTvClient: sevenTvClient,
 	}
+
+	esm.RegisterCallback(dto.REWARD_ELECTION, mgr.Nominate)
+
+	return mgr
 }
 
 const CHECK_INTERVAL_SECONDS = 30

@@ -53,9 +53,9 @@ func (a *Api) RewardHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		a.eventsubSubscriptionManager.SubscribeRewardRedemptionAdd(userID, config.ID)
+		a.eventsubManager.SubscribeRewardRedemptionAdd(userID, config.ID)
 		if config.ApproveOnly {
-			a.eventsubSubscriptionManager.SubscribeRewardRedemptionUpdate(userID, config.ID)
+			a.eventsubManager.SubscribeRewardRedemptionUpdate(userID, config.ID)
 		}
 
 		newReward.SetConfig(config)

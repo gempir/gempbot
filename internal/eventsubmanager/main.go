@@ -12,7 +12,6 @@ import (
 	"github.com/gempir/gempbot/internal/chat"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/dto"
-	"github.com/gempir/gempbot/internal/election"
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
@@ -21,16 +20,16 @@ import (
 )
 
 type EventsubManager struct {
-	cfg             *config.Config
-	helixClient     helixclient.Client
-	db              *store.Database
-	emoteChief      *emotechief.EmoteChief
-	chatClient      *chat.ChatClient
-	ttlCache        *ttlcache.Cache
-	electionManager *election.ElectionManager
+	cfg         *config.Config
+	helixClient helixclient.Client
+	db          *store.Database
+	emoteChief  *emotechief.EmoteChief
+	chatClient  *chat.ChatClient
+	ttlCache    *ttlcache.Cache
+	callbackMap map[dto.RewardType]func(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent)
 }
 
-func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient, electionManager *election.ElectionManager) *EventsubManager {
+func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventsubManager {
 	cache := ttlcache.NewCache()
 	err := cache.SetTTL(time.Second * 60)
 	if err != nil {
@@ -38,14 +37,18 @@ func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *
 	}
 
 	return &EventsubManager{
-		cfg:             cfg,
-		helixClient:     helixClient,
-		db:              db,
-		emoteChief:      emoteChief,
-		chatClient:      bot,
-		ttlCache:        cache,
-		electionManager: electionManager,
+		cfg:         cfg,
+		helixClient: helixClient,
+		db:          db,
+		emoteChief:  emoteChief,
+		chatClient:  bot,
+		ttlCache:    cache,
+		callbackMap: map[dto.RewardType]func(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent){},
 	}
+}
+
+func (esm *EventsubManager) RegisterCallback(rewardType dto.RewardType, callback func(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent)) {
+	esm.callbackMap[rewardType] = callback
 }
 
 type eventSubNotification struct {
@@ -179,8 +182,9 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 				esm.emoteChief.HandleSeventvRedemption(reward, redemption, true)
 				return
 			}
-			if reward.Type == dto.REWARD_ELECTION {
-				esm.electionManager.Nominate(reward, redemption)
+
+			if callback, ok := esm.callbackMap[reward.Type]; ok {
+				callback(reward, redemption)
 			}
 		}
 	}
@@ -267,6 +271,69 @@ func (esm *EventsubManager) SubscribeChannelPoints(userID string) {
 		log.Infof("new subscription for %s id: %s", userID, sub.ID)
 		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, "")
 	}
+}
+
+func (esm *EventsubManager) SubscribeRewardRedemptionAdd(userID, rewardId string) {
+	response, err := esm.helixClient.CreateRewardEventSubSubscription(
+		userID,
+		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
+		helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
+		rewardId,
+		false,
+	)
+	if err != nil {
+		log.Errorf("Error subscribing: %s", err)
+		return
+	}
+
+	if response.StatusCode == http.StatusForbidden {
+		log.Errorf("Forbidden subscription %s", response.ErrorMessage)
+		return
+	}
+
+	log.Infof("[%d] SubscribeRewardRedemptionAdd %s %s", response.StatusCode, response.Error, response.ErrorMessage)
+	for _, sub := range response.Data.EventSubSubscriptions {
+		log.Infof("new subscription for %s id: %s", userID, sub.ID)
+		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, rewardId)
+	}
+}
+
+func (esm *EventsubManager) SubscribeRewardRedemptionUpdate(userID, rewardId string) {
+	response, err := esm.helixClient.CreateRewardEventSubSubscription(
+		userID,
+		esm.cfg.WebhookApiBaseUrl+"/api/eventsub?type="+helix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
+		helix.EventSubTypeChannelPointsCustomRewardRedemptionUpdate,
+		rewardId,
+		false,
+	)
+	if err != nil {
+		log.Errorf("Error subscribing: %s", err)
+		return
+	}
+
+	if response.StatusCode == http.StatusForbidden {
+		log.Errorf("Forbidden subscription %s", response.ErrorMessage)
+		return
+	}
+
+	log.Infof("[%d] SubscribeRewardRedemptionUpdate %s %s", response.StatusCode, response.Error, response.ErrorMessage)
+	for _, sub := range response.Data.EventSubSubscriptions {
+		log.Infof("new subscription for %s id: %s", userID, sub.ID)
+		esm.db.AddEventSubSubscription(userID, sub.ID, sub.Version, sub.Type, rewardId)
+	}
+}
+
+func (esm *EventsubManager) RemoveSubscription(subscriptionID string) error {
+	response, err := esm.helixClient.RemoveEventSubSubscription(subscriptionID)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	log.Infof("[%d] removed EventSubSubscription", response.StatusCode)
+	esm.db.RemoveEventSubSubscription(subscriptionID)
+
+	return nil
 }
 
 func (esm *EventsubManager) RemoveEventSubSubscription(subscriptionID string) error {

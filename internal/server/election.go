@@ -128,7 +128,7 @@ func (a *Api) ElectionHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to save reward "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-		a.eventsubSubscriptionManager.SubscribeRewardRedemptionAdd(newElection.ChannelTwitchID, newReward.ID)
+		a.eventsubManager.SubscribeRewardRedemptionAdd(newElection.ChannelTwitchID, newReward.ID)
 
 		api.WriteJson(w, nil, http.StatusOK)
 	} else if r.Method == http.MethodDelete {
