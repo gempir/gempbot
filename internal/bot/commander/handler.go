@@ -12,7 +12,7 @@ import (
 	"github.com/gempir/gempbot/internal/humanize"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
-	"github.com/gempir/go-twitch-irc/v3"
+	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/nicklaw5/helix/v2"
 )
 

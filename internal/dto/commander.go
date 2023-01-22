@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/gempir/go-twitch-irc/v3"
+import "github.com/gempir/go-twitch-irc/v4"
 
 type CommandPayload struct {
 	Query string

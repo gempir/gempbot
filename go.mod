@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.11.0
 	github.com/carlmjohnson/requests v0.22.3
-	github.com/gempir/go-twitch-irc/v3 v3.2.0
+	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
