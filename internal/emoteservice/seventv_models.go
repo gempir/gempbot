@@ -1,31 +1,46 @@
 package emoteservice
 
 type sevenTvEmote struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Owner struct {
+	ID        string   `json:"id"`
+	Name      string   `json:"name"`
+	Flags     int      `json:"flags"`
+	Tags      []string `json:"tags"`
+	Lifecycle int      `json:"lifecycle"`
+	State     []string `json:"state"`
+	Listed    bool     `json:"listed"`
+	Animated  bool     `json:"animated"`
+	Owner     struct {
 		ID          string `json:"id"`
-		TwitchID    string `json:"twitch_id"`
-		Login       string `json:"login"`
+		Username    string `json:"username"`
 		DisplayName string `json:"display_name"`
-		Role        struct {
-			ID       string `json:"id"`
-			Name     string `json:"name"`
-			Position int    `json:"position"`
-			Color    int    `json:"color"`
-			Allowed  int    `json:"allowed"`
-			Denied   int    `json:"denied"`
-			Default  bool   `json:"default"`
-		} `json:"role"`
+		AvatarURL   string `json:"avatar_url"`
+		Style       struct {
+			Color int `json:"color"`
+		} `json:"style"`
+		Roles []string `json:"roles"`
 	} `json:"owner"`
-	Visibility       int           `json:"visibility"`
-	VisibilitySimple []interface{} `json:"visibility_simple"`
-	Mime             string        `json:"mime"`
-	Status           int           `json:"status"`
-	Tags             []interface{} `json:"tags"`
-	Width            []int         `json:"width"`
-	Height           []int         `json:"height"`
-	Urls             [][]string    `json:"urls"`
+	Host struct {
+		URL   string `json:"url"`
+		Files []struct {
+			Name       string `json:"name"`
+			StaticName string `json:"static_name"`
+			Width      int    `json:"width"`
+			Height     int    `json:"height"`
+			FrameCount int    `json:"frame_count"`
+			Size       int    `json:"size"`
+			Format     string `json:"format"`
+		} `json:"files"`
+	} `json:"host"`
+	Versions []struct {
+		ID          string   `json:"id"`
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		Lifecycle   int      `json:"lifecycle"`
+		State       []string `json:"state"`
+		Listed      bool     `json:"listed"`
+		Animated    bool     `json:"animated"`
+		CreatedAt   int64    `json:"createdAt"`
+	} `json:"versions"`
 }
 
 type gqlQuery struct {
