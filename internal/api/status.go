@@ -11,17 +11,3 @@ type StatusError struct {
 	Code int
 	Err  error
 }
-
-// Allows StatusError to satisfy the error interface.
-func (se StatusError) Error() string {
-	return se.Err.Error()
-}
-
-// Returns our HTTP status code.
-func (se StatusError) Status() int {
-	return se.Code
-}
-
-func NewApiError(code int, err error) Error {
-	return StatusError{Code: code, Err: err}
-}
