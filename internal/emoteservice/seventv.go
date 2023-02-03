@@ -3,13 +3,11 @@ package emoteservice
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
-	"github.com/gempir/gempbot/internal/utils"
 )
 
 const DefaultSevenTvApiBaseUrl = "https://api.7tv.app/v2"
@@ -94,12 +92,6 @@ func (c *SevenTvClient) GetEmote(emoteID string) (Emote, error) {
 	err := requests.URL(c.apiBaseUrl + "/emotes/" + emoteID).
 		ToJSON(&emoteData).
 		Fetch(context.Background())
-
-	if utils.BitField.HasBits(int64(emoteData.Visibility), int64(EmoteVisibilityPrivate)) ||
-		utils.BitField.HasBits(int64(emoteData.Visibility), int64(EmoteVisibilityUnlisted)) {
-
-		return Emote{}, fmt.Errorf("emote %s has incorrect visibility", emoteData.Name)
-	}
 
 	return Emote{Code: emoteData.Name, ID: emoteData.ID}, err
 }
