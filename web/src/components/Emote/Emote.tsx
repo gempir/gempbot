@@ -7,7 +7,7 @@ export function Emote({ id, type = EmoteType.SEVENTV, size = 1 }: { id: string, 
     let hrefUrl = `https://betterttv.com/emotes/${id}`;
 
     if (type === EmoteType.SEVENTV) {
-        url = `https://cdn.7tv.app/emote/${id}/${size}x`
+        url = `https://cdn.7tv.app/emote/${id}/${size}x.webp`
         hrefUrl = `https://7tv.app/emotes/${id}`;
     }
 
