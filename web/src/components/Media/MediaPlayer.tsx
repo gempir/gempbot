@@ -3,13 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import ReactPlayer from 'react-player';
 import { useWs, WsAction } from "../../hooks/useWs";
 import { useStore } from "../../store";
-import { PlayerState } from "../../types/Media";
+import { PlayerState, Queue } from "../../types/Media";
+import { MediaQueue } from './MediaQueue';
 
 export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
     const player = useRef<ReactPlayer | null>(null);
 
     const tokenContent = useStore(state => state.scTokenContent);
     const isChannelOwner = useRef(tokenContent?.Login === channel || channel === "");
+    const [queue, setQueue] = useState<Queue>([]);
 
     useEffect(() => {
         isChannelOwner.current = tokenContent?.Login === channel || channel === "";
@@ -37,6 +39,11 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
                 setUrl(data.url);
             }
         }
+        if (data.action === WsAction.QUEUE_STATE) {
+            const queue: Queue = data.queue;
+
+            setQueue(queue);
+        }
         if (data.action === WsAction.DEBUG) {
             console.log(data);
         }
@@ -44,6 +51,7 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
 
     useEffect(() => {
         sendJsonMessage({ action: WsAction.JOIN, channel: channel });
+        sendJsonMessage({ action: WsAction.GET_QUEUE, channel: channel });
     }, []);
 
     const handlePause = () => {
@@ -72,28 +80,31 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
         sendJsonMessage({ action: WsAction.PLAYER_STATE, time: seconds, url: url, state: PlayerState.PLAYING });
     }
 
-    return <div>
-        <div className="mb-4">
-            <div className="p-4 bg-gray-800 rounded shadow flex items-center">
-                <div className="flex gap-2 items-center">
-                    <div onClick={() => setVolume(vol => vol > 0 ? 0 : 1)} className="cursor-pointer hover:text-blue-500">
-                        {volume > 0 ? <SpeakerWaveIcon className="h-6 w-6" /> : <SpeakerXMarkIcon className="h-6 w-6" />}
+    return <div className="flex gap-4 w-full h-full">
+        <div>
+            <div className="mb-4">
+                <div className="p-4 bg-gray-800 rounded shadow flex items-center">
+                    <div className="flex gap-2 items-center">
+                        <div onClick={() => setVolume(vol => vol > 0 ? 0 : 1)} className="cursor-pointer hover:text-blue-500">
+                            {volume > 0 ? <SpeakerWaveIcon className="h-6 w-6" /> : <SpeakerXMarkIcon className="h-6 w-6" />}
+                        </div>
+                        <input
+                            type="range"
+                            className="cursor-pointer"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={volume}
+                            onChange={event => {
+                                setVolume(event.target.valueAsNumber)
+                            }}
+                        />
+                        {Math.round(volume * 100)}%
                     </div>
-                    <input
-                        type="range"
-                        className="cursor-pointer"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={volume}
-                        onChange={event => {
-                            setVolume(event.target.valueAsNumber)
-                        }}
-                    />
-                    {Math.round(volume * 100)}%
                 </div>
             </div>
+            <ReactPlayer controls={true} ref={player} muted={volume === 0} volume={volume} pip={true} url={url} playing={playing} onPause={handlePause} onSeek={handleSeek} onPlay={handlePlay} />
         </div>
-        <ReactPlayer controls={true} ref={player} muted={volume === 0} volume={volume} pip={true} url={url} playing={playing} onPause={handlePause} onSeek={handleSeek} onPlay={handlePlay} />
+        <MediaQueue queue={queue} />
     </div>
 }

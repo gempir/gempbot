@@ -58,6 +58,7 @@ type Room struct {
 
 type storage interface {
 	AddToQueue(queueItem store.MediaQueue) error
+	GetQueue(channelTwitchId string) []store.MediaQueue
 	GetAllMediaCommandsBotConfig() []store.BotConfig
 }
 
@@ -147,6 +148,11 @@ type PlayerStateMessage struct {
 	State  PlayerState `json:"state"`
 }
 
+type QueueStateMessage struct {
+	Action string             `json:"action"`
+	Queue  []store.MediaQueue `json:"queue"`
+}
+
 func (m *MediaManager) HandlePlayerState(connectionId string, userID string, state PlayerState, url string, time float32) {
 	if userID == "" {
 		log.Errorf("missing userID time %f on connection %s", time, connectionId)
@@ -170,6 +176,28 @@ func (m *MediaManager) HandlePlayerState(connectionId string, userID string, sta
 	if roomState.Url != "" {
 		sendPlayerState(conns, roomState)
 	}
+}
+
+func (m *MediaManager) HandleGetQueue(connectionId string, userID string, channel string) {
+	var channelId string
+	if channel == "" {
+		channelId = userID
+	} else {
+		res, err := m.helixClient.GetUserByUsername(channel)
+		if err != nil {
+			return
+		}
+		channelId = res.ID
+	}
+
+	queueItems := m.storage.GetQueue(channelId)
+
+	connection, ok := m.connections.Load(connectionId)
+	if !ok {
+		return
+	}
+
+	sendQueueState([]*Connection{connection}, queueItems)
 }
 
 func (m *MediaManager) getRoom(channelId string) *Room {
@@ -217,11 +245,30 @@ func sendPlayerState(connections []*Connection, room *Room) {
 	}
 }
 
+func sendQueueState(connections []*Connection, queue []store.MediaQueue) {
+	resultMessage, err := json.Marshal(newQueueStateMessage(queue))
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	for _, conn := range connections {
+		conn.writer(resultMessage)
+	}
+}
+
 func newPlayerStateMessage(room *Room) PlayerStateMessage {
 	return PlayerStateMessage{
 		Action: "PLAYER_STATE",
 		Url:    room.Url,
 		Time:   room.Time,
 		State:  room.State,
+	}
+}
+
+func newQueueStateMessage(queue []store.MediaQueue) QueueStateMessage {
+	return QueueStateMessage{
+		Action: "QUEUE_STATE",
+		Queue:  queue,
 	}
 }

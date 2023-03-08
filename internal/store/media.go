@@ -1,6 +1,10 @@
 package store
 
-import "time"
+import (
+	"time"
+
+	"github.com/teris-io/shortid"
+)
 
 type MediaPlayer struct {
 	ChannelTwitchId string `gorm:"primaryKey"`
@@ -10,8 +14,8 @@ type MediaPlayer struct {
 }
 
 type MediaQueue struct {
-	ChannelTwitchId string `gorm:"primaryKey"`
-	Id              uint64 `gorm:"primaryKey,autoIncrement:true"`
+	ID              string `gorm:"primaryKey"`
+	ChannelTwitchId string `gorm:"index"`
 	Url             string
 	Approved        bool
 	Author          string
@@ -21,10 +25,24 @@ type MediaQueue struct {
 }
 
 func (db *Database) AddToQueue(queueItem MediaQueue) error {
+	var err error
+	queueItem.ID, err = shortid.Generate()
+	if err != nil {
+		return err
+	}
+
 	res := db.Client.Create(&queueItem)
 	if res.Error != nil {
 		return res.Error
 	}
 
 	return nil
+}
+
+func (db *Database) GetQueue(channelID string) []MediaQueue {
+	var queue []MediaQueue
+
+	db.Client.Where("channel_twitch_id = ?", channelID).Find(&queue)
+
+	return queue
 }

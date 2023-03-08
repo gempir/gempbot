@@ -88,20 +88,32 @@ func startWriter(conn *websocket.Conn, writeQueue chan []byte) {
 }
 
 type PlayerStateMessage struct {
-	Action string            `json:"action"`
+	Action MEDIA_ACTION      `json:"action"`
 	Time   float32           `json:"time"`
 	Url    string            `json:"url"`
 	State  media.PlayerState `json:"state"`
 }
 
 type Join struct {
-	Action  string `json:"action"`
-	Channel string `json:"channel"`
+	Action  MEDIA_ACTION `json:"action"`
+	Channel string       `json:"channel"`
+}
+
+type GetQueue struct {
+	Action  MEDIA_ACTION `json:"action"`
+	Channel string       `json:"channel"`
 }
 
 type BaseMessage struct {
-	Action string `json:"action"`
+	Action MEDIA_ACTION `json:"action"`
 }
+
+type MEDIA_ACTION string
+
+const actionGetQueue MEDIA_ACTION = "GET_QUEUE"
+const actionAddToQueue MEDIA_ACTION = "ADD_TO_QUEUE"
+const actionJoin MEDIA_ACTION = "JOIN"
+const actionPlayerState MEDIA_ACTION = "PLAYER_STATE"
 
 func (h *WsHandler) handleMessage(connectionId string, userId string, byteMessage []byte) {
 	var baseMessage BaseMessage
@@ -112,7 +124,7 @@ func (h *WsHandler) handleMessage(connectionId string, userId string, byteMessag
 	}
 
 	switch baseMessage.Action {
-	case "PLAYER_STATE":
+	case actionPlayerState:
 		var msg PlayerStateMessage
 		err := json.Unmarshal(byteMessage, &msg)
 		if err != nil {
@@ -120,7 +132,7 @@ func (h *WsHandler) handleMessage(connectionId string, userId string, byteMessag
 			return
 		}
 		h.mediaManager.HandlePlayerState(connectionId, userId, msg.State, msg.Url, msg.Time)
-	case "JOIN":
+	case actionJoin:
 		var msg Join
 		err := json.Unmarshal(byteMessage, &msg)
 		if err != nil {
@@ -128,5 +140,16 @@ func (h *WsHandler) handleMessage(connectionId string, userId string, byteMessag
 			return
 		}
 		h.mediaManager.HandleJoin(connectionId, userId, msg.Channel)
+	case actionAddToQueue:
+		log.Debug("Not implemented yet: actionAddToQueue")
+	case actionGetQueue:
+		var msg GetQueue
+		err := json.Unmarshal(byteMessage, &msg)
+		if err != nil {
+			log.Errorf("Failed to unmarshal Join message: %s", err)
+			return
+		}
+
+		h.mediaManager.HandleGetQueue(connectionId, userId, msg.Channel)
 	}
 }

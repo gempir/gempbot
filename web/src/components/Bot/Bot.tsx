@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useBotConfig } from '../../hooks/useBotConfig';
 import { useSubscribtions } from '../../hooks/useSubscriptions';
+import { useStore } from '../../store';
 import { Toggle } from './Toggle';
 
 export function Bot() {
     const [subscribe, unsubscribe, subscriptionsStatus, loading] = useSubscribtions();
+    const isDev = useStore(state => state.baseUrl).includes("localhost");
 
     const [predictionsAnnouncements, setPredictionAnnouncements] = useState(false);
 
@@ -25,6 +27,11 @@ export function Bot() {
     const handlePredictionCommandsChange = (value: boolean) => {
         if (botConfig) {
             setBotConfig({ ...botConfig, JoinBot: value });
+        }
+    };
+    const handleMediaCommandsChange = (value: boolean) => {
+        if (botConfig) {
+            setBotConfig({ ...botConfig, MediaCommands: value });
         }
     };
 
@@ -70,6 +77,19 @@ export function Bot() {
                 <Toggle checked={!!botConfig?.JoinBot} onChange={handlePredictionCommandsChange} />
             </div>
         </div>
+        {isDev && <div className={"bg-gray-800 rounded shadow relative p-4 mt-4 " + (loadingUserConfig ? "animate-pulse pointer-events-none" : "")}>
+            <div className="flex items-start justify-between">
+                <div>
+                    <h3 className="font-bold text-xl">Media Commands</h3>
+                    <div className="p-2 text-gray-200 mx-0 px-0">
+                        <ul className="list-disc pl-6 font-mono mt-2">
+                            <li>!sr {"<youtube link>"}</li>
+                        </ul>
+                    </div>
+                </div>
+                <Toggle checked={!!botConfig?.MediaCommands} onChange={handleMediaCommandsChange} />
+            </div>
+        </div>}
     </div >;
 }
 

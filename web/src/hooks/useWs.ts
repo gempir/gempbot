@@ -4,6 +4,8 @@ import { useStore } from "../store";
 export enum WsAction {
     PLAYER_STATE = "PLAYER_STATE",
     JOIN = "JOIN",
+    GET_QUEUE = "GET_QUEUE",
+    QUEUE_STATE = "QUEUE_STATE",
     DEBUG = "DEBUG",
 }
 

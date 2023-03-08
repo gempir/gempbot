@@ -5,6 +5,7 @@ import { useStore } from "../store";
 export interface BotConfig {
     OwnerTwitchId: string;
     JoinBot: boolean;
+    MediaCommands: boolean;
 }
 
 export type SetBotConfig = (config: BotConfig) => void;
