@@ -16,6 +16,7 @@ type Config struct {
 	WebhookApiBaseUrl string `json:"webhookApiBaseUrl"`
 	CookieDomain      string `json:"cookieDomain"`
 	DSN               string `json:"DSN"`
+	LogLevel          string `json:"logLevel"`
 	ListenAddress     string `json:"listenAddress"`
 }
 
@@ -30,6 +31,11 @@ func FromEnv() *Config {
 		listenAddress = ":3010"
 	}
 
+	logLevel := Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+
 	return &Config{
 		ClientID:          Getenv("NEXT_PUBLIC_TWITCH_CLIENT_ID"),
 		ClientSecret:      Getenv("TWITCH_CLIENT_SECRET"),
@@ -40,6 +46,7 @@ func FromEnv() *Config {
 		Username:          Getenv("TWITCH_USERNAME"),
 		OAuth:             Getenv("TWITCH_OAUTH"),
 		DSN:               Getenv("DSN"),
+		LogLevel:          logLevel,
 		ListenAddress:     listenAddress,
 	}
 }

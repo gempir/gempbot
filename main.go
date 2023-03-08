@@ -24,6 +24,7 @@ import (
 
 func main() {
 	cfg := config.FromEnv()
+	log.SetLogLevel(cfg.LogLevel)
 	db := store.NewDatabase(cfg)
 
 	argsWithoutProg := os.Args[1:]

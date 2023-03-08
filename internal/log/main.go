@@ -13,8 +13,14 @@ var logrusLogger = logrus.New()
 // Fields wraps logrus.Fields, which is a map[string]interface{}
 type Fields logrus.Fields
 
-func SetLogLevel(level logrus.Level) {
-	logrusLogger.Level = level
+func SetLogLevel(level string) {
+	lvl, err := logrus.ParseLevel(level)
+	if err != nil {
+		logrusLogger.Warnf("invalid log level: %s defaulting to info", level)
+		lvl = logrus.InfoLevel
+	}
+
+	logrusLogger.Level = lvl
 }
 
 func SetLogFormatter(formatter logrus.Formatter) {
