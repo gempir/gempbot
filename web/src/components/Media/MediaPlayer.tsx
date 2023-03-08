@@ -17,7 +17,7 @@ export function MediaPlayer({ channel }: { channel: string }): JSX.Element {
         isChannelOwner.current = tokenContent?.Login === channel || channel === "";
     }, [channel, tokenContent?.Login]);
 
-    const [url, setUrl] = useState("https://www.youtube.com/watch?v=wzE2nsjsHhg");
+    const [url, setUrl] = useState();
     const [playing, setPlaying] = useState(false);
     const [volume, setVolume] = useState(0);
 

@@ -51,7 +51,9 @@ type Connection struct {
 type Room struct {
 	MediaType MEDIA_TYPE
 	Url       string
+	QueueID   string
 	Time      float32
+	ChannelID string
 	State     PlayerState
 	users     *xsync.MapOf[string, *Connection]
 }
@@ -72,11 +74,6 @@ func NewMediaManager(storage storage, helixClient helixclient.Client, bot mediaB
 
 	commandsActivatedChannels := make(map[string]bool)
 	commandActivatedCfgs := storage.GetAllMediaCommandsBotConfig()
-	for _, cfg := range commandActivatedCfgs {
-		if cfg.MediaCommands {
-			commandsActivatedChannels[cfg.OwnerTwitchID] = true
-		}
-	}
 
 	mm := &MediaManager{
 		storage:                   storage,
@@ -89,7 +86,27 @@ func NewMediaManager(storage storage, helixClient helixclient.Client, bot mediaB
 
 	bot.RegisterCommand("sr", mm.handleSongRequest)
 
+	for _, cfg := range commandActivatedCfgs {
+		if cfg.MediaCommands {
+			commandsActivatedChannels[cfg.OwnerTwitchID] = true
+			mm.rooms.Store(cfg.OwnerTwitchID, mm.initRoom(cfg.OwnerTwitchID))
+		}
+	}
+
 	return mm
+}
+
+func (m *MediaManager) initRoom(channelID string) *Room {
+	queue := m.storage.GetQueue(channelID)
+
+	room := newRoom()
+	room.ChannelID = channelID
+	if len(queue) > 0 {
+		room.Url = queue[0].Url
+		room.QueueID = queue[0].ID
+	}
+
+	return room
 }
 
 func (m *MediaManager) handleSongRequest(payload dto.CommandPayload) {
@@ -142,10 +159,11 @@ func (m *MediaManager) HandleJoin(connectionId string, userID string, channel st
 }
 
 type PlayerStateMessage struct {
-	Action string      `json:"action"`
-	Url    string      `json:"url"`
-	Time   float32     `json:"time"`
-	State  PlayerState `json:"state"`
+	Action  string      `json:"action"`
+	Url     string      `json:"url"`
+	QueueID string      `json:"queueId"`
+	Time    float32     `json:"time"`
+	State   PlayerState `json:"state"`
 }
 
 type QueueStateMessage struct {
@@ -173,7 +191,11 @@ func (m *MediaManager) HandlePlayerState(connectionId string, userID string, sta
 		return true
 	})
 
-	if roomState.Url != "" {
+	if roomState.State == PLAYING && roomState.QueueID == "" {
+		m.storage.GetQueue(roomState.Url)
+	}
+
+	if roomState.QueueID != "" {
 		sendPlayerState(conns, roomState)
 	}
 }
@@ -226,10 +248,11 @@ func (m *MediaManager) DeregisterConnection(connectionId string) {
 
 func newRoom() *Room {
 	return &Room{
-		users: xsync.NewMapOf[*Connection](),
-		Url:   "https://www.youtube.com/watch?v=wzE2nsjsHhg",
-		Time:  0,
-		State: PAUSED,
+		users:   xsync.NewMapOf[*Connection](),
+		Url:     "",
+		QueueID: "",
+		Time:    0,
+		State:   PAUSED,
 	}
 }
 

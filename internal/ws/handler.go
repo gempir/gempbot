@@ -88,15 +88,15 @@ func startWriter(conn *websocket.Conn, writeQueue chan []byte) {
 }
 
 type PlayerStateMessage struct {
-	Action MEDIA_ACTION      `json:"action"`
+	Action string            `json:"action"`
 	Time   float32           `json:"time"`
 	Url    string            `json:"url"`
 	State  media.PlayerState `json:"state"`
 }
 
 type Join struct {
-	Action  MEDIA_ACTION `json:"action"`
-	Channel string       `json:"channel"`
+	Action  string `json:"action"`
+	Channel string `json:"channel"`
 }
 
 type GetQueue struct {
