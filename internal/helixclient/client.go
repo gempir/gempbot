@@ -2,11 +2,13 @@ package helixclient
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
@@ -38,13 +40,14 @@ type Client interface {
 
 // Client wrapper for helix
 type HelixClient struct {
-	clientID       string
-	clientSecret   string
-	eventSubSecret string
-	Client         *helix.Client
-	AppAccessToken helix.AccessCredentials
-	db             store.Store
-	httpClient     *http.Client
+	clientID        string
+	clientSecret    string
+	eventSubSecret  string
+	Client          *helix.Client
+	AppAccessToken  helix.AccessCredentials
+	db              store.Store
+	httpClient      *http.Client
+	refreshTtlCache *ttlcache.Cache
 }
 
 var (
@@ -73,17 +76,22 @@ func NewClient(cfg *config.Config, db store.Store) *HelixClient {
 	if err != nil {
 		panic(err)
 	}
-
+	cache := ttlcache.NewCache()
+	err = cache.SetTTL(time.Second * 30)
+	if err != nil {
+		panic(err)
+	}
 	token := setOrUpdateAccessToken(client, db)
 
 	return &HelixClient{
-		clientID:       cfg.ClientID,
-		clientSecret:   cfg.ClientSecret,
-		eventSubSecret: cfg.Secret,
-		Client:         client,
-		AppAccessToken: helix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
-		db:             db,
-		httpClient:     &http.Client{},
+		clientID:        cfg.ClientID,
+		clientSecret:    cfg.ClientSecret,
+		eventSubSecret:  cfg.Secret,
+		Client:          client,
+		AppAccessToken:  helix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
+		db:              db,
+		httpClient:      &http.Client{},
+		refreshTtlCache: cache,
 	}
 }
 
@@ -120,6 +128,11 @@ func (c *HelixClient) refreshUserAccessTokens() {
 }
 
 func (c *HelixClient) refreshUserAccessToken(userID string) error {
+	if item, _ := c.refreshTtlCache.Get(userID); item != nil {
+		return fmt.Errorf("already refreshing token for user %s in last 30 seconds", userID)
+	}
+	c.refreshTtlCache.Set(userID, true)
+
 	token, err := c.db.GetUserAccessToken(userID)
 	if err != nil {
 		return err
