@@ -35,7 +35,7 @@ func main() {
 	}
 
 	helixClient := helixclient.NewClient(cfg, db)
-	go helixClient.StartRefreshTokenRoutine()
+	// go helixClient.StartRefreshTokenRoutine()
 
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
 	authClient := auth.NewAuth(cfg, db, helixClient)

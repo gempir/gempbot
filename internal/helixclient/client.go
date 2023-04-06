@@ -124,13 +124,11 @@ func (c *HelixClient) refreshUserAccessToken(userID string) error {
 	if err != nil {
 		return err
 	}
-	if time.Since(token.UpdatedAt) > 3*time.Hour {
-		err := c.RefreshToken(token)
-		if err != nil {
-			return err
-		} else {
-			log.Infof("refreshed token for user %s", token.OwnerTwitchID)
-		}
+	err = c.RefreshToken(token)
+	if err != nil {
+		return err
+	} else {
+		log.Infof("refreshed token for user %s", token.OwnerTwitchID)
 	}
 
 	return nil
