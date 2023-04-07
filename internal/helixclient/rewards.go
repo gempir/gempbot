@@ -75,11 +75,15 @@ type CreateCustomRewardResponseDataItem struct {
 	CooldownExpiresAt                 interface{} `json:"cooldown_expires_at"`
 }
 
-func (c *HelixClient) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (*helix.ChannelCustomReward, error) {
+func (c *HelixClient) CreateOrUpdateReward(userID string, reward CreateCustomRewardRequest, rewardID string) (*helix.ChannelCustomReward, error) {
+	token, err := c.db.GetUserAccessToken(userID)
+	if err != nil {
+		return &helix.ChannelCustomReward{}, err
+	}
 	log.Infof("Creating/Updating Reward for user %s reward title: %s", userID, reward.Title)
+	userAccessToken := token.AccessToken
 
 	var resp *helix.ChannelCustomRewardResponse
-	var err error
 
 	c.Client.SetUserAccessToken(userAccessToken)
 	if rewardID == "" {
@@ -119,6 +123,12 @@ func (c *HelixClient) CreateOrUpdateReward(userID, userAccessToken string, rewar
 		})
 	}
 	c.Client.SetUserAccessToken("")
+	if resp.StatusCode == http.StatusUnauthorized {
+		err := c.refreshUserAccessToken(userID)
+		if err == nil {
+			return c.CreateOrUpdateReward(userID, reward, rewardID)
+		}
+	}
 	if err != nil {
 		return &helix.ChannelCustomReward{}, err
 	}

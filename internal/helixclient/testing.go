@@ -49,7 +49,7 @@ func (m *MockHelixClient) CreatePrediction(params *helix.CreatePredictionParams)
 	return nil, nil
 }
 
-func (m *MockHelixClient) CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (*helix.ChannelCustomReward, error) {
+func (m *MockHelixClient) CreateOrUpdateReward(userID string, reward CreateCustomRewardRequest, rewardID string) (*helix.ChannelCustomReward, error) {
 	return &helix.ChannelCustomReward{}, nil
 }
 

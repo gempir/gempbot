@@ -26,7 +26,7 @@ type Client interface {
 	GetPredictions(params *helix.PredictionsParams) (*helix.PredictionsResponse, error)
 	EndPrediction(params *helix.EndPredictionParams) (*helix.PredictionsResponse, error)
 	CreatePrediction(params *helix.CreatePredictionParams) (*helix.PredictionsResponse, error)
-	CreateOrUpdateReward(userID, userAccessToken string, reward CreateCustomRewardRequest, rewardID string) (*helix.ChannelCustomReward, error)
+	CreateOrUpdateReward(userID string, reward CreateCustomRewardRequest, rewardID string) (*helix.ChannelCustomReward, error)
 	UpdateRedemptionStatus(broadcasterID, rewardID string, redemptionID string, statusSuccess bool) error
 	DeleteReward(userID string, userAccessToken string, rewardID string) error
 	GetUsersByUserIds(userIDs []string) (map[string]UserData, error)

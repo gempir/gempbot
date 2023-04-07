@@ -63,11 +63,6 @@ func (cpm *ChannelPointManager) DeleteChannelPointReward(userID, rewardID string
 }
 
 func (cpm *ChannelPointManager) CreateOrUpdateChannelPointReward(userID string, request TwitchRewardConfig, rewardID string) (TwitchRewardConfig, error) {
-	token, err := cpm.db.GetUserAccessToken(userID)
-	if err != nil {
-		return TwitchRewardConfig{}, err
-	}
-
 	req := helixclient.CreateCustomRewardRequest{
 		Title:                             request.Title,
 		Prompt:                            request.Prompt,
@@ -96,7 +91,7 @@ func (cpm *ChannelPointManager) CreateOrUpdateChannelPointReward(userID string, 
 		req.GlobalCoolDownSeconds = request.GlobalCooldownSeconds
 	}
 
-	resp, err := cpm.helixClient.CreateOrUpdateReward(userID, token.AccessToken, req, rewardID)
+	resp, err := cpm.helixClient.CreateOrUpdateReward(userID, req, rewardID)
 	if err != nil {
 		return TwitchRewardConfig{}, err
 	}
