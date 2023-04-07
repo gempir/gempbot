@@ -217,6 +217,13 @@ func (c *HelixClient) UpdateRedemptionStatus(broadcasterID, rewardID string, red
 
 	log.Infof("[%d][%s] %s %s", resp.StatusCode, method, reqUrl, marshalled)
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		err := c.refreshUserAccessToken(broadcasterID)
+		if err == nil {
+			return c.UpdateRedemptionStatus(broadcasterID, rewardID, redemptionID, statusSuccess)
+		}
+	}
+
 	if resp.StatusCode >= 400 {
 		var response ErrorResponse
 		err = json.NewDecoder(resp.Body).Decode(&response)
@@ -240,7 +247,13 @@ func (c *HelixClient) UpdateRedemptionStatus(broadcasterID, rewardID string, red
 	return nil
 }
 
-func (c *HelixClient) DeleteReward(userID string, userAccessToken string, rewardID string) error {
+func (c *HelixClient) DeleteReward(userID string, rewardID string) error {
+	token, err := c.db.GetUserAccessToken(userID)
+	if err != nil {
+		return err
+	}
+	userAccessToken := token.AccessToken
+
 	method := http.MethodDelete
 	reqUrl, err := url.Parse("https://api.twitch.tv/helix/channel_points/custom_rewards")
 	if err != nil {
@@ -269,6 +282,13 @@ func (c *HelixClient) DeleteReward(userID string, userAccessToken string, reward
 	}
 
 	log.Infof("[%d][%s] %s", resp.StatusCode, method, reqUrl.String())
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		err := c.refreshUserAccessToken(userID)
+		if err == nil {
+			return c.DeleteReward(userID, rewardID)
+		}
+	}
 
 	if resp.StatusCode >= 400 {
 		var response ErrorResponse

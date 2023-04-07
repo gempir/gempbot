@@ -57,7 +57,7 @@ func (m *MockHelixClient) UpdateRedemptionStatus(broadcasterID, rewardID string,
 	return nil
 }
 
-func (m *MockHelixClient) DeleteReward(userID string, userAccessToken string, rewardID string) error {
+func (m *MockHelixClient) DeleteReward(userID string, rewardID string) error {
 	return nil
 }
 

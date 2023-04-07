@@ -73,14 +73,9 @@ func (a *Api) RewardHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		token, err := a.db.GetUserAccessToken(userID)
-		if err != nil {
-			http.Error(w, "no accessToken to edit reward", http.StatusNotFound)
-		}
-
 		a.db.DeleteChannelPointReward(userID, dto.RewardType(r.URL.Query().Get("type")))
 
-		err = a.helixClient.DeleteReward(userID, token.AccessToken, reward.RewardID)
+		err = a.helixClient.DeleteReward(userID, reward.RewardID)
 		if err != nil {
 			log.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)

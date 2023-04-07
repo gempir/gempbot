@@ -28,17 +28,12 @@ func NewChannelPointManager(cfg *config.Config, helixClient helixclient.Client, 
 }
 
 func (cpm *ChannelPointManager) DeleteElectionReward(userID string) error {
-	token, err := cpm.db.GetUserAccessToken(userID)
-	if err != nil {
-		return err
-	}
-
 	reward, err := cpm.db.GetChannelPointReward(userID, dto.REWARD_ELECTION)
 	if err != nil {
 		return err
 	}
 
-	err = cpm.helixClient.DeleteReward(userID, token.AccessToken, reward.RewardID)
+	err = cpm.helixClient.DeleteReward(userID, reward.RewardID)
 	if err != nil {
 		return err
 	}
@@ -48,12 +43,7 @@ func (cpm *ChannelPointManager) DeleteElectionReward(userID string) error {
 }
 
 func (cpm *ChannelPointManager) DeleteChannelPointReward(userID, rewardID string) error {
-	token, err := cpm.db.GetUserAccessToken(userID)
-	if err != nil {
-		return err
-	}
-
-	err = cpm.helixClient.DeleteReward(userID, token.AccessToken, rewardID)
+	err := cpm.helixClient.DeleteReward(userID, rewardID)
 	if err != nil {
 		return err
 	}
