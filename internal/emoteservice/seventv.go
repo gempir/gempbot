@@ -10,7 +10,7 @@ import (
 	"github.com/gempir/gempbot/internal/store"
 )
 
-const DefaultSevenTvApiBaseUrl = "https://api.7tv.app/v2"
+const DefaultSevenTvApiBaseUrl = "https://7tv.io/v3"
 const DefaultSevenTvV3ApiBaseUrl = "https://7tv.io/v3"
 const DefaultSevenTvGqlBaseUrl = "https://api.7tv.app/v2/gql"
 const DefaultSevenTvGqlV3BaseUrl = "https://api.7tv.app/v3/gql"
@@ -205,7 +205,7 @@ func (c *SevenTvClient) GetUser(channelID string) (User, error) {
 		}
 		emote_slots
 	}
-	`, map[string]interface{}{"id": channelID}, &userData, false)
+	`, map[string]interface{}{"id": channelID}, &userData, true)
 	if err != nil {
 		return User{}, err
 	}
