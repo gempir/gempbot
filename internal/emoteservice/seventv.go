@@ -205,7 +205,7 @@ func (c *SevenTvClient) GetUser(channelID string) (User, error) {
 		}
 		emote_slots
 	}
-	`, map[string]interface{}{"id": channelID}, &userData, true)
+	`, map[string]interface{}{"id": channelID}, &userData, false)
 	if err != nil {
 		return User{}, err
 	}
