@@ -36,7 +36,7 @@ export function EmoteLogPage({ channel }: { channel: string }): JSX.Element {
                         <td className="text-center px-5"><Emote id={item.EmoteID} /></td>
                         <td className="text-center px-10">{item.EmoteCode}</td>
                         <td className="text-center px-10">{item.AddedBy}</td>
-                        <td className="text-center px-10">{item.Type === "seventv" ? "Redemption" : "Election"}</td>
+                        <td className="text-center px-10">{"Redemption"}</td>
                         <td className="p-3 text-center whitespace-nowrap">{item.CreatedAt.format('L LT')}</td>
                     </tr>)}
                 </tbody>

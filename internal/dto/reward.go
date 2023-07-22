@@ -3,9 +3,8 @@ package dto
 type RewardType string
 
 const (
-	REWARD_BTTV     RewardType = "bttv"
-	REWARD_SEVENTV  RewardType = "seventv"
-	REWARD_ELECTION RewardType = "election"
+	REWARD_BTTV    RewardType = "bttv"
+	REWARD_SEVENTV RewardType = "seventv"
 )
 
 type EmoteChangeType string

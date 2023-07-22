@@ -21,14 +21,9 @@ type Store interface {
 	GetAllUserAccessToken() []UserAccessToken
 	GetSevenTvToken(ctx context.Context) string
 	GetBttvToken(ctx context.Context) string
-	CreateOrUpdateElection(ctx context.Context, election Election) error
-	GetElection(ctx context.Context, channelTwitchID string) (Election, error)
-	DeleteElection(ctx context.Context, channelTwitchID string) error
-	GetAllElections(ctx context.Context) ([]Election, error)
 	SaveReward(reward ChannelPointReward) error
 	CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error
 	GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error)
-	GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error)
 	ClearNominations(ctx context.Context, channelTwitchID string) error
 	ClearNominationEmote(ctx context.Context, channelTwitchID string, emoteID string) error
 	DeleteChannelPointRewardById(userID string, rewardID string)
@@ -83,7 +78,6 @@ func (db *Database) Migrate() {
 		EmoteBlock{},
 		MediaPlayer{},
 		MediaQueue{},
-		Election{},
 		Nomination{},
 		NominationVote{},
 		NominationDownvote{},

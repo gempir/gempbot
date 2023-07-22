@@ -8,7 +8,6 @@ import (
 	"github.com/gempir/gempbot/internal/bot"
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/config"
-	"github.com/gempir/gempbot/internal/election"
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/eventsubmanager"
@@ -51,9 +50,6 @@ func main() {
 	wsHandler := ws.NewWsHandler(authClient, mediaManager)
 	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
 
-	electionManager := election.NewElectionManager(db, helixClient, channelPointManager, eventsubManager, bot, seventvClient)
-	go electionManager.StartElectionManagerRoutine()
-
 	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler)
 
 	mux := http.NewServeMux()
@@ -73,11 +69,6 @@ func main() {
 	mux.HandleFunc("/api/emotelog", apiHandlers.EmoteLogHandler)
 	mux.HandleFunc("/api/eventsub", apiHandlers.EventSubHandler)
 	mux.HandleFunc("/api/reward", apiHandlers.RewardHandler)
-	mux.HandleFunc("/api/election", apiHandlers.ElectionHandler)
-	mux.HandleFunc("/api/nominations", apiHandlers.NominationsHandler)
-	mux.HandleFunc("/api/nominations/vote", apiHandlers.NominationVoteHandler)
-	mux.HandleFunc("/api/nominations/downvote", apiHandlers.NominationDownvoteHandler)
-	mux.HandleFunc("/api/nominations/block", apiHandlers.NominationsBlockHandler)
 	mux.HandleFunc("/api/subscriptions", apiHandlers.SubscriptionsHandler)
 	mux.HandleFunc("/api/userconfig", apiHandlers.UserConfigHandler)
 	mux.HandleFunc("/api/ws", wsHandler.HandleWs)

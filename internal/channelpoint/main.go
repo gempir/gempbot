@@ -27,21 +27,6 @@ func NewChannelPointManager(cfg *config.Config, helixClient helixclient.Client, 
 	}
 }
 
-func (cpm *ChannelPointManager) DeleteElectionReward(userID string) error {
-	reward, err := cpm.db.GetChannelPointReward(userID, dto.REWARD_ELECTION)
-	if err != nil {
-		return err
-	}
-
-	err = cpm.helixClient.DeleteReward(userID, reward.RewardID)
-	if err != nil {
-		return err
-	}
-
-	cpm.db.DeleteChannelPointRewardById(userID, reward.RewardID)
-	return nil
-}
-
 func (cpm *ChannelPointManager) DeleteChannelPointReward(userID, rewardID string) error {
 	err := cpm.helixClient.DeleteReward(userID, rewardID)
 	if err != nil {
@@ -180,30 +165,6 @@ func (r *SevenTvReward) SetConfig(config TwitchRewardConfig) {
 	r.TwitchRewardConfig = config
 }
 
-type ElectionReward struct {
-	TwitchRewardConfig
-	ElectionRewardAdditionalOptions
-}
-
-type ElectionRewardAdditionalOptions struct {
-}
-
-func (r *ElectionReward) GetType() dto.RewardType {
-	return dto.REWARD_ELECTION
-}
-
-func (r *ElectionReward) GetConfig() TwitchRewardConfig {
-	return r.TwitchRewardConfig
-}
-
-func (r *ElectionReward) SetConfig(config TwitchRewardConfig) {
-	r.TwitchRewardConfig = config
-}
-
-func (r *ElectionReward) GetAdditionalOptions() interface{} {
-	return r.ElectionRewardAdditionalOptions
-}
-
 func MarshallReward(reward Reward) string {
 	js, err := json.Marshal(reward)
 	if err != nil {
@@ -334,10 +295,6 @@ func CreateRewardFromBody(body io.ReadCloser) (Reward, error) {
 		return &SevenTvReward{
 			TwitchRewardConfig:       rewardConfig,
 			SevenTvAdditionalOptions: addOpts.AdditionalOptionsParsed,
-		}, nil
-	case dto.REWARD_ELECTION:
-		return &ElectionReward{
-			TwitchRewardConfig: createTwitchRewardConfigFromRequestBody(data),
 		}, nil
 	}
 

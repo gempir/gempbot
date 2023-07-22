@@ -73,22 +73,6 @@ func (s *MockStore) GetAllMediaCommandsBotConfig() []BotConfig {
 	return []BotConfig{}
 }
 
-func (s *MockStore) CreateOrUpdateElection(ctx context.Context, election Election) error {
-	return nil
-}
-
-func (s *MockStore) GetElection(ctx context.Context, channelTwitchID string) (Election, error) {
-	return Election{}, nil
-}
-
-func (s *MockStore) DeleteElection(ctx context.Context, channelTwitchID string) error {
-	return nil
-}
-
-func (s *MockStore) GetAllElections(ctx context.Context) ([]Election, error) {
-	return []Election{}, nil
-}
-
 func (s *MockStore) SaveReward(reward ChannelPointReward) error {
 	return nil
 }
@@ -99,10 +83,6 @@ func (s *MockStore) CreateOrIncrementNomination(ctx context.Context, nomination 
 
 func (s *MockStore) GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error) {
 	return []Nomination{}, nil
-}
-
-func (s *MockStore) GetActiveElection(ctx context.Context, channelTwitchID string) (Election, error) {
-	return Election{}, nil
 }
 
 func (s *MockStore) ClearNominations(ctx context.Context, channelTwitchID string) error {
