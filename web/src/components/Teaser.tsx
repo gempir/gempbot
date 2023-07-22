@@ -5,6 +5,7 @@ export function Teaser() {
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
     const twitchClientId = useStore(state => state.twitchClientId);
     const url = createLoginUrl(apiBaseUrl, twitchClientId);
+    const {isLoggedIn} = useStore(state => ({isLoggedIn: !!state.scToken}));
 
     return <section className="text-gray-600 body-font w-full">
         <div className="container px-5 py-24 mx-auto">
@@ -25,9 +26,9 @@ export function Teaser() {
                     <p className="leading-relaxed text-base mb-4 text-gray-400">Manage predictions via !prediction in chat</p>
                 </div>
             </div>
-            <div className="flex justify-center">
+            {!isLoggedIn && <div className="flex justify-center">
                 <a className="m-auto mx-auto mt-16 text-white bg-purple-800 hover:bg-purple-600 border-0 py-2 px-8 focus:outline-none rounded text-lg" href={url.toString()}>Login to Get Started</a>
-            </div>
+            </div>}
         </div>
     </section>
 }

@@ -1,12 +1,10 @@
 package emotechief
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"math/rand"
 	"regexp"
-	"time"
 
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/dto"
@@ -72,7 +70,7 @@ func (ec *EmoteChief) VerifySetSevenTvEmote(channelUserID, emoteId, channel, red
 }
 
 func (ec *EmoteChief) setSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername string, redeemedByUserID string, slots int) (addedEmoteId string, removedEmoteID string, err error) {
-	emoteAddType, removalTargetEmoteId, nextEmote, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
+	emoteAddType, removalTargetEmoteId, _, err := ec.VerifySetSevenTvEmote(channelUserID, emoteId, channel, redeemedByUsername, slots)
 	if err != nil {
 		return "", "", err
 	}
@@ -91,8 +89,6 @@ func (ec *EmoteChief) setSevenTvEmote(channelUserID, emoteId, channel, redeemedB
 	if err != nil {
 		return "", removalTargetEmoteId, err
 	}
-
-	ec.db.AddEmoteLogEntry(context.Background(), store.EmoteLog{CreatedAt: time.Now(), EmoteID: emoteId, AddedBy: redeemedByUserID, Type: dto.REWARD_SEVENTV, EmoteCode: nextEmote.Code, ChannelTwitchID: channelUserID})
 
 	ec.db.CreateEmoteAdd(channelUserID, dto.REWARD_SEVENTV, emoteId, dto.EMOTE_ADD_ADD)
 
