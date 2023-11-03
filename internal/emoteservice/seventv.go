@@ -11,7 +11,7 @@ import (
 )
 
 const DefaultSevenTvApiBaseUrl = "https://7tv.io/v3"
-const DefaultSevenTvGqlV3BaseUrl = "https://api.7tv.app/v3/gql"
+const DefaultSevenTvGqlV3BaseUrl = "https://7tv.io/v3/gql"
 
 type SevenTvClient struct {
 	store      store.Store
