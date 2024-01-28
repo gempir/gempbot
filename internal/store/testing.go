@@ -61,14 +61,6 @@ func (s *MockStore) GetBttvToken(ctx context.Context) string {
 	return "BttvToken"
 }
 
-func (s *MockStore) AddToQueue(queueItem MediaQueue) error {
-	return nil
-}
-
-func (s *MockStore) GetQueue(channelTwitchID string) []MediaQueue {
-	return []MediaQueue{}
-}
-
 func (s *MockStore) GetAllMediaCommandsBotConfig() []BotConfig {
 	return []BotConfig{}
 }

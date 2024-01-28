@@ -74,8 +74,6 @@ func (db *Database) Migrate() {
 		Permission{},
 		EventSubMessage{},
 		EmoteBlock{},
-		MediaPlayer{},
-		MediaQueue{},
 		Nomination{},
 		NominationVote{},
 		NominationDownvote{},
