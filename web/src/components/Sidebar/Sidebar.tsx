@@ -1,10 +1,9 @@
+import { AdjustmentsHorizontalIcon, ChatBubbleLeftIcon, GiftIcon, HomeIcon, NoSymbolIcon, PhotoIcon } from "@heroicons/react/24/solid";
+import Link from "next/link";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { useStore } from "../../store";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
-import Link from "next/link";
-import React from "react";
-import { HomeIcon, GiftIcon, AdjustmentsHorizontalIcon, NoSymbolIcon, ChatBubbleLeftIcon, PlayIcon, TrophyIcon } from "@heroicons/react/24/solid";
 
 export function Sidebar() {
     const [userConfig] = useUserConfig();
@@ -25,8 +24,8 @@ export function Sidebar() {
             <Link href="/bot" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><ChatBubbleLeftIcon className="h-6" /> Bot</a>
             </Link>
-            {isDev && <Link href="/media" >
-                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><PlayIcon className="h-6" /> Media</a>
+            {isDev && <Link href="/overlays" >
+                <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><PhotoIcon className="h-6" /> Overlays</a>
             </Link>}
             <Link href="/rewards" >
                 <a className="flex gap-2 items-center py-4 justify-start hover:text-blue-500"><GiftIcon className="h-6" /> Rewards</a>
