@@ -23,6 +23,7 @@ export const initializeStore = (ctx: NextPageContext) => {
                 managing: cookies.managing ? cookies.managing : null,
                 twitchClientId: (process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ?? "").replaceAll('"', ''),
                 apiBaseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replaceAll('"', ''),
+                yjsWsUrl: (process.env.NEXT_PUBLIC_YJS_WS_URL ?? "").replaceAll('"', ''),
                 baseUrl: (process.env.NEXT_PUBLIC_BASE_URL ?? "").replaceAll('"', ''),
             }
         },

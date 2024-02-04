@@ -41,6 +41,7 @@ key.txt
 
 # vercel
 web/.vercel
+web/dbdir
 
 
 # Binaries

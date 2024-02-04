@@ -11,6 +11,7 @@ export interface Store {
     twitchClientId: string;
     apiBaseUrl: string;
     baseUrl: string;
+    yjsWsUrl: string;
     scToken: string  | null;
     scTokenContent: ScTokenContent  | null;
     setScToken: (token: string) => void;
@@ -23,6 +24,7 @@ let store: any;
 const initialState = {
     twitchClientId: "",
     apiBaseUrl: "",
+    yjsWsUrl: "",
     baseUrl: "",
     scToken: "",
     scTokenContent: null,
