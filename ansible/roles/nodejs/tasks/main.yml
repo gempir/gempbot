@@ -17,7 +17,7 @@
 
 - name: Add NodeSource repository
   apt_repository:
-    repo: "deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
+    repo: "deb [trusted=yes] https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
     state: present
     update_cache: yes
     filename: nodesource
