@@ -1,31 +1,29 @@
 ---
-- become: true
-  tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
+- name: Update apt cache
+  apt:
+    update_cache: yes
 
-    - name: Install Node.js dependencies
-      apt:
-        name: "{{ item }}"
-        state: present
-      loop:
-        - curl
-        - software-properties-common
+- name: Install Node.js dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - curl
+    - software-properties-common
 
-    - name: Add NodeSource repository
-      apt_repository:
-        repo: "deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
-        state: present
-        update_cache: yes
-        filename: nodesource
+- name: Add NodeSource repository
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
+    state: present
+    update_cache: yes
+    filename: nodesource
 
-    - name: Install Node.js
-      apt:
-        name: nodejs
-        state: present
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
 
-    - name: Install build-essential
-      apt:
-        name: build-essential
-        state: present
+- name: Install build-essential
+  apt:
+    name: build-essential
+    state: present
