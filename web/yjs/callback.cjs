@@ -1,3 +1,4 @@
+// @ts-nocheck
 const http = require('http')
 
 const CALLBACK_URL = process.env.CALLBACK_URL ? new URL(process.env.CALLBACK_URL) : null
@@ -14,7 +15,7 @@ exports.isCallbackSet = !!CALLBACK_URL
 exports.callbackHandler = (update, origin, doc) => {
   const room = doc.name
   const dataToSend = {
-    room,
+    room: room,
     data: {}
   }
   const sharedObjectList = Object.keys(CALLBACK_OBJECTS)
@@ -39,7 +40,7 @@ const callbackRequest = (url, timeout, data) => {
     hostname: url.hostname,
     port: url.port,
     path: url.pathname,
-    timeout,
+    timeout: timeout,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
