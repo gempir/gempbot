@@ -50,7 +50,7 @@ export function useYjsStore({
 		return {
 			yDoc,
 			yStore,
-			room: new WebsocketProvider(hostUrl, roomId, yDoc, { connect: true }),
+			room: new WebsocketProvider(String(hostUrl), roomId, yDoc, { connect: true }),
 		}
 	}, [hostUrl, roomId])
 
@@ -151,11 +151,13 @@ export function useYjsStore({
 				createPresenceStateDerivation(userPreferences, presenceId)(store)
 
 			// Set our initial presence from the derivation's current value
+			// @ts-expect-error
 			room.awareness.setLocalStateField('presence', presenceDerivation.value)
 
 			// When the derivation change, sync presence to to yjs awareness
 			unsubs.push(
 				react('when presence changes', () => {
+					// @ts-expect-error
 					const presence = presenceDerivation.value
 					requestAnimationFrame(() => {
 						room.awareness.setLocalStateField('presence', presence)
