@@ -10,7 +10,7 @@ build_server:
 	go run main.go
 
 yjs_server:
-	cd web && YPERSISTENCE=./dbdir  yarn yjs
+	cd web && yarn yjs
 
 test:
 	go test ./internal/...
