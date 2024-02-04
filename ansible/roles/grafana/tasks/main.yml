@@ -4,7 +4,7 @@
 
 - name: Add Repository
   apt_repository:
-    repo: "deb https://apt.grafana.com stable main stable main"
+    repo: "deb https://apt.grafana.com stable main"
     state: "present"
 
 - name: Install
