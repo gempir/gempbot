@@ -8,6 +8,7 @@
     - { role: "common", tags: ["common"] }
     - { role: "geerlingguy.postgresql", tags: ["postgresql"] }
     - { role: "caddy", tags: ["caddy"] }
+    - { role: "nodejs", tags: ["nodejs"] }
     - { role: "geerlingguy.node_exporter", tags: ["node_exporter"] }
     - { role: "prometheus", tags: ["prometheus"] }
     - { role: "prometheus-postgres", tags: ["prometheus-postgres"] }
