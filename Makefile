@@ -30,7 +30,7 @@ deploy:
 
 deploy_yjs:
 	(cd web && yarn)
-	tar -czvf web.tar.gz web
+	tar -czf web.tar.gz web
 	rsync -avz -e "ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key" web.tar.gz ubuntu@o1.gempir.com:/home/gempbot/
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot-yjs"
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "rm -rf /home/gempbot/web"
