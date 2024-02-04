@@ -34,7 +34,7 @@ deploy_yjs:
 	rsync -avz -e "ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key" web.tar.gz ubuntu@o1.gempir.com:/home/gempbot/
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot-yjs"
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "rm -rf /home/gempbot/web"
-	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "tar -xvf /home/gempbot/web.tar.gz -C /home/gempbot/"
+	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "tar -xf /home/gempbot/web.tar.gz -C /home/gempbot/"
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl start gempbot-yjs"
 
 ansible:
