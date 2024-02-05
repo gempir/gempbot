@@ -1,9 +1,9 @@
 import React from "react";
 import { initializeStore } from "../../service/initializeStore";
-import { OverlayPage } from "../../components/Overlay/OverlayPage";
+import { IframeOverlayPage } from "../../components/Overlay/IframeOverlayPage";
 
 export default function Overlay() {
-    return <OverlayPage />
+    return <IframeOverlayPage />
 }
 
 export const getServerSideProps = initializeStore;

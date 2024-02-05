@@ -2,10 +2,13 @@
 
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
+import { useParams } from 'next/navigation';
 
 const Editor = dynamic(async () => (await import('./Editor')).Editor, { ssr: false })
 
-export function OverlayPage() {
+export function IframeOverlayPage() {
+    const { overlayId } = useParams<{ overlayId: string }>();
+
     return (
         <div className="relative w-full h-[100vh]">
             <Head>
@@ -19,7 +22,7 @@ export function OverlayPage() {
                     }
                 `}</style>
             </Head>
-            <Editor hideUi />
+            <Editor hideUi overlayId={overlayId} readonly />
         </div>
     );
 }
