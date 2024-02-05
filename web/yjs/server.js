@@ -26,25 +26,25 @@ server.on('upgrade', (request, socket, head) => {
      */
     const handleAuth = ws => {
         try {
-            // parse cookie 'scToken' 
-            const cookies = parseCookie(request.headers.cookie);
-            if (!cookies.scToken) {
-                throw new Error('No cookie')
-            }
+            // // parse cookie 'scToken' 
+            // const cookies = parseCookie(request.headers.cookie);
+            // if (!cookies.scToken) {
+            //     throw new Error('No cookie')
+            // }
 
-            try {
-                const payload = josnwebtoken.verify(cookies.scToken, jwtKey);
+            // try {
+            //     const payload = josnwebtoken.verify(cookies.scToken, jwtKey);
 
-                // if user == managing etc..
+            //     // if user == managing etc..
 
-                console.log('JWT Payload', payload);
-            } catch (e) {
-                throw new Error('invalid scToken')
-            }
+            //     console.log('JWT Payload', payload);
+            // } catch (e) {
+            //     throw new Error('invalid scToken')
+            // }
 
             wss.emit('connection', ws, request)
         } catch (e) {
-            console.error(e);
+            console.error(e.message);
             ws.close(1008, 'Not authorized')
         }
     }
