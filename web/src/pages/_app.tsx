@@ -12,7 +12,7 @@ dayjs.extend(localizedFormat);
 export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
     const createStore = useCreateStore(pageProps.store);
 
-    const renderFullLayout = Component.name !== "Overlay";
+    const renderFullLayout = pageProps.renderFullLayout ?? true;
 
     return (
         <StoreProvider createStore={createStore}>

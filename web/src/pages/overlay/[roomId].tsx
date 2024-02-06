@@ -1,9 +1,8 @@
-import React from "react";
-import { initializeStore } from "../../service/initializeStore";
 import { IframeOverlayPage } from "../../components/Overlay/IframeOverlayPage";
+import { initializeStoreWithProps } from "../../service/initializeStore";
 
 export default function Overlay() {
     return <IframeOverlayPage />
 }
 
-export const getServerSideProps = initializeStore;
+export const getServerSideProps = initializeStoreWithProps({renderFullLayout: false});
