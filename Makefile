@@ -19,7 +19,7 @@ staticcheck:
 	staticcheck ./...
 
 web: 
-	yarn dev
+	cd web && yarn dev
 
 deploy:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -o gempbot main.go

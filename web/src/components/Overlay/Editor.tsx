@@ -5,14 +5,14 @@ import { useStore } from '../../store';
 
 
 type Props = {
-    overlayId: string;
+    roomId: string;
     readonly?: boolean;
 }
 
 export function Editor(props: Partial<TldrawProps> & Props) {
     const yjsWsUrl = useStore(state => state.yjsWsUrl);
     const store = useYjsStore({
-        roomId: props.overlayId,
+        roomId: props.roomId,
         hostUrl: yjsWsUrl,
     });
     const editor = useEditor();

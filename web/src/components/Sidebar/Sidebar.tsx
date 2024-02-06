@@ -30,7 +30,7 @@ export function Sidebar() {
                     <ChatBubbleLeftIcon className="h-6" />Bot
                 </Link>
                 {isDev && <Link
-                    href="/overlays"
+                    href="/overlay"
                     className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
                     <PhotoIcon className="h-6" />Overlays
                 </Link>}

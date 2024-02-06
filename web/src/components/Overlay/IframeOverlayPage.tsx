@@ -7,7 +7,9 @@ import { useParams } from 'next/navigation';
 const Editor = dynamic(async () => (await import('./Editor')).Editor, { ssr: false })
 
 export function IframeOverlayPage() {
-    const { overlayId } = useParams<{ overlayId: string }>();
+    const params = useParams<{ roomId: string }>();
+
+    console.log("Joining", params.roomId);
 
     return (
         <div className="relative w-full h-[100vh]">
@@ -22,7 +24,7 @@ export function IframeOverlayPage() {
                     }
                 `}</style>
             </Head>
-            <Editor hideUi overlayId={overlayId} readonly />
+            <Editor hideUi roomId={params.roomId} readonly />
         </div>
     );
 }
