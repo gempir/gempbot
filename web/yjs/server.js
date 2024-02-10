@@ -48,7 +48,12 @@ server.on('upgrade', (request, socket, head) => {
             ws.close(1008, 'Not authorized')
         }
     }
-    wss.handleUpgrade(request, socket, head, handleAuth)
+    try {
+        wss.handleUpgrade(request, socket, head, handleAuth)
+    } catch (e) {
+        console.error(e.message);
+        socket.close()
+    }
 })
 
 server.listen(port, host, () => {
