@@ -1,4 +1,4 @@
-import { Tldraw, TldrawProps, useEditor } from '@tldraw/tldraw';
+import { Editor, Tldraw, TldrawProps } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 import { useYjsStore } from '../../hooks/useYjsStore';
 import { useStore } from '../../store';
@@ -9,20 +9,18 @@ type Props = {
     readonly?: boolean;
 }
 
-export function Editor(props: Partial<TldrawProps> & Props) {
+export function CustomEditor(props: Partial<TldrawProps> & Props) {
     const yjsWsUrl = useStore(state => state.yjsWsUrl);
     const store = useYjsStore({
         roomId: props.roomId,
         hostUrl: yjsWsUrl,
     });
-    const editor = useEditor();
+    
+    const handleMount = (editor: Editor) => {
+        editor.setCamera({ x: 0, y: 0, z: 1 });
+        editor.updateInstanceState({ isReadonly: true, canMoveCamera: false })
+		editor.selectNone();
+	}
 
-
-    if (props.readonly && editor) {
-        console.log(editor);
-        // editor.setCamera({ x: 0, y: 0, z: 1 });
-        // editor.updateInstanceState({ isReadonly: true, canMoveCamera: false })
-    }
-
-    return <Tldraw inferDarkMode store={store} {...props} />
+    return <Tldraw onMount={handleMount} inferDarkMode store={store} {...props} />
 }

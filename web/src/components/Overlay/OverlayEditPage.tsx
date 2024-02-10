@@ -1,4 +1,4 @@
-const Editor = dynamic(async () => (await import('./Editor')).Editor, { ssr: false })
+const Editor = dynamic(async () => (await import('./Editor')).CustomEditor, { ssr: false })
 import dynamic from "next/dynamic";
 import { useOverlay } from "../../hooks/useOverlays";
 import { useParams } from "next/navigation";

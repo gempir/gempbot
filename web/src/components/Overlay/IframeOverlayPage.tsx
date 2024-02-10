@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import { useParams } from 'next/navigation';
 
-const Editor = dynamic(async () => (await import('./Editor')).Editor, { ssr: false })
+const Editor = dynamic(async () => (await import('./Editor')).CustomEditor, { ssr: false })
 
 export function IframeOverlayPage() {
     const params = useParams<{ roomId: string }>();
@@ -21,6 +21,10 @@ export function IframeOverlayPage() {
 
                     .tl-background {
                         background-color: transparent !important;
+                    }
+
+                    .tl-loading {
+                        display: none !important;
                     }
                 `}</style>
             </Head>
