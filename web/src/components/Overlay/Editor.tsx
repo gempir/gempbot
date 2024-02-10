@@ -15,12 +15,14 @@ export function CustomEditor(props: Partial<TldrawProps> & Props) {
         roomId: props.roomId,
         hostUrl: yjsWsUrl,
     });
-    
+
     const handleMount = (editor: Editor) => {
-        editor.setCamera({ x: 0, y: 0, z: 1 });
-        editor.updateInstanceState({ isReadonly: true, canMoveCamera: false })
-		editor.selectNone();
-	}
+        if (props.readonly) {
+            editor.setCamera({ x: 0, y: 0, z: 1 });
+            editor.updateInstanceState({ isReadonly: true, canMoveCamera: false })
+            editor.selectNone();
+        }
+    }
 
     return <Tldraw onMount={handleMount} inferDarkMode store={store} {...props} />
 }
