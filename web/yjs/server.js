@@ -5,8 +5,8 @@ import josnwebtoken from 'jsonwebtoken';
 import WebSocket from 'ws';
 import { setupWSConnection } from './util.cjs';
 
-// max payload size is 128MB
-const wss = new WebSocket.Server({ noServer: true, maxPayload: 1024 * 1024 * 128});
+// max payload size is 512MB
+const wss = new WebSocket.Server({ noServer: true, maxPayload: 1024 * 1024 * 512});
 
 const host = process.env.HOST ?? '127.0.0.1'
 const port = process.env.PORT ?? 1234
