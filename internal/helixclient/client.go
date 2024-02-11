@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
+	"github.com/jellydator/ttlcache/v2"
 	"github.com/nicklaw5/helix/v2"
 )
 
