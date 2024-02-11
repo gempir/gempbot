@@ -18,7 +18,7 @@ type Listener struct {
 	db                 *store.Database
 	predictionsHandler *Handler
 	commands           map[string]func(dto.CommandPayload)
-	chatSay            func(channel, message string)
+	chatSay            func(channelID, message string)
 }
 
 var (
@@ -78,5 +78,5 @@ func (l *Listener) handleStatus(payload dto.CommandPayload) {
 	}
 
 	uptime := humanize.TimeSince(l.startTime)
-	l.chatSay(payload.Msg.Channel, fmt.Sprintf("@%s, uptime: %s", payload.Msg.User.DisplayName, uptime))
+	l.chatSay(payload.Msg.RoomID, fmt.Sprintf("@%s, uptime: %s", payload.Msg.User.DisplayName, uptime))
 }

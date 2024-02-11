@@ -6,6 +6,7 @@ import (
 
 	"github.com/gempir/gempbot/internal/auth"
 	"github.com/gempir/gempbot/internal/bot"
+	"github.com/gempir/gempbot/internal/bot/commander"
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/emotechief"
@@ -39,6 +40,12 @@ func main() {
 	authClient := auth.NewAuth(cfg, db, helixClient)
 
 	bot := bot.NewBot(cfg, db, helixClient)
+	cmdHandler := commander.NewHandler(cfg, helixClient, db, bot.Send)
+
+	listener := commander.NewListener(db, cmdHandler, bot.Send)
+	listener.RegisterDefaultCommands()
+	bot.ChatClient.SetOnPrivateMessage(listener.HandlePrivateMessage)
+
 	go bot.Connect()
 
 	seventvClient := emoteservice.NewSevenTvClient(db)

@@ -152,7 +152,7 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 					}
 				} else {
 					log.Infof("[%s] Bttv Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
-					esm.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("A new Bttv emote is waiting for approval, redeemed by @%s", redemption.UserName))
+					esm.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("A new Bttv emote is waiting for approval, redeemed by @%s", redemption.UserName))
 					return
 				}
 			}
@@ -169,7 +169,7 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 					}
 				} else {
 					log.Infof("[%s] 7TV Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
-					esm.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("A new 7TV emote is waiting for approval, redeemed by @%s", redemption.UserName))
+					esm.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("A new 7TV emote is waiting for approval, redeemed by @%s", redemption.UserName))
 					return
 				}
 			}
@@ -212,7 +212,7 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 			}
 			// if we don't find the redemption in our cache, we didn't send the redemption update ourselves and need to send a rejection message
 			if _, err := esm.ttlCache.Get(redemption.ID); err == ttlcache.ErrNotFound {
-				esm.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Emote redemption by @%s was rejected", redemption.UserLogin))
+				esm.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("⚠️ Emote redemption by @%s was rejected", redemption.UserLogin))
 			}
 		}
 		return

@@ -1,29 +1,40 @@
 package chat
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gempir/gempbot/internal/config"
+	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/go-twitch-irc/v4"
+	"github.com/nicklaw5/helix/v2"
 )
 
+const gempbotUserID = "99659894"
+
 type ChatClient struct {
-	ircClient *twitch.Client
-	cfg       *config.Config
-	connected chan bool
+	ircClient   *twitch.Client
+	helixClient helixclient.Client
+	cfg         *config.Config
+	connected   chan bool
 }
 
-func NewClient(cfg *config.Config) *ChatClient {
+func NewClient(cfg *config.Config, helixClient helixclient.Client) *ChatClient {
 	return &ChatClient{
-		cfg:       cfg,
-		connected: make(chan bool),
-		ircClient: twitch.NewClient(cfg.Username, cfg.OAuth),
+		cfg:         cfg,
+		connected:   make(chan bool),
+		helixClient: helixClient,
+		ircClient:   twitch.NewClient(cfg.Username, cfg.OAuth),
 	}
 }
 
-func (c *ChatClient) Say(channel string, message string) {
-	c.ircClient.Say(channel, message)
+func (c *ChatClient) Send(channelID string, message string) {
+	resp, err := c.helixClient.SendChatMessage(&helix.SendChatMessageParams{BroadcasterID: channelID, Message: message, SenderID: gempbotUserID})
+	if err != nil {
+		log.Error("Failure sending message", err, resp)
+	}
+	fmt.Println(resp)
 }
 
 func (c *ChatClient) Reply(channel string, parentMsgId string, message string) {

@@ -20,10 +20,10 @@ type Handler struct {
 	cfg         *config.Config
 	db          *store.Database
 	helixClient helixclient.Client
-	chatSay     func(channel, message string)
+	chatSay     func(channelID, message string)
 }
 
-func NewHandler(cfg *config.Config, helixClient helixclient.Client, db *store.Database, chatSay func(channel, message string)) *Handler {
+func NewHandler(cfg *config.Config, helixClient helixclient.Client, db *store.Database, chatSay func(channelID, message string)) *Handler {
 	return &Handler{
 		cfg:         cfg,
 		db:          db,
@@ -174,5 +174,5 @@ func (h *Handler) startPrediction(payload dto.CommandPayload) {
 }
 
 func (h *Handler) handleError(msg twitch.PrivateMessage, err error) {
-	h.chatSay(msg.Channel, fmt.Sprintf("@%s %s", msg.User.DisplayName, err))
+	h.chatSay(msg.RoomID, fmt.Sprintf("@%s %s", msg.User.DisplayName, err))
 }

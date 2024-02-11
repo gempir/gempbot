@@ -1,17 +1,19 @@
 package bot
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
-	"github.com/gempir/gempbot/internal/bot/commander"
 	"github.com/gempir/gempbot/internal/chat"
 	"github.com/gempir/gempbot/internal/config"
-	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/store"
+	"github.com/nicklaw5/helix/v2"
 )
+
+const gempbotUserID = "99659894"
 
 // Bot basic logging bot
 type Bot struct {
@@ -19,49 +21,29 @@ type Bot struct {
 	cfg         *config.Config
 	db          *store.Database
 	helixClient helixclient.Client
-	listener    *commander.Listener
 	Done        chan bool
 	ChatClient  *chat.ChatClient
 }
 
 func NewBot(cfg *config.Config, db *store.Database, helixClient helixclient.Client) *Bot {
-	chatClient := chat.NewClient(cfg)
-
-	handler := commander.NewHandler(cfg, helixClient, db, chatClient.Say)
-
-	listener := commander.NewListener(db, handler, chatClient.Say)
-	listener.RegisterDefaultCommands()
+	chatClient := chat.NewClient(cfg, helixClient)
 
 	return &Bot{
 		Done:        make(chan bool),
 		ChatClient:  chatClient,
 		cfg:         cfg,
 		db:          db,
-		listener:    listener,
 		helixClient: helixClient,
 	}
 }
 
-func (b *Bot) RegisterCommand(command string, handler func(dto.CommandPayload)) {
-	b.listener.RegisterCommand(command, handler)
-}
-
-func (b *Bot) Say(channel string, message string) {
-	go b.ChatClient.Say(channel, message)
-}
-
-func (b *Bot) SayByChannelID(channelID string, message string) {
-	userData, err := b.helixClient.GetUserByUserID(channelID)
+func (b *Bot) Send(channelID string, message string) {
+	fmt.Println("sending message", channelID, message, gempbotUserID)
+	resp, err := b.helixClient.SendChatMessage(&helix.SendChatMessageParams{BroadcasterID: channelID, Message: message, SenderID: gempbotUserID})
 	if err != nil {
-		log.Error(err)
-		return
+		log.Error("Failure sending message", err, resp)
 	}
-
-	go b.ChatClient.Say(userData.Login, message)
-}
-
-func (c *Bot) Reply(channel string, parentMsgId string, message string) {
-	c.ChatClient.Reply(channel, parentMsgId, message)
+	fmt.Println(resp)
 }
 
 func (b *Bot) Join(channel string) {
@@ -74,7 +56,6 @@ func (b *Bot) Part(channel string) {
 
 func (b *Bot) Connect() {
 	b.startTime = time.Now()
-	b.ChatClient.SetOnPrivateMessage(b.listener.HandlePrivateMessage)
 	go b.ChatClient.Connect(b.joinBotConfigChannels)
 
 	if strings.HasPrefix(b.cfg.Username, "justinfan") {

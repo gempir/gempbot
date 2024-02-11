@@ -13,7 +13,6 @@ import (
 func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	userID := ""
-	login := ""
 
 	if username == "" {
 		authResult, _, err := a.authClient.AttemptAuth(r, w)
@@ -21,7 +20,6 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		userID = authResult.Data.UserID
-		login = authResult.Data.Login
 
 		if r.URL.Query().Get("managing") != "" {
 			userID, err = a.userAdmin.CheckEditor(r, a.userAdmin.GetUserConfig(userID))
@@ -29,13 +27,6 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), err.Status())
 				return
 			}
-
-			uData, helixError := a.helixClient.GetUserByUserID(userID)
-			if helixError != nil {
-				api.WriteJson(w, fmt.Errorf("could not find managing user in helix"), http.StatusBadRequest)
-				return
-			}
-			login = uData.Login
 		}
 	} else {
 		user, err := a.helixClient.GetUserByUsername(username)
@@ -45,7 +36,6 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		userID = user.ID
-		login = user.Login
 	}
 	if r.Method == http.MethodDelete {
 		a.db.RemoveEmoteAdd(userID, r.URL.Query().Get("emoteId"))
@@ -78,7 +68,7 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			a.bot.ChatClient.Say(login, fmt.Sprintf("⚠️ Emote %s has been removed and blocked", emote.Code))
+			a.bot.Send(userID, fmt.Sprintf("⚠️ Emote %s has been removed and blocked", emote.Code))
 		} else if emoteAdd.Type == dto.REWARD_BTTV {
 			err := a.db.BlockEmotes(userID, []string{emoteID}, string(dto.REWARD_BTTV))
 			if err != nil {
@@ -91,7 +81,7 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			a.bot.ChatClient.Say(login, fmt.Sprintf("⚠️ Emote %s has been removed and blocked", emote.Code))
+			a.bot.Send(userID, fmt.Sprintf("⚠️ Emote %s has been removed and blocked", emote.Code))
 		}
 
 		api.WriteJson(w, "ok", http.StatusOK)

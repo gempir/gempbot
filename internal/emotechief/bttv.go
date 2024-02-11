@@ -237,14 +237,14 @@ func (ec *EmoteChief) VerifyBttvRedemption(reward store.ChannelPointReward, rede
 		_, _, _, _, err := ec.VerifySetBttvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("Bttv error %s %s", redemption.BroadcasterUserLogin, err)
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: %s", redemption.UserName, err.Error()))
+			ec.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: %s", redemption.UserName, err.Error()))
 			return false
 		}
 
 		return true
 	}
 
-	ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: %s", redemption.UserName, err.Error()))
+	ec.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: %s", redemption.UserName, err.Error()))
 	return false
 }
 
@@ -267,19 +267,19 @@ func (ec *EmoteChief) HandleBttvRedemption(reward store.ChannelPointReward, rede
 		emoteAdded, emoteRemoved, err := ec.SetBttvEmote(redemption.BroadcasterUserID, emoteID, redemption.BroadcasterUserLogin, opts.Slots)
 		if err != nil {
 			log.Warnf("Bttv error %s %s", redemption.BroadcasterUserLogin, err)
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: %s", redemption.UserName, err.Error()))
+			ec.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: %s", redemption.UserName, err.Error()))
 		} else if emoteAdded != nil && emoteRemoved != nil {
 			success = true
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new bttv emote %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.UserName, emoteRemoved.Code))
+			ec.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("✅ Added new bttv emote %s redeemed by @%s removed: %s", emoteAdded.Code, redemption.UserName, emoteRemoved.Code))
 		} else if emoteAdded != nil {
 			success = true
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new bttv emote %s redeemed by @%s", emoteAdded.Code, redemption.UserName))
+			ec.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("✅ Added new bttv emote %s redeemed by @%s", emoteAdded.Code, redemption.UserName))
 		} else {
 			success = true
-			ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("✅ Added new bttv emote [unknown] redeemed by @%s", redemption.UserName))
+			ec.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("✅ Added new bttv emote [unknown] redeemed by @%s", redemption.UserName))
 		}
 	} else {
-		ec.chatClient.Say(redemption.BroadcasterUserLogin, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: %s", redemption.UserName, err.Error()))
+		ec.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("⚠️ Failed to add bttv emote from @%s error: %s", redemption.UserName, err.Error()))
 	}
 
 	if redemption.UserID == dto.GEMPIR_USER_ID {

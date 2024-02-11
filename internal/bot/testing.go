@@ -15,5 +15,8 @@ func (mb *Mockbot) RegisterCommand(command string, handler func(dto.CommandPaylo
 func (mb *Mockbot) Say(channel string, message string) {
 }
 
+func (mb *Mockbot) Send(channelID string, message string) {
+}
+
 func (mb *Mockbot) Reply(channel string, parentMsgId string, message string) {
 }
