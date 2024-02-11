@@ -29,11 +29,6 @@
     src: templates/service.j2
     dest: /etc/systemd/system/gempbot.service
 
-- name: Install Yjs Service
-  template:
-    src: templates/service-yjs.j2
-    dest: /etc/systemd/system/gempbot-yjs.service
-
 - name: Install Migrate Service
   template:
     src: templates/migrate.j2
@@ -49,10 +44,4 @@
   systemd:
     daemon_reload: true
     name: gempbot
-    enabled: true
-
-- name: ensure yjs service is enabled
-  systemd:
-    daemon_reload: true
-    name: gempbot-yjs
     enabled: true

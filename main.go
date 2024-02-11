@@ -68,7 +68,6 @@ func main() {
 	mux.HandleFunc("/api/reward", apiHandlers.RewardHandler)
 	mux.HandleFunc("/api/subscriptions", apiHandlers.SubscriptionsHandler)
 	mux.HandleFunc("/api/userconfig", apiHandlers.UserConfigHandler)
-	mux.HandleFunc("/api/overlay", apiHandlers.OverlayHandler)
 	mux.HandleFunc("/api/ws", wsHandler.HandleWs)
 
 	handler := cors.New(cors.Options{

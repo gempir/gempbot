@@ -30,11 +30,6 @@ export function Sidebar() {
                     <ChatBubbleLeftIcon className="h-6" />Bot
                 </Link>
                 <Link
-                    href="/overlay"
-                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                    <PhotoIcon className="h-6" />Overlays
-                </Link>
-                <Link
                     href="/rewards"
                     className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
                     <GiftIcon className="h-6" />Rewards

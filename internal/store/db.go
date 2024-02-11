@@ -38,11 +38,6 @@ type Store interface {
 	CountNominationDownvotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error)
 	CountNominationVotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error)
 	IsAlreadyNominated(ctx context.Context, channelTwitchID string, emoteID string) (bool, error)
-	GetOverlays(userID string) []Overlay
-	GetOverlay(ID string, userID string) Overlay
-	GetOverlayByRoomId(roomID string) Overlay
-	DeleteOverlay(ID string)
-	SaveOverlay(overlay Overlay) error
 }
 
 type Database struct {
@@ -82,7 +77,6 @@ func (db *Database) Migrate() {
 		Nomination{},
 		NominationVote{},
 		NominationDownvote{},
-		Overlay{},
 	)
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())

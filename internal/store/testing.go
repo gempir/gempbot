@@ -131,24 +131,3 @@ func (s *MockStore) CountNominationDownvotes(ctx context.Context, channelTwitchI
 func (s *MockStore) CountNominationVotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error) {
 	return 0, nil
 }
-
-func (s *MockStore) GetOverlays(userID string) []Overlay {
-	return []Overlay{
-		{ID: "1", OwnerTwitchID: "1", RoomID: "roomid"},
-	}
-}
-
-func (s *MockStore) GetOverlay(ID string, userID string) Overlay {
-	return Overlay{}
-}
-
-func (s *MockStore) GetOverlayByRoomId(roomID string) Overlay {
-	return Overlay{}
-}
-
-func (s *MockStore) DeleteOverlay(ID string) {
-}
-
-func (s *MockStore) SaveOverlay(overlay Overlay) error {
-	return nil
-}
