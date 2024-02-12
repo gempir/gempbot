@@ -12,6 +12,9 @@ build_server:
 yjs_server:
 	cd web && yarn yjs
 
+ysweet_token:
+	cd web && yarn build-ysweet-token
+
 test:
 	go test ./internal/...
 

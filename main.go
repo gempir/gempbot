@@ -17,6 +17,7 @@ import (
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/user"
 	"github.com/gempir/gempbot/internal/ws"
+	"github.com/gempir/gempbot/internal/ysweet"
 	"github.com/rs/cors"
 )
 
@@ -71,6 +72,13 @@ func main() {
 	mux.HandleFunc("/api/overlay", apiHandlers.OverlayHandler)
 	mux.HandleFunc("/api/ws", wsHandler.HandleWs)
 
+	tokenFactory := ysweet.NewFactory("xdd")
+	str, err := tokenFactory.CreateToken("doc")
+	if err != nil {
+		log.Error(err)
+	}
+	log.Warn(str)
+
 	handler := cors.New(cors.Options{
 		AllowedOrigins:   []string{cfg.WebBaseUrl},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
@@ -79,7 +87,7 @@ func main() {
 	}).Handler(mux)
 
 	log.Info("Starting server on " + cfg.ListenAddress)
-	err := http.ListenAndServe(cfg.ListenAddress, handler)
+	err = http.ListenAndServe(cfg.ListenAddress, handler)
 	if err != nil {
 		log.Fatal(err)
 	}

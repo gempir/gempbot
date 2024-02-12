@@ -4,7 +4,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "yjs": "node yjs/server.js"
+    "yjs": "node yjs/server.js",
+    "build-ysweet-token": "esbuild createYsweetToken.cjs --bundle --outfile=../internal/ysweet/createToken.cjs --platform=node --target=node20"
   },
   "type": "module",
   "dependencies": {
@@ -12,6 +13,8 @@
     "@tailwindcss/forms": "^0.5.7",
     "@tldraw/tldraw": "^2.0.0-beta.2",
     "@types/seedrandom": "^3.0.4",
+    "@y-sweet/react": "^0.1.0",
+    "@y-sweet/sdk": "^0.1.0",
     "dayjs": "^1.11.7",
     "eslint-config-next": "^14.1.0",
     "jsonwebtoken": "^9.0.2",
@@ -24,6 +27,7 @@
     "react-use-websocket": "^4.5.0",
     "seedrandom": "^3.0.5",
     "tailwindcss": "^3.4.1",
+    "y-sweet": "^0.1.0",
     "y-utility": "^0.1.3",
     "y-websocket": "^1.5.3",
     "yjs": "^13.6.11",
@@ -33,6 +37,7 @@
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.52",
     "autoprefixer": "^10.4.17",
+    "esbuild": "^0.20.0",
     "postcss": "^8.4.33",
     "typescript": "^5.3.3"
   }

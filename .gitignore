@@ -47,3 +47,4 @@ web/dbdir
 # Binaries
 /main
 /gempbot
+/internal/ysweet/createToken.cjs
