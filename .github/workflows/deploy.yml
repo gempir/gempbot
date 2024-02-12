@@ -18,3 +18,4 @@ jobs:
           echo "${{secrets.SSH_PRIVATE_KEY}}" > ansible/.ssh_key
           chmod 600 ansible/.ssh_key
           make deploy
+          make deploy_yjs
