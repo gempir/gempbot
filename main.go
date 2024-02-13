@@ -38,6 +38,7 @@ func main() {
 
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
 	authClient := auth.NewAuth(cfg, db, helixClient)
+	tokenFactory := ysweet.NewFactory(cfg)
 
 	bot := bot.NewBot(cfg, db, helixClient)
 	go bot.Connect()
@@ -49,7 +50,7 @@ func main() {
 	wsHandler := ws.NewWsHandler(authClient)
 	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler)
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler, tokenFactory)
 
 	mux := http.NewServeMux()
 
@@ -72,13 +73,6 @@ func main() {
 	mux.HandleFunc("/api/overlay", apiHandlers.OverlayHandler)
 	mux.HandleFunc("/api/ws", wsHandler.HandleWs)
 
-	tokenFactory := ysweet.NewFactory("xdd")
-	str, err := tokenFactory.CreateToken("doc")
-	if err != nil {
-		log.Error(err)
-	}
-	log.Warn(str)
-
 	handler := cors.New(cors.Options{
 		AllowedOrigins:   []string{cfg.WebBaseUrl},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
@@ -87,7 +81,7 @@ func main() {
 	}).Handler(mux)
 
 	log.Info("Starting server on " + cfg.ListenAddress)
-	err = http.ListenAndServe(cfg.ListenAddress, handler)
+	err := http.ListenAndServe(cfg.ListenAddress, handler)
 	if err != nil {
 		log.Fatal(err)
 	}

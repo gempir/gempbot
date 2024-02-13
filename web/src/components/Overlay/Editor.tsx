@@ -1,20 +1,14 @@
 import { Editor, Tldraw, TldrawProps } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 import { useYjsStore } from '../../hooks/useYjsStore';
-import { useStore } from '../../store';
 
 
 type Props = {
-    roomId: string;
     readonly?: boolean;
 }
 
 export function CustomEditor(props: Partial<TldrawProps> & Props) {
-    const yjsWsUrl = useStore(state => state.yjsWsUrl);
-    const store = useYjsStore({
-        roomId: props.roomId,
-        hostUrl: yjsWsUrl,
-    });
+    const store = useYjsStore();
 
     const handleMount = (editor: Editor) => {
         if (props.readonly) {

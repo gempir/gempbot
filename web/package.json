@@ -4,8 +4,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "yjs": "node yjs/server.js",
-    "build-ysweet-token": "esbuild createYsweetToken.cjs --bundle --outfile=../internal/ysweet/createToken.cjs --platform=node --target=node20"
+    "ysweet-dev": "y-sweet serve --port 8070 --auth=eGRk --host 127.0.0.1"
   },
   "type": "module",
   "dependencies": {
@@ -37,7 +36,6 @@
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.52",
     "autoprefixer": "^10.4.17",
-    "esbuild": "^0.20.0",
     "postcss": "^8.4.33",
     "typescript": "^5.3.3"
   }

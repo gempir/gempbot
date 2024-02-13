@@ -1,23 +1,21 @@
 package ysweet
 
 import (
-	"bytes"
-	_ "embed"
-	"encoding/json"
-	"fmt"
-	"os/exec"
+	"context"
+
+	"github.com/carlmjohnson/requests"
+	"github.com/gempir/gempbot/internal/config"
 )
 
-//go:embed createToken.cjs
-var createToken string
-
 type Factory struct {
-	ysweetUrl string
+	ysweetUrl   string
+	bearerToken string
 }
 
-func NewFactory(ysweetUrl string) *Factory {
+func NewFactory(cfg *config.Config) *Factory {
 	return &Factory{
-		ysweetUrl: ysweetUrl,
+		ysweetUrl:   cfg.YsweetUrl,
+		bearerToken: cfg.YsweetToken,
 	}
 }
 
@@ -27,27 +25,35 @@ type TokenResponse struct {
 	Token string `json:"token"`
 }
 
+type DocResponse struct {
+	DocID string `json:"docId"`
+}
+
 func (f *Factory) CreateToken(docID string) (TokenResponse, error) {
-	cmd := exec.Command("node", "-", "")
-	cmd.Env = append(cmd.Env, "YSWEET_URL="+f.ysweetUrl)
-	cmd.Env = append(cmd.Env, "YSWEET_DOC_ID=1"+docID)
-
-	cmd.Stdin = bytes.NewBufferString(createToken)
-
-	var out bytes.Buffer
-	var errOut bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &errOut
-
-	err := cmd.Run()
+	var docResponse DocResponse
+	err := requests.
+		URL(f.ysweetUrl).
+		Post().
+		BodyJSON(map[string]string{"docId": docID}).
+		Bearer(f.bearerToken).
+		Pathf("/doc/new").
+		ToJSON(&docResponse).
+		Fetch(context.Background())
 	if err != nil {
-		return TokenResponse{}, fmt.Errorf("%s %w", errOut.String(), err)
+		return TokenResponse{}, err
 	}
 
 	var tokenResponse TokenResponse
-	err = json.Unmarshal(out.Bytes(), &tokenResponse)
+	err = requests.
+		URL(f.ysweetUrl).
+		Post().
+		Pathf("/doc/%s/auth", docResponse.DocID).
+		BodyJSON(map[string]string{}).
+		Bearer(f.bearerToken).
+		ToJSON(&tokenResponse).
+		Fetch(context.Background())
 	if err != nil {
-		return TokenResponse{}, fmt.Errorf("%s %w", out.String(), err)
+		return TokenResponse{}, err
 	}
 
 	return tokenResponse, nil

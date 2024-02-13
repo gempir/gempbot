@@ -41,9 +41,19 @@ export function useOverlays(): [Overlay[], () => void, (id: string) => void, str
     return [overlays, addOverlay, deleteOverlay, errorMessage, loading];
 }
 
+type Auth = {
+    url: string;
+    docId: string;
+    token: string;
+}
 
-export function useOverlay(id: string): [Overlay|null, boolean] {
-    const [overlay, setOverlay] = useState<Overlay | null>(null);
+type OverlayAuth = {
+    overlay: Overlay;
+    auth: Auth;
+}
+
+export function useOverlay(id: string): [OverlayAuth|null, boolean] {
+    const [overlay, setOverlay] = useState<OverlayAuth | null>(null);
     const [loading, setLoading] = useState(false);
     const managing = useStore(state => state.managing);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
@@ -61,8 +71,8 @@ export function useOverlay(id: string): [Overlay|null, boolean] {
     return [overlay, loading];
 }
 
-export function useOverlayByRoomId(roomId: string): [Overlay|null, boolean] {
-    const [overlay, setOverlay] = useState<Overlay | null>(null);
+export function useOverlayByRoomId(roomId: string): [OverlayAuth|null, boolean] {
+    const [overlay, setOverlay] = useState<OverlayAuth | null>(null);
     const [loading, setLoading] = useState(false);
     const managing = useStore(state => state.managing);
     const apiBaseUrl = useStore(state => state.apiBaseUrl);

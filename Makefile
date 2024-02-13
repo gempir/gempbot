@@ -9,11 +9,8 @@ export $(shell sed 's/=.*//' .env)
 build_server:
 	go run main.go
 
-yjs_server:
-	cd web && yarn yjs
-
-ysweet_token:
-	cd web && yarn build-ysweet-token
+ysweet:
+	cd web && yarn ysweet-dev
 
 test:
 	go test ./internal/...

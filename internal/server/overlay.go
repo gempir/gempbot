@@ -6,9 +6,15 @@ import (
 
 	"github.com/gempir/gempbot/internal/api"
 	"github.com/gempir/gempbot/internal/store"
+	"github.com/gempir/gempbot/internal/ysweet"
 	"github.com/google/uuid"
 	"github.com/teris-io/shortid"
 )
+
+type OverlayResponse struct {
+	Overlay store.Overlay        `json:"overlay"`
+	Auth    ysweet.TokenResponse `json:"auth"`
+}
 
 func (a *Api) OverlayHandler(w http.ResponseWriter, r *http.Request) {
 	authResp, _, apiErr := a.authClient.AttemptAuth(r, w)
@@ -28,13 +34,26 @@ func (a *Api) OverlayHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		if r.URL.Query().Get("roomId") != "" {
 			overlay := a.db.GetOverlayByRoomId(r.URL.Query().Get("roomId"))
-			api.WriteJson(w, overlay, http.StatusOK)
+
+			token, err := a.tokenFactory.CreateToken(overlay.RoomID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			api.WriteJson(w, OverlayResponse{overlay, token}, http.StatusOK)
 			return
 		}
 
 		if r.URL.Query().Get("id") != "" {
 			overlay := a.db.GetOverlay(r.URL.Query().Get("id"), userID)
-			api.WriteJson(w, overlay, http.StatusOK)
+			token, err := a.tokenFactory.CreateToken(overlay.RoomID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			api.WriteJson(w, OverlayResponse{overlay, token}, http.StatusOK)
 			return
 		}
 
