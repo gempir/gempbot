@@ -2,6 +2,7 @@ package ysweet
 
 import (
 	"context"
+	"strings"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/gempir/gempbot/internal/config"
@@ -9,12 +10,14 @@ import (
 
 type Factory struct {
 	ysweetUrl   string
+	ssl         bool
 	bearerToken string
 }
 
 func NewFactory(cfg *config.Config) *Factory {
 	return &Factory{
 		ysweetUrl:   cfg.YsweetUrl,
+		ssl:         strings.HasPrefix(cfg.WebhookApiBaseUrl, "https"),
 		bearerToken: cfg.YsweetToken,
 	}
 }
@@ -54,6 +57,10 @@ func (f *Factory) CreateToken(docID string) (TokenResponse, error) {
 		Fetch(context.Background())
 	if err != nil {
 		return TokenResponse{}, err
+	}
+
+	if f.ssl {
+		tokenResponse.Url = strings.Replace(tokenResponse.Url, "ws://", "wss://", 1)
 	}
 
 	return tokenResponse, nil
