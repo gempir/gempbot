@@ -1,0 +1,15 @@
+
+POST http://127.0.0.1:8070/doc/new
+Content-Type: application/json
+Authorization: Bearer AAAgT07jyfGLORBpu8Oj0XmtJmbT7KAeWBRZ3Y75d1T4u1A
+
+{
+    "docId": "newDoc123"
+}
+
+###
+POST http://127.0.0.1:8070/doc/newDoc123/auth
+Content-Type: application/json
+Authorization: Bearer AAAgT07jyfGLORBpu8Oj0XmtJmbT7KAeWBRZ3Y75d1T4u1A
+
+{}

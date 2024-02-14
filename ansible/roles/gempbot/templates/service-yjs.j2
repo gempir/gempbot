@@ -1,0 +1,14 @@
+[Unit]
+Description=gempbot-yjs
+After=network.target
+StartLimitBurst=10
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStart=./node_modules/.bin/y-sweet serve --port 8070 --host 127.0.0.1 --auth {{ ysweet_authb64 }} --prod /home/gempbot/yjs_db
+WorkingDirectory=/home/gempbot/web
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

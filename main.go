@@ -17,6 +17,7 @@ import (
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/user"
 	"github.com/gempir/gempbot/internal/ws"
+	"github.com/gempir/gempbot/internal/ysweet"
 	"github.com/rs/cors"
 )
 
@@ -37,6 +38,7 @@ func main() {
 
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
 	authClient := auth.NewAuth(cfg, db, helixClient)
+	tokenFactory := ysweet.NewFactory(cfg)
 
 	bot := bot.NewBot(cfg, db, helixClient)
 	go bot.Connect()
@@ -48,7 +50,7 @@ func main() {
 	wsHandler := ws.NewWsHandler(authClient)
 	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler)
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler, tokenFactory)
 
 	mux := http.NewServeMux()
 
@@ -68,6 +70,7 @@ func main() {
 	mux.HandleFunc("/api/reward", apiHandlers.RewardHandler)
 	mux.HandleFunc("/api/subscriptions", apiHandlers.SubscriptionsHandler)
 	mux.HandleFunc("/api/userconfig", apiHandlers.UserConfigHandler)
+	mux.HandleFunc("/api/overlay", apiHandlers.OverlayHandler)
 	mux.HandleFunc("/api/ws", wsHandler.HandleWs)
 
 	handler := cors.New(cors.Options{
