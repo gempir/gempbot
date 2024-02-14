@@ -65,7 +65,7 @@ func (a *Api) OverlayHandler(w http.ResponseWriter, r *http.Request) {
 		overlay.ID = shortid.MustGenerate()
 		// long string so you cant read addressbar easily
 		var roomID []string
-		for i := 0; i < 16; i++ {
+		for i := 0; i < 4; i++ {
 			roomID = append(roomID, uuid.New().String())
 		}
 		overlay.RoomID = strings.Join(roomID, "-")
