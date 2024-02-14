@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gempir/gempbot/internal/api"
+	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/ysweet"
 	"github.com/google/uuid"
@@ -60,6 +61,11 @@ func (a *Api) OverlayHandler(w http.ResponseWriter, r *http.Request) {
 		overlays := a.db.GetOverlays(userID)
 		api.WriteJson(w, overlays, http.StatusOK)
 	} else if r.Method == http.MethodPost {
+		if authResp.Data.UserID != dto.GEMPIR_USER_ID {
+			http.Error(w, "Only gempir can", http.StatusForbidden)
+			return
+		}
+
 		overlay := store.Overlay{}
 		overlay.OwnerTwitchID = userID
 		overlay.ID = shortid.MustGenerate()
@@ -79,6 +85,11 @@ func (a *Api) OverlayHandler(w http.ResponseWriter, r *http.Request) {
 		api.WriteJson(w, overlay, http.StatusCreated)
 
 	} else if r.Method == http.MethodDelete {
+		if authResp.Data.UserID != dto.GEMPIR_USER_ID {
+			http.Error(w, "Only gempir can", http.StatusForbidden)
+			return
+		}
+
 		if r.URL.Query().Get("id") == "" {
 			http.Error(w, "missing id", http.StatusBadRequest)
 		}
