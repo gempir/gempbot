@@ -11,6 +11,7 @@ export function CustomEditor(props: Partial<TldrawProps> & Props) {
     const store = useYjsStore();
 
     const handleMount = (editor: Editor) => {
+        console.log('editor mounted', props.readonly, editor);
         if (props.readonly) {
             editor.setCamera({ x: 0, y: 0, z: 1 });
             editor.updateInstanceState({ isReadonly: true, canMoveCamera: false })

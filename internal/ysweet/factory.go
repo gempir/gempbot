@@ -17,7 +17,7 @@ type Factory struct {
 func NewFactory(cfg *config.Config) *Factory {
 	return &Factory{
 		ysweetUrl:   cfg.YsweetUrl,
-		ssl:         strings.HasPrefix(cfg.WebhookApiBaseUrl, "https"),
+		ssl:         strings.HasPrefix(cfg.WebBaseUrl, "https"),
 		bearerToken: cfg.YsweetToken,
 	}
 }
