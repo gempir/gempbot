@@ -9,6 +9,9 @@ export $(shell sed 's/=.*//' .env)
 build_server:
 	go run main.go
 
+ysweet:
+	cd web && yarn ysweet-dev
+
 test:
 	go test ./internal/...
 

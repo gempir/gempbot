@@ -12,6 +12,7 @@ import (
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/user"
 	"github.com/gempir/gempbot/internal/ws"
+	"github.com/gempir/gempbot/internal/ysweet"
 )
 
 type Api struct {
@@ -26,9 +27,10 @@ type Api struct {
 	channelPointManager *channelpoint.ChannelPointManager
 	sevenTvClient       emoteservice.ApiClient
 	wsHandler           *ws.WsHandler
+	tokenFactory        *ysweet.Factory
 }
 
-func NewApi(cfg *config.Config, db *store.Database, helixClient helixclient.Client, userAdmin *user.UserAdmin, authClient *auth.Auth, bot *bot.Bot, emoteChief *emotechief.EmoteChief, eventsubManager *eventsubmanager.EventsubManager, channelPointManager *channelpoint.ChannelPointManager, sevenTvClient emoteservice.ApiClient, wsHandler *ws.WsHandler) *Api {
+func NewApi(cfg *config.Config, db *store.Database, helixClient helixclient.Client, userAdmin *user.UserAdmin, authClient *auth.Auth, bot *bot.Bot, emoteChief *emotechief.EmoteChief, eventsubManager *eventsubmanager.EventsubManager, channelPointManager *channelpoint.ChannelPointManager, sevenTvClient emoteservice.ApiClient, wsHandler *ws.WsHandler, tokenFactory *ysweet.Factory) *Api {
 	return &Api{
 		db:                  db,
 		cfg:                 cfg,
@@ -41,5 +43,6 @@ func NewApi(cfg *config.Config, db *store.Database, helixClient helixclient.Clie
 		channelPointManager: channelPointManager,
 		sevenTvClient:       sevenTvClient,
 		wsHandler:           wsHandler,
+		tokenFactory:        tokenFactory,
 	}
 }

@@ -18,6 +18,8 @@ type Config struct {
 	DSN               string `json:"DSN"`
 	LogLevel          string `json:"logLevel"`
 	ListenAddress     string `json:"listenAddress"`
+	YsweetUrl         string `json:"ysweetUrl"`
+	YsweetToken       string `json:"ysweetToken"`
 }
 
 func FromEnv() *Config {
@@ -48,6 +50,8 @@ func FromEnv() *Config {
 		DSN:               Getenv("DSN"),
 		LogLevel:          logLevel,
 		ListenAddress:     listenAddress,
+		YsweetUrl:         Getenv("YSWEET_URL"),
+		YsweetToken:       Getenv("YSWEET_TOKEN"),
 	}
 }
 
