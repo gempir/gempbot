@@ -1,7 +1,32 @@
 package helixclient
 
-import "github.com/nicklaw5/helix/v2"
+import (
+	"context"
 
-func (c *HelixClient) SendChatMessage(params *helix.SendChatMessageParams) (*helix.ChatMessageResponse, error) {
-	return c.Client.SendChatMessage(params)
+	"github.com/carlmjohnson/requests"
+	"github.com/nicklaw5/helix/v2"
+)
+
+type SendChatMessageResponse struct {
+	Data []struct {
+		MessageID string `json:"message_id"`
+		IsSent    bool   `json:"is_sent"`
+	} `json:"data"`
+}
+
+func (c *HelixClient) SendChatMessage(params *helix.SendChatMessageParams) (*SendChatMessageResponse, error) {
+	var resp SendChatMessageResponse
+
+	err := requests.
+		URL(TWITCH_API).
+		BodyJSON(params).
+		Bearer(c.AppAccessToken.AccessToken).
+		Header("Client-Id", c.clientID).
+		ContentType("application/json").
+		Path("/helix/chat/messages").
+		ToJSON(&resp).
+		Post().
+		Fetch(context.Background())
+
+	return &resp, err
 }

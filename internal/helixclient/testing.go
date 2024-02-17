@@ -90,6 +90,6 @@ func (m *MockHelixClient) RequestUserAccessToken(code string) (*helix.UserAccess
 	return nil, nil
 }
 
-func (m *MockHelixClient) SendChatMessage(params *helix.SendChatMessageParams) (*helix.ChatMessageResponse, error) {
+func (m *MockHelixClient) SendChatMessage(params *helix.SendChatMessageParams) (*SendChatMessageResponse, error) {
 	return nil, nil
 }

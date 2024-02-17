@@ -77,19 +77,6 @@ export function Bot() {
                 <Toggle checked={!!botConfig?.JoinBot} onChange={handlePredictionCommandsChange} />
             </div>
         </div>
-        {isDev && <div className={"bg-gray-800 rounded shadow relative p-4 mt-4 " + (loadingUserConfig ? "animate-pulse pointer-events-none" : "")}>
-            <div className="flex items-start justify-between">
-                <div>
-                    <h3 className="font-bold text-xl">Media Commands</h3>
-                    <div className="p-2 text-gray-200 mx-0 px-0">
-                        <ul className="list-disc pl-6 font-mono mt-2">
-                            <li>!sr {"<youtube link>"}</li>
-                        </ul>
-                    </div>
-                </div>
-                <Toggle checked={!!botConfig?.MediaCommands} onChange={handleMediaCommandsChange} />
-            </div>
-        </div>}
     </div >;
 }
 
