@@ -68,20 +68,7 @@ func (a *Api) EmoteHistoryHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			a.bot.Send(userID, fmt.Sprintf("⚠️ Emote %s has been removed and blocked", emote.Code))
-		} else if emoteAdd.Type == dto.REWARD_BTTV {
-			err := a.db.BlockEmotes(userID, []string{emoteID}, string(dto.REWARD_BTTV))
-			if err != nil {
-				log.Error(err)
-			}
-
-			emote, err := a.emoteChief.RemoveBttvEmote(userID, emoteID)
-			if err != nil || emote == nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			a.bot.Send(userID, fmt.Sprintf("⚠️ Emote %s has been removed and blocked", emote.Code))
+			a.helixClient.SendChatMessage(userID, fmt.Sprintf("⚠️ Emote %s has been removed and blocked", emote.Code))
 		}
 
 		api.WriteJson(w, "ok", http.StatusOK)

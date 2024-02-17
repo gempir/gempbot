@@ -82,7 +82,7 @@ func (esm *EventsubManager) HandlePredictionBegin(event []byte) {
 		titles = append(titles, outcome.Title)
 	}
 
-	esm.chatClient.Send(
+	esm.helixClient.SendChatMessage(
 		data.BroadcasterUserID,
 		fmt.Sprintf("PogChamp prediction: %s [ %s ] ending in %s",
 			data.Title,
@@ -110,7 +110,7 @@ func (esm *EventsubManager) HandlePredictionLock(event []byte) {
 		lockedTime = nil
 	}
 
-	esm.chatClient.Send(
+	esm.helixClient.SendChatMessage(
 		data.BroadcasterUserID,
 		fmt.Sprintf("FBtouchdown locked submissions for: %s",
 			data.Title,
@@ -145,14 +145,14 @@ func (esm *EventsubManager) HandlePredictionEnd(event []byte) {
 	}
 
 	if strings.ToUpper(data.Status) == dto.PredictionStatusCanceled {
-		esm.chatClient.Send(
+		esm.helixClient.SendChatMessage(
 			data.BroadcasterUserID,
 			fmt.Sprintf("NinjaGrumpy canceled prediction: %s",
 				data.Title,
 			),
 		)
 	} else {
-		esm.chatClient.Send(
+		esm.helixClient.SendChatMessage(
 			data.BroadcasterUserID,
 			fmt.Sprintf("PogChamp ended prediction: %s Winner: %s %s",
 				data.Title,

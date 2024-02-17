@@ -5,8 +5,6 @@ import (
 	"os"
 
 	"github.com/gempir/gempbot/internal/auth"
-	"github.com/gempir/gempbot/internal/bot"
-	"github.com/gempir/gempbot/internal/bot/commander"
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/emotechief"
@@ -35,29 +33,19 @@ func main() {
 	}
 
 	helixClient := helixclient.NewClient(cfg, db)
-	// go helixClient.StartRefreshTokenRoutine()
 
-	userAdmin := user.NewUserAdmin(cfg, db, helixClient, nil)
+	userAdmin := user.NewUserAdmin(cfg, db, helixClient)
 	authClient := auth.NewAuth(cfg, db, helixClient)
 	tokenFactory := ysweet.NewFactory(cfg)
 
-	bot := bot.NewBot(cfg, db, helixClient)
-	cmdHandler := commander.NewHandler(cfg, helixClient, db, bot.Send)
-
-	listener := commander.NewListener(db, cmdHandler, bot.Send)
-	listener.RegisterDefaultCommands()
-	bot.ChatClient.SetOnPrivateMessage(listener.HandlePrivateMessage)
-
-	go bot.Connect()
-
 	seventvClient := emoteservice.NewSevenTvClient(db)
 
-	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, bot.ChatClient, seventvClient)
+	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, seventvClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 	wsHandler := ws.NewWsHandler(authClient)
-	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief, bot.ChatClient)
+	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief)
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, bot, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler, tokenFactory)
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler, tokenFactory)
 
 	mux := http.NewServeMux()
 
@@ -70,7 +58,6 @@ func main() {
 		http.Error(w, "404 page not found", http.StatusNotFound)
 	})
 	mux.HandleFunc("/api/blocks", apiHandlers.BlocksHandler)
-	mux.HandleFunc("/api/botconfig", apiHandlers.BotConfigHandler)
 	mux.HandleFunc("/api/callback", apiHandlers.CallbackHandler)
 	mux.HandleFunc("/api/emotehistory", apiHandlers.EmoteHistoryHandler)
 	mux.HandleFunc("/api/eventsub", apiHandlers.EventSubHandler)

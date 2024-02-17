@@ -36,7 +36,7 @@ type Client interface {
 	SetUserAccessToken(token string)
 	ValidateToken(accessToken string) (bool, *helix.ValidateTokenResponse, error)
 	RequestUserAccessToken(code string) (*helix.UserAccessTokenResponse, error)
-	SendChatMessage(params *helix.SendChatMessageParams) (*SendChatMessageResponse, error)
+	SendChatMessage(channelID string, message string) (*SendChatMessageResponse, error)
 }
 
 // Client wrapper for helix
@@ -44,6 +44,7 @@ type HelixClient struct {
 	clientID        string
 	clientSecret    string
 	eventSubSecret  string
+	botUserID       string
 	Client          *helix.Client
 	AppAccessToken  helix.AccessCredentials
 	db              store.Store
@@ -65,7 +66,7 @@ func init() {
 
 const TWITCH_API = "https://api.twitch.tv/"
 
-var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions moderation:read channel:bot user:write:chat user:bot"}
+var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions moderation:read channel:bot user:write:chat user:bot moderator:manage:announcements"}
 
 // NewClient Create helix client
 func NewClient(cfg *config.Config, db store.Store) *HelixClient {
@@ -88,6 +89,7 @@ func NewClient(cfg *config.Config, db store.Store) *HelixClient {
 		clientID:        cfg.ClientID,
 		clientSecret:    cfg.ClientSecret,
 		eventSubSecret:  cfg.Secret,
+		botUserID:       cfg.BotUserID,
 		Client:          client,
 		AppAccessToken:  helix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
 		db:              db,

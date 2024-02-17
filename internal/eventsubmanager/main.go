@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gempir/gempbot/internal/api"
-	"github.com/gempir/gempbot/internal/chat"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/dto"
 	"github.com/gempir/gempbot/internal/emotechief"
@@ -24,12 +23,11 @@ type EventsubManager struct {
 	helixClient helixclient.Client
 	db          *store.Database
 	emoteChief  *emotechief.EmoteChief
-	chatClient  *chat.ChatClient
 	ttlCache    *ttlcache.Cache
 	callbackMap map[dto.RewardType]func(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent)
 }
 
-func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief, bot *chat.ChatClient) *EventsubManager {
+func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *store.Database, emoteChief *emotechief.EmoteChief) *EventsubManager {
 	cache := ttlcache.NewCache()
 	err := cache.SetTTL(time.Second * 60)
 	if err != nil {
@@ -41,7 +39,6 @@ func NewEventsubManager(cfg *config.Config, helixClient helixclient.Client, db *
 		helixClient: helixClient,
 		db:          db,
 		emoteChief:  emoteChief,
-		chatClient:  bot,
 		ttlCache:    cache,
 		callbackMap: map[dto.RewardType]func(reward store.ChannelPointReward, redemption helix.EventSubChannelPointsCustomRewardRedemptionEvent){},
 	}
@@ -139,23 +136,6 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 
 	if helixclient.RewardStatusIsUnfullfilled(redemption.Status) {
 		if reward.ApproveOnly {
-			if reward.Type == dto.REWARD_BTTV {
-				if !esm.emoteChief.VerifyBttvRedemption(reward, redemption) {
-					log.Infof("[%s] Bttv Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
-					err := esm.ttlCache.Set(redemption.ID, false)
-					if err != nil {
-						log.Error(err)
-					}
-					err = esm.helixClient.UpdateRedemptionStatus(redemption.BroadcasterUserID, reward.RewardID, redemption.ID, false)
-					if err != nil {
-						log.Error(err)
-					}
-				} else {
-					log.Infof("[%s] Bttv Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
-					esm.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("A new Bttv emote is waiting for approval, redeemed by @%s", redemption.UserName))
-					return
-				}
-			}
 			if reward.Type == dto.REWARD_SEVENTV {
 				if !esm.emoteChief.VerifySeventvRedemption(reward, redemption) {
 					log.Infof("[%s] 7TV Reward did not verify refunding %s", redemption.BroadcasterUserID, redemption.Status)
@@ -169,15 +149,11 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 					}
 				} else {
 					log.Infof("[%s] 7TV Reward is approve only, skipping redemption %s", redemption.BroadcasterUserID, redemption.Status)
-					esm.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("A new 7TV emote is waiting for approval, redeemed by @%s", redemption.UserName))
+					esm.helixClient.SendChatMessage(redemption.BroadcasterUserID, fmt.Sprintf("A new 7TV emote is waiting for approval, redeemed by @%s", redemption.UserName))
 					return
 				}
 			}
 		} else {
-			if reward.Type == dto.REWARD_BTTV {
-				esm.emoteChief.HandleBttvRedemption(reward, redemption, true)
-				return
-			}
 			if reward.Type == dto.REWARD_SEVENTV {
 				esm.emoteChief.HandleSeventvRedemption(reward, redemption, true)
 				return
@@ -191,12 +167,7 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 	if helixclient.RewardStatusIsCancelled(redemption.Status) {
 		if reward.ApproveOnly {
 			emoteID := ""
-			if reward.Type == dto.REWARD_BTTV {
-				emoteID, err = emotechief.GetBttvEmoteId(redemption.UserInput)
-				if err != nil {
-					log.Error(err)
-				}
-			}
+
 			if reward.Type == dto.REWARD_SEVENTV {
 				emoteID, err = emotechief.GetSevenTvEmoteId(redemption.UserInput)
 				if err != nil {
@@ -212,17 +183,13 @@ func (esm *EventsubManager) HandleChannelPointsCustomRewardRedemption(event []by
 			}
 			// if we don't find the redemption in our cache, we didn't send the redemption update ourselves and need to send a rejection message
 			if _, err := esm.ttlCache.Get(redemption.ID); err == ttlcache.ErrNotFound {
-				esm.chatClient.Send(redemption.BroadcasterUserID, fmt.Sprintf("⚠️ Emote redemption by @%s was rejected", redemption.UserLogin))
+				esm.helixClient.SendChatMessage(redemption.BroadcasterUserID, fmt.Sprintf("⚠️ Emote redemption by @%s was rejected", redemption.UserLogin))
 			}
 		}
 		return
 	}
 	if helixclient.RewardStatusIsFullfilled(redemption.Status) {
 		if reward.ApproveOnly {
-			if reward.Type == dto.REWARD_BTTV {
-				esm.emoteChief.HandleBttvRedemption(reward, redemption, false)
-				return
-			}
 			if reward.Type == dto.REWARD_SEVENTV {
 				esm.emoteChief.HandleSeventvRedemption(reward, redemption, false)
 				return

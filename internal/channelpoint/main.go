@@ -115,29 +115,8 @@ type TwitchRewardConfig struct {
 	ID                                string
 }
 
-type BttvReward struct {
-	TwitchRewardConfig
-	BttvAdditionalOptions
-}
-
 type BttvAdditionalOptions struct {
 	Slots int
-}
-
-func (r *BttvReward) GetType() dto.RewardType {
-	return dto.REWARD_BTTV
-}
-
-func (r *BttvReward) GetAdditionalOptions() interface{} {
-	return r.BttvAdditionalOptions
-}
-
-func (r *BttvReward) GetConfig() TwitchRewardConfig {
-	return r.TwitchRewardConfig
-}
-
-func (r *BttvReward) SetConfig(config TwitchRewardConfig) {
-	r.TwitchRewardConfig = config
 }
 
 type SevenTvReward struct {
@@ -226,10 +205,6 @@ type rewardRequestBody struct {
 	Enabled                           bool
 }
 
-type bttvRewardRequestBody struct {
-	AdditionalOptionsParsed BttvAdditionalOptions
-}
-
 type sevenTvRewardRequestBody struct {
 	AdditionalOptionsParsed SevenTvAdditionalOptions
 }
@@ -268,20 +243,6 @@ func CreateRewardFromBody(body io.ReadCloser) (Reward, error) {
 	rewardConfig := createTwitchRewardConfigFromRequestBody(data)
 
 	switch data.Type {
-	case dto.REWARD_BTTV:
-		var addOpts bttvRewardRequestBody
-		if err := json.Unmarshal(bodyBytes, &addOpts); err != nil {
-			return nil, err
-		}
-
-		if addOpts.AdditionalOptionsParsed.Slots < 1 {
-			addOpts.AdditionalOptionsParsed.Slots = 1
-		}
-
-		return &BttvReward{
-			TwitchRewardConfig:    rewardConfig,
-			BttvAdditionalOptions: addOpts.AdditionalOptionsParsed,
-		}, nil
 	case dto.REWARD_SEVENTV:
 		var addOpts sevenTvRewardRequestBody
 		if err := json.Unmarshal(bodyBytes, &addOpts); err != nil {

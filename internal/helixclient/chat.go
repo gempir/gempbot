@@ -14,8 +14,14 @@ type SendChatMessageResponse struct {
 	} `json:"data"`
 }
 
-func (c *HelixClient) SendChatMessage(params *helix.SendChatMessageParams) (*SendChatMessageResponse, error) {
+func (c *HelixClient) SendChatMessage(channelID string, message string) (*SendChatMessageResponse, error) {
 	var resp SendChatMessageResponse
+
+	params := helix.SendChatMessageParams{
+		BroadcasterID: channelID,
+		Message:       message,
+		SenderID:      c.botUserID,
+	}
 
 	err := requests.
 		URL(TWITCH_API).

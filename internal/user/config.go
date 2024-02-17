@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gempir/gempbot/internal/api"
-	"github.com/gempir/gempbot/internal/chat"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
@@ -18,11 +17,14 @@ type UserAdmin struct {
 	cfg         *config.Config
 	db          *store.Database
 	helixClient helixclient.Client
-	chatClient  *chat.ChatClient
 }
 
-func NewUserAdmin(cfg *config.Config, db *store.Database, helixClient helixclient.Client, chatClient *chat.ChatClient) *UserAdmin {
-	return &UserAdmin{cfg, db, helixClient, chatClient}
+func NewUserAdmin(cfg *config.Config, db *store.Database, helixClient helixclient.Client) *UserAdmin {
+	return &UserAdmin{
+		cfg,
+		db,
+		helixClient,
+	}
 }
 
 type UserConfig struct {
