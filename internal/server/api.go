@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/gempir/gempbot/internal/auth"
-	"github.com/gempir/gempbot/internal/bot"
 	"github.com/gempir/gempbot/internal/channelpoint"
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/emotechief"
@@ -21,7 +20,6 @@ type Api struct {
 	helixClient         helixclient.Client
 	userAdmin           *user.UserAdmin
 	authClient          *auth.Auth
-	bot                 *bot.Bot
 	emoteChief          *emotechief.EmoteChief
 	eventsubManager     *eventsubmanager.EventsubManager
 	channelPointManager *channelpoint.ChannelPointManager
@@ -30,14 +28,13 @@ type Api struct {
 	tokenFactory        *ysweet.Factory
 }
 
-func NewApi(cfg *config.Config, db *store.Database, helixClient helixclient.Client, userAdmin *user.UserAdmin, authClient *auth.Auth, bot *bot.Bot, emoteChief *emotechief.EmoteChief, eventsubManager *eventsubmanager.EventsubManager, channelPointManager *channelpoint.ChannelPointManager, sevenTvClient emoteservice.ApiClient, wsHandler *ws.WsHandler, tokenFactory *ysweet.Factory) *Api {
+func NewApi(cfg *config.Config, db *store.Database, helixClient helixclient.Client, userAdmin *user.UserAdmin, authClient *auth.Auth, emoteChief *emotechief.EmoteChief, eventsubManager *eventsubmanager.EventsubManager, channelPointManager *channelpoint.ChannelPointManager, sevenTvClient emoteservice.ApiClient, wsHandler *ws.WsHandler, tokenFactory *ysweet.Factory) *Api {
 	return &Api{
 		db:                  db,
 		cfg:                 cfg,
 		helixClient:         helixClient,
 		userAdmin:           userAdmin,
 		authClient:          authClient,
-		bot:                 bot,
 		emoteChief:          emoteChief,
 		eventsubManager:     eventsubManager,
 		channelPointManager: channelPointManager,

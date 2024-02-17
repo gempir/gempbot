@@ -7,7 +7,7 @@ import (
 
 // Config application configuratin
 type Config struct {
-	Username          string `json:"username"`
+	BotUserID         string `json:"botUserId"`
 	OAuth             string `json:"oauth"`
 	ClientID          string `json:"clientId"`
 	ClientSecret      string `json:"clientSecret"`
@@ -45,8 +45,7 @@ func FromEnv() *Config {
 		WebBaseUrl:        Getenv("NEXT_PUBLIC_BASE_URL"),
 		WebhookApiBaseUrl: webhookApiBaseUrl,
 		CookieDomain:      Getenv("COOKIE_DOMAIN"),
-		Username:          Getenv("TWITCH_USERNAME"),
-		OAuth:             Getenv("TWITCH_OAUTH"),
+		BotUserID:         Getenv("BOT_USER_ID"),
 		DSN:               Getenv("DSN"),
 		LogLevel:          logLevel,
 		ListenAddress:     listenAddress,

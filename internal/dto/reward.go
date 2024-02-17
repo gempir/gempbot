@@ -3,7 +3,6 @@ package dto
 type RewardType string
 
 const (
-	REWARD_BTTV    RewardType = "bttv"
 	REWARD_SEVENTV RewardType = "seventv"
 )
 

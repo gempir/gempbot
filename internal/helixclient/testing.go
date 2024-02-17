@@ -89,3 +89,7 @@ func (m *MockHelixClient) ValidateToken(accessToken string) (bool, *helix.Valida
 func (m *MockHelixClient) RequestUserAccessToken(code string) (*helix.UserAccessTokenResponse, error) {
 	return nil, nil
 }
+
+func (m *MockHelixClient) SendChatMessage(channelID string, message string) (*SendChatMessageResponse, error) {
+	return nil, nil
+}
