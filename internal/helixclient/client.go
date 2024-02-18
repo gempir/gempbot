@@ -66,7 +66,7 @@ func init() {
 
 const TWITCH_API = "https://api.twitch.tv/"
 
-var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions", "moderation:read", "channel:bot", "user:write:chat", "user:bot", "moderator:manage:announcements"}
+var scopes = []string{"channel:read:redemptions", "channel:manage:redemptions", "channel:read:predictions", "channel:manage:predictions", "moderation:read", "channel:bot", "user:write:chat", "moderator:manage:announcements"}
 
 // NewClient Create helix client
 func NewClient(cfg *config.Config, db store.Store) *HelixClient {
