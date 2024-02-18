@@ -45,4 +45,4 @@ run_docker:
 	docker run --env-file=.env -p 3010:3010 gempbot
 
 tunnel:
-	bore -id gempbot -s bore.services -p 2200 -ls localhost -lp 3010
+	npx localtunnel --port 3010 --subdomain gempbot
