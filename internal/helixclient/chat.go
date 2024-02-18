@@ -30,7 +30,7 @@ func (c *HelixClient) SendChatMessage(channelID string, message string) (*SendCh
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/helix/chat/messages", TWITCH_API), bytes.NewBuffer(jsonParams))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%shelix/chat/messages", TWITCH_API), bytes.NewBuffer(jsonParams))
 	if err != nil {
 		return nil, err
 	}
