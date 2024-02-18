@@ -105,6 +105,7 @@ func (a *Api) AssetHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", asset.MimeType)
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(asset.Blob)))
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(asset.Blob)
 }
