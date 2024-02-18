@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/gempir/gempbot/internal/log"
 	"github.com/nicklaw5/helix/v2"
 )
 
@@ -46,16 +47,19 @@ func (c *HelixClient) SendChatMessage(channelID string, message string) (*SendCh
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Errorf("Error reading response body: %s", err)
 		return nil, err
 	}
 
 	if resp.StatusCode >= 300 {
+		log.Errorf("[%d] %s", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("[%d] %s", resp.StatusCode, string(body))
 	}
 
 	var msgs SendChatMessageResponse
 	err = json.Unmarshal(body, &msgs)
 	if err != nil {
+		log.Errorf("Error unmarshalling response body: %s", err)
 		return nil, err
 	}
 
