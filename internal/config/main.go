@@ -35,7 +35,7 @@ func FromEnv() *Config {
 	}
 
 	apiBaseUrl := "http://" + listenAddress
-	if strings.Contains(webhookApiBaseUrl, "bot.gempir.com") {
+	if strings.Contains(webhookApiBaseUrl, "gempir.com") {
 		apiBaseUrl = webhookApiBaseUrl
 	}
 
