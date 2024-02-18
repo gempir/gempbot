@@ -14,6 +14,7 @@ type Config struct {
 	Secret            string `json:"secret"`
 	WebBaseUrl        string `json:"webBaseUrl"`
 	WebhookApiBaseUrl string `json:"webhookApiBaseUrl"`
+	ApiBaseUrl        string `json:"apiBaseUrl"`
 	CookieDomain      string `json:"cookieDomain"`
 	DSN               string `json:"DSN"`
 	LogLevel          string `json:"logLevel"`
@@ -33,6 +34,11 @@ func FromEnv() *Config {
 		listenAddress = ":3010"
 	}
 
+	apiBaseUrl := "http://" + listenAddress
+	if strings.Contains(webhookApiBaseUrl, "bot.gempir.com") {
+		apiBaseUrl = webhookApiBaseUrl
+	}
+
 	logLevel := Getenv("LOG_LEVEL")
 	if logLevel == "" {
 		logLevel = "info"
@@ -44,6 +50,7 @@ func FromEnv() *Config {
 		Secret:            Getenv("SECRET"),
 		WebBaseUrl:        Getenv("NEXT_PUBLIC_BASE_URL"),
 		WebhookApiBaseUrl: webhookApiBaseUrl,
+		ApiBaseUrl:        apiBaseUrl,
 		CookieDomain:      Getenv("COOKIE_DOMAIN"),
 		BotUserID:         Getenv("BOT_USER_ID"),
 		DSN:               Getenv("DSN"),

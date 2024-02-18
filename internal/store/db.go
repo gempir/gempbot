@@ -83,6 +83,7 @@ func (db *Database) Migrate() {
 		NominationVote{},
 		NominationDownvote{},
 		Overlay{},
+		Asset{},
 	)
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())
