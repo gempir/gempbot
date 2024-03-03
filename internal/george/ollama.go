@@ -47,8 +47,8 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 	}
 
 	var user emoteservice.User
-	if _, ok := userDataMap[username]; ok {
-		user, err = o.emoteservice.GetUser(userDataMap[username].ID)
+	if _, ok := userDataMap[channel]; ok {
+		user, err = o.emoteservice.GetUser(userDataMap[channel].ID)
 		if err != nil {
 			log.Errorf("failed to get user data from 7tv: %s", err)
 			return nil
