@@ -97,7 +97,7 @@ export function George() {
                             </div>
                         </div>
                         <input type="text" placeholder="Query" name="query" className="w-full bg-gray-800 p-2 rounded resize-none" />
-                        <input type="submit" value="Send" className="bg-blue-500 py-2 px-5 rounded" />
+                        <input type="submit" value="Send" className="bg-blue-500 py-2 px-5 rounded cursor-pointer" />
                         <div className="p-1">
                             <span className="whitespace-nowrap">Twitch and 7TV emotes are filtered..</span><br/>
                             <span className="whitespace-nowrap">If we have more than limit lines then we pick random lines from the logs.</span><br/>
