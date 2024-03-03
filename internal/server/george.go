@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 type GeorgeRequest struct {
@@ -30,6 +31,8 @@ var allowlistedUsers = map[string]string{
 	"pajlada":     "pajlada",
 }
 
+var mutex = sync.Mutex{}
+
 func (a *Api) GeorgeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "invalid method", http.StatusMethodNotAllowed)
@@ -41,6 +44,13 @@ func (a *Api) GeorgeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, ok := allowlistedUsers[authResp.Data.Login]; !ok {
 		http.Error(w, "Not allowedlisted", http.StatusForbidden)
+		return
+	}
+
+	if mutex.TryLock() {
+		defer mutex.Unlock()
+	} else {
+		http.Error(w, "Already processing", http.StatusTooManyRequests)
 		return
 	}
 

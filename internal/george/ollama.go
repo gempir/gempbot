@@ -25,11 +25,6 @@ func NewOllama(emoteservice *emoteservice.SevenTvClient, helixClient helixclient
 }
 
 func (o *Ollama) AnalyzeUser(query string, channel string, username string, month int, year int, day int, model string, limit int, ctx context.Context, streamFunc func(chunk string)) error {
-	if o.lock {
-		return fmt.Errorf("sever is already busy")
-	}
-	o.lock = true
-
 	llm, err := ollama.New(ollama.WithModel(model))
 	if err != nil {
 		log.Fatal(err)
@@ -79,6 +74,5 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 		return err
 	}
 
-	o.lock = false
 	return nil
 }
