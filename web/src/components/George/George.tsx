@@ -29,7 +29,6 @@ export function George() {
             day: parseInt(formData.get("day") as string),
             model: formData.get("model") as string,
             query: formData.get("query") as string,
-            limit: parseInt(formData.get("limit") as string),
         };
         setResp(".");
         loadRef.current = setInterval(() => {
@@ -65,10 +64,10 @@ export function George() {
                                 <input type="number" placeholder="Year" name="year" className="w-full bg-gray-800 p-2 rounded mt-2" />
                                 <input type="number" placeholder="Month" name="month" className="w-full bg-gray-800 p-2 rounded mt-2" />
                                 <input type="number" placeholder="Day" name="day" className="w-full bg-gray-800 p-2 rounded mt-2" />
-                                <div className="flex justify-center align-middle pt-2">
+                                {/* <div className="flex justify-center align-middle pt-2">
                                     Max Tokens
                                 </div>
-                                <input type="number" placeholder="Max Tokens" name="limit" defaultValue={"4096"} className="w-full bg-gray-800 p-2 rounded mt-2" />
+                                <input type="number" placeholder="Max Tokens" name="limit" defaultValue={"4096"} className="w-full bg-gray-800 p-2 rounded mt-2" /> */}
                             </div>
                         </div>
                         <input type="text" placeholder="Query" name="query" className="w-full bg-gray-800 p-2 rounded resize-none" />
