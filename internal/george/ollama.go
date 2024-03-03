@@ -18,7 +18,7 @@ type Ollama struct {
 }
 
 func NewOllama(emoteservice *emoteservice.SevenTvClient) *Ollama {
-	llm, err := ollama.New(ollama.WithModel("llama2"))
+	llm, err := ollama.New(ollama.WithModel("mistral"))
 	if err != nil {
 		log.Fatal(err)
 	}
