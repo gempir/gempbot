@@ -56,13 +56,12 @@ export const useGeorge = (): [RequestFunc, AbortController] => {
             
             if (!queryDone && result.includes("====QUERYDONE====")) {
                 queryDone = true;
+                onQuery(result);
                 result = "";
             }
 
-            if (queryDone) {
+            if (result) {
                 onText(result);
-            } else {    
-                onQuery(result);
             }
         }
     };
