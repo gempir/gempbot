@@ -68,7 +68,7 @@ export function George() {
                                 <input type="text" placeholder="Username" name="username" className="w-full bg-gray-800 p-2 rounded" />
                                 <select name="model" className="bg-gray-800 rounded appearance-none">
                                     <option value="mistral">mistral</option>
-                                    <option value="llama">llama2</option>
+                                    <option value="llama2">llama2</option>
                                     <option value="llama2:70b" disabled>llama2:70b</option>
                                     <option value="gemma:7b">gemma:7b</option>
                                     <option value="llama2:13b">llama2:13b</option>
