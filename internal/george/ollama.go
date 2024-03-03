@@ -31,7 +31,8 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 		log.Fatal(err)
 	}
 
-	fullQuery := "You will receive chat logs from twitch.tv, NOT Discord. These messages are in the channel of \"" + channel + "\".\n"
+	fullQuery := "You will receive chat logs from twitch.tv, NOT Discord.\n"
+	fullQuery += "The logs are from the channel: \"" + channel + "\".\n"
 	if username != "" {
 		fullQuery += "You are analyzing the user: \"" + username + "\".\n"
 	}
