@@ -42,8 +42,10 @@ export function George() {
         }, 1000);
         doReq(req, (text: string) => {
             clearInterval(loadRef.current);
-            setLoading(false);
             setResp(text.trim());
+            if (text === "@DONE") {
+                setLoading(false);
+            }
         });
     }
 
