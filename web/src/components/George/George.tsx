@@ -57,8 +57,6 @@ export function George() {
         setLoading(false);
     }
 
-    console.log(loadRef.current);
-
     return <div className={"p-4 w-full"}>
         <div className={"bg-gray-800 rounded shadow relative p-4 w-full"}>
             <div className="flex items-start justify-between w-full">
