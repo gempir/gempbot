@@ -52,15 +52,17 @@ export const useGeorge = (): [RequestFunc, AbortController] => {
                 onText("@DONE");
                 break;
             }
-            result += new TextDecoder().decode(value);
+            const textValue = new TextDecoder().decode(value);
+            result += textValue;
             
-            if (!queryDone && result.includes("====QUERYDONE====")) {
-                queryDone = true;
+            if (!queryDone && textValue.includes("==QUERYDONE==")) {
                 onQuery(result);
                 result = "";
+                queryDone = true;
+                continue;
             }
 
-            if (result) {
+            if (queryDone) {
                 onText(result);
             }
         }
