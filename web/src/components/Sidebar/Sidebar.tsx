@@ -7,7 +7,6 @@ import { Managing } from "./Managing";
 
 export function Sidebar() {
     const [userConfig] = useUserConfig();
-    const isDev = useStore(state => state.baseUrl).includes("localhost");
     const loggedIn = useStore(state => Boolean(state.scToken));
 
     if (!loggedIn) {

@@ -1,4 +1,4 @@
-import { Method, doFetch } from '../service/doFetch';
+import { Method } from '../service/doFetch';
 import { useStore } from '../store';
 
 type FetchStreamResponse = {
@@ -12,7 +12,9 @@ interface GeorgeRequest {
     username: string;
     year: number;
     month: number;
+    day: number;
     query: string;
+    model: string;
 }
 
 export const useGeorge = (): (req: GeorgeRequest, onText: (text: string) => void) => void => {

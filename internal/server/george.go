@@ -13,6 +13,9 @@ type GeorgeRequest struct {
 	Username string `json:"username"`
 	Month    int    `json:"month"`
 	Year     int    `json:"year"`
+	Day      int    `json:"day"`
+	Model    string `json:"model"`
+	Limit    int    `json:"limit"`
 }
 
 var allowlistedUsers = map[string]string{
@@ -50,7 +53,7 @@ func (a *Api) GeorgeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 
-	err = a.george.AnalyzeUser(req.Query, req.Channel, req.Username, req.Month, req.Year, r.Context(), func(chunk string) {
+	err = a.george.AnalyzeUser(req.Query, req.Channel, req.Username, req.Month, req.Year, req.Day, req.Model, req.Limit, r.Context(), func(chunk string) {
 		_, err := fmt.Fprint(w, chunk)
 		if err != nil {
 			fmt.Println("Error writing response:", err)

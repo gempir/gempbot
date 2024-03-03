@@ -12,6 +12,17 @@ import (
 	"github.com/gempir/gempbot/internal/emoteservice"
 )
 
+var blockListedUsers = map[string]string{
+	"supibot":        "supibot",
+	"nightbot":       "nightbot",
+	"streamelements": "streamelements",
+	"streamlabs":     "streamlabs",
+	"moobot":         "moobot",
+	"gempbot":        "gempbot",
+	"botnextdoor":    "botnextdoor",
+	"botbear1110":    "botbear1110",
+}
+
 type Logs struct {
 	Messages []Message `json:"messages"`
 }
@@ -45,14 +56,24 @@ type Message struct {
 	Type     int    `json:"type"`
 }
 
-func fetchLogs(channel string, username string, month int, year int) (Logs, error) {
+func fetchLogs(channel string, username string, month int, year int, day int) (Logs, error) {
 	// Fetch logs for the given username, month and year
 	// https://logs.ivr.fi/channel/nymn/user/gempir/2024/3?json
 
-	resp, err := http.Get(fmt.Sprintf("https://logs.ivr.fi/channel/%s/user/%s/%d/%d?json", channel, username, year, month))
-	if err != nil {
-		return Logs{}, err
+	var resp *http.Response
+	var err error
+	if day == 0 {
+		resp, err = http.Get(fmt.Sprintf("https://logs.ivr.fi/channel/%s/user/%s/%d/%d?json", channel, username, year, month))
+		if err != nil {
+			return Logs{}, err
+		}
+	} else {
+		resp, err = http.Get(fmt.Sprintf("https://logs.ivr.fi/channel/%s/%d/%d/%d?json", channel, year, month, day))
+		if err != nil {
+			return Logs{}, err
+		}
 	}
+
 	if resp.StatusCode != http.StatusOK {
 		return Logs{}, fmt.Errorf("%s", resp.Status)
 	}
@@ -68,7 +89,14 @@ func fetchLogs(channel string, username string, month int, year int) (Logs, erro
 	return logs, nil
 }
 
-func (o *Ollama) removeEmotesFromMessage(msg Message, emotes emoteservice.User) string {
+func (o *Ollama) cleanMessage(msg Message, emotes emoteservice.User) string {
+	if _, ok := blockListedUsers[msg.Username]; ok {
+		return ""
+	}
+	if strings.HasPrefix(msg.Text, "!") {
+		return ""
+	}
+
 	emoteRanges := parseEmoteRanges(msg.Tags.Emotes)
 	if len(emoteRanges) == 0 {
 		return msg.Text
