@@ -98,10 +98,6 @@ func (o *Ollama) cleanMessage(msg Message, emotes emoteservice.User) string {
 	}
 
 	emoteRanges := parseEmoteRanges(msg.Tags.Emotes)
-	if len(emoteRanges) == 0 {
-		return msg.Text
-	}
-
 	var cleanedText strings.Builder
 	prevEnd := 0
 
@@ -121,7 +117,17 @@ func (o *Ollama) cleanMessage(msg Message, emotes emoteservice.User) string {
 	clean := cleanedText.String()
 
 	for _, emote := range emotes.Emotes {
-		clean = strings.ReplaceAll(cleanedText.String(), emote.Code, "")
+		if emote.Code == clean {
+			return ""
+		}
+
+		pattern := "\\b" + emote.Code + "\\b"
+		regex, err := regexp.Compile(pattern)
+		if err != nil {
+			continue
+		}
+
+		clean = regex.ReplaceAllString(clean, "")
 	}
 
 	return strings.TrimSpace(clean)

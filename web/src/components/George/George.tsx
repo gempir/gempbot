@@ -3,6 +3,7 @@ import { useGeorge } from "../../hooks/useGeorge";
 
 export function George() {
     const [resp, setResp] = useState<string>("");
+    const [query, setQuery] = useState<string>("");
     const loadRef = useRef<NodeJS.Timeout>();
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -18,11 +19,13 @@ export function George() {
         // when username is defined username is required
         if (!formData.get("username") && !formData.get("day")) {
             setResp("channel log requires day");
+            setQuery("");
             return;
         }
 
         if (formData.get("username") && formData.get("day")) {
             setResp("day is not possible for user log");
+            setQuery("");
             return;
         }
 
@@ -36,6 +39,7 @@ export function George() {
             query: formData.get("query") as string,
         };
         setResp(".");
+        setQuery("");
         setLoading(true);
         loadRef.current = setInterval(() => {
             setResp(prev => prev + ".");
@@ -47,6 +51,8 @@ export function George() {
                 return;
             }
             setResp(text.trim());
+        }, (text: string) => {
+            setQuery(text.trim());
         });
     }
 
@@ -95,10 +101,13 @@ export function George() {
                 </form>
             </div>
         </div>
-        <div className={"bg-gray-800 rounded shadow relative p-4 w-full mt-2"}>
-            <div className="flex items-start justify-between w-full">
-                <textarea readOnly value={resp} placeholder="Response" name="response" className="w-full min-h-[700px] bg-gray-900 p-2 border-none select-none rounded focus:outline-none focus:ring-0 resize-none" />
+        <div className={"bg-gray-800 rounded shadow relative p-4 w-full mt-2 flex gap-2"}>
+            <div className="flex items-start justify-between w-[60%]">
+                <textarea readOnly value={resp} placeholder="Response" name="response" className="w-full min-h-[900px] bg-gray-900 p-2 border-none select-none rounded focus:outline-none focus:ring-0 resize-none" />
                 {loading && <input type="button" value="Abort" onClick={abort} className="bg-red-600 py-2 px-5 rounded cursor-pointer hover:bg-red-500 absolute bottom-6 left-6" />}
+            </div>
+            <div className="flex items-start justify-between w-[40%]">
+                <textarea readOnly value={query} placeholder="Query" name="response" className="w-full min-h-[900px] bg-gray-900 p-2 border-none select-none rounded focus:outline-none focus:ring-0 resize-none" />
             </div>
         </div>
     </div >;

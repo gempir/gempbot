@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Method } from '../service/doFetch';
 import { useStore } from '../store';
+import { on } from 'events';
 
 type FetchStreamResponse = {
     data: string | null;
@@ -18,7 +19,7 @@ interface GeorgeRequest {
     model: string;
 }
 
-type RequestFunc = (req: GeorgeRequest, onText: (text: string) => void) => void;
+type RequestFunc = (req: GeorgeRequest, onText: (text: string) => void, onQuery: (text: string) => void) => void;
 
 export const useGeorge = (): [RequestFunc, AbortController] => {
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
@@ -26,7 +27,7 @@ export const useGeorge = (): [RequestFunc, AbortController] => {
 
     const controller = useRef<AbortController>(new AbortController());
 
-    const request = async (req: GeorgeRequest, onText: (text: string) => void) => {
+    const request = async (req: GeorgeRequest, onText: (text: string) => void, onQuery: (text: string) => void) => {
         const response = await fetch(apiBaseUrl + "/api/george", {
             method: Method.POST,
             headers: {
@@ -43,6 +44,8 @@ export const useGeorge = (): [RequestFunc, AbortController] => {
         }
 
         let result = '';
+        let queryDone = false;
+
         while (true) {
             const { done, value } = await reader.read();
             if (done) {
@@ -50,8 +53,17 @@ export const useGeorge = (): [RequestFunc, AbortController] => {
                 break;
             }
             result += new TextDecoder().decode(value);
+            
+            if (!queryDone && result.includes("====QUERYDONE====")) {
+                queryDone = true;
+                result = "";
+            }
 
-            onText(result);
+            if (queryDone) {
+                onText(result);
+            } else {    
+                onQuery(result);
+            }
         }
     };
 
