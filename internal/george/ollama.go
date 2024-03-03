@@ -80,11 +80,7 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 			continue
 		}
 
-		if username == "" {
-			fullQuery += fmt.Sprintf("%s: %s\n", msg.Username, txt)
-		} else {
-			fullQuery += fmt.Sprintf("%s\n", txt)
-		}
+		fullQuery += fmt.Sprintf("%s: %s\n", msg.Username, txt)
 	}
 
 	streamFunc(fullQuery)
