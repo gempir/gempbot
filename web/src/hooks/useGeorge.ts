@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Method } from '../service/doFetch';
 import { useStore } from '../store';
 
@@ -17,9 +18,13 @@ interface GeorgeRequest {
     model: string;
 }
 
-export const useGeorge = (): (req: GeorgeRequest, onText: (text: string) => void) => void => {
+type RequestFunc = (req: GeorgeRequest, onText: (text: string) => void) => void;
+
+export const useGeorge = (): [RequestFunc, AbortController] => {
     const apiBaseUrl = useStore(state => state.apiBaseUrl);
     const scToken = useStore(state => state.scToken);
+
+    const controller = useRef<AbortController>(new AbortController());
 
     const request = async (req: GeorgeRequest, onText: (text: string) => void) => {
         const response = await fetch(apiBaseUrl + "/api/george", {
@@ -28,7 +33,8 @@ export const useGeorge = (): (req: GeorgeRequest, onText: (text: string) => void
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${scToken}`
             },
-            body: JSON.stringify(req)
+            body: JSON.stringify(req),
+            signal: controller.current.signal
         });
 
         const reader = response.body?.getReader();
@@ -46,5 +52,5 @@ export const useGeorge = (): (req: GeorgeRequest, onText: (text: string) => void
         }
     };
 
-    return request;
+    return [request, controller.current];
 };

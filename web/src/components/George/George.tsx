@@ -4,11 +4,12 @@ import { useGeorge } from "../../hooks/useGeorge";
 export function George() {
     const [resp, setResp] = useState<string>("");
     const loadRef = useRef<NodeJS.Timeout>();
+    const [loading, setLoading] = useState<boolean>(false);
 
-    const doReq = useGeorge();
+    const [doReq, abortController] = useGeorge();
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        clearTimeout(loadRef.current);
+        clearInterval(loadRef.current);
 
         e.preventDefault();
         const form = e.currentTarget;
@@ -20,6 +21,10 @@ export function George() {
             return;
         }
 
+        if (formData.get("username") && formData.get("day")) {
+            setResp("day is not possible for user log");
+            return;
+        }
 
         const req = {
             channel: formData.get("channel") as string,
@@ -31,15 +36,28 @@ export function George() {
             query: formData.get("query") as string,
         };
         setResp(".");
+        setLoading(true);
         loadRef.current = setInterval(() => {
             setResp(prev => prev + ".");
         }, 1000);
         doReq(req, (text: string) => {
             clearInterval(loadRef.current);
+            setLoading(false);
             setResp(text.trim());
         });
     }
 
+    const abort = () => {
+        try {
+            abortController.abort();
+        } catch (e) {
+            console.error(e);
+        }
+        clearInterval(loadRef.current);
+        setLoading(false);
+    }
+
+    console.log(loadRef.current);
 
     return <div className={"p-4 w-full"}>
         <div className={"bg-gray-800 rounded shadow relative p-4 w-full"}>
@@ -79,6 +97,7 @@ export function George() {
         <div className={"bg-gray-800 rounded shadow relative p-4 w-full mt-2"}>
             <div className="flex items-start justify-between w-full">
                 <textarea readOnly value={resp} placeholder="Response" name="response" className="w-full min-h-[700px] bg-gray-900 p-2 border-none select-none rounded focus:outline-none focus:ring-0 resize-none" />
+                {loading && <input type="button" value="Abort" onClick={abort} className="bg-red-600 py-2 px-5 rounded cursor-pointer hover:bg-red-500 absolute bottom-6 left-6" />}
             </div>
         </div>
     </div >;
