@@ -42,10 +42,11 @@ export function George() {
         }, 1000);
         doReq(req, (text: string) => {
             clearInterval(loadRef.current);
-            setResp(text.trim());
             if (text === "@DONE") {
                 setLoading(false);
+                return;
             }
+            setResp(text.trim());
         });
     }
 
