@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/gempir/gempbot/internal/emoteservice"
 )
 
 var blockListedUsers = map[string]string{
@@ -89,7 +87,7 @@ func fetchLogs(channel string, username string, month int, year int, day int) (L
 	return logs, nil
 }
 
-func (o *Ollama) cleanMessage(msg Message, emotes emoteservice.User) string {
+func (o *Ollama) cleanMessage(msg Message, regexes []*regexp.Regexp) string {
 	if _, ok := blockListedUsers[msg.Username]; ok {
 		return ""
 	}
@@ -116,18 +114,11 @@ func (o *Ollama) cleanMessage(msg Message, emotes emoteservice.User) string {
 
 	clean := cleanedText.String()
 
-	for _, emote := range emotes.Emotes {
-		if emote.Code == clean {
-			return ""
+	// Use compiled regex patterns in the loop
+	for _, regex := range regexes {
+		if regex.MatchString(clean) {
+			clean = regex.ReplaceAllString(clean, "")
 		}
-
-		pattern := "\\b" + emote.Code + "\\b"
-		regex, err := regexp.Compile(pattern)
-		if err != nil {
-			continue
-		}
-
-		clean = regex.ReplaceAllString(clean, "")
 	}
 
 	return strings.TrimSpace(clean)

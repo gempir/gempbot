@@ -3,6 +3,7 @@ package george
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/helixclient"
@@ -58,8 +59,21 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 		}
 	}
 
+	// Precompile regex patterns
+	compiledRegexes := make([]*regexp.Regexp, 0, len(user.Emotes))
+	for _, emote := range user.Emotes {
+		pattern := "\\b" + emote.Code + "\\b"
+		regex, err := regexp.Compile(pattern)
+		if err != nil {
+			continue
+		}
+		compiledRegexes = append(compiledRegexes, regex)
+	}
+
+	// return clean if necessary
+
 	for _, msg := range logs.Messages {
-		txt := o.cleanMessage(msg, user)
+		txt := o.cleanMessage(msg, compiledRegexes)
 		if txt == "" {
 			continue
 		}
