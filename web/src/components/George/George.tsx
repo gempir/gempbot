@@ -37,6 +37,7 @@ export function George() {
             day: parseInt(formData.get("day") as string),
             model: formData.get("model") as string,
             query: formData.get("query") as string,
+            limit: parseInt(formData.get("limit") as string)
         };
         setResp(".");
         setQuery("");
@@ -89,14 +90,19 @@ export function George() {
                                 <input type="number" placeholder="Year" name="year" className="w-full bg-gray-800 p-2 rounded mt-2" />
                                 <input type="number" placeholder="Month" name="month" className="w-full bg-gray-800 p-2 rounded mt-2" />
                                 <input type="number" placeholder="Day" name="day" className="w-full bg-gray-800 p-2 rounded mt-2" />
-                                {/* <div className="flex justify-center align-middle pt-2">
-                                    Max Tokens
+                                <div className="flex justify-center align-middle pt-2">
+                                    Line Limit
                                 </div>
-                                <input type="number" placeholder="Max Tokens" name="limit" defaultValue={"4096"} className="w-full bg-gray-800 p-2 rounded mt-2" /> */}
+                                <input type="number" placeholder="Max Tokens" name="limit" defaultValue={"300"} className="w-full bg-gray-800 p-2 rounded mt-2" />
                             </div>
                         </div>
                         <input type="text" placeholder="Query" name="query" className="w-full bg-gray-800 p-2 rounded resize-none" />
                         <input type="submit" value="Send" className="bg-blue-500 py-2 px-5 rounded" />
+                        <div className="p-1">
+                            <span className="whitespace-nowrap">Twitch and 7TV emotes are filtered..</span><br/>
+                            <span className="whitespace-nowrap">If we have more than limit lines then we pick random lines from the logs.</span><br/>
+                            <span className="whitespace-nowrap">You can read whole channels by leaving out the username..</span>
+                        </div>
                     </div>
                 </form>
             </div>

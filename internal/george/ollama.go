@@ -3,6 +3,7 @@ package george
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"regexp"
 
 	"github.com/gempir/gempbot/internal/emoteservice"
@@ -15,7 +16,6 @@ import (
 type Ollama struct {
 	emoteservice *emoteservice.SevenTvClient
 	helixClient  helixclient.Client
-	lock         bool
 }
 
 func NewOllama(emoteservice *emoteservice.SevenTvClient, helixClient helixclient.Client) *Ollama {
@@ -72,15 +72,23 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 		compiledRegexes = append(compiledRegexes, regex)
 	}
 
-	// return clean if necessary
-
+	var msgs []string
 	for _, msg := range logs.Messages {
 		txt := o.cleanMessage(msg, compiledRegexes)
 		if txt == "" {
 			continue
 		}
 
-		fullQuery += fmt.Sprintf("%s: %s\n", msg.Username, txt)
+		if username == "" {
+			msgs = append(msgs, fmt.Sprintf("%s: %s\n", msg.Username, txt))
+		} else {
+			msgs = append(msgs, fmt.Sprintf("%s\n", txt))
+		}
+	}
+
+	randomMsgs := pickRandom(msgs, limit)
+	for _, msg := range randomMsgs {
+		fullQuery += msg
 	}
 
 	streamFunc(fullQuery)
@@ -96,4 +104,34 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 	}
 
 	return nil
+}
+
+func pickRandom(msgs []string, numToPick int) []string {
+	// Shuffle the slice
+	rand.Shuffle(len(msgs), func(i, j int) {
+		msgs[i], msgs[j] = msgs[j], msgs[i]
+	})
+
+	// Determine the number of elements to pick
+	n := len(msgs)
+	if numToPick > n {
+		numToPick = n
+	}
+
+	// Create a map to store picked elements to check for duplicates
+	picked := make(map[string]bool)
+	pickedMsgs := make([]string, 0, numToPick)
+
+	// Pick unique elements
+	for _, msg := range msgs {
+		if len(pickedMsgs) == numToPick {
+			break
+		}
+		if !picked[msg] {
+			picked[msg] = true
+			pickedMsgs = append(pickedMsgs, msg)
+		}
+	}
+
+	return pickedMsgs
 }
