@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gempir/gempbot/internal/emoteservice"
 )
 
 type Logs struct {
@@ -66,7 +68,7 @@ func fetchLogs(channel string, username string, month int, year int) (Logs, erro
 	return logs, nil
 }
 
-func removeEmotesFromMessage(msg Message) string {
+func (o *Ollama) removeEmotesFromMessage(msg Message, emotes emoteservice.User) string {
 	emoteRanges := parseEmoteRanges(msg.Tags.Emotes)
 	if len(emoteRanges) == 0 {
 		return msg.Text
@@ -88,7 +90,13 @@ func removeEmotesFromMessage(msg Message) string {
 		cleanedText.WriteString(msg.Text[prevEnd:])
 	}
 
-	return cleanedText.String()
+	clean := cleanedText.String()
+
+	for _, emote := range emotes.Emotes {
+		clean = strings.ReplaceAll(cleanedText.String(), emote.Code, "")
+	}
+
+	return strings.TrimSpace(clean)
 }
 
 type EmoteRange struct {

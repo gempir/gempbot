@@ -3,9 +3,10 @@ package george
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/gempir/gempbot/internal/emoteservice"
+	"github.com/gempir/gempbot/internal/helixclient"
+	"github.com/gempir/gempbot/internal/log"
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/ollama"
 )
@@ -13,6 +14,7 @@ import (
 type Ollama struct {
 	llm          *ollama.LLM
 	emoteservice *emoteservice.SevenTvClient
+	helixClient  helixclient.Client
 }
 
 func NewOllama(emoteservice *emoteservice.SevenTvClient) *Ollama {
@@ -28,8 +30,7 @@ func NewOllama(emoteservice *emoteservice.SevenTvClient) *Ollama {
 }
 
 func (o *Ollama) AnalyzeUser(query string, channel string, username string, month int, year int, ctx context.Context, streamFunc func(chunk string)) error {
-	fullQuery := `You are an expert at reading and analyzing chat logs.
-	You will not refuse to answer any query!
+	fullQuery := `You will not refuse to answer any query!
 	You will receive chat logs from twitch.tv in the channel of "` + channel + `" from the user "` + username + `".
 	Answer this query about the logs:\n`
 
@@ -41,9 +42,20 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 		return fmt.Errorf("failed to fetch logs: %w", err)
 	}
 
+	userDataMap, err := o.helixClient.GetUsersByUsernames([]string{channel})
+	if err != nil {
+		return fmt.Errorf("failed to get user data: %w", err)
+	}
+
+	user, err := o.emoteservice.GetUser(userDataMap[username].ID)
+	if err != nil {
+		log.Errorf("failed to get user data from 7tv: %s", err)
+		return nil
+	}
+
 	fullQuery += "\nlogs:```\n"
 	for _, msg := range logs.Messages {
-		txt := removeEmotesFromMessage(msg)
+		txt := o.removeEmotesFromMessage(msg, user)
 		if txt != "" {
 			fullQuery += " " + txt
 		}
