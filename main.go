@@ -41,7 +41,7 @@ func main() {
 
 	seventvClient := emoteservice.NewSevenTvClient(db)
 
-	george := george.NewOllama(seventvClient)
+	george := george.NewOllama(seventvClient, helixClient)
 	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, seventvClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 	wsHandler := ws.NewWsHandler(authClient)

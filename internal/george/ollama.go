@@ -17,7 +17,7 @@ type Ollama struct {
 	helixClient  helixclient.Client
 }
 
-func NewOllama(emoteservice *emoteservice.SevenTvClient) *Ollama {
+func NewOllama(emoteservice *emoteservice.SevenTvClient, helixClient helixclient.Client) *Ollama {
 	llm, err := ollama.New(ollama.WithModel("mistral"))
 	if err != nil {
 		log.Fatal(err)
@@ -26,6 +26,7 @@ func NewOllama(emoteservice *emoteservice.SevenTvClient) *Ollama {
 	return &Ollama{
 		llm:          llm,
 		emoteservice: emoteservice,
+		helixClient:  helixClient,
 	}
 }
 
@@ -47,10 +48,13 @@ func (o *Ollama) AnalyzeUser(query string, channel string, username string, mont
 		return fmt.Errorf("failed to get user data: %w", err)
 	}
 
-	user, err := o.emoteservice.GetUser(userDataMap[username].ID)
-	if err != nil {
-		log.Errorf("failed to get user data from 7tv: %s", err)
-		return nil
+	var user emoteservice.User
+	if _, ok := userDataMap[username]; ok {
+		user, err = o.emoteservice.GetUser(userDataMap[username].ID)
+		if err != nil {
+			log.Errorf("failed to get user data from 7tv: %s", err)
+			return nil
+		}
 	}
 
 	fullQuery += "\nlogs:```\n"
