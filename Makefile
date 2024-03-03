@@ -46,3 +46,6 @@ run_docker:
 
 tunnel:
 	npx localtunnel --port 3010 --subdomain gempbot
+
+ollama:
+	ssh -N -R 11434:127.0.0.1:11434 o1

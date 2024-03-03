@@ -1,4 +1,4 @@
-import { AdjustmentsHorizontalIcon, ChatBubbleLeftIcon, GiftIcon, HomeIcon, NoSymbolIcon, PhotoIcon } from "@heroicons/react/24/solid";
+import { AdjustmentsHorizontalIcon, ChatBubbleLeftIcon, EyeIcon, GiftIcon, HomeIcon, NoSymbolIcon, PhotoIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { useStore } from "../../store";
@@ -23,6 +23,11 @@ export function Sidebar() {
                     href="/"
                     className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 ">
                     <HomeIcon className="h-6" />Home
+                </Link>
+                <Link
+                    href="/george"
+                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
+                    <EyeIcon className="h-6" />George
                 </Link>
                 <Link
                     href="/bot"
