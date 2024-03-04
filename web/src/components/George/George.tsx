@@ -93,7 +93,7 @@ export function George() {
                                 <div className="flex justify-center align-middle pt-2">
                                     Line Limit
                                 </div>
-                                <input type="number" placeholder="Max Tokens" name="limit" defaultValue={"300"} className="w-full bg-gray-800 p-2 rounded mt-2" />
+                                <input type="number" placeholder="Max Tokens" name="limit" defaultValue={"150"} className="w-full bg-gray-800 p-2 rounded mt-2" />
                             </div>
                         </div>
                         <input type="text" placeholder="Query" name="query" className="w-full bg-gray-800 p-2 rounded resize-none" />

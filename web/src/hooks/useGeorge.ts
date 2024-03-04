@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { Method } from '../service/doFetch';
 import { useStore } from '../store';
-import { on } from 'events';
 
 type FetchStreamResponse = {
     data: string | null;
@@ -54,7 +53,7 @@ export const useGeorge = (): [RequestFunc, AbortController] => {
             }
             const textValue = new TextDecoder().decode(value);
             result += textValue;
-            
+
             if (!queryDone && textValue.includes("==QUERYDONE==")) {
                 onQuery(result);
                 result = "";
