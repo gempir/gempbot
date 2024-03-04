@@ -7,7 +7,9 @@ export function George() {
     const loadRef = useRef<NodeJS.Timeout>();
     const [loading, setLoading] = useState<boolean>(false);
 
-    const [doReq, abortController] = useGeorge();
+    const abortController = useRef(new AbortController());
+
+    const [doReq] = useGeorge();
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         clearInterval(loadRef.current);
@@ -45,7 +47,8 @@ export function George() {
         loadRef.current = setInterval(() => {
             setResp(prev => prev + ".");
         }, 1000);
-        doReq(req, (text: string) => {
+        abortController.current = new AbortController();
+        doReq(req, abortController.current, (text: string) => {
             clearInterval(loadRef.current);
             if (text === "@DONE") {
                 setLoading(false);
@@ -59,7 +62,7 @@ export function George() {
 
     const abort = () => {
         try {
-            abortController.abort();
+            abortController.current.abort();
         } catch (e) {
             console.error(e);
         }
