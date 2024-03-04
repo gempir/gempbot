@@ -48,9 +48,13 @@ export const useGeorge = (): [RequestFunc] => {
                 result += textValue;
 
                 if (!queryDone && textValue.includes("====QUERYDONE====")) {
-                    onQuery(result.replace("====QUERYDONE====", ""));
+                    const res = result.split("====QUERYDONE====")
+                    onQuery(res[0]);
                     result = "";
                     queryDone = true;
+                    if (res[1]) {
+                        onText(res[1]);
+                    }
                     continue;
                 }
 
