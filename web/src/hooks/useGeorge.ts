@@ -66,6 +66,11 @@ export const useGeorge = (): [RequestFunc, AbortController] => {
                 onText(result);
             }
         }
+
+        // something failed
+        if (!queryDone) {
+            onText(result);
+        }
     };
 
     return [request, controller.current];
