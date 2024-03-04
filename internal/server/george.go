@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/gempir/gempbot/internal/log"
 )
 
 type GeorgeRequest struct {
@@ -73,11 +75,12 @@ func (a *Api) GeorgeHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
+		log.Errorf("Error analyzing user: %s", err.Error())
 		if strings.Contains(err.Error(), "connection refused") {
-			http.Error(w, "gempir is offline, his GPU needs to be connected", http.StatusInternalServerError)
+			fmt.Fprint(w, "gempir is offline, his GPU needs to be connected")
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fmt.Fprint(w, err.Error())
 		return
 	}
 	w.WriteHeader(http.StatusOK)
