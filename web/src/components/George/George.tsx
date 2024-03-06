@@ -104,7 +104,7 @@ export function George() {
                         <div className="p-1">
                             <span className="whitespace-nowrap">Twitch and 7TV emotes are filtered..</span><br/>
                             <span className="whitespace-nowrap">If we have more than limit lines then we pick random lines from the logs.</span><br/>
-                            <span className="whitespace-nowrap">You can read whole channels by leaving out the username..</span>
+                            <span className="whitespace-nowrap">You can read whole channels by leaving out the username..</span><br/>
                             <span className="whitespace-nowrap">If the response is bad try reducing line limit, might have exceeded context limit</span>
                         </div>
                     </div>
