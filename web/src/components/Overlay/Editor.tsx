@@ -1,5 +1,5 @@
-import { AssetRecordType, Editor, MediaHelpers, TLAsset, TLAssetId, Tldraw, TldrawProps, getHashForString, isGifAnimated } from 'tldraw';
-import 'tldraw/tldraw.css';
+import { AssetRecordType, Editor, MediaHelpers, TLAsset, TLAssetId, Tldraw, TldrawProps, getHashForString } from '@tldraw/tldraw';
+import '@tldraw/tldraw/tldraw.css';
 import { useAssetUploader } from '../../hooks/useAssetUploader';
 import { useYjsStore } from '../../hooks/useYjsStore';
 
@@ -21,41 +21,24 @@ export function CustomEditor(props: Partial<TldrawProps> & Props) {
         } else {
             editor.registerExternalAssetHandler('file', async ({ file }: { type: 'file'; file: File }) => {
                 const uploadedAsset = await upload(file);
-                //[b]
-                const assetId: TLAssetId = AssetRecordType.createId(getHashForString(uploadedAsset.url))
-    
-                let size: {
-                    w: number
-                    h: number
-                }
-                let isAnimated: boolean
-                let shapeType: 'image' | 'video'
-    
-                //[c]
-                if (['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'].includes(file.type)) {
-                    shapeType = 'image'
-                    size = await MediaHelpers.getImageSize(file)
-                    isAnimated = file.type === 'image/gif' && (await isGifAnimated(file))
-                } else {
-                    shapeType = 'video'
-                    isAnimated = true
-                    size = await MediaHelpers.getVideoSize(file)
-                }
-                //[d]
+                const assetId: TLAssetId = AssetRecordType.createId(getHashForString(uploadedAsset.id))
+
+                const size = uploadedAsset.isVideo ? await MediaHelpers.getVideoSizeFromSrc(uploadedAsset.url) : await MediaHelpers.getImageSizeFromSrc(uploadedAsset.url);
+
                 const asset: TLAsset = AssetRecordType.create({
                     id: assetId,
-                    type: shapeType,
+                    type: uploadedAsset.isVideo ? 'video' : 'image',
                     typeName: 'asset',
                     props: {
-                        name: file.name,
+                        name: uploadedAsset.id,
                         src: uploadedAsset.url,
                         w: size.w,
                         h: size.h,
-                        mimeType: file.type,
-                        isAnimated,
+                        mimeType: uploadedAsset.mimeType,
+                        isAnimated: uploadedAsset.isAnimated,
                     },
                 })
-    
+
                 return asset
             })
         }
