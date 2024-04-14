@@ -24,11 +24,6 @@ export function Sidebar() {
                     <HomeIcon className="h-6" />Home
                 </Link>
                 <Link
-                    href="/george"
-                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                    <EyeIcon className="h-6" />George
-                </Link>
-                <Link
                     href="/bot"
                     className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
                     <ChatBubbleLeftIcon className="h-6" />Bot

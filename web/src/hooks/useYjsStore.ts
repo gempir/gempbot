@@ -14,7 +14,7 @@ import {
 	setUserPreferences,
 	react,
 	transact,
-  } from '@tldraw/tldraw'
+  } from 'tldraw'
   import { useEffect, useMemo, useState } from 'react'
   import { YKeyValue } from 'y-utility/y-keyvalue'
   import * as Y from 'yjs'
