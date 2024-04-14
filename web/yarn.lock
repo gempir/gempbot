@@ -673,13 +673,6 @@
     lodash.isequal "^4.5.0"
     nanoid "4.0.2"
 
-"@tldraw/tldraw@^2.0.0-beta.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@tldraw/tldraw/-/tldraw-2.0.2.tgz#b53be55b0a8e727ccaaf0fa171d4b97f7dbdf179"
-  integrity sha512-34GK/SjYMyvPSrO7D0DR0sg3qi0XtFhyNKS4ls4PNGNa24Ov4Etm3MVEmbOe+stqAi8FC4hlfSDd7eE/vIsU5w==
-  dependencies:
-    tldraw "2.0.2"
-
 "@tldraw/tlschema@2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@tldraw/tlschema/-/tlschema-2.0.2.tgz#b4925a9155d74354b0b3608276f3fdf2e78d8b76"
@@ -3203,7 +3196,7 @@ throttle-debounce@^3.0.1:
   resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-3.0.1.tgz#32f94d84dfa894f786c9a1f290e7a645b6a19abb"
   integrity sha512-dTEWWNu6JmeVXY0ZYoPuH5cRIwc0MeGbJwah9KUNYSJwommQpCzTySTpEe8Gs1J23aeWEuAobe4Ag7EHVt/LOg==
 
-tldraw@2.0.2, tldraw@^2.0.2:
+tldraw@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/tldraw/-/tldraw-2.0.2.tgz#2d4efd6671c363ceec53d1ea57b872fbd90c1f1d"
   integrity sha512-qWIbsZkbCVcexGHtUBBjT28+upgzwSu3yImtQXRbfwDj8wbVadxxczAK9Uh6gSsRqlEx8WaQRu3Nkv/3QJSTQQ==
