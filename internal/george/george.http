@@ -1,9 +1,0 @@
-POST http://127.0.0.1:3010/api/george
-
-{
-  "query": "What is he thinking?",
-  "username": "gempir",
-  "channel": "nymn",
-  "year": 2023,
-  "month": 11
-}
