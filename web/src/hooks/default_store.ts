@@ -63,6 +63,7 @@ export const DEFAULT_STORE = {
 				w: 720,
 				h: 400,
 			},
+			insets: [false, false, false, false],
 			zoomBrush: null,
 			isGridMode: false,
 			isPenMode: false,
