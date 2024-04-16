@@ -10,6 +10,7 @@ import (
 	"github.com/gempir/gempbot/internal/emotechief"
 	"github.com/gempir/gempbot/internal/emoteservice"
 	"github.com/gempir/gempbot/internal/eventsubmanager"
+	"github.com/gempir/gempbot/internal/george"
 	"github.com/gempir/gempbot/internal/helixclient"
 	"github.com/gempir/gempbot/internal/log"
 	"github.com/gempir/gempbot/internal/server"
@@ -40,12 +41,13 @@ func main() {
 
 	seventvClient := emoteservice.NewSevenTvClient(db)
 
+	george := george.NewOllama(seventvClient, helixClient)
 	emoteChief := emotechief.NewEmoteChief(cfg, db, helixClient, seventvClient)
 	channelPointManager := channelpoint.NewChannelPointManager(cfg, helixClient, db)
 	wsHandler := ws.NewWsHandler(authClient)
 	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief)
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler, tokenFactory)
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler, tokenFactory, george)
 
 	mux := http.NewServeMux()
 
@@ -66,6 +68,8 @@ func main() {
 	mux.HandleFunc("/api/userconfig", apiHandlers.UserConfigHandler)
 	mux.HandleFunc("/api/asset", apiHandlers.AssetCreationHandler)
 	mux.HandleFunc("/api/overlay", apiHandlers.OverlayHandler)
+	mux.HandleFunc("/api/george", apiHandlers.GeorgeHandler)
+	mux.HandleFunc("/api/ws", wsHandler.HandleWs)
 
 	handler := cors.New(cors.Options{
 		AllowedOrigins:   []string{cfg.WebBaseUrl},
