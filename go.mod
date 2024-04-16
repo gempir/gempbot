@@ -18,8 +18,8 @@ require (
 )
 
 require (
-	github.com/kr/pretty v0.3.1 // indirect
-	golang.org/x/tools v0.14.0 // indirect
+	github.com/dlclark/regexp2 v1.8.1 // indirect
+	github.com/pkoukk/tiktoken-go v0.1.2 // indirect
 )
 
 require (
@@ -34,6 +34,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	github.com/tmc/langchaingo v0.1.5
 	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
