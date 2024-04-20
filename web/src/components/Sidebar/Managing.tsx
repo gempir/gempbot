@@ -17,7 +17,7 @@ export function Managing({ userConfig }: { userConfig: UserConfig | null | undef
     const data = userConfig?.Protected.EditorFor.sort().map(channel => ({label: channel, value: channel})) || [];
     data.unshift({label: "You", value: ""});
 
-    return <div className="Managing my-4">
+    return <div className="Managing m-3">
         <NativeSelect size="sm" className="w-full" data={data} onChange={updateManaging} value={managing ?? ""}
             rightSection={<UserGroupIcon className="text-gray-400 h-4" />}
         />

@@ -11,17 +11,19 @@ export function Login() {
 
     const [hovering, setHovering] = useState(false);
 
-    const classes = "p-3 flex justify-center rounded shadow bg-purple-800 hover:bg-purple-600 hover:opacity-100 whitespace-nowrap w-36".split(" ")
+    const classes = "p-2 flex justify-center rounded shadow bg-purple-800 hover:bg-purple-600 hover:opacity-100 whitespace-nowrap w-full".split(" ")
     if (isLoggedIn) {
         classes.push("opacity-25")
     }
 
-    return <a
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-        className={classes.join(" ")}
-        href={url.toString()}>
-        {isLoggedIn && <>{hovering ? <><UserIcon className="h-6" />&nbsp;&nbsp;Login again</> : <><UserIcon className="h-6" />&nbsp;&nbsp;Logged in</>}</>}
-        {!isLoggedIn && <>{hovering ? <><UserIcon className="h-6" />&nbsp;&nbsp;Login</> : <><UserIcon className="h-6" />&nbsp;&nbsp;Login</>}</>}
-    </a>
+    return <div className="w-full px-3">
+        <a
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
+            className={classes.join(" ")}
+            href={url.toString()}>
+            {isLoggedIn && <>{hovering ? <><UserIcon className="h-6" />&nbsp;&nbsp;Login again</> : <><UserIcon className="h-6" />&nbsp;&nbsp;Logged in</>}</>}
+            {!isLoggedIn && <>{hovering ? <><UserIcon className="h-6" />&nbsp;&nbsp;Login</> : <><UserIcon className="h-6" />&nbsp;&nbsp;Login</>}</>}
+        </a>
+    </div>
 }

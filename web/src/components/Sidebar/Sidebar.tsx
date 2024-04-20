@@ -4,50 +4,65 @@ import { useUserConfig } from "../../hooks/useUserConfig";
 import { useStore } from "../../store";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
+import { NavLink } from "@mantine/core";
+import { usePathname } from "next/navigation";
 
 export function Sidebar() {
     const [userConfig] = useUserConfig();
     const loggedIn = useStore(state => Boolean(state.scToken));
+    const pathname = usePathname();
 
     if (!loggedIn) {
         return null;
     }
 
     return (
-        <div className="p-4 bg-gray-800 px-6 shadow flex flex-col relative h-screen">
+        <div className="py-4 bg-gray-800 shadow flex flex-col relative h-screen items-center">
             <Login />
             {loggedIn && <>
                 <Managing userConfig={userConfig} />
-                <Link
+                <NavLink
                     href="/"
-                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500 ">
-                    <HomeIcon className="h-6" />Home
-                </Link>
-                <Link
+                    active={pathname === "/"}
+                    label="Home"
+                    leftSection={<HomeIcon className="h-6" />}
+                    component={Link}
+                />
+                <NavLink
                     href="/bot"
-                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                    <ChatBubbleLeftIcon className="h-6" />Bot
-                </Link>
-                <Link
+                    active={pathname.startsWith("/bot")}
+                    label="Bot"
+                    leftSection={<ChatBubbleLeftIcon className="h-6" />}
+                    component={Link}
+                />
+                <NavLink
                     href="/overlay"
-                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                    <PhotoIcon className="h-6" />Overlays
-                </Link>
-                <Link
+                    active={pathname.startsWith("/overlay")}
+                    label="Overlays"
+                    leftSection={<PhotoIcon className="h-6" />}
+                    component={Link}
+                />
+                <NavLink
                     href="/rewards"
-                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                    <GiftIcon className="h-6" />Rewards
-                </Link>
-                <Link
+                    active={pathname.startsWith("/rewards")}
+                    label="Rewards"
+                    leftSection={<GiftIcon className="h-6" />}
+                    component={Link}
+                />
+                <NavLink
                     href="/permissions"
-                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                    <AdjustmentsHorizontalIcon className="h-6" />Permissions
-                </Link>
-                <Link
+                    active={pathname.startsWith("/permissions")}
+                    label="Permissions"
+                    leftSection={<AdjustmentsHorizontalIcon className="h-6" />}
+                    component={Link}
+                />
+                <NavLink
                     href="/blocks"
-                    className="flex gap-2 items-center py-4 justify-start hover:text-blue-500">
-                    <NoSymbolIcon className="h-6" />Blocks
-                </Link>
+                    active={pathname.startsWith("/blocks")}
+                    label="Blocks"
+                    leftSection={<NoSymbolIcon className="h-6" />}
+                    component={Link}
+                />
             </>}
         </div>
     );
