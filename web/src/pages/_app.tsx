@@ -1,3 +1,4 @@
+import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
 import dayjs from 'dayjs';
 import * as localizedFormat from 'dayjs/plugin/localizedFormat';
 import Head from "next/head";
@@ -6,8 +7,17 @@ import 'tailwindcss/tailwind.css';
 import { Sidebar } from "../components/Sidebar/Sidebar";
 import { StoreProvider, useCreateStore } from "../store";
 
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
+import '@mantine/dropzone/styles.css';
+
 // @ts-ignore
 dayjs.extend(localizedFormat);
+
+
+const theme = createTheme({
+    /** Put your mantine theme override here */
+});
 
 export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
     const createStore = useCreateStore(pageProps.store);
@@ -19,6 +29,7 @@ export default function App({ Component, pageProps }: { Component: any; pageProp
             <Head>
                 <title>gempbot</title>
                 <link rel="icon" href="/favicon.ico" />
+                <ColorSchemeScript />
             </Head>
             <style jsx global>{`
                 body {
@@ -30,22 +41,24 @@ export default function App({ Component, pageProps }: { Component: any; pageProp
                     color: rgba(209, 213, 219, var(--tw-text-opacity));
                 }
             `}</style>
-            {renderFullLayout && <>
-                <main>
-                    <div className="flex" style={{ scrollbarGutter: "stable" }}>
-                        <Sidebar />
-                        <Component {...pageProps} />
-                    </div>
-                    <div className="absolute bottom-3 text-center right-3 mx-auto hover:text-blue-500">
-                        <Link href="/privacy">
-                            Privacy
-                        </Link>
-                    </div>
-                </main>
-            </>}
-            {!renderFullLayout && <>
-                <Component {...pageProps} />
-            </>}
+            <MantineProvider theme={theme}>
+                {renderFullLayout && <>
+                    <main>
+                        <div className="flex" style={{ scrollbarGutter: "stable" }}>
+                            <Sidebar />
+                            <Component {...pageProps} />
+                        </div>
+                        <div className="absolute bottom-3 text-center right-3 mx-auto hover:text-blue-500">
+                            <Link href="/privacy">
+                                Privacy
+                            </Link>
+                        </div>
+                    </main>
+                </>}
+                {!renderFullLayout && <>
+                    <Component {...pageProps} />
+                </>}
+            </MantineProvider>
         </StoreProvider>
     );
 }
