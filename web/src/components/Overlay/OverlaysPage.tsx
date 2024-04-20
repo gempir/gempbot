@@ -2,12 +2,9 @@
 import { Button, Table, TextInput, Tooltip, useMantineTheme, CopyButton } from "@mantine/core";
 import Link from "next/link";
 import { useOverlays } from "../../hooks/useOverlays";
-import { useUserConfig } from "../../hooks/useUserConfig";
 
 export function OverlaysPage() {
     const [overlays, addOverlay, deleteOverlay, errorMessage, loading] = useOverlays();
-    const [user] = useUserConfig();
-
     const theme = useMantineTheme();
 
     return <div className="relative w-full h-[100vh] p-4">
@@ -22,14 +19,16 @@ export function OverlaysPage() {
                     <Table.Tr>
                         <Table.Th>Id</Table.Th>
                         <Table.Th>Overlay Link</Table.Th>
-                        <Table.Th>Symbol</Table.Th>
+                        <Table.Th>Action</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                     {overlays.map(overlay => <Table.Tr key={overlay.ID}>
                         <Table.Td>{overlay.ID}</Table.Td>
                         <Table.Td className="flex gap-3 min-w-[350px]">
-                            <TextInput style={{ maxWidth: 300 }} value={`${window?.location?.href}/${overlay.RoomID}`} readOnly />
+                            <TextInput
+                                variant="filled"
+                                style={{ maxWidth: 300 }} value={`${window?.location?.href}/${overlay.RoomID}`} readOnly />
                             <CopyButton value={`${window?.location?.href}/${overlay.RoomID}`}>
                                 {({ copied, copy }) => (
                                     <Button color={copied ? 'teal' : 'blue'} onClick={copy}>

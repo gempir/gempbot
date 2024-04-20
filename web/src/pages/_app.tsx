@@ -16,7 +16,6 @@ dayjs.extend(localizedFormat);
 
 
 const theme = createTheme({
-    /** Put your mantine theme override here */
 });
 
 export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
@@ -41,7 +40,7 @@ export default function App({ Component, pageProps }: { Component: any; pageProp
                     color: rgba(209, 213, 219, var(--tw-text-opacity));
                 }
             `}</style>
-            <MantineProvider theme={theme}>
+            <MantineProvider theme={theme} forceColorScheme="dark">
                 {renderFullLayout && <>
                     <main>
                         <div className="flex" style={{ scrollbarGutter: "stable" }}>
