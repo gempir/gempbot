@@ -89,26 +89,26 @@ func (a *Api) HandlePrediction(context FossabotContext, w http.ResponseWriter, r
 }
 
 func (h *Api) lockOrCancelPrediction(context FossabotContext, status string) string {
-	resp, err := h.helixClient.GetPredictions(&helix.PredictionsParams{BroadcasterID: context.Channel.ID})
+	resp, err := h.helixClient.GetPredictions(&helix.PredictionsParams{BroadcasterID: context.Channel.ProviderID})
 	if err != nil {
 		log.Error(err)
 		return err.Error()
 	}
 	prediction := resp.Data.Predictions[0]
 
-	token, err := h.db.GetUserAccessToken(context.Channel.ID)
+	token, err := h.db.GetUserAccessToken(context.Channel.ProviderID)
 	if err != nil {
 		return err.Error()
 	}
 	h.helixClient.SetUserAccessToken(token.AccessToken)
-	resp, err = h.helixClient.EndPrediction(&helix.EndPredictionParams{BroadcasterID: context.Channel.ID, ID: prediction.ID, Status: status})
+	resp, err = h.helixClient.EndPrediction(&helix.EndPredictionParams{BroadcasterID: context.Channel.ProviderID, ID: prediction.ID, Status: status})
 	h.helixClient.SetUserAccessToken("")
 
 	if err != nil {
 		log.Error(err)
 		return err.Error()
 	}
-	log.Infof("[helix] %d CancelOrLockPrediction %s", resp.StatusCode, context.Channel.ID)
+	log.Infof("[helix] %d CancelOrLockPrediction %s", resp.StatusCode, context.Channel.ProviderID)
 	if resp.StatusCode >= http.StatusBadRequest {
 		return fmt.Sprintf("Bad Twitch API response %d", resp.StatusCode)
 	}
@@ -121,7 +121,7 @@ func (h *Api) setOutcomeForPrediction(context FossabotContext) string {
 
 	var winningOutcome helix.Outcomes
 
-	resp, err := h.helixClient.GetPredictions(&helix.PredictionsParams{BroadcasterID: context.Channel.ID})
+	resp, err := h.helixClient.GetPredictions(&helix.PredictionsParams{BroadcasterID: context.Channel.ProviderID})
 	if err != nil {
 		log.Error(err)
 		return err.Error()
@@ -139,7 +139,7 @@ func (h *Api) setOutcomeForPrediction(context FossabotContext) string {
 		return "outcome not found"
 	}
 
-	_, err = h.helixClient.EndPrediction(&helix.EndPredictionParams{BroadcasterID: context.Channel.ID, ID: prediction.ID, Status: dto.PredictionStatusResolved, WinningOutcomeID: winningOutcome.ID})
+	_, err = h.helixClient.EndPrediction(&helix.EndPredictionParams{BroadcasterID: context.Channel.ProviderID, ID: prediction.ID, Status: dto.PredictionStatusResolved, WinningOutcomeID: winningOutcome.ID})
 	if err != nil {
 		log.Error(err)
 		return fmt.Sprintf("failed to end prediction: %s", err.Error())
@@ -189,7 +189,7 @@ func (h *Api) startPrediction(context FossabotContext) string {
 	}
 
 	prediction := &helix.CreatePredictionParams{
-		BroadcasterID:    context.Channel.ID,
+		BroadcasterID:    context.Channel.ProviderID,
 		Title:            title,
 		Outcomes:         outcomes,
 		PredictionWindow: predictionWindow,
