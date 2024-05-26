@@ -18,7 +18,6 @@ import {
   import { useEffect, useMemo, useState } from 'react'
   import { YKeyValue } from 'y-utility/y-keyvalue'
   import * as Y from 'yjs'
-  import { DEFAULT_STORE } from './default_store'
   import { useYDoc, useYjsProvider } from '@y-sweet/react'
   
   export function useYjsStore() {
@@ -26,7 +25,6 @@ import {
 	  const store = createTLStore({
 		shapeUtils: defaultShapeUtils,
 	  })
-	  store.loadSnapshot(DEFAULT_STORE)
 	  return store
 	})
   
