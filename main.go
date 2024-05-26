@@ -58,6 +58,7 @@ func main() {
 		http.Error(w, "404 page not found", http.StatusNotFound)
 	})
 	mux.HandleFunc("/api/blocks", apiHandlers.BlocksHandler)
+	mux.HandleFunc("/api/fossabot", apiHandlers.FossabotHandler)
 	mux.HandleFunc("/api/callback", apiHandlers.CallbackHandler)
 	mux.HandleFunc("/api/emotehistory", apiHandlers.EmoteHistoryHandler)
 	mux.HandleFunc("/api/eventsub", apiHandlers.EventSubHandler)
