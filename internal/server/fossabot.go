@@ -45,9 +45,6 @@ type FossabotContext struct {
 	} `json:"message"`
 }
 
-const PREDICTION_LOCK = "lock"
-const PREDICTION_CANCEL = "cancel"
-
 func (a *Api) FossabotHandler(w http.ResponseWriter, r *http.Request) {
 	customApiToken := r.Header.Get("x-fossabot-customapitoken")
 
@@ -80,9 +77,9 @@ func (a *Api) HandlePrediction(context FossabotContext, w http.ResponseWriter, r
 	} else if strings.HasPrefix(context.Message.Content, "!prediction end") {
 		responseMsg = a.setOutcomeForPrediction(context)
 	} else if strings.HasPrefix(context.Message.Content, "!prediction cancel") {
-		responseMsg = a.lockOrCancelPrediction(context, PREDICTION_CANCEL)
+		responseMsg = a.lockOrCancelPrediction(context, dto.PredictionStatusCanceled)
 	} else if strings.HasPrefix(context.Message.Content, "!prediction lock") {
-		responseMsg = a.lockOrCancelPrediction(context, PREDICTION_LOCK)
+		responseMsg = a.lockOrCancelPrediction(context, dto.PredictionStatusLocked)
 	}
 
 	api.WriteText(w, responseMsg, http.StatusOK)
