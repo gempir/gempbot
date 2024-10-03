@@ -29,7 +29,7 @@ export function IframeOverlayPage() {
                         display: none !important;
                     }
 
-                    #cursor_hint {
+                    #cursor_hint, .tl-collaborator__cursor-hint {
                         display: none !important;
                         opacity: 0 !important;
                     }
