@@ -1,6 +1,8 @@
 import { useSync } from '@tldraw/sync';
 import 'tldraw/tldraw.css';
-import { AssetRecordType, Editor, TLAssetStore, TLBookmarkAsset, Tldraw, TldrawProps, getHashForString, uniqueId } from 'tldraw';
+import { AssetRecordType, Editor, MediaHelpers, TLAsset, TLAssetId, TLAssetStore, TLBookmarkAsset, Tldraw, TldrawProps, getHashForString, uniqueId } from 'tldraw';
+import { useAssetUploader } from '../../hooks/useAssetUploader';
+
 
 type Props = {
     readonly?: boolean;
@@ -16,7 +18,7 @@ export function CustomEditor(props: Partial<TldrawProps> & Props) {
         assets: multiplayerAssets,
     })
 
-    // const upload = useAssetUploader();
+    const upload = useAssetUploader();
 
     const handleMount = (editor: Editor) => {
         // @ts-expect-error
@@ -24,11 +26,51 @@ export function CustomEditor(props: Partial<TldrawProps> & Props) {
         console.log('editor mounted', props.readonly, editor);
         if (props.readonly) {
             editor.setCamera({ x: 0, y: 0, z: 1 });
-            editor.setCameraOptions({ isLocked: true })
             editor.updateInstanceState({ isReadonly: true })
             editor.selectNone();
         } else {
             editor.registerExternalAssetHandler('url', unfurlBookmarkUrl)
+            editor.registerExternalAssetHandler('file', async ({ file }: { type: 'file'; file: File }) => {
+                const uploadedAsset = await upload(file);
+                //[b]
+                const assetId: TLAssetId = AssetRecordType.createId(getHashForString(uploadedAsset.url))
+
+                let size: {
+                    w: number
+                    h: number
+                }
+                let isAnimated: boolean
+                let shapeType: 'image' | 'video'
+
+                //[c]
+                if (['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'].includes(file.type)) {
+                    shapeType = 'image'
+                    size = await MediaHelpers.getImageSize(file)
+                    isAnimated = file.type === 'image/gif'
+                } else {
+                    shapeType = 'video'
+                    isAnimated = true
+                    size = await MediaHelpers.getVideoSize(file)
+                }
+                //[d]
+
+                console.log('uploadedAsset', uploadedAsset);
+                const asset: TLAsset = AssetRecordType.create({
+                    id: assetId,
+                    type: shapeType,
+                    typeName: 'asset',
+                    props: {
+                        name: file.name,
+                        src: uploadedAsset.url,
+                        w: size.w,
+                        h: size.h,
+                        mimeType: file.type,
+                        isAnimated,
+                    },
+                })
+
+                return asset
+            })
         }
     }
 
