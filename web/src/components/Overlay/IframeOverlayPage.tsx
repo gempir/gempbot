@@ -36,7 +36,7 @@ export function IframeOverlayPage() {
                     }
                 `}</style>
             </Head>
-            <Editor hideUi readonly roomID={params.roomId} />
+            <Editor hideUi readonly roomID={params.roomId} components={{Cursor: null}} />
         </div>
     );
 }
