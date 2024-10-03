@@ -53,8 +53,6 @@ export function CustomEditor(props: Partial<TldrawProps> & Props) {
                     size = await MediaHelpers.getVideoSize(file)
                 }
                 //[d]
-
-                console.log('uploadedAsset', uploadedAsset);
                 const asset: TLAsset = AssetRecordType.create({
                     id: assetId,
                     type: shapeType,
