@@ -32,7 +32,7 @@ export function CustomEditor(props: Partial<TldrawProps> & Props) {
         }
     }
 
-    return <Tldraw onMount={handleMount} inferDarkMode store={store} {...props} Background={<></>} />
+    return <Tldraw onMount={handleMount} inferDarkMode store={store} {...props} />
 }
 
 // How does our server handle assets like images and videos?
