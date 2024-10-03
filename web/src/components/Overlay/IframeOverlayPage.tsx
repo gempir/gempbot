@@ -29,6 +29,7 @@ export function IframeOverlayPage() {
                         display: none !important;
                     }
 
+                    // Please don't hate me tldraw, I can't show this in the overlay, that would suck for the stream. But it's still visible for the editors.
                     .tl-watermark_SEE-LICENSE { 
                         display: none !important;
                     }
