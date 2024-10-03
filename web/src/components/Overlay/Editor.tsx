@@ -7,6 +7,8 @@ import { useAssetUploader } from '../../hooks/useAssetUploader';
 type Props = {
     readonly?: boolean;
     roomID: string;
+    username?: string;
+    userID?: string;
 }
 
 export function CustomEditor(props: Partial<TldrawProps> & Props) {
@@ -16,6 +18,7 @@ export function CustomEditor(props: Partial<TldrawProps> & Props) {
         uri: `https://bot-tldraw.gempir.com/connect/${props.roomID}`,
         // ...and how to handle static assets like images & videos
         assets: multiplayerAssets,
+        userInfo: props.username && props.userID ? { name: props.username, id: props.userID } : undefined,
     })
 
     const upload = useAssetUploader();
