@@ -6,6 +6,10 @@
     reverse_proxy 127.0.0.1:8070
 }
 
+{{ tldraw_host }} {
+    reverse_proxy 127.0.0.1:5858
+}
+
 {{ grafana_host }} {
     reverse_proxy 127.0.0.1:3000
 }

@@ -16,6 +16,15 @@
     recurse: yes
     mode: 0770
 
+- name: Ensure tldraw-server folder
+  file:
+    path: /home/gempbot/tldraw-server
+    state: directory
+    owner: gempbot
+    group: gempbot
+    recurse: yes
+    mode: 0770
+
 - name: Setup env file
   template:
     src: templates/env.j2
@@ -28,6 +37,11 @@
   template:
     src: templates/service.j2
     dest: /etc/systemd/system/gempbot.service
+
+- name: Install Tldraw Service
+  template:
+    src: templates/service-tldraw.j2
+    dest: /etc/systemd/system/gempbot-tldraw.service
 
 - name: Install Yjs Service
   template:
@@ -49,6 +63,12 @@
   systemd:
     daemon_reload: true
     name: gempbot
+    enabled: true
+
+- name: ensure tldraw service is enabled
+  systemd:
+    daemon_reload: true
+    name: gempbot-tldraw
     enabled: true
 
 - name: ensure yjs service is enabled

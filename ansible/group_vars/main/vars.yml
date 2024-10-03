@@ -3,6 +3,7 @@ web_host: bot.gempir.com
 cookie_domain: gempir.com
 api_host: bot-api.gempir.com
 yjs_host: bot-yjs.gempir.com
+tldraw_host: bot-tldraw.gempir.com
 grafana_host: grafana.o.gempir.com
 prometheus_host: prometheus.o.gempir.com
 
