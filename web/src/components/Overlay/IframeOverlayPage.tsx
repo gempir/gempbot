@@ -1,16 +1,13 @@
 'use client';
 
-import { YDocProvider } from '@y-sweet/react';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import { useParams } from 'next/navigation';
-import { useOverlayByRoomId } from '../../hooks/useOverlays';
 
 const Editor = dynamic(async () => (await import('./Editor')).CustomEditor, { ssr: false })
 
 export function IframeOverlayPage() {
     const params = useParams<{ roomId: string }>();
-    const [overlayAuth] = useOverlayByRoomId(params.roomId);
 
     return (
         <div className="relative w-full h-[100vh]">
@@ -20,20 +17,24 @@ export function IframeOverlayPage() {
                         background-color: transparent !important;
                     }
 
-                    .tl-background {
+                    .tl-background__wrapper, .tl-background, .tl-canvas {
                         background-color: transparent !important;
                     }
 
                     .tl-loading {
                         display: none !important;
                     }
+
+                    .tl-cursor {
+                        display: none !important;
+                    }
+
+                    .tl-watermark_SEE-LICENSE { 
+                        display: none !important;
+                    }
                 `}</style>
             </Head>
-            {overlayAuth &&
-                <YDocProvider clientToken={overlayAuth.auth}>
-                    <Editor hideUi readonly />
-                </YDocProvider>
-            }
+            <Editor hideUi readonly roomID={params.roomId} />
         </div>
     );
 }

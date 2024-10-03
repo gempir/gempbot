@@ -16,7 +16,6 @@ import (
 	"github.com/gempir/gempbot/internal/store"
 	"github.com/gempir/gempbot/internal/user"
 	"github.com/gempir/gempbot/internal/ws"
-	"github.com/gempir/gempbot/internal/ysweet"
 	"github.com/rs/cors"
 )
 
@@ -36,7 +35,6 @@ func main() {
 
 	userAdmin := user.NewUserAdmin(cfg, db, helixClient)
 	authClient := auth.NewAuth(cfg, db, helixClient)
-	tokenFactory := ysweet.NewFactory(cfg)
 
 	seventvClient := emoteservice.NewSevenTvClient(db)
 
@@ -45,7 +43,7 @@ func main() {
 	wsHandler := ws.NewWsHandler(authClient)
 	eventsubManager := eventsubmanager.NewEventsubManager(cfg, helixClient, db, emoteChief)
 
-	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler, tokenFactory)
+	apiHandlers := server.NewApi(cfg, db, helixClient, userAdmin, authClient, emoteChief, eventsubManager, channelPointManager, seventvClient, wsHandler)
 
 	mux := http.NewServeMux()
 
