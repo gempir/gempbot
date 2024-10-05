@@ -34,6 +34,10 @@ export function IframeOverlayPage() {
                         opacity: 0 !important;
                     }
 
+                    .tl-overlays__item {
+                        opacity: 0 !important;
+                    }
+
                     /** Please don't hate me tldraw, I can't show this in the overlay, that would suck for the stream. But it's still visible for the editors. **/
                     
                     .tl-watermark_SEE-LICENSE { 
