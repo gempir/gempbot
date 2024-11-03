@@ -193,7 +193,7 @@ func (c *SevenTvClient) GetUser(channelID string) (User, error) {
 		emotes = append(emotes, Emote{ID: emote.ID, Code: emote.Name})
 	}
 
-	return User{ID: userResp.User.ID, Emotes: emotes, EmoteSlots: userResp.EmoteCapacity}, nil
+	return User{ID: userResp.User.ID, Emotes: emotes, EmoteSlots: userResp.EmoteSet.Capacity}, nil
 }
 
 func (c *SevenTvClient) QuerySevenTvGQL(query string, variables map[string]interface{}, response interface{}) error {
