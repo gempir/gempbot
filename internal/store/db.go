@@ -52,7 +52,6 @@ type Database struct {
 
 func NewDatabase(cfg *config.Config) *Database {
 	psql, err := gorm.Open(gormPostgres.Open(cfg.DSN), &gorm.Config{
-		Logger:                                   log.NewGormLogger(),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {

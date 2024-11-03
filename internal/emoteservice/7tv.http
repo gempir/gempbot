@@ -1,0 +1,7 @@
+GET https://7tv.io/v3/users/twitch/62300805
+
+###
+GET https://7tv.io/v3/emotes/01GWDQTYP8000DK9PQK54JBJZ6
+
+###
+GET https://7tv.io/v3/users/:user/emotes
