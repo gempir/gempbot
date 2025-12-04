@@ -10,7 +10,7 @@ build_server:
 	go run main.go
 
 ysweet:
-	cd web && yarn ysweet-dev
+	cd web && pnpm ysweet-dev
 
 test:
 	go test ./internal/...
@@ -19,7 +19,7 @@ staticcheck:
 	staticcheck ./...
 
 web:
-	cd web && yarn dev
+	cd web && pnpm dev
 
 deploy:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -ldflags="-s -w" -o gempbot main.go
