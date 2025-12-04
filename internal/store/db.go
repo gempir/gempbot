@@ -25,11 +25,6 @@ type Store interface {
 	SaveReward(reward ChannelPointReward) error
 	DeleteChannelPointRewardById(userID string, rewardID string)
 	GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error)
-	GetOverlays(userID string) []Overlay
-	GetOverlay(ID string, userID string) Overlay
-	GetOverlayByRoomId(roomID string) Overlay
-	DeleteOverlay(ID string)
-	SaveOverlay(overlay Overlay) error
 }
 
 type Database struct {
@@ -80,8 +75,6 @@ func (db *Database) Migrate() {
 		Permission{},
 		EventSubMessage{},
 		EmoteBlock{},
-		Overlay{},
-		Asset{},
 	)
 	if err != nil {
 		panic("Failed to migrate, " + err.Error())

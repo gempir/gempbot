@@ -75,24 +75,3 @@ func (s *MockStore) DeleteChannelPointRewardById(userID string, rewardID string)
 func (s *MockStore) GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error) {
 	return ChannelPointReward{}, nil
 }
-
-func (s *MockStore) GetOverlays(userID string) []Overlay {
-	return []Overlay{
-		{ID: "1", OwnerTwitchID: "1", RoomID: "roomid"},
-	}
-}
-
-func (s *MockStore) GetOverlay(ID string, userID string) Overlay {
-	return Overlay{}
-}
-
-func (s *MockStore) GetOverlayByRoomId(roomID string) Overlay {
-	return Overlay{}
-}
-
-func (s *MockStore) DeleteOverlay(ID string) {
-}
-
-func (s *MockStore) SaveOverlay(overlay Overlay) error {
-	return nil
-}

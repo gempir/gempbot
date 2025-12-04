@@ -1,29 +1,25 @@
-import { useState } from "react";
+import { Button, Group } from "@mantine/core";
+import { UserIcon } from "@heroicons/react/24/solid";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { useStore } from "../../store";
-import { UserIcon } from "@heroicons/react/24/solid";
 
 export function Login() {
-    const apiBaseUrl = useStore(state => state.apiBaseUrl);
-    const twitchClientId = useStore(state => state.twitchClientId);
-    const isLoggedIn = useStore(state => Boolean(state.scToken));
-    const url = createLoginUrl(apiBaseUrl, twitchClientId);
+  const apiBaseUrl = useStore((state) => state.apiBaseUrl);
+  const twitchClientId = useStore((state) => state.twitchClientId);
+  const isLoggedIn = useStore((state) => Boolean(state.scToken));
+  const url = createLoginUrl(apiBaseUrl, twitchClientId);
 
-    const [hovering, setHovering] = useState(false);
-
-    const classes = "p-2 flex justify-center rounded shadow bg-purple-800 hover:bg-purple-600 hover:opacity-100 whitespace-nowrap w-full".split(" ")
-    if (isLoggedIn) {
-        classes.push("opacity-25")
-    }
-
-    return <div className="w-full px-3">
-        <a
-            onMouseEnter={() => setHovering(true)}
-            onMouseLeave={() => setHovering(false)}
-            className={classes.join(" ")}
-            href={url.toString()}>
-            {isLoggedIn && <>{hovering ? <><UserIcon className="h-6" />&nbsp;&nbsp;Login again</> : <><UserIcon className="h-6" />&nbsp;&nbsp;Logged in</>}</>}
-            {!isLoggedIn && <>{hovering ? <><UserIcon className="h-6" />&nbsp;&nbsp;Login</> : <><UserIcon className="h-6" />&nbsp;&nbsp;Login</>}</>}
-        </a>
-    </div>
+  return (
+    <Button
+      component="a"
+      href={url.toString()}
+      variant={isLoggedIn ? "subtle" : "gradient"}
+      gradient={{ from: "purple", to: "indigo", deg: 90 }}
+      size="md"
+      fullWidth
+      leftSection={<UserIcon style={{ width: 20, height: 20 }} />}
+    >
+      {isLoggedIn ? "Logged in" : "Login with Twitch"}
+    </Button>
+  );
 }
