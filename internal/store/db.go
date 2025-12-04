@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"github.com/gempir/gempbot/internal/config"
 	"github.com/gempir/gempbot/internal/dto"
@@ -22,22 +23,8 @@ type Store interface {
 	GetSevenTvToken(ctx context.Context) string
 	GetBttvToken(ctx context.Context) string
 	SaveReward(reward ChannelPointReward) error
-	CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error
-	GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error)
-	ClearNominations(ctx context.Context, channelTwitchID string) error
-	ClearNominationEmote(ctx context.Context, channelTwitchID string, emoteID string) error
 	DeleteChannelPointRewardById(userID string, rewardID string)
 	GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error)
-	CreateNominationVote(ctx context.Context, vote NominationVote) error
-	RemoveNominationVote(ctx context.Context, vote NominationVote) error
-	GetNomination(ctx context.Context, channelTwitchID string, emoteID string) (Nomination, error)
-	RemoveNomination(ctx context.Context, channelTwitchID string, emoteID string) error
-	CountNominations(ctx context.Context, channelTwitchID string, userID string) (int, error)
-	CreateNominationDownvote(ctx context.Context, downvote NominationDownvote) error
-	RemoveNominationDownvote(ctx context.Context, downvote NominationDownvote) error
-	CountNominationDownvotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error)
-	CountNominationVotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error)
-	IsAlreadyNominated(ctx context.Context, channelTwitchID string, emoteID string) (bool, error)
 	GetOverlays(userID string) []Overlay
 	GetOverlay(ID string, userID string) Overlay
 	GetOverlayByRoomId(roomID string) Overlay
@@ -57,6 +44,21 @@ func NewDatabase(cfg *config.Config) *Database {
 	if err != nil {
 		panic("failed to connect psql database " + err.Error())
 	}
+
+	// Configure connection pool
+	sqlDB, err := psql.DB()
+	if err != nil {
+		panic("failed to get database instance " + err.Error())
+	}
+
+	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool
+	sqlDB.SetMaxIdleConns(10)
+
+	// SetMaxOpenConns sets the maximum number of open connections to the database
+	sqlDB.SetMaxOpenConns(100)
+
+	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	log.Infof("connected on postgres")
 
@@ -78,9 +80,6 @@ func (db *Database) Migrate() {
 		Permission{},
 		EventSubMessage{},
 		EmoteBlock{},
-		Nomination{},
-		NominationVote{},
-		NominationDownvote{},
 		Overlay{},
 		Asset{},
 	)

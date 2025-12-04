@@ -69,67 +69,11 @@ func (s *MockStore) SaveReward(reward ChannelPointReward) error {
 	return nil
 }
 
-func (s *MockStore) CreateOrIncrementNomination(ctx context.Context, nomination Nomination) error {
-	return nil
-}
-
-func (s *MockStore) GetNominations(ctx context.Context, channelTwitchID string) ([]Nomination, error) {
-	return []Nomination{}, nil
-}
-
-func (s *MockStore) ClearNominations(ctx context.Context, channelTwitchID string) error {
-	return nil
-}
-
 func (s *MockStore) DeleteChannelPointRewardById(userID string, rewardID string) {
 }
 
 func (s *MockStore) GetChannelPointReward(userID string, rewardType dto.RewardType) (ChannelPointReward, error) {
 	return ChannelPointReward{}, nil
-}
-
-func (s *MockStore) CreateNominationVote(ctx context.Context, vote NominationVote) error {
-	return nil
-}
-
-func (s *MockStore) RemoveNominationVote(ctx context.Context, vote NominationVote) error {
-	return nil
-}
-
-func (s *MockStore) ClearNominationEmote(ctx context.Context, channelTwitchID string, emoteID string) error {
-	return nil
-}
-
-func (s *MockStore) GetNomination(ctx context.Context, channelTwitchID string, emoteID string) (Nomination, error) {
-	return Nomination{}, nil
-}
-
-func (s *MockStore) RemoveNomination(ctx context.Context, channelTwitchID string, emoteID string) error {
-	return nil
-}
-
-func (s *MockStore) CountNominations(ctx context.Context, channelTwitchID string, userID string) (int, error) {
-	return 0, nil
-}
-
-func (s *MockStore) CreateNominationDownvote(ctx context.Context, downvote NominationDownvote) error {
-	return nil
-}
-
-func (s *MockStore) RemoveNominationDownvote(ctx context.Context, downvote NominationDownvote) error {
-	return nil
-}
-
-func (s *MockStore) IsAlreadyNominated(ctx context.Context, channelTwitchID string, emoteID string) (bool, error) {
-	return false, nil
-}
-
-func (s *MockStore) CountNominationDownvotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error) {
-	return 0, nil
-}
-
-func (s *MockStore) CountNominationVotes(ctx context.Context, channelTwitchID string, voteBy string) (int, error) {
-	return 0, nil
 }
 
 func (s *MockStore) GetOverlays(userID string) []Overlay {

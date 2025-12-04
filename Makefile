@@ -18,11 +18,11 @@ test:
 staticcheck:
 	staticcheck ./...
 
-web: 
+web:
 	cd web && yarn dev
 
 deploy:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -o gempbot main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -ldflags="-s -w" -o gempbot main.go
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo systemctl stop gempbot"
 	rsync -avz -e "ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key" gempbot ubuntu@o1.gempir.com:/home/gempbot/
 	ssh -o StrictHostKeyChecking=no -p 32022 -i ansible/.ssh_key ubuntu@o1.gempir.com "sudo chown gempbot:gempbot /home/gempbot/gempbot"
@@ -45,7 +45,7 @@ provision:
 migrate:
 	go run main.go migrate
 
-docker: 
+docker:
 	docker build . -t gempbot
 
 run_docker:

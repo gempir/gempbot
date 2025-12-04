@@ -86,14 +86,21 @@ func NewClient(cfg *config.Config, db store.Store) *HelixClient {
 	token := setOrUpdateAccessToken(client, db)
 
 	return &HelixClient{
-		clientID:        cfg.ClientID,
-		clientSecret:    cfg.ClientSecret,
-		eventSubSecret:  cfg.Secret,
-		botUserID:       cfg.BotUserID,
-		Client:          client,
-		AppAccessToken:  helix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
-		db:              db,
-		httpClient:      &http.Client{},
+		clientID:       cfg.ClientID,
+		clientSecret:   cfg.ClientSecret,
+		eventSubSecret: cfg.Secret,
+		botUserID:      cfg.BotUserID,
+		Client:         client,
+		AppAccessToken: helix.AccessCredentials{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Scopes: strings.Split(token.Scopes, " "), ExpiresIn: token.ExpiresIn},
+		db:             db,
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second,
+			Transport: &http.Transport{
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 10,
+				IdleConnTimeout:     90 * time.Second,
+			},
+		},
 		refreshTtlCache: cache,
 	}
 }
@@ -117,17 +124,31 @@ func (c *HelixClient) StartRefreshTokenRoutine() {
 
 func (c *HelixClient) refreshUserAccessTokens() {
 	tokens := c.db.GetAllUserAccessToken()
+
+	// Create a worker pool with 5 concurrent workers
+	const maxWorkers = 5
+	semaphore := make(chan struct{}, maxWorkers)
+	var wg sync.WaitGroup
+
 	for _, token := range tokens {
 		if time.Since(token.UpdatedAt) > 3*time.Hour {
-			err := c.RefreshToken(token)
-			if err != nil {
-				log.Errorf("failed to refresh token for user %s %s", token.OwnerTwitchID, err)
-			} else {
-				log.Infof("refreshed token for user %s", token.OwnerTwitchID)
-			}
-			time.Sleep(time.Millisecond * 500)
+			wg.Add(1)
+			go func(t store.UserAccessToken) {
+				defer wg.Done()
+				semaphore <- struct{}{}        // Acquire semaphore
+				defer func() { <-semaphore }() // Release semaphore
+
+				err := c.RefreshToken(t)
+				if err != nil {
+					log.Errorf("failed to refresh token for user %s %s", t.OwnerTwitchID, err)
+				} else {
+					log.Infof("refreshed token for user %s", t.OwnerTwitchID)
+				}
+			}(token)
 		}
 	}
+
+	wg.Wait()
 }
 
 func (c *HelixClient) refreshUserAccessToken(userID string) error {
