@@ -83,7 +83,7 @@ export function Bot() {
                   }
                   disabled={updating}
                   size="lg"
-                  color="purple"
+                  color="cyan"
                   onLabel="ON"
                   offLabel="OFF"
                 />

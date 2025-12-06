@@ -24,7 +24,7 @@ const features = [
     title: "Channel Point Rewards",
     description:
       "Automatically manage BTTV and 7TV emotes with channel point redemptions. Let your viewers add their favorite emotes!",
-    color: "purple",
+    color: "cyan",
     href: "/rewards",
   },
   {
@@ -48,7 +48,7 @@ const features = [
     title: "User Permissions",
     description:
       "Grant editor access to trusted users and control who can manage your bot settings and predictions.",
-    color: "indigo",
+    color: "blue",
     href: "/permissions",
   },
 ];
@@ -59,50 +59,6 @@ export function Teaser() {
   return (
     <Container size="xl">
       <Stack gap="xl" py="xl">
-        {/* Hero Section */}
-        <Stack gap="md" ta="center" py="xl">
-          <Badge
-            size="lg"
-            variant="gradient"
-            gradient={{ from: "purple", to: "indigo", deg: 90 }}
-          >
-            Twitch Bot Manager
-          </Badge>
-
-          <Title
-            order={1}
-            size={48}
-            style={{
-              background:
-                "linear-gradient(90deg, var(--mantine-color-purple-6) 0%, var(--mantine-color-indigo-6) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            Welcome to gempbot
-          </Title>
-
-          <Text size="xl" c="dimmed" maw={600} mx="auto">
-            Powerful automation and management tools for Twitch streamers.
-            Manage emotes, permissions, and automate your stream.
-          </Text>
-
-          {!isLoggedIn && (
-            <Group justify="center" mt="md">
-              <Button
-                size="lg"
-                variant="gradient"
-                gradient={{ from: "purple", to: "indigo", deg: 90 }}
-                component="a"
-                href="#"
-              >
-                Get Started
-              </Button>
-            </Group>
-          )}
-        </Stack>
-
         {/* Features Grid */}
         <Grid gutter="lg">
           {features.map((feature) => {

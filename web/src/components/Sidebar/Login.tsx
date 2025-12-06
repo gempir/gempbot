@@ -14,7 +14,7 @@ export function Login() {
       component="a"
       href={url.toString()}
       variant={isLoggedIn ? "subtle" : "gradient"}
-      gradient={{ from: "purple", to: "indigo", deg: 90 }}
+      gradient={{ from: "cyan", to: "blue", deg: 90 }}
       size="md"
       fullWidth
       leftSection={<UserIcon style={{ width: 20, height: 20 }} />}

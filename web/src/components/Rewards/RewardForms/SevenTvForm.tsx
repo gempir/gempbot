@@ -141,7 +141,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
         <Stack gap="md">
           <Group align="flex-start" wrap="nowrap">
             <Image
-              src="https://cdn.7tv.app/emote/60420eb02f4d4807ca6ca103/4x.webp"
+              src="https://cdn.7tv.app/emote/01JTTR1J4HTK35S08H272VCWV3/4x.avif"
               alt="7TV"
               w={60}
               h={60}
@@ -247,7 +247,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
               Delete Reward
             </Button>
 
-            <Button type="submit" color="purple">
+            <Button type="submit" color="cyan">
               Save Changes
             </Button>
           </Group>

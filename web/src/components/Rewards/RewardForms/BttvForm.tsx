@@ -247,7 +247,7 @@ export function BttvForm({ userConfig }: { userConfig: UserConfig }) {
               Delete Reward
             </Button>
 
-            <Button type="submit" color="purple">
+            <Button type="submit" color="cyan">
               Save Changes
             </Button>
           </Group>

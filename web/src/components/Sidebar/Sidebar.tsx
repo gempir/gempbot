@@ -55,19 +55,20 @@ export function Sidebar() {
 
   return (
     <Stack h="100%" justify="space-between">
-      <Stack gap="md">
+      <Stack gap="sm">
         {/* Brand */}
-        <Box mb="md">
+        <Box>
           <Text
             size="xl"
             fw={700}
-            variant="gradient"
-            gradient={{ from: "purple", to: "indigo", deg: 90 }}
+            style={{
+              background: "linear-gradient(90deg, #00fa91 0%, #3b82f6 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
           >
             gempbot
-          </Text>
-          <Text size="xs" c="dimmed">
-            Twitch Bot & Overlay Manager
           </Text>
         </Box>
 
@@ -103,7 +104,7 @@ export function Sidebar() {
                   <ThemeIcon
                     variant="subtle"
                     size="md"
-                    color={isActive ? "purple" : "gray"}
+                    color={isActive ? "cyan" : "gray"}
                   >
                     <Icon style={{ width: "70%", height: "70%" }} />
                   </ThemeIcon>

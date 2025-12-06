@@ -120,7 +120,7 @@ export function Blocks() {
                 leftSection={<PlusIcon style={{ width: 16, height: 16 }} />}
                 onClick={handleAdd}
                 loading={adding}
-                color="purple"
+                color="cyan"
               >
                 Block
               </Button>
@@ -185,7 +185,7 @@ export function Blocks() {
                     total={totalPages}
                     value={page}
                     onChange={setPage}
-                    color="purple"
+                    color="cyan"
                   />
                 </Group>
               )}

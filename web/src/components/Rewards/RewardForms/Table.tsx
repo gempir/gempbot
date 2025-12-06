@@ -164,7 +164,7 @@ export function Table({
                   total={totalPages}
                   value={page}
                   onChange={onPageChange}
-                  color="purple"
+                  color="cyan"
                 />
               </Group>
             )}

@@ -129,7 +129,7 @@ export function UserPermissions({
             <Button
               leftSection={<PlusIcon style={{ width: 16, height: 16 }} />}
               onClick={handleAddRow}
-              color="purple"
+              color="cyan"
             >
               Add User
             </Button>
@@ -175,7 +175,7 @@ export function UserPermissions({
                           setRows(newRows);
                           handleSave(newRows);
                         }}
-                        color="purple"
+                        color="cyan"
                       />
                     </Table.Td>
                     <Table.Td>
@@ -190,7 +190,7 @@ export function UserPermissions({
                           setRows(newRows);
                           handleSave(newRows);
                         }}
-                        color="purple"
+                        color="cyan"
                       />
                     </Table.Td>
                     <Table.Td>
