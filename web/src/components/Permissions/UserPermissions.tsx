@@ -167,12 +167,13 @@ export function UserPermissions({
                       <Checkbox
                         checked={row.editor}
                         onChange={(e) => {
-                          handleUpdateRow(
-                            index,
-                            "editor",
-                            e.currentTarget.checked,
-                          );
-                          setTimeout(() => handleSave(), 100);
+                          const newRows = [...rows];
+                          newRows[index] = {
+                            ...newRows[index],
+                            editor: e.currentTarget.checked,
+                          };
+                          setRows(newRows);
+                          handleSave(newRows);
                         }}
                         color="purple"
                       />
@@ -181,12 +182,13 @@ export function UserPermissions({
                       <Checkbox
                         checked={row.prediction}
                         onChange={(e) => {
-                          handleUpdateRow(
-                            index,
-                            "prediction",
-                            e.currentTarget.checked,
-                          );
-                          setTimeout(() => handleSave(), 100);
+                          const newRows = [...rows];
+                          newRows[index] = {
+                            ...newRows[index],
+                            prediction: e.currentTarget.checked,
+                          };
+                          setRows(newRows);
+                          handleSave(newRows);
                         }}
                         color="purple"
                       />

@@ -63,14 +63,6 @@ export function Bot() {
 
         <Card shadow="sm" padding="xl" radius="md" withBorder>
           <Group align="flex-start" wrap="nowrap">
-            <Image
-              src="https://static-cdn.jtvnw.net/badges/v1/6c4783cd-0858-4564-9b5c-c7f90af8b1de/3"
-              alt="Predictions"
-              w={80}
-              h={80}
-              radius="md"
-            />
-
             <Stack gap="sm" style={{ flex: 1 }}>
               <Group justify="space-between" align="flex-start">
                 <div>

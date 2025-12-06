@@ -8,9 +8,10 @@ import (
 )
 
 type BotConfig struct {
-	OwnerTwitchID string `gorm:"primaryKey"`
-	JoinBot       bool   `gorm:"index"`
-	MediaCommands bool
+	OwnerTwitchID           string `gorm:"primaryKey"`
+	JoinBot                 bool   `gorm:"index"`
+	MediaCommands           bool
+	PredictionAnnouncements bool
 }
 
 func (db *Database) SaveBotConfig(ctx context.Context, botCfg BotConfig) error {

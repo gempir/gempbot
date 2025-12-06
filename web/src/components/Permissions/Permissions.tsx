@@ -3,7 +3,7 @@ import { useUserConfig } from "../../hooks/useUserConfig";
 import { UserPermissions } from "./UserPermissions";
 
 export function Permissions() {
-  const { userConfig, setUserConfig, errorMessage, loading } = useUserConfig();
+  const [userConfig, setUserConfig, , loading, errorMessage] = useUserConfig();
 
   if (loading || !userConfig) {
     return (

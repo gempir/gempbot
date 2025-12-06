@@ -72,8 +72,13 @@ export function Teaser() {
           <Title
             order={1}
             size={48}
-            variant="gradient"
-            gradient={{ from: "purple", to: "indigo", deg: 90 }}
+            style={{
+              background:
+                "linear-gradient(90deg, var(--mantine-color-purple-6) 0%, var(--mantine-color-indigo-6) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
           >
             Welcome to gempbot
           </Title>
@@ -111,18 +116,19 @@ export function Teaser() {
                   radius="md"
                   withBorder
                   h="100%"
-                  component={isLoggedIn ? Link : "div"}
-                  href={isLoggedIn ? feature.href : "#"}
+                  component={(isLoggedIn ? "a" : "div") as any}
+                  {...(isLoggedIn ? { href: feature.href } : {})}
                   style={{
                     cursor: isLoggedIn ? "pointer" : "default",
                     transition: "transform 0.2s",
+                    textDecoration: "none",
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
                     if (isLoggedIn) {
                       e.currentTarget.style.transform = "translateY(-4px)";
                     }
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
                     e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >

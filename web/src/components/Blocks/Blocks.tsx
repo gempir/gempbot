@@ -18,7 +18,7 @@ import { notifications } from "@mantine/notifications";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import { Emote } from "../Emote/Emote";
-import { useBlocks } from "../../hooks/useBlocks";
+import { useBlocks, Block } from "../../hooks/useBlocks";
 
 export function Blocks() {
   const { blocks, page, totalPages, loading, addBlock, removeBlock, setPage } =
@@ -57,9 +57,9 @@ export function Blocks() {
     }
   };
 
-  const handleRemove = async (emoteId: string, type: string) => {
+  const handleRemove = async (block: Block) => {
     try {
-      await removeBlock(emoteId, type as "BTTV" | "7TV");
+      await removeBlock(block);
       notifications.show({
         title: "Emote Unblocked",
         message: "Emote has been removed from the block list",
@@ -151,26 +151,24 @@ export function Blocks() {
                 </Table.Thead>
                 <Table.Tbody>
                   {blocks.map((block) => (
-                    <Table.Tr key={`${block.emoteID}-${block.type}`}>
+                    <Table.Tr key={`${block.EmoteID}-${block.Type}`}>
                       <Table.Td>
-                        <Emote emoteId={block.emoteID} type={block.type} />
+                        <Emote emoteId={block.EmoteID} type={block.Type} />
                       </Table.Td>
                       <Table.Td>
                         <Text size="sm" ff="monospace">
-                          {block.emoteID}
+                          {block.EmoteID}
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm">{block.type}</Text>
+                        <Text size="sm">{block.Type}</Text>
                       </Table.Td>
                       <Table.Td>
                         <Tooltip label="Remove block">
                           <ActionIcon
                             variant="subtle"
                             color="red"
-                            onClick={() =>
-                              handleRemove(block.emoteID, block.type)
-                            }
+                            onClick={() => handleRemove(block)}
                           >
                             <TrashIcon style={{ width: 16, height: 16 }} />
                           </ActionIcon>

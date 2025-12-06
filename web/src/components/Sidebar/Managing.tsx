@@ -5,7 +5,7 @@ import { useStore } from "../../store";
 import { setCookie } from "../../service/cookie";
 
 export function Managing() {
-  const { userConfig } = useUserConfig();
+  const [userConfig] = useUserConfig();
   const managing = useStore((state) => state.managing);
   const setManaging = useStore((state) => state.setManaging);
 

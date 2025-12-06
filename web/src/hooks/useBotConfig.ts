@@ -1,79 +1,72 @@
-import { useEffect, useState } from 'react';
-import { useStore } from '../store';
-import { doFetch } from '../service/doFetch';
+import { useEffect, useState } from "react";
+import { useStore } from "../store";
+import { doFetch, Method } from "../service/doFetch";
 
 export interface BotConfig {
-    predictionAnnouncements: boolean;
+  predictionAnnouncements: boolean;
 }
 
 export function useBotConfig() {
-    const [config, setConfig] = useState<BotConfig | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const managing = useStore((state) => state.managing);
-    const apiBaseUrl = useStore((state) => state.apiBaseUrl);
+  const [config, setConfig] = useState<BotConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const managing = useStore((state) => state.managing);
+  const apiBaseUrl = useStore((state) => state.apiBaseUrl);
+  const scToken = useStore((state) => state.scToken);
 
-    const fetchConfig = async () => {
-        if (!managing) {
-            setLoading(false);
-            return;
-        }
+  const fetchConfig = async () => {
+    try {
+      setLoading(true);
+      const searchParams = new URLSearchParams();
+      if (managing) {
+        searchParams.append("channelId", managing);
+      }
+      const data = await doFetch(
+        { apiBaseUrl, managing, scToken },
+        Method.GET,
+        "/api/bot/config",
+        searchParams,
+      );
+      setConfig(data);
+      setError(null);
+    } catch (err) {
+      setError("Error loading bot configuration");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        try {
-            setLoading(true);
-            const response = await doFetch(`${apiBaseUrl}/api/bot/config?channelId=${managing}`, {
-                method: 'GET',
-            });
+  const updateConfig = async (updates: Partial<BotConfig>) => {
+    try {
+      const body: any = { ...updates };
+      if (managing) {
+        body.channelId = managing;
+      }
 
-            if (response.ok) {
-                const data = await response.json();
-                setConfig(data);
-            } else {
-                setError('Failed to load bot configuration');
-            }
-        } catch (err) {
-            setError('Error loading bot configuration');
-        } finally {
-            setLoading(false);
-        }
-    };
+      const data = await doFetch(
+        { apiBaseUrl, managing, scToken },
+        Method.POST,
+        "/api/bot/config",
+        undefined,
+        body,
+      );
+      setConfig(data);
+      setError(null);
+    } catch (err) {
+      setError("Error updating bot configuration");
+      throw err;
+    }
+  };
 
-    const updateConfig = async (updates: Partial<BotConfig>) => {
-        if (!managing) return;
+  useEffect(() => {
+    fetchConfig();
+  }, [managing]);
 
-        try {
-            const response = await doFetch(`${apiBaseUrl}/api/bot/config`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    channelId: managing,
-                    ...updates,
-                }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setConfig(data);
-            } else {
-                throw new Error('Failed to update configuration');
-            }
-        } catch (err) {
-            setError('Error updating bot configuration');
-            throw err;
-        }
-    };
-
-    useEffect(() => {
-        fetchConfig();
-    }, [managing]);
-
-    return {
-        config,
-        loading,
-        error,
-        updateConfig,
-        refetch: fetchConfig,
-    };
+  return {
+    config,
+    loading,
+    error,
+    updateConfig,
+    refetch: fetchConfig,
+  };
 }
