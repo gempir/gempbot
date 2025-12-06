@@ -1,30 +1,145 @@
-import { createLoginUrl } from "../factory/createLoginUrl";
+import {
+  ChatBubbleLeftIcon,
+  ShieldCheckIcon,
+  TrophyIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/solid";
+import {
+  Button,
+  Card,
+  Container,
+  Grid,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { useStore } from "../store";
 
-export function Teaser() {
-    const apiBaseUrl = useStore(state => state.apiBaseUrl);
-    const twitchClientId = useStore(state => state.twitchClientId);
-    const url = createLoginUrl(apiBaseUrl, twitchClientId);
-    const {isLoggedIn} = useStore(state => ({isLoggedIn: !!state.scToken}));
+const features = [
+  {
+    icon: TrophyIcon,
+    title: "Channel Point Rewards",
+    description:
+      "Automatically manage BTTV and 7TV emotes with channel point redemptions. Let your viewers add their favorite emotes!",
+    color: "cyan",
+    href: "/rewards",
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: "Emote Management",
+    description:
+      "Block unwanted emotes and manage permissions for editors. Keep your emote list clean and organized.",
+    color: "violet",
+    href: "/blocks",
+  },
+  {
+    icon: ChatBubbleLeftIcon,
+    title: "Prediction Bot",
+    description:
+      "Automatically announce predictions in chat with customizable messages and formatting.",
+    color: "grape",
+    href: "/bot",
+  },
+  {
+    icon: UserGroupIcon,
+    title: "User Permissions",
+    description:
+      "Grant editor access to trusted users and control who can manage your bot settings and predictions.",
+    color: "blue",
+    href: "/permissions",
+  },
+];
 
-    return <section className="text-gray-600 body-font w-full">
-        <div className="container px-5 py-24 mx-auto">
-            <div className="flex flex-col text-center w-full mb-20">
-                <h1 className="sm:text-3xl text-2xl text-indigo-400 font-medium title-font mb-4">gempbot</h1>
-            </div>
-            <div className="flex flex-wrap">
-                <div className="xl:w-1/4 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60">
-                    <h2 className="text-lg sm:text-xl text-gray-100 font-medium title-font mb-2">Channel Point Rewards</h2>
-                    <p className="leading-relaxed text-base mb-4 text-gray-400">Allow viewers to add new 7TV emotes to your chat</p>
-                </div>
-                <div className="xl:w-1/4 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60">
-                    <h2 className="text-lg sm:text-xl text-gray-100 font-medium title-font mb-2">Predictions Announcements</h2>
-                    <p className="leading-relaxed text-base mb-4 text-gray-400">Announce predictions as chat message</p>
-                </div>
-            </div>
-            {!isLoggedIn && <div className="flex justify-center">
-                <a className="m-auto mx-auto mt-16 text-white bg-purple-800 hover:bg-purple-600 border-0 py-2 px-8 focus:outline-none rounded text-lg" href={url.toString()}>Login to Get Started</a>
-            </div>}
-        </div>
-    </section>
+export function Teaser() {
+  const isLoggedIn = useStore((state) => Boolean(state.scToken));
+
+  return (
+    <Container size="xl">
+      <Stack gap="xl" py="xl">
+        {/* Features Grid */}
+        <Grid gutter="lg">
+          {features.map((feature) => {
+            const Icon = feature.icon;
+
+            return (
+              <Grid.Col key={feature.title} span={{ base: 12, sm: 6, md: 6 }}>
+                <Card
+                  shadow="sm"
+                  padding="lg"
+                  radius="md"
+                  withBorder
+                  h="100%"
+                  component={(isLoggedIn ? "a" : "div") as any}
+                  {...(isLoggedIn ? { href: feature.href } : {})}
+                  style={{
+                    cursor: isLoggedIn ? "pointer" : "default",
+                    transition: "transform 0.2s",
+                    textDecoration: "none",
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                    if (isLoggedIn) {
+                      e.currentTarget.style.transform = "translateY(-4px)";
+                    }
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <Stack gap="md">
+                    <Group>
+                      <div
+                        style={{
+                          background: `var(--mantine-color-${feature.color}-9)`,
+                          borderRadius: "12px",
+                          padding: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Icon
+                          style={{ width: 24, height: 24, color: "white" }}
+                        />
+                      </div>
+                      <Title order={3} size="h4">
+                        {feature.title}
+                      </Title>
+                    </Group>
+
+                    <Text size="sm" c="dimmed">
+                      {feature.description}
+                    </Text>
+                  </Stack>
+                </Card>
+              </Grid.Col>
+            );
+          })}
+        </Grid>
+
+        {/* Call to Action */}
+        {!isLoggedIn && (
+          <Card shadow="sm" padding="xl" radius="md" withBorder mt="xl">
+            <Stack gap="md" ta="center">
+              <Title order={2} size="h3">
+                Ready to get started?
+              </Title>
+              <Text c="dimmed">
+                Login with your Twitch account to start managing your channel
+              </Text>
+              <Group justify="center" mt="md">
+                <Button
+                  size="md"
+                  variant="gradient"
+                  gradient={{ from: "purple", to: "indigo", deg: 90 }}
+                >
+                  Login with Twitch
+                </Button>
+              </Group>
+            </Stack>
+          </Card>
+        )}
+      </Stack>
+    </Container>
+  );
 }

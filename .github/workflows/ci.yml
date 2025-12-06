@@ -11,8 +11,23 @@ jobs:
           fetch-depth: 2
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.21'
+          go-version: "1.21"
       - name: Run coverage
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./internal/...
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: "web/pnpm-lock.yaml"
+      - name: Install dependencies
+        run: cd web && pnpm install
+      - name: Run Biome lint
+        run: cd web && pnpm lint
+      - name: Check Biome formatting
+        run: cd web && pnpm biome format .

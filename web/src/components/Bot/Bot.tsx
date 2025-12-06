@@ -1,45 +1,110 @@
-import { useEffect, useState } from 'react';
-import { useSubscribtions } from '../../hooks/useSubscriptions';
-import { Toggle } from './Toggle';
+import {
+  Card,
+  Container,
+  Group,
+  Loader,
+  Stack,
+  Switch,
+  Text,
+  Title,
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { useState } from "react";
+import { useBotConfig } from "../../hooks/useBotConfig";
 
 export function Bot() {
-    const [subscribe, unsubscribe, subscriptionsStatus, loading] = useSubscribtions();
+  const { config, loading, updateConfig } = useBotConfig();
+  const [updating, setUpdating] = useState(false);
 
-    const [predictionsAnnouncements, setPredictionAnnouncements] = useState(false);
+  const handleToggle = async (checked: boolean) => {
+    setUpdating(true);
+    try {
+      await updateConfig({ predictionAnnouncements: checked });
+      notifications.show({
+        title: "Settings Updated",
+        message: `Prediction announcements ${checked ? "enabled" : "disabled"}`,
+        color: "green",
+      });
+    } catch (_error) {
+      notifications.show({
+        title: "Update Failed",
+        message: "Failed to update bot settings",
+        color: "red",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
 
-    useEffect(() => {
-        setPredictionAnnouncements(subscriptionsStatus.predictions);
-    }, [subscriptionsStatus.predictions]);
+  if (loading) {
+    return (
+      <Container size="lg">
+        <Card shadow="sm" padding="xl" radius="md" withBorder>
+          <Group justify="center" p="xl">
+            <Loader size="lg" />
+          </Group>
+        </Card>
+      </Container>
+    );
+  }
 
-    const handlePredictionAnnouncementChange = (value: boolean) => {
-        setPredictionAnnouncements(value);
-        if (value) {
-            subscribe();
-        } else {
-            unsubscribe();
-        }
-    };
-
-    return <div className={"p-4"}>
-        <div className={"bg-gray-800 rounded shadow relative p-4 " + (loading ? "animate-pulse pointer-events-none" : "")}>
-            <div className="flex items-start justify-between">
-                <div>
-                    <h3 className="font-bold text-xl">Prediction Announcements</h3>
-                    <div className="p-2 text-gray-200 mx-0 px-0">
-                        Announces when predictions
-                        <ul className="list-disc pl-6 mt-2">
-                            <li>are made</li>
-                            <li>locked</li>
-                            <li>canceled</li>
-                            <li>resolved</li>
-                        </ul>
-                        <img src={"/images/announcement.png"} className="mt-2" />
-                    </div>
-                </div>
-                <Toggle checked={predictionsAnnouncements} onChange={handlePredictionAnnouncementChange} />
-            </div>
+  return (
+    <Container size="lg">
+      <Stack gap="lg">
+        <div>
+          <Title order={1} mb="xs">
+            Bot Settings
+          </Title>
+          <Text c="dimmed">
+            Configure automated bot features for your channel
+          </Text>
         </div>
-    </div >;
+
+        <Card shadow="sm" padding="xl" radius="md" withBorder>
+          <Group align="flex-start" wrap="nowrap">
+            <Stack gap="sm" style={{ flex: 1 }}>
+              <Group justify="space-between" align="flex-start">
+                <div>
+                  <Title order={3} size="h4">
+                    Prediction Announcements
+                  </Title>
+                  <Text size="sm" c="dimmed" mt={4}>
+                    Automatically announce when predictions are created in your
+                    channel. The bot will post a message in chat with prediction
+                    details.
+                  </Text>
+                </div>
+
+                <Switch
+                  checked={config?.predictionAnnouncements || false}
+                  onChange={(event) =>
+                    handleToggle(event.currentTarget.checked)
+                  }
+                  disabled={updating}
+                  size="lg"
+                  color="cyan"
+                  onLabel="ON"
+                  offLabel="OFF"
+                />
+              </Group>
+            </Stack>
+          </Group>
+        </Card>
+
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Stack gap="xs">
+            <Title order={4} size="h5">
+              About Prediction Announcements
+            </Title>
+            <Text size="sm" c="dimmed">
+              When enabled, gempbot will monitor your channel for new
+              predictions and automatically post an announcement in chat. This
+              helps increase viewer engagement by notifying everyone when a
+              prediction starts.
+            </Text>
+          </Stack>
+        </Card>
+      </Stack>
+    </Container>
+  );
 }
-
-

@@ -1,17 +1,38 @@
-import { EmoteType } from "../../hooks/useEmotehistory";
+import { Anchor, Image } from "@mantine/core";
 
-export type EmoteSize = 1 | 2 | 3 | 4;
+interface EmoteProps {
+  emoteId: string;
+  type: string;
+}
 
-export function Emote({ id, type = EmoteType.SEVENTV, size = 1 }: { id: string, type?: EmoteType, size?: EmoteSize }): JSX.Element {
-    let url = `https://cdn.betterttv.net/emote/${id}/${size}x`;
-    let hrefUrl = `https://betterttv.com/emotes/${id}`;
-
-    if (type === EmoteType.SEVENTV) {
-        url = `https://cdn.7tv.app/emote/${id}/${size}x.webp`
-        hrefUrl = `https://7tv.app/emotes/${id}`;
+export function Emote({ emoteId, type }: EmoteProps) {
+  const getEmoteUrl = () => {
+    if (type === "BTTV") {
+      return `https://cdn.betterttv.net/emote/${emoteId}/3x`;
+    } else if (type === "7TV") {
+      return `https://cdn.7tv.app/emote/${emoteId}/2x.webp`;
     }
+    return "";
+  };
 
-    return <a href={hrefUrl} target="_blank">
-        <img className="inline-block" style={{ minWidth: 28 }} src={url} alt={id} />
-    </a>;
+  const getEmotePageUrl = () => {
+    if (type === "BTTV") {
+      return `https://betterttv.com/emotes/${emoteId}`;
+    } else if (type === "7TV") {
+      return `https://7tv.app/emotes/${emoteId}`;
+    }
+    return "";
+  };
+
+  return (
+    <Anchor href={getEmotePageUrl()} target="_blank" rel="noopener noreferrer">
+      <Image
+        src={getEmoteUrl()}
+        alt={`${type} emote`}
+        w={32}
+        h={32}
+        fit="contain"
+      />
+    </Anchor>
+  );
 }

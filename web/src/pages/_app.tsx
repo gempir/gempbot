@@ -1,63 +1,63 @@
-import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
-import dayjs from 'dayjs';
-import * as localizedFormat from 'dayjs/plugin/localizedFormat';
+import { AppShell, ColorSchemeScript, MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
+import dayjs from "dayjs";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 import Head from "next/head";
-import Link from "next/link";
-import 'tailwindcss/tailwind.css';
+import { useEffect } from "react";
 import { Sidebar } from "../components/Sidebar/Sidebar";
-import { StoreProvider, useCreateStore } from "../store";
+import { initializeStore } from "../store";
+import { theme } from "../theme";
 
-import '@mantine/core/styles.css';
-import '@mantine/dates/styles.css';
-import '@mantine/dropzone/styles.css';
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 
-// @ts-ignore
 dayjs.extend(localizedFormat);
 
+export default function App({
+  Component,
+  pageProps,
+}: {
+  Component: any;
+  pageProps: any;
+}) {
+  const renderFullLayout = pageProps.renderFullLayout ?? true;
 
-const theme = createTheme({
-});
+  // Initialize store with server state on mount
+  useEffect(() => {
+    if (pageProps.store) {
+      initializeStore(pageProps.store);
+    }
+  }, [pageProps.store]);
 
-export default function App({ Component, pageProps }: { Component: any; pageProps: any }) {
-    const createStore = useCreateStore(pageProps.store);
+  return (
+    <>
+      <Head>
+        <title>gempbot - Twitch Bot & Overlay Manager</title>
+        <link rel="icon" href="/favicon.ico" />
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
+        />
+        <ColorSchemeScript />
+      </Head>
 
-    const renderFullLayout = pageProps.renderFullLayout ?? true;
+      <MantineProvider theme={theme} forceColorScheme="dark">
+        <Notifications position="top-right" />
 
-    return (
-        <StoreProvider createStore={createStore}>
-            <Head>
-                <title>gempbot</title>
-                <link rel="icon" href="/favicon.ico" />
-                <ColorSchemeScript />
-            </Head>
-            <style jsx global>{`
-                body {
-                    --tw-bg-opacity: 1;
-                    min-height: 100vh;
-                    background-color: ${renderFullLayout ? "rgba(17, 24, 39, var(--tw-bg-opacity))" : "transparent"};
-                    line-height: 1.25;
-                    --tw-text-opacity: 1;
-                    color: rgba(209, 213, 219, var(--tw-text-opacity));
-                }
-            `}</style>
-            <MantineProvider theme={theme} forceColorScheme="dark">
-                {renderFullLayout && <>
-                    <main>
-                        <div className="flex" style={{ scrollbarGutter: "stable" }}>
-                            <Sidebar />
-                            <Component {...pageProps} />
-                        </div>
-                        <div className="absolute bottom-3 text-center right-3 mx-auto hover:text-blue-500">
-                            <Link href="/privacy">
-                                Privacy
-                            </Link>
-                        </div>
-                    </main>
-                </>}
-                {!renderFullLayout && <>
-                    <Component {...pageProps} />
-                </>}
-            </MantineProvider>
-        </StoreProvider>
-    );
+        {renderFullLayout ? (
+          <AppShell navbar={{ width: 280, breakpoint: "sm" }} padding="md">
+            <AppShell.Navbar p="md">
+              <Sidebar />
+            </AppShell.Navbar>
+
+            <AppShell.Main>
+              <Component {...pageProps} />
+            </AppShell.Main>
+          </AppShell>
+        ) : (
+          <Component {...pageProps} />
+        )}
+      </MantineProvider>
+    </>
+  );
 }

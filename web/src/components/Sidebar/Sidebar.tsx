@@ -1,69 +1,133 @@
-import { AdjustmentsHorizontalIcon, ChatBubbleLeftIcon, EyeIcon, GiftIcon, HomeIcon, NoSymbolIcon, PhotoIcon } from "@heroicons/react/24/solid";
+import {
+  ChatBubbleLeftIcon,
+  HomeIcon,
+  ShieldCheckIcon,
+  TrophyIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/solid";
+import {
+  Anchor,
+  Box,
+  Divider,
+  NavLink,
+  Stack,
+  Text,
+  ThemeIcon,
+} from "@mantine/core";
 import Link from "next/link";
-import { useUserConfig } from "../../hooks/useUserConfig";
+import { usePathname } from "next/navigation";
 import { useStore } from "../../store";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
-import { NavLink } from "@mantine/core";
-import { usePathname } from "next/navigation";
 
 export function Sidebar() {
-    const [userConfig] = useUserConfig();
-    const loggedIn = useStore(state => Boolean(state.scToken));
-    const pathname = usePathname();
+  const pathname = usePathname();
+  const isLoggedIn = useStore((state) => Boolean(state.scToken));
 
-    if (!loggedIn) {
-        return null;
-    }
+  const navLinks = [
+    { href: "/", label: "Home", icon: HomeIcon },
+    {
+      href: "/rewards",
+      label: "Rewards",
+      icon: TrophyIcon,
+      requiresAuth: true,
+    },
+    {
+      href: "/permissions",
+      label: "Permissions",
+      icon: UserGroupIcon,
+      requiresAuth: true,
+    },
+    {
+      href: "/bot",
+      label: "Bot",
+      icon: ChatBubbleLeftIcon,
+      requiresAuth: true,
+    },
+    {
+      href: "/blocks",
+      label: "Blocks",
+      icon: ShieldCheckIcon,
+      requiresAuth: true,
+    },
+  ];
 
-    return (
-        <div className="py-4 bg-gray-800 shadow flex flex-col relative h-screen items-center">
-            <Login />
-            {loggedIn && <>
-                <Managing userConfig={userConfig} />
-                <NavLink
-                    href="/"
-                    active={pathname === "/"}
-                    label="Home"
-                    leftSection={<HomeIcon className="h-6" />}
-                    component={Link}
-                />
-                <NavLink
-                    href="/bot"
-                    active={pathname.startsWith("/bot")}
-                    label="Bot"
-                    leftSection={<ChatBubbleLeftIcon className="h-6" />}
-                    component={Link}
-                />
-                <NavLink
-                    href="/overlay"
-                    active={pathname.startsWith("/overlay")}
-                    label="Overlays"
-                    leftSection={<PhotoIcon className="h-6" />}
-                    component={Link}
-                />
-                <NavLink
-                    href="/rewards"
-                    active={pathname.startsWith("/rewards")}
-                    label="Rewards"
-                    leftSection={<GiftIcon className="h-6" />}
-                    component={Link}
-                />
-                <NavLink
-                    href="/permissions"
-                    active={pathname.startsWith("/permissions")}
-                    label="Permissions"
-                    leftSection={<AdjustmentsHorizontalIcon className="h-6" />}
-                    component={Link}
-                />
-                <NavLink
-                    href="/blocks"
-                    active={pathname.startsWith("/blocks")}
-                    label="Blocks"
-                    leftSection={<NoSymbolIcon className="h-6" />}
-                    component={Link}
-                />
-            </>}
-        </div>
-    );
+  return (
+    <Stack h="100%" justify="space-between">
+      <Stack gap="sm">
+        {/* Brand */}
+        <Box>
+          <Text
+            size="xl"
+            fw={700}
+            style={{
+              background: "linear-gradient(90deg, #00fa91 0%, #3b82f6 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            gempbot
+          </Text>
+        </Box>
+
+        <Divider />
+
+        {/* Login */}
+        <Login />
+
+        {/* Managing Channel Selector */}
+        {isLoggedIn && (
+          <>
+            <Managing />
+            <Divider />
+          </>
+        )}
+
+        {/* Navigation Links */}
+        <Stack gap="xs">
+          {navLinks.map((link) => {
+            if (link.requiresAuth && !isLoggedIn) return null;
+
+            const Icon = link.icon;
+            const isActive = pathname === link.href;
+
+            return (
+              <NavLink
+                key={link.href}
+                component={Link}
+                href={link.href}
+                label={link.label}
+                active={isActive}
+                leftSection={
+                  <ThemeIcon
+                    variant="subtle"
+                    size="md"
+                    color={isActive ? "cyan" : "gray"}
+                  >
+                    <Icon style={{ width: "70%", height: "70%" }} />
+                  </ThemeIcon>
+                }
+              />
+            );
+          })}
+        </Stack>
+      </Stack>
+
+      {/* Footer */}
+      <Box pt="md">
+        <Divider mb="sm" />
+        <Anchor
+          component={Link}
+          href="/privacy"
+          size="sm"
+          c="dimmed"
+          ta="center"
+          w="100%"
+        >
+          Privacy Policy
+        </Anchor>
+      </Box>
+    </Stack>
+  );
 }

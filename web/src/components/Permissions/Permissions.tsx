@@ -1,13 +1,40 @@
+import { Container, Loader, Stack, Text, Title } from "@mantine/core";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { UserPermissions } from "./UserPermissions";
 
 export function Permissions() {
-    const [userCfg, setUserConfig, , loading, errorMessage] = useUserConfig();
-    if (!userCfg) {
-        return null;
-    }
+  const [userConfig, setUserConfig, , loading, errorMessage] = useUserConfig();
 
-    return <div className="p-4">
-        <UserPermissions userConfig={userCfg} setUserConfig={setUserConfig} errorMessage={errorMessage} loading={loading}/>
-    </div>;
+  if (loading || !userConfig) {
+    return (
+      <Container size="xl">
+        <Stack align="center" justify="center" h={400}>
+          <Loader size="lg" />
+          <Text c="dimmed">Loading permissions...</Text>
+        </Stack>
+      </Container>
+    );
+  }
+
+  return (
+    <Container size="xl">
+      <Stack gap="lg">
+        <div>
+          <Title order={1} mb="xs">
+            User Permissions
+          </Title>
+          <Text c="dimmed">
+            Control who can access and manage your bot settings
+          </Text>
+        </div>
+
+        <UserPermissions
+          userConfig={userConfig}
+          setUserConfig={setUserConfig}
+          errorMessage={errorMessage}
+          loading={loading}
+        />
+      </Stack>
+    </Container>
+  );
 }

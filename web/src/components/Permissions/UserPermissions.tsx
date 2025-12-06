@@ -1,106 +1,238 @@
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+  ActionIcon,
+  Button,
+  Card,
+  Checkbox,
+  Group,
+  Loader,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+  Tooltip,
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { useEffect, useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { Permission, SetUserConfig, UserConfig } from "../../hooks/useUserConfig";
-import { isNumeric } from "../../service/isNumeric";
+import type {
+  Permission,
+  SetUserConfig,
+  UserConfig,
+} from "../../hooks/useUserConfig";
 
-type perms = { User: string, Editor: boolean, Prediction: boolean };
+type PermissionRow = {
+  user: string;
+  editor: boolean;
+  prediction: boolean;
+  isNew?: boolean;
+};
 
-export function UserPermissions({ userConfig, setUserConfig, errorMessage, loading }: { userConfig: UserConfig, setUserConfig: SetUserConfig, errorMessage?: string, loading?: boolean }) {
-    const [perms, setPerms] = useState(userConfig.Permissions);
-    const { register, handleSubmit, setValue, reset, unregister, setFocus } = useForm();
+export function UserPermissions({
+  userConfig,
+  setUserConfig,
+  errorMessage,
+  loading,
+}: {
+  userConfig: UserConfig;
+  setUserConfig: SetUserConfig;
+  errorMessage?: string;
+  loading?: boolean;
+}) {
+  const [rows, setRows] = useState<PermissionRow[]>([]);
+  const [newUserCounter, setNewUserCounter] = useState(0);
 
-    const [addCounter, setAddCounter] = useState(0);
+  useEffect(() => {
+    const permRows = Object.entries(userConfig.Permissions || {}).map(
+      ([user, perm]) => ({
+        user,
+        editor: perm.Editor,
+        prediction: perm.Prediction,
+      }),
+    );
+    setRows(permRows);
+  }, [userConfig.Permissions]);
 
-    useEffect(() => {
-        reset({ permissions: userConfig.Permissions });
-        setPerms(userConfig.Permissions);
+  const handleAddRow = () => {
+    setRows([
+      ...rows,
+      {
+        user: ``,
+        editor: false,
+        prediction: true,
+        isNew: true,
+      },
+    ]);
+    setNewUserCounter(newUserCounter + 1);
+  };
 
-        for (const [user, perm] of Object.entries(userConfig.Permissions)) {
-            setValue(`permissions.${user}.User`, user)
-            setValue(`permissions.${user}.Editor`, perm.Editor)
-            setValue(`permissions.${user}.Prediction`, perm.Prediction)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(userConfig.Permissions)]);
+  const handleRemoveRow = (index: number) => {
+    const newRows = rows.filter((_, i) => i !== index);
+    setRows(newRows);
+    handleSave(newRows);
+  };
 
-    const onSubmit: SubmitHandler<{permissions: Record<string | number, perms>}> = (data) => {
-        const perms: Record<string, Permission> = {};
+  const handleUpdateRow = (
+    index: number,
+    field: keyof PermissionRow,
+    value: any,
+  ) => {
+    const newRows = [...rows];
+    newRows[index] = { ...newRows[index], [field]: value };
+    setRows(newRows);
+  };
 
-        for (const [key, perm] of Object.entries(data.permissions)) {
-            if (!isNumeric(key)) {
-                continue
-            }
+  const handleSave = (rowsToSave: PermissionRow[] = rows) => {
+    const perms: Record<string, Permission> = {};
 
-            perms[perm.User.toLowerCase()] = { Editor: perm.Editor, Prediction: perm.Prediction };
-        }
-
-        setUserConfig({ ...userConfig, Permissions: perms })
+    for (const row of rowsToSave) {
+      if (row.user.trim()) {
+        perms[row.user.toLowerCase().trim()] = {
+          Editor: row.editor,
+          Prediction: row.prediction,
+        };
+      }
     }
 
-    const addRow = () => {
-        const newPerms = { ...perms };
-        newPerms["user" + addCounter] = { Editor: false, Prediction: true };
+    setUserConfig({ ...userConfig, Permissions: perms });
 
-        setPerms(newPerms);
-        setAddCounter(addCounter + 1);
-    }
+    notifications.show({
+      title: "Permissions Updated",
+      message: "User permissions have been saved",
+      color: "green",
+    });
+  };
 
-    const removeRow = (user: string, index: number) => {
-        const newPerms = { ...perms };
-        delete newPerms[user];
+  if (loading) {
+    return (
+      <Card shadow="sm" padding="xl" radius="md" withBorder>
+        <Group justify="center" p="xl">
+          <Loader size="lg" />
+        </Group>
+      </Card>
+    );
+  }
 
-        unregister(`permissions.${index}.User`);
-        unregister(`permissions.${index}.Editor`);
-        unregister(`permissions.${index}.Prediction`);
+  return (
+    <Stack gap="lg">
+      <Card shadow="sm" padding="lg" radius="md" withBorder>
+        <Stack gap="md">
+          <Group justify="space-between">
+            <div>
+              <Title order={3} size="h4">
+                User Permissions
+              </Title>
+              <Text size="sm" c="dimmed">
+                Manage who can edit your bot settings and make predictions
+              </Text>
+            </div>
+            <Button
+              leftSection={<PlusIcon style={{ width: 16, height: 16 }} />}
+              onClick={handleAddRow}
+              color="cyan"
+            >
+              Add User
+            </Button>
+          </Group>
 
-        setPerms(newPerms);
-    };
+          {rows.length === 0 ? (
+            <Text c="dimmed" ta="center" py="xl">
+              No permissions configured. Add users to grant them access.
+            </Text>
+          ) : (
+            <Table highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Twitch Username</Table.Th>
+                  <Table.Th>Editor</Table.Th>
+                  <Table.Th>Predictions</Table.Th>
+                  <Table.Th w={100}>Actions</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {rows.map((row, index) => (
+                  <Table.Tr key={index}>
+                    <Table.Td>
+                      <TextInput
+                        placeholder="username"
+                        value={row.user}
+                        onChange={(e) =>
+                          handleUpdateRow(index, "user", e.currentTarget.value)
+                        }
+                        onBlur={() => handleSave()}
+                        variant="unstyled"
+                      />
+                    </Table.Td>
+                    <Table.Td>
+                      <Checkbox
+                        checked={row.editor}
+                        onChange={(e) => {
+                          const newRows = [...rows];
+                          newRows[index] = {
+                            ...newRows[index],
+                            editor: e.currentTarget.checked,
+                          };
+                          setRows(newRows);
+                          handleSave(newRows);
+                        }}
+                        color="cyan"
+                      />
+                    </Table.Td>
+                    <Table.Td>
+                      <Checkbox
+                        checked={row.prediction}
+                        onChange={(e) => {
+                          const newRows = [...rows];
+                          newRows[index] = {
+                            ...newRows[index],
+                            prediction: e.currentTarget.checked,
+                          };
+                          setRows(newRows);
+                          handleSave(newRows);
+                        }}
+                        color="cyan"
+                      />
+                    </Table.Td>
+                    <Table.Td>
+                      <Tooltip label="Remove user">
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() => handleRemoveRow(index)}
+                        >
+                          <TrashIcon style={{ width: 16, height: 16 }} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          )}
 
+          {errorMessage && (
+            <Text c="red" size="sm">
+              {errorMessage}
+            </Text>
+          )}
+        </Stack>
+      </Card>
 
-    useEffect(() => {
-        if (addCounter > 0) {
-            try {
-                setFocus(`permissions.${Object.keys(perms).length - 1}.User`);
-            } catch (e) {
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [addCounter]);
-
-    // @ts-ignore
-    return <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-gray-800 rounded shadow relative">
-        <h2 className="mb-4 text-xl">Permissions</h2>
-        <table className="w-full">
-            <thead>
-                <tr className="border-b-8 border-transparent">
-                    <th />
-                    <th className="text-left pl-5">User</th>
-                    <th className="px-5">Editor</th>
-                    <th className="px-5">Prediction</th>
-                </tr>
-            </thead>
-            <tbody>
-                {Object.keys(perms).map((user, index) => <tr className={index % 2 ? "bg-gray-900" : ""} key={index}>
-                    <th className="hover:text-red-600 cursor-pointer" onClick={() => removeRow(user, index)}><XMarkIcon className="h-6" /></th>
-                    <th className="p-1"><input {...register(`permissions.${index}.User`)} className="p-1 bg-transparent leading-6" type="text" defaultValue={user} autoComplete={"off"} spellCheck={false} /> </th>
-                    <th className="p-1"><input {...register(`permissions.${index}.Editor`)} className="p-1 bg-transparent leading-6" type="checkbox" defaultChecked={perms[user].Editor} /></th>
-                    <th className="p-1"><input {...register(`permissions.${index}.Prediction`)} className="p-1 bg-transparent leading-6" type="checkbox" defaultChecked={perms[user].Prediction} /></th>
-                </tr>)}
-            </tbody>
-        </table>
-        <div className="hover:bg-gray-600 bg-gray-700 p-3 shadow rounded cursor-pointer font-bold mt-4 w-20 flex justify-center" onClick={addRow}>
-            Add
-        </div>
-        <div className="flex justify-between items-center mt-4">
-            <div className="text-red-700 max-w-xs">{errorMessage}</div>
-            {!loading && <input type="submit" className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block cursor-pointer" value="save" />}
-            {loading && <span className="bg-blue-700 p-2 rounded shadow block">
-                <svg className="animate-spin mx-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            </span>}
-        </div>
-    </form>
+      <Card shadow="sm" padding="lg" radius="md" withBorder>
+        <Stack gap="xs">
+          <Title order={4} size="h5">
+            Permission Types
+          </Title>
+          <Text size="sm" c="dimmed">
+            <strong>Editor:</strong> Users can modify bot settings, rewards, and
+            manage blocked emotes
+          </Text>
+          <Text size="sm" c="dimmed">
+            <strong>Predictions:</strong> Users can create and manage
+            predictions in your channel
+          </Text>
+        </Stack>
+      </Card>
+    </Stack>
+  );
 }

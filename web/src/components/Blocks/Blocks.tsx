@@ -1,71 +1,198 @@
-import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import React, { useState } from "react";
-import { useBlocks } from "../../hooks/useBlocks";
-import { EmoteType } from "../../hooks/useEmotehistory";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+  ActionIcon,
+  Button,
+  Card,
+  Container,
+  Group,
+  Loader,
+  Pagination,
+  Select,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+  Tooltip,
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { useState } from "react";
+import { type Block, useBlocks } from "../../hooks/useBlocks";
 import { Emote } from "../Emote/Emote";
 
 export function Blocks() {
-    const { blocks, block, loading, increasePage, decreasePage, page, fetch, deleteBlock } = useBlocks();
+  const { blocks, page, totalPages, loading, addBlock, removeBlock, setPage } =
+    useBlocks();
+  const [newEmoteId, setNewEmoteId] = useState("");
+  const [rewardType, setRewardType] = useState<string>("BTTV");
+  const [adding, setAdding] = useState(false);
 
-    const [newEmoteType, setNewEmoteType] = useState<EmoteType>(EmoteType.SEVENTV);
-    const [newEmoteID, setNewEmoteID] = useState<string>("");
+  const handleAdd = async () => {
+    if (!newEmoteId.trim()) {
+      notifications.show({
+        title: "Validation Error",
+        message: "Please enter an emote ID",
+        color: "red",
+      });
+      return;
+    }
 
-    const blockEmote = () => {
-        if (newEmoteID === "") {
-            return;
-        }
+    setAdding(true);
+    try {
+      await addBlock(newEmoteId, rewardType as "BTTV" | "7TV");
+      setNewEmoteId("");
+      notifications.show({
+        title: "Emote Blocked",
+        message: "Emote has been added to the block list",
+        color: "green",
+      });
+    } catch (_error) {
+      notifications.show({
+        title: "Failed to Block",
+        message: "Could not add emote to block list",
+        color: "red",
+      });
+    } finally {
+      setAdding(false);
+    }
+  };
 
-        block(newEmoteID, newEmoteType);
-        setNewEmoteID("");
-    };
+  const handleRemove = async (block: Block) => {
+    try {
+      await removeBlock(block);
+      notifications.show({
+        title: "Emote Unblocked",
+        message: "Emote has been removed from the block list",
+        color: "green",
+      });
+    } catch (_error) {
+      notifications.show({
+        title: "Failed to Unblock",
+        message: "Could not remove emote from block list",
+        color: "red",
+      });
+    }
+  };
 
-    return <div className="p-4">
-        <div className="p-4 bg-gray-800 rounded shadow relative">
-            <div className="flex gap-5 items-center mb-5">
-                <h2 className="text-xl">Blocks</h2>
-                <div className="text-2xl flex gap-5 w-full select-none" onClick={fetch}>
-                    <div className="flex gap-2 items-center">
-                        <div onClick={decreasePage} className="cursor-pointer hover:text-blue-500">
-                            <ChevronLeftIcon className="h-6" />
-                        </div>
-                        <div className="text-base w-4 text-center">
-                            {page}
-                        </div>
-                        <div onClick={increasePage} className="cursor-pointer hover:text-blue-500">
-                            <ChevronRightIcon className="h-6" />
-                        </div>
-                    </div>
-                    <ArrowPathIcon className={"h-6 hover:text-blue-500 cursor-pointer " + (loading ? "animate-spin" : "")} />
-                </div>
-            </div>
-            <table className={"w-full" + (loading ? " animate-pulse opacity-10" : "")}>
-                <thead>
-                    <tr className="border-b-8 border-transparent">
-                        <th />
-                        <th className="px-5">Emote</th>
-                        <th className="text-left pl-5">EmoteID</th>
-                        <th className="px-5">Type</th>
-                        <th className="px-5">Created</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {blocks.map(block => <tr key={block.ChannelTwitchID + block.EmoteID + block.EmoteID}>
-                        <th className="hover:text-red-600 cursor-pointer" onClick={() => deleteBlock(block)}><XMarkIcon className="h-6" /></th>
-                        <th><Emote id={block.EmoteID} type={block.Type} /></th>
-                        <th>{block.EmoteID}</th>
-                        <th>{block.Type}</th>
-                        <th>{block.CreatedAt.toLocaleDateString()} {block.CreatedAt.toLocaleTimeString()}</th>
-                    </tr>)}
-                </tbody>
-            </table>
-            <div className="mt-5 flex gap-5">
-                <input type="text" placeholder="EmoteId,EmoteId2,EmoteId3" className="w-full p-1 bg-transparent leading-6 rounded" value={newEmoteID} onChange={e => setNewEmoteID(e.target.value)} />
-                <select className="p-1 pr-10 bg-transparent leading-6 rounded appearance-none" onChange={e => setNewEmoteType(e.target.value as EmoteType)} value={newEmoteType}>
-                    <option>{EmoteType.SEVENTV}</option>
-                    <option>{EmoteType.BTTV}</option>
-                </select>
-                <button className="bg-green-700 hover:bg-green-600 p-2 rounded shadow block cursor-pointer" onClick={blockEmote}>block</button>
-            </div>
+  return (
+    <Container size="xl">
+      <Stack gap="lg">
+        <div>
+          <Title order={1} mb="xs">
+            Blocked Emotes
+          </Title>
+          <Text c="dimmed">
+            Prevent specific emotes from being added to your channel
+          </Text>
         </div>
-    </div>;
+
+        {/* Add Block Form */}
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Stack gap="md">
+            <Title order={3} size="h4">
+              Block New Emote
+            </Title>
+
+            <Group align="flex-end">
+              <TextInput
+                label="Emote ID"
+                placeholder="Enter emote ID"
+                value={newEmoteId}
+                onChange={(e) => setNewEmoteId(e.currentTarget.value)}
+                style={{ flex: 1 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAdd();
+                }}
+              />
+
+              <Select
+                label="Type"
+                data={[
+                  { value: "BTTV", label: "BTTV" },
+                  { value: "7TV", label: "7TV" },
+                ]}
+                value={rewardType}
+                onChange={(value) => setRewardType(value || "BTTV")}
+                w={120}
+              />
+
+              <Button
+                leftSection={<PlusIcon style={{ width: 16, height: 16 }} />}
+                onClick={handleAdd}
+                loading={adding}
+                color="cyan"
+              >
+                Block
+              </Button>
+            </Group>
+          </Stack>
+        </Card>
+
+        {/* Blocks Table */}
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          {loading ? (
+            <Group justify="center" p="xl">
+              <Loader size="lg" />
+            </Group>
+          ) : blocks.length === 0 ? (
+            <Text c="dimmed" ta="center" py="xl">
+              No blocked emotes yet
+            </Text>
+          ) : (
+            <Stack gap="md">
+              <Table highlightOnHover>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Emote</Table.Th>
+                    <Table.Th>Emote ID</Table.Th>
+                    <Table.Th>Type</Table.Th>
+                    <Table.Th w={100}>Actions</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {blocks.map((block) => (
+                    <Table.Tr key={`${block.EmoteID}-${block.Type}`}>
+                      <Table.Td>
+                        <Emote emoteId={block.EmoteID} type={block.Type} />
+                      </Table.Td>
+                      <Table.Td>
+                        <Text size="sm" ff="monospace">
+                          {block.EmoteID}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Text size="sm">{block.Type}</Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Tooltip label="Remove block">
+                          <ActionIcon
+                            variant="subtle"
+                            color="red"
+                            onClick={() => handleRemove(block)}
+                          >
+                            <TrashIcon style={{ width: 16, height: 16 }} />
+                          </ActionIcon>
+                        </Tooltip>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+
+              {totalPages > 1 && (
+                <Group justify="center" mt="md">
+                  <Pagination
+                    total={totalPages}
+                    value={page}
+                    onChange={setPage}
+                    color="cyan"
+                  />
+                </Group>
+              )}
+            </Stack>
+          )}
+        </Card>
+      </Stack>
+    </Container>
+  );
 }
