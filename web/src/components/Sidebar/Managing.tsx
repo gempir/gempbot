@@ -1,8 +1,8 @@
-import { Select } from "@mantine/core";
 import { UserGroupIcon } from "@heroicons/react/24/solid";
+import { Select } from "@mantine/core";
 import { useUserConfig } from "../../hooks/useUserConfig";
-import { useStore } from "../../store";
 import { setCookie } from "../../service/cookie";
+import { useStore } from "../../store";
 
 export function Managing() {
   const [userConfig] = useUserConfig();

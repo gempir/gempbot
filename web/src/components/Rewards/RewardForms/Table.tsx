@@ -1,18 +1,18 @@
+import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import {
   ActionIcon,
   Card,
   Group,
   Loader,
+  Table as MantineTable,
   Pagination,
   Stack,
-  Table as MantineTable,
   Text,
   Title,
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { EmotehistoryItem } from "../../../hooks/useEmotehistory";
+import type { EmotehistoryItem } from "../../../hooks/useEmotehistory";
 import { Emote } from "../../Emote/Emote";
 
 interface TableProps {
@@ -44,7 +44,7 @@ export function Table({
         message: "Emote has been added successfully",
         color: "green",
       });
-    } catch (error) {
+    } catch (_error) {
       notifications.show({
         title: "Approval Failed",
         message: "Could not approve emote",
@@ -61,7 +61,7 @@ export function Table({
         message: "Emote request has been denied",
         color: "orange",
       });
-    } catch (error) {
+    } catch (_error) {
       notifications.show({
         title: "Denial Failed",
         message: "Could not deny emote",

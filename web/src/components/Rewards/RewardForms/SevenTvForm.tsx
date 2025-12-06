@@ -15,8 +15,8 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useEffect } from "react";
 import { useChannelPointReward } from "../../../hooks/useChannelPointReward";
-import { UserConfig } from "../../../hooks/useUserConfig";
-import { ChannelPointReward, RewardTypes } from "../../../types/Rewards";
+import type { UserConfig } from "../../../hooks/useUserConfig";
+import { type ChannelPointReward, RewardTypes } from "../../../types/Rewards";
 
 const defaultReward: ChannelPointReward = {
   OwnerTwitchID: "",
@@ -80,7 +80,7 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
       approveOnly: reward.ApproveOnly,
       enabled: reward.Enabled,
     });
-  }, [reward]);
+  }, [reward, form.setValues]);
 
   const handleSubmit = form.onSubmit((values) => {
     const rewardData: ChannelPointReward = {

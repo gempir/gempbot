@@ -1,6 +1,6 @@
 import jwt_decode from "jwt-decode";
-import { GetServerSidePropsContext, NextPageContext } from "next";
-import { ScTokenContent } from "../store";
+import type { GetServerSidePropsContext, NextPageContext } from "next";
+import type { ScTokenContent } from "../store";
 import { parseCookie } from "./cookie";
 
 export const initializeStore = (

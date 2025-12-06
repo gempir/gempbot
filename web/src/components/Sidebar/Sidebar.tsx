@@ -1,25 +1,24 @@
 import {
-  Anchor,
-  Box,
-  Divider,
-  Group,
-  NavLink,
-  Stack,
-  Text,
-  ThemeIcon,
-} from "@mantine/core";
-import {
   ChatBubbleLeftIcon,
   HomeIcon,
   ShieldCheckIcon,
   TrophyIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
-import { usePathname } from "next/navigation";
+import {
+  Anchor,
+  Box,
+  Divider,
+  NavLink,
+  Stack,
+  Text,
+  ThemeIcon,
+} from "@mantine/core";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useStore } from "../../store";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
-import { useStore } from "../../store";
 
 export function Sidebar() {
   const pathname = usePathname();

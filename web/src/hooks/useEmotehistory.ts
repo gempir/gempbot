@@ -97,7 +97,7 @@ export function useEmotehistory(type?: string): Return {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(fetch, [managing, page, type]);
+  useEffect(fetch, []);
 
   return {
     history: emotehistory,

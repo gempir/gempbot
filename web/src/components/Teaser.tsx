@@ -1,5 +1,10 @@
 import {
-  Badge,
+  ChatBubbleLeftIcon,
+  ShieldCheckIcon,
+  TrophyIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/solid";
+import {
   Button,
   Card,
   Container,
@@ -9,13 +14,6 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import {
-  ChatBubbleLeftIcon,
-  ShieldCheckIcon,
-  TrophyIcon,
-  UserGroupIcon,
-} from "@heroicons/react/24/solid";
-import Link from "next/link";
 import { useStore } from "../store";
 
 const features = [

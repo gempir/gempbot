@@ -1,7 +1,7 @@
 import { AppShell, ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
-import * as localizedFormat from "dayjs/plugin/localizedFormat";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 import Head from "next/head";
 import { useEffect } from "react";
 import { Sidebar } from "../components/Sidebar/Sidebar";
@@ -11,7 +11,6 @@ import { theme } from "../theme";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
-// @ts-ignore
 dayjs.extend(localizedFormat);
 
 export default function App({

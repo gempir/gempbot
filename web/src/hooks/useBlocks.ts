@@ -78,7 +78,7 @@ export function useBlocks(): Return {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(fetchBlocks, [managing, page]);
+  useEffect(fetchBlocks, []);
 
   const addBlock = (emoteIds: string, type: string) => {
     setLoading(true);

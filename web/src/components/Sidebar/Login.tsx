@@ -1,5 +1,5 @@
-import { Button, Group } from "@mantine/core";
 import { UserIcon } from "@heroicons/react/24/solid";
+import { Button } from "@mantine/core";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { useStore } from "../../store";
 

@@ -1,3 +1,4 @@
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
   ActionIcon,
   Button,
@@ -13,9 +14,8 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-import {
+import type {
   Permission,
   SetUserConfig,
   UserConfig,

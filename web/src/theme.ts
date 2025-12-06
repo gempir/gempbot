@@ -1,4 +1,4 @@
-import { createTheme, MantineColorsTuple } from "@mantine/core";
+import { createTheme, type MantineColorsTuple } from "@mantine/core";
 
 // Custom cyan/green color palette - #00fa91
 const cyan: MantineColorsTuple = [

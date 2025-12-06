@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useStore } from "../store";
 import { doFetch, Method } from "../service/doFetch";
+import { useStore } from "../store";
 
 export interface BotConfig {
   predictionAnnouncements: boolean;
@@ -29,7 +29,7 @@ export function useBotConfig() {
       );
       setConfig(data);
       setError(null);
-    } catch (err) {
+    } catch (_err) {
       setError("Error loading bot configuration");
     } finally {
       setLoading(false);
@@ -60,7 +60,7 @@ export function useBotConfig() {
 
   useEffect(() => {
     fetchConfig();
-  }, [managing]);
+  }, [fetchConfig]);
 
   return {
     config,

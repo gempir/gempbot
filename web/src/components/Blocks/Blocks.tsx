@@ -1,3 +1,4 @@
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
   ActionIcon,
   Button,
@@ -15,10 +16,9 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
+import { type Block, useBlocks } from "../../hooks/useBlocks";
 import { Emote } from "../Emote/Emote";
-import { useBlocks, Block } from "../../hooks/useBlocks";
 
 export function Blocks() {
   const { blocks, page, totalPages, loading, addBlock, removeBlock, setPage } =
@@ -46,7 +46,7 @@ export function Blocks() {
         message: "Emote has been added to the block list",
         color: "green",
       });
-    } catch (error) {
+    } catch (_error) {
       notifications.show({
         title: "Failed to Block",
         message: "Could not add emote to block list",
@@ -65,7 +65,7 @@ export function Blocks() {
         message: "Emote has been removed from the block list",
         color: "green",
       });
-    } catch (error) {
+    } catch (_error) {
       notifications.show({
         title: "Failed to Unblock",
         message: "Could not remove emote from block list",

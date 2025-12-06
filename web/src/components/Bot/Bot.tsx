@@ -2,7 +2,6 @@ import {
   Card,
   Container,
   Group,
-  Image,
   Loader,
   Stack,
   Switch,
@@ -26,7 +25,7 @@ export function Bot() {
         message: `Prediction announcements ${checked ? "enabled" : "disabled"}`,
         color: "green",
       });
-    } catch (error) {
+    } catch (_error) {
       notifications.show({
         title: "Update Failed",
         message: "Failed to update bot settings",
