@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDebounce } from "react-use";
 import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
@@ -59,20 +59,23 @@ export function useUserConfig(): [
   const scToken = useStore((state) => state.scToken);
   const apiBaseUrl = useStore((state) => state.apiBaseUrl);
 
-  const fetchConfig = () => {
+  const fetchConfig = useCallback(() => {
     if (!scToken) {
+      setLoading(false);
       return;
     }
 
+    setLoading(true);
     const endPoint = "/api/userconfig";
     doFetch({ apiBaseUrl, managing, scToken }, Method.GET, endPoint)
       .then((userConfig) => setUserConfig(userConfig))
       .then(() => setLoading(false))
       .catch(setError);
-  };
+  }, [scToken, managing, apiBaseUrl]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(fetchConfig, []);
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
 
   useDebounce(
     () => {
