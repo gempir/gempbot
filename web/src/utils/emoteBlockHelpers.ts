@@ -32,69 +32,83 @@ export function validateEmoteId(id: string): boolean {
 }
 
 /**
- * Export blocks as JSON string
+ * Export blocks as CSV string
  */
-export function exportBlocksAsJson(blocks: Block[]): string {
-  return JSON.stringify(blocks, null, 2);
+export function exportBlocksAsCsv(blocks: Block[]): string {
+  // CSV format: type,emoteId
+  const rows = blocks.map((block) => `${block.Type},${block.EmoteID}`);
+  return rows.join("\n");
 }
 
 /**
- * Import blocks from JSON string
+ * Import blocks from CSV string
  * Returns parsed blocks and any validation errors
  */
-export function importBlocksFromJson(jsonString: string): {
+export function importBlocksFromCsv(csvString: string): {
   blocks: Block[];
   errors: string[];
 } {
   const errors: string[] = [];
-  let blocks: Block[] = [];
+  const blocks: Block[] = [];
 
   try {
-    const parsed = JSON.parse(jsonString);
+    const lines = csvString.trim().split("\n");
 
-    if (!Array.isArray(parsed)) {
-      errors.push("JSON must be an array of blocks");
+    if (lines.length === 0) {
+      errors.push("CSV file is empty");
       return { blocks: [], errors };
     }
 
-    blocks = parsed
-      .map((item, index) => {
-        // Validate required fields
-        if (!item.EmoteID || typeof item.EmoteID !== "string") {
-          errors.push(`Block ${index + 1}: Missing or invalid EmoteID`);
-          return null;
-        }
+    lines.forEach((line, index) => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return; // Skip empty lines
 
-        if (!item.Type || (item.Type !== "BTTV" && item.Type !== "7TV")) {
-          errors.push(`Block ${index + 1}: Invalid Type (must be BTTV or 7TV)`);
-          return null;
-        }
+      const parts = trimmedLine.split(",");
 
-        // Create block with required fields
-        return {
-          EmoteID: item.EmoteID,
-          Type: item.Type,
-          ChannelTwitchID: item.ChannelTwitchID || "",
-          CreatedAt: item.CreatedAt ? new Date(item.CreatedAt) : new Date(),
-        } as Block;
-      })
-      .filter((block): block is Block => block !== null);
+      if (parts.length < 2) {
+        errors.push(`Line ${index + 1}: Invalid format (expected: type,emoteId)`);
+        return;
+      }
+
+      const type = parts[0].trim();
+      const emoteId = parts[1].trim();
+
+      // Validate type
+      if (type !== "BTTV" && type !== "7TV") {
+        errors.push(`Line ${index + 1}: Invalid type "${type}" (must be BTTV or 7TV)`);
+        return;
+      }
+
+      // Validate emote ID
+      if (!emoteId) {
+        errors.push(`Line ${index + 1}: Missing emote ID`);
+        return;
+      }
+
+      // Create block
+      blocks.push({
+        EmoteID: emoteId,
+        Type: type,
+        ChannelTwitchID: "",
+        CreatedAt: new Date(),
+      } as Block);
+    });
 
     if (blocks.length === 0 && errors.length === 0) {
-      errors.push("No valid blocks found in JSON");
+      errors.push("No valid blocks found in CSV");
     }
   } catch (error) {
-    errors.push(`Invalid JSON: ${error instanceof Error ? error.message : "Unknown error"}`);
+    errors.push(`Invalid CSV: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 
   return { blocks, errors };
 }
 
 /**
- * Download a JSON string as a file
+ * Download a CSV string as a file
  */
-export function downloadJson(jsonString: string, filename: string): void {
-  const blob = new Blob([jsonString], { type: "application/json" });
+export function downloadCsv(csvString: string, filename: string): void {
+  const blob = new Blob([csvString], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -111,5 +125,5 @@ export function downloadJson(jsonString: string, filename: string): void {
 export function getExportFilename(): string {
   const date = new Date();
   const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD
-  return `emote-blocks-${dateStr}.json`;
+  return `emote-blocks-${dateStr}.csv`;
 }

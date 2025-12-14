@@ -33,9 +33,9 @@ import { useState, useMemo } from "react";
 import { type Block, useBlocks } from "../../hooks/useBlocks";
 import {
   parseEmoteIds,
-  downloadJson,
-  exportBlocksAsJson,
-  importBlocksFromJson,
+  downloadCsv,
+  exportBlocksAsCsv,
+  importBlocksFromCsv,
   getExportFilename,
 } from "../../utils/emoteBlockHelpers";
 import { Emote } from "../Emote/Emote";
@@ -189,8 +189,8 @@ export function Blocks() {
   };
 
   const handleExport = () => {
-    const json = exportBlocksAsJson(blocks);
-    downloadJson(json, getExportFilename());
+    const csv = exportBlocksAsCsv(blocks);
+    downloadCsv(csv, getExportFilename());
     notifications.show({
       title: "Export Successful",
       message: `Exported ${blocks.length} emote block(s)`,
@@ -204,7 +204,7 @@ export function Blocks() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      const { blocks: importedBlocks, errors } = importBlocksFromJson(content);
+      const { blocks: importedBlocks, errors } = importBlocksFromCsv(content);
 
       if (errors.length > 0) {
         notifications.show({
@@ -315,7 +315,7 @@ export function Blocks() {
               />
             </Group>
             <Group gap="xs">
-              <Tooltip label="Export blocks as JSON">
+              <Tooltip label="Export blocks as CSV">
                 <Button
                   variant="light"
                   leftSection={<ArrowDownTrayIcon style={{ width: 16, height: 16 }} />}
@@ -325,9 +325,9 @@ export function Blocks() {
                   Export
                 </Button>
               </Tooltip>
-              <FileButton onChange={handleImportFile} accept="application/json">
+              <FileButton onChange={handleImportFile} accept="text/csv,.csv">
                 {(props) => (
-                  <Tooltip label="Import blocks from JSON">
+                  <Tooltip label="Import blocks from CSV">
                     <Button
                       {...props}
                       variant="light"
