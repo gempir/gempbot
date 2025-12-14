@@ -419,6 +419,7 @@ export function Blocks() {
                   indeterminate={selectedCount > 0 && selectedCount < filteredBlocks.length}
                   onChange={toggleSelectAll}
                   label={`${selectedCount} selected`}
+                  style={{ cursor: "pointer" }}
                 />
               </Group>
               <Group gap="xs">
@@ -469,6 +470,7 @@ export function Blocks() {
                         checked={selectedCount === filteredBlocks.length && filteredBlocks.length > 0}
                         indeterminate={selectedCount > 0 && selectedCount < filteredBlocks.length}
                         onChange={toggleSelectAll}
+                        style={{ cursor: "pointer" }}
                       />
                     </Table.Th>
                     <Table.Th w={60}>Preview</Table.Th>
@@ -490,6 +492,7 @@ export function Blocks() {
                           <Checkbox
                             checked={selectedIds.has(blockKey)}
                             onChange={() => toggleSelection(blockKey)}
+                            style={{ cursor: "pointer" }}
                           />
                         </Table.Td>
                         <Table.Td>
