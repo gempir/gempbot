@@ -45,13 +45,21 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
     </Box>
   );
 
+  const emoteUrl = getEmoteUrl();
+  const emotePageUrl = getEmotePageUrl();
+
+  // If no valid URLs, just show the content without a link
+  if (!emoteUrl || !emotePageUrl || !emoteId || !emoteId.trim()) {
+    return fallbackContent;
+  }
+
   return (
-    <Anchor href={getEmotePageUrl()} target="_blank" rel="noopener noreferrer">
+    <Anchor href={emotePageUrl} target="_blank" rel="noopener noreferrer">
       {imageError ? (
         fallbackContent
       ) : (
         <Image
-          src={getEmoteUrl()}
+          src={emoteUrl}
           alt={`${type} emote`}
           w={size}
           h={size}
