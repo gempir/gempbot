@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
 
@@ -41,7 +41,7 @@ export function useBlocks(): Return {
   const apiBaseUrl = useStore((state) => state.apiBaseUrl);
   const scToken = useStore((state) => state.scToken);
 
-  const fetchBlocks = () => {
+  const fetchBlocks = useCallback(() => {
     // Don't fetch if apiBaseUrl is not set yet
     if (!apiBaseUrl) {
       setLoading(false);
@@ -82,10 +82,11 @@ export function useBlocks(): Return {
           throw err;
         }
       });
-  };
+  }, [apiBaseUrl, managing, scToken, page]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(fetchBlocks, [apiBaseUrl]);
+  useEffect(() => {
+    fetchBlocks();
+  }, [fetchBlocks]);
 
   const addBlock = async (emoteIds: string, type: string) => {
     setLoading(true);

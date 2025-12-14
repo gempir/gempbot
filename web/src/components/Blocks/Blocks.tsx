@@ -27,23 +27,31 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import { useDebouncedValue } from "@mantine/hooks";
-import { useState, useMemo } from "react";
+import { notifications } from "@mantine/notifications";
+import { useMemo, useState } from "react";
 import { type Block, useBlocks } from "../../hooks/useBlocks";
 import {
-  parseEmoteIds,
   downloadCsv,
   exportBlocksAsCsv,
-  importBlocksFromCsv,
   getExportFilename,
+  importBlocksFromCsv,
+  parseEmoteIds,
 } from "../../utils/emoteBlockHelpers";
 import { Emote } from "../Emote/Emote";
 import { EmotePreview } from "./EmotePreview";
 
 export function Blocks() {
-  const { blocks, page, totalPages, loading, addBlock, removeBlock, removeMultiple, setPage } =
-    useBlocks();
+  const {
+    blocks,
+    page,
+    totalPages,
+    loading,
+    addBlock,
+    removeBlock,
+    removeMultiple,
+    setPage,
+  } = useBlocks();
 
   // Form state
   const [newEmoteIds, setNewEmoteIds] = useState("");
@@ -65,7 +73,6 @@ export function Blocks() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   // Import state
-  const [importFile, setImportFile] = useState<File | null>(null);
   const [importPreview, setImportPreview] = useState<Block[]>([]);
   const [importModalOpen, setImportModalOpen] = useState(false);
 
@@ -79,7 +86,7 @@ export function Blocks() {
     if (debouncedSearch) {
       const query = debouncedSearch.toLowerCase();
       filtered = filtered.filter((block) =>
-        block.EmoteID.toLowerCase().includes(query)
+        block.EmoteID.toLowerCase().includes(query),
       );
     }
 
@@ -102,10 +109,15 @@ export function Blocks() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === filteredBlocks.length && filteredBlocks.length > 0) {
+    if (
+      selectedIds.size === filteredBlocks.length &&
+      filteredBlocks.length > 0
+    ) {
       setSelectedIds(new Set());
     } else {
-      const allKeys = filteredBlocks.map((block) => `${block.EmoteID}-${block.Type}`);
+      const allKeys = filteredBlocks.map(
+        (block) => `${block.EmoteID}-${block.Type}`,
+      );
       setSelectedIds(new Set(allKeys));
     }
   };
@@ -161,7 +173,7 @@ export function Blocks() {
 
   const handleBulkDelete = async () => {
     const blocksToDelete = filteredBlocks.filter((block) =>
-      selectedIds.has(`${block.EmoteID}-${block.Type}`)
+      selectedIds.has(`${block.EmoteID}-${block.Type}`),
     );
 
     if (blocksToDelete.length === 0) return;
@@ -248,7 +260,6 @@ export function Blocks() {
         color: "green",
       });
       setImportPreview([]);
-      setImportFile(null);
     } catch (_error) {
       notifications.show({
         title: "Import Failed",
@@ -287,7 +298,9 @@ export function Blocks() {
                 placeholder="Search by emote ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                leftSection={<MagnifyingGlassIcon style={{ width: 16, height: 16 }} />}
+                leftSection={
+                  <MagnifyingGlassIcon style={{ width: 16, height: 16 }} />
+                }
                 rightSection={
                   searchQuery && (
                     <ActionIcon
@@ -318,7 +331,9 @@ export function Blocks() {
               <Tooltip label="Export blocks as CSV">
                 <Button
                   variant="light"
-                  leftSection={<ArrowDownTrayIcon style={{ width: 16, height: 16 }} />}
+                  leftSection={
+                    <ArrowDownTrayIcon style={{ width: 16, height: 16 }} />
+                  }
                   onClick={handleExport}
                   disabled={blocks.length === 0}
                 >
@@ -331,7 +346,9 @@ export function Blocks() {
                     <Button
                       {...props}
                       variant="light"
-                      leftSection={<ArrowUpTrayIcon style={{ width: 16, height: 16 }} />}
+                      leftSection={
+                        <ArrowUpTrayIcon style={{ width: 16, height: 16 }} />
+                      }
                     >
                       Import
                     </Button>
@@ -351,7 +368,8 @@ export function Blocks() {
               </Title>
               {parsedIds.length > 0 && (
                 <Badge color="cyan" variant="light">
-                  {parsedIds.length} emote{parsedIds.length > 1 ? "s" : ""} detected
+                  {parsedIds.length} emote{parsedIds.length > 1 ? "s" : ""}{" "}
+                  detected
                 </Badge>
               )}
             </Group>
@@ -372,10 +390,7 @@ export function Blocks() {
                 </Text>
               </Stack>
 
-              <EmotePreview
-                emoteId={debouncedPreview}
-                type={rewardType}
-              />
+              <EmotePreview emoteId={debouncedPreview} type={rewardType} />
             </Group>
 
             <Group align="flex-end">
@@ -397,7 +412,8 @@ export function Blocks() {
                 color="cyan"
                 disabled={parsedIds.length === 0}
               >
-                Block {parsedIds.length > 1 ? `${parsedIds.length} Emotes` : "Emote"}
+                Block{" "}
+                {parsedIds.length > 1 ? `${parsedIds.length} Emotes` : "Emote"}
               </Button>
             </Group>
           </Stack>
@@ -415,11 +431,20 @@ export function Blocks() {
             <Group justify="space-between">
               <Group gap="md">
                 <Checkbox
-                  checked={selectedCount === filteredBlocks.length && filteredBlocks.length > 0}
-                  indeterminate={selectedCount > 0 && selectedCount < filteredBlocks.length}
+                  checked={
+                    selectedCount === filteredBlocks.length &&
+                    filteredBlocks.length > 0
+                  }
+                  indeterminate={
+                    selectedCount > 0 && selectedCount < filteredBlocks.length
+                  }
                   onChange={toggleSelectAll}
                   label={`${selectedCount} selected`}
-                  styles={{ root: { cursor: "pointer" }, input: { cursor: "pointer" }, label: { cursor: "pointer" } }}
+                  styles={{
+                    root: { cursor: "pointer" },
+                    input: { cursor: "pointer" },
+                    label: { cursor: "pointer" },
+                  }}
                 />
               </Group>
               <Group gap="xs">
@@ -458,7 +483,8 @@ export function Blocks() {
             <Stack gap="md">
               {debouncedSearch || typeFilter ? (
                 <Text size="sm" c="dimmed">
-                  {filteredBlocks.length} result{filteredBlocks.length !== 1 ? "s" : ""}
+                  {filteredBlocks.length} result
+                  {filteredBlocks.length !== 1 ? "s" : ""}
                 </Text>
               ) : null}
 
@@ -467,10 +493,19 @@ export function Blocks() {
                   <Table.Tr>
                     <Table.Th w={40}>
                       <Checkbox
-                        checked={selectedCount === filteredBlocks.length && filteredBlocks.length > 0}
-                        indeterminate={selectedCount > 0 && selectedCount < filteredBlocks.length}
+                        checked={
+                          selectedCount === filteredBlocks.length &&
+                          filteredBlocks.length > 0
+                        }
+                        indeterminate={
+                          selectedCount > 0 &&
+                          selectedCount < filteredBlocks.length
+                        }
                         onChange={toggleSelectAll}
-                        styles={{ root: { cursor: "pointer" }, input: { cursor: "pointer" } }}
+                        styles={{
+                          root: { cursor: "pointer" },
+                          input: { cursor: "pointer" },
+                        }}
                       />
                     </Table.Th>
                     <Table.Th w={60}>Preview</Table.Th>
@@ -492,11 +527,18 @@ export function Blocks() {
                           <Checkbox
                             checked={selectedIds.has(blockKey)}
                             onChange={() => toggleSelection(blockKey)}
-                            styles={{ root: { cursor: "pointer" }, input: { cursor: "pointer" } }}
+                            styles={{
+                              root: { cursor: "pointer" },
+                              input: { cursor: "pointer" },
+                            }}
                           />
                         </Table.Td>
                         <Table.Td>
-                          <Emote emoteId={block.EmoteID} type={block.Type} size={24} />
+                          <Emote
+                            emoteId={block.EmoteID}
+                            type={block.Type}
+                            size={24}
+                          />
                         </Table.Td>
                         <Table.Td>
                           <Text size="sm" ff="monospace">
@@ -504,7 +546,10 @@ export function Blocks() {
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <Badge color={block.Type === "7TV" ? "violet" : "orange"} variant="light">
+                          <Badge
+                            color={block.Type === "7TV" ? "violet" : "orange"}
+                            variant="light"
+                          >
                             {block.Type}
                           </Badge>
                         </Table.Td>
@@ -548,10 +593,14 @@ export function Blocks() {
       >
         <Stack gap="md">
           <Text>
-            Are you sure you want to delete {selectedCount} emote block{selectedCount > 1 ? "s" : ""}?
+            Are you sure you want to delete {selectedCount} emote block
+            {selectedCount > 1 ? "s" : ""}?
           </Text>
           <Group justify="flex-end">
-            <Button variant="subtle" onClick={() => setDeleteConfirmOpen(false)}>
+            <Button
+              variant="subtle"
+              onClick={() => setDeleteConfirmOpen(false)}
+            >
               Cancel
             </Button>
             <Button color="red" onClick={handleBulkDelete}>
@@ -573,13 +622,17 @@ export function Blocks() {
       >
         <Stack gap="md">
           <Text>
-            Import {importPreview.length} emote block{importPreview.length > 1 ? "s" : ""}?
+            Import {importPreview.length} emote block
+            {importPreview.length > 1 ? "s" : ""}?
           </Text>
           <Card withBorder mah={300} style={{ overflow: "auto" }}>
             <Stack gap="xs">
-              {importPreview.slice(0, 10).map((block, idx) => (
-                <Group key={idx} gap="sm">
-                  <Badge color={block.Type === "7TV" ? "violet" : "orange"} variant="light">
+              {importPreview.slice(0, 10).map((block) => (
+                <Group key={`${block.Type}-${block.EmoteID}`} gap="sm">
+                  <Badge
+                    color={block.Type === "7TV" ? "violet" : "orange"}
+                    variant="light"
+                  >
                     {block.Type}
                   </Badge>
                   <Text size="sm" ff="monospace">

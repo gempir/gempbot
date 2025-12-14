@@ -28,7 +28,11 @@ export function validateEmoteId(id: string): boolean {
 
   // Basic validation: alphanumeric and some special chars, 3-64 chars
   const cleaned = id.trim();
-  return cleaned.length >= 3 && cleaned.length <= 64 && /^[a-zA-Z0-9_-]+$/.test(cleaned);
+  return (
+    cleaned.length >= 3 &&
+    cleaned.length <= 64 &&
+    /^[a-zA-Z0-9_-]+$/.test(cleaned)
+  );
 }
 
 /**
@@ -66,7 +70,9 @@ export function importBlocksFromCsv(csvString: string): {
       const parts = trimmedLine.split(",");
 
       if (parts.length < 2) {
-        errors.push(`Line ${index + 1}: Invalid format (expected: type,emoteId)`);
+        errors.push(
+          `Line ${index + 1}: Invalid format (expected: type,emoteId)`,
+        );
         return;
       }
 
@@ -75,7 +81,9 @@ export function importBlocksFromCsv(csvString: string): {
 
       // Validate type
       if (type !== "BTTV" && type !== "7TV") {
-        errors.push(`Line ${index + 1}: Invalid type "${type}" (must be BTTV or 7TV)`);
+        errors.push(
+          `Line ${index + 1}: Invalid type "${type}" (must be BTTV or 7TV)`,
+        );
         return;
       }
 
@@ -98,7 +106,9 @@ export function importBlocksFromCsv(csvString: string): {
       errors.push("No valid blocks found in CSV");
     }
   } catch (error) {
-    errors.push(`Invalid CSV: ${error instanceof Error ? error.message : "Unknown error"}`);
+    errors.push(
+      `Invalid CSV: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 
   return { blocks, errors };

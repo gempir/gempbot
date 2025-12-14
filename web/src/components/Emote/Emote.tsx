@@ -1,5 +1,5 @@
-import { Anchor, Box, Image, Text } from "@mantine/core";
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { Anchor, Box, Image } from "@mantine/core";
 import { useState } from "react";
 
 interface EmoteProps {
@@ -41,7 +41,9 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
         borderRadius: "4px",
       }}
     >
-      <QuestionMarkCircleIcon style={{ width: size * 0.5, height: size * 0.5, color: "#868e96" }} />
+      <QuestionMarkCircleIcon
+        style={{ width: size * 0.5, height: size * 0.5, color: "#868e96" }}
+      />
     </Box>
   );
 
