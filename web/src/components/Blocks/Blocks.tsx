@@ -47,7 +47,7 @@ export function Blocks() {
 
   // Form state
   const [newEmoteIds, setNewEmoteIds] = useState("");
-  const [rewardType, setRewardType] = useState<string>("BTTV");
+  const [rewardType, setRewardType] = useState<string>("7TV");
   const [adding, setAdding] = useState(false);
 
   // Preview state
@@ -382,11 +382,11 @@ export function Blocks() {
               <Select
                 label="Type"
                 data={[
-                  { value: "BTTV", label: "BTTV" },
                   { value: "7TV", label: "7TV" },
+                  { value: "BTTV", label: "BTTV" },
                 ]}
                 value={rewardType}
-                onChange={(value) => setRewardType(value || "BTTV")}
+                onChange={(value) => setRewardType(value || "7TV")}
                 w={120}
               />
 
