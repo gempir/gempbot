@@ -405,7 +405,13 @@ export function Blocks() {
 
         {/* Bulk Actions Bar */}
         {selectedCount > 0 && (
-          <Card shadow="sm" padding="md" radius="md" withBorder bg="cyan.0">
+          <Card
+            shadow="sm"
+            padding="md"
+            radius="md"
+            withBorder
+            style={{ borderColor: "var(--mantine-color-cyan-6)" }}
+          >
             <Group justify="space-between">
               <Group gap="md">
                 <Checkbox
