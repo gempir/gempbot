@@ -465,7 +465,7 @@ export function Blocks() {
                         onChange={toggleSelectAll}
                       />
                     </Table.Th>
-                    <Table.Th w={80}>Preview</Table.Th>
+                    <Table.Th w={60}>Preview</Table.Th>
                     <Table.Th>Emote ID</Table.Th>
                     <Table.Th w={100}>Type</Table.Th>
                     <Table.Th w={100}>Actions</Table.Th>
@@ -475,7 +475,11 @@ export function Blocks() {
                   {filteredBlocks.map((block) => {
                     const blockKey = `${block.EmoteID}-${block.Type}`;
                     return (
-                      <Table.Tr key={blockKey}>
+                      <Table.Tr
+                        key={blockKey}
+                        onClick={() => toggleSelection(blockKey)}
+                        style={{ cursor: "pointer" }}
+                      >
                         <Table.Td>
                           <Checkbox
                             checked={selectedIds.has(blockKey)}
@@ -483,7 +487,7 @@ export function Blocks() {
                           />
                         </Table.Td>
                         <Table.Td>
-                          <Emote emoteId={block.EmoteID} type={block.Type} size={64} />
+                          <Emote emoteId={block.EmoteID} type={block.Type} size={24} />
                         </Table.Td>
                         <Table.Td>
                           <Text size="sm" ff="monospace">
@@ -495,7 +499,7 @@ export function Blocks() {
                             {block.Type}
                           </Badge>
                         </Table.Td>
-                        <Table.Td>
+                        <Table.Td onClick={(e) => e.stopPropagation()}>
                           <Tooltip label="Remove block">
                             <ActionIcon
                               variant="subtle"
