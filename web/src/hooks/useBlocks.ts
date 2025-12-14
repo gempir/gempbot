@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
 
@@ -23,8 +23,9 @@ interface Return {
   totalPages: number;
   increasePage: () => void;
   decreasePage: () => void;
-  addBlock: (emoteIds: string, type: string) => void;
-  removeBlock: (block: Block) => void;
+  addBlock: (emoteIds: string, type: string) => Promise<void>;
+  removeBlock: (block: Block) => Promise<void>;
+  removeMultiple: (blocks: Block[]) => Promise<void>;
   setPage: (page: number) => void;
 }
 
@@ -40,7 +41,13 @@ export function useBlocks(): Return {
   const apiBaseUrl = useStore((state) => state.apiBaseUrl);
   const scToken = useStore((state) => state.scToken);
 
-  const fetchBlocks = () => {
+  const fetchBlocks = useCallback(() => {
+    // Don't fetch if apiBaseUrl is not set yet
+    if (!apiBaseUrl) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     const currentPage = pageRef.current;
@@ -75,47 +82,73 @@ export function useBlocks(): Return {
           throw err;
         }
       });
-  };
+  }, [apiBaseUrl, managing, scToken, page]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(fetchBlocks, []);
+  useEffect(() => {
+    fetchBlocks();
+  }, [fetchBlocks]);
 
-  const addBlock = (emoteIds: string, type: string) => {
+  const addBlock = async (emoteIds: string, type: string) => {
     setLoading(true);
 
     const endPoint = "/api/blocks";
     const searchParams = new URLSearchParams();
-    doFetch(
-      { apiBaseUrl, managing, scToken },
-      Method.PATCH,
-      endPoint,
-      searchParams,
-      { emoteIds: emoteIds, type: type },
-    )
-      .then(fetchBlocks)
-      .catch((err) => {
-        setLoading(false);
-        throw err;
-      });
+    try {
+      await doFetch(
+        { apiBaseUrl, managing, scToken },
+        Method.PATCH,
+        endPoint,
+        searchParams,
+        { emoteIds: emoteIds, type: type },
+      );
+      fetchBlocks();
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    }
   };
 
-  const removeBlock = (block: Block) => {
+  const removeBlock = async (block: Block) => {
     setLoading(true);
 
     const endPoint = "/api/blocks";
     const searchParams = new URLSearchParams();
-    doFetch(
-      { apiBaseUrl, managing, scToken },
-      Method.DELETE,
-      endPoint,
-      searchParams,
-      block,
-    )
-      .then(fetchBlocks)
-      .catch((err) => {
-        setLoading(false);
-        throw err;
-      });
+    try {
+      await doFetch(
+        { apiBaseUrl, managing, scToken },
+        Method.DELETE,
+        endPoint,
+        searchParams,
+        block,
+      );
+      fetchBlocks();
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const removeMultiple = async (blocksToRemove: Block[]) => {
+    setLoading(true);
+
+    try {
+      // Delete blocks sequentially to avoid overwhelming the API
+      for (const block of blocksToRemove) {
+        const endPoint = "/api/blocks";
+        const searchParams = new URLSearchParams();
+        await doFetch(
+          { apiBaseUrl, managing, scToken },
+          Method.DELETE,
+          endPoint,
+          searchParams,
+          block,
+        );
+      }
+      fetchBlocks();
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    }
   };
 
   return {
@@ -130,5 +163,6 @@ export function useBlocks(): Return {
     decreasePage: () => (page > 1 ? setPage(page - 1) : undefined),
     addBlock: addBlock,
     removeBlock: removeBlock,
+    removeMultiple: removeMultiple,
   };
 }
