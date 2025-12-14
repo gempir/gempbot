@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { doFetch, Method } from "../service/doFetch";
 import { useStore } from "../store";
 
@@ -14,7 +14,7 @@ export function useBotConfig() {
   const apiBaseUrl = useStore((state) => state.apiBaseUrl);
   const scToken = useStore((state) => state.scToken);
 
-  const fetchConfig = async () => {
+  const fetchConfig = useCallback(async () => {
     try {
       setLoading(true);
       const searchParams = new URLSearchParams();
@@ -34,7 +34,7 @@ export function useBotConfig() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiBaseUrl, managing, scToken]);
 
   const updateConfig = async (updates: Partial<BotConfig>) => {
     try {
