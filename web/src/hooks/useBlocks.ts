@@ -42,6 +42,12 @@ export function useBlocks(): Return {
   const scToken = useStore((state) => state.scToken);
 
   const fetchBlocks = () => {
+    // Don't fetch if apiBaseUrl is not set yet
+    if (!apiBaseUrl) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     const currentPage = pageRef.current;
@@ -79,7 +85,7 @@ export function useBlocks(): Return {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(fetchBlocks, []);
+  useEffect(fetchBlocks, [apiBaseUrl]);
 
   const addBlock = async (emoteIds: string, type: string) => {
     setLoading(true);
