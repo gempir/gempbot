@@ -1,4 +1,4 @@
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import type { GetServerSidePropsContext, NextPageContext } from "next";
 import type { ScTokenContent } from "../store";
 import { parseCookie } from "./cookie";
@@ -12,7 +12,7 @@ export const initializeStore = (
   if (cookies.scToken) {
     try {
       scTokenContent =
-        jwt_decode<ScTokenContent | null>(cookies.scToken ?? "") ?? null;
+        jwtDecode<ScTokenContent | null>(cookies.scToken ?? "") ?? null;
     } catch (e) {
       console.error(e);
     }
@@ -49,7 +49,7 @@ export const initializeStoreWithProps = (props: any) => {
     if (cookies.scToken) {
       try {
         scTokenContent =
-          jwt_decode<ScTokenContent | null>(cookies.scToken ?? "") ?? null;
+          jwtDecode<ScTokenContent | null>(cookies.scToken ?? "") ?? null;
       } catch (e) {
         console.error(e);
       }
