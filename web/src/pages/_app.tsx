@@ -10,6 +10,7 @@ import { theme } from "../theme";
 
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "../styles/globals.css";
 
 dayjs.extend(localizedFormat);
 
