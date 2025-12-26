@@ -11,23 +11,21 @@ interface EmoteProps {
 export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
   const [imageError, setImageError] = useState(false);
 
-  const normalizedType = type?.toUpperCase();
+  const normalizedType = type?.toLowerCase();
 
   const getEmoteUrl = () => {
-    console.log('Emote component - ID:', emoteId, 'Type:', type, 'Normalized:', normalizedType);
-    if (normalizedType === "BTTV") {
+    if (normalizedType === "bttv") {
       return `https://cdn.betterttv.net/emote/${emoteId}/1x.webp`;
-    } else if (normalizedType === "7TV") {
+    } else if (normalizedType === "seventv") {
       return `https://cdn.7tv.app/emote/${emoteId}/1x.avif`;
     }
-    console.log('No matching type found for:', type);
     return "";
   };
 
   const getEmotePageUrl = () => {
-    if (normalizedType === "BTTV") {
+    if (normalizedType === "bttv") {
       return `https://betterttv.com/emotes/${emoteId}`;
-    } else if (normalizedType === "7TV") {
+    } else if (normalizedType === "seventv") {
       return `https://7tv.app/emotes/${emoteId}`;
     }
     return "";
@@ -54,11 +52,8 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
   const emoteUrl = getEmoteUrl();
   const emotePageUrl = getEmotePageUrl();
 
-  console.log('Constructed URLs - Emote:', emoteUrl, 'Page:', emotePageUrl);
-
   // If no valid URLs, just show the content without a link
   if (!emoteUrl || !emotePageUrl || !emoteId || !emoteId.trim()) {
-    console.log('Showing fallback - emoteUrl:', !!emoteUrl, 'emotePageUrl:', !!emotePageUrl, 'emoteId:', emoteId);
     return fallbackContent;
   }
 
@@ -73,10 +68,7 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
           w={size}
           h={size}
           fit="contain"
-          onError={(e) => {
-            console.error('Image failed to load:', emoteUrl, e);
-            setImageError(true);
-          }}
+          onError={() => setImageError(true)}
         />
       )}
     </Anchor>
