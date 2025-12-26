@@ -13,9 +13,9 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
 
   const getEmoteUrl = () => {
     if (type === "BTTV") {
-      return `https://cdn.betterttv.net/emote/${emoteId}/3x.webp`;
+      return `https://cdn.betterttv.net/emote/${emoteId}/1x.webp`;
     } else if (type === "7TV") {
-      return `https://cdn.7tv.app/emote/${emoteId}/4x.avif`;
+      return `https://cdn.7tv.app/emote/${emoteId}/1x.avif`;
     }
     return "";
   };
