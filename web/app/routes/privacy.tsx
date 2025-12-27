@@ -37,7 +37,13 @@ function Privacy() {
               gempbot collects and stores the following information when you use
               our service:
             </Text>
-            <List size="xs" spacing="xs" styles={{ itemLabel: { fontFamily: "'JetBrains Mono', monospace" } }}>
+            <List
+              size="xs"
+              spacing="xs"
+              styles={{
+                itemLabel: { fontFamily: "'JetBrains Mono', monospace" },
+              }}
+            >
               <List.Item>
                 <Text size="xs" c="dimmed" ff="monospace">
                   your twitch user id and username

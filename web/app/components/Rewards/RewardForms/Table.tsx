@@ -109,7 +109,11 @@ export function Table({
                 {history.map((item, index) => (
                   <MantineTable.Tr key={index}>
                     <MantineTable.Td>
-                      <Emote emoteId={item.emoteID} type={item.type} size={20} />
+                      <Emote
+                        emoteId={item.emoteID}
+                        type={item.type}
+                        size={20}
+                      />
                     </MantineTable.Td>
                     <MantineTable.Td>
                       <Text size="xs" ff="monospace" c="dimmed">

@@ -246,7 +246,14 @@ export function UserPermissions({
         }}
       >
         <Stack gap="sm">
-          <Text size="xs" fw={600} ff="monospace" c="dimmed" tt="uppercase" style={{ letterSpacing: "0.1em" }}>
+          <Text
+            size="xs"
+            fw={600}
+            ff="monospace"
+            c="dimmed"
+            tt="uppercase"
+            style={{ letterSpacing: "0.1em" }}
+          >
             permission_types
           </Text>
           <Stack gap="xs">

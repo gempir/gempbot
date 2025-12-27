@@ -65,7 +65,13 @@ export function Teaser() {
                 boxShadow: "0 0 8px var(--terminal-green)",
               }}
             />
-            <Text size="xs" c="dimmed" ff="monospace" tt="uppercase" style={{ letterSpacing: "0.1em" }}>
+            <Text
+              size="xs"
+              c="dimmed"
+              ff="monospace"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
               system online
             </Text>
           </Group>
@@ -97,7 +103,8 @@ export function Teaser() {
                   backgroundColor: "var(--bg-elevated)",
                   cursor: isClickable ? "pointer" : "default",
                   height: "100%",
-                  transition: "border-color 0.15s ease, background-color 0.15s ease",
+                  transition:
+                    "border-color 0.15s ease, background-color 0.15s ease",
                 }}
                 onMouseEnter={(e) => {
                   if (isClickable) {
@@ -221,10 +228,7 @@ export function Teaser() {
         )}
 
         {/* System Status Footer */}
-        <Box
-          pt="md"
-          style={{ borderTop: "1px solid var(--border-subtle)" }}
-        >
+        <Box pt="md" style={{ borderTop: "1px solid var(--border-subtle)" }}>
           <Group justify="space-between">
             <Group gap="xl">
               <Group gap="xs">

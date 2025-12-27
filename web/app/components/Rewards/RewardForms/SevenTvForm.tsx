@@ -180,9 +180,17 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
             </div>
             <Group gap="xs">
               <Box
-                className={form.values.enabled ? "status-dot status-online" : "status-dot status-offline"}
+                className={
+                  form.values.enabled
+                    ? "status-dot status-online"
+                    : "status-dot status-offline"
+                }
               />
-              <Text size="xs" ff="monospace" c={form.values.enabled ? "terminal" : "dimmed"}>
+              <Text
+                size="xs"
+                ff="monospace"
+                c={form.values.enabled ? "terminal" : "dimmed"}
+              >
                 {form.values.enabled ? "enabled" : "disabled"}
               </Text>
             </Group>
@@ -252,7 +260,15 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
               backgroundColor: "var(--bg-surface)",
             }}
           >
-            <Text size="xs" fw={600} ff="monospace" c="dimmed" mb="sm" tt="uppercase" style={{ letterSpacing: "0.1em" }}>
+            <Text
+              size="xs"
+              fw={600}
+              ff="monospace"
+              c="dimmed"
+              mb="sm"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
               limits
             </Text>
             <Stack gap="sm">
@@ -295,7 +311,15 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
               backgroundColor: "var(--bg-surface)",
             }}
           >
-            <Text size="xs" fw={600} ff="monospace" c="dimmed" mb="sm" tt="uppercase" style={{ letterSpacing: "0.1em" }}>
+            <Text
+              size="xs"
+              fw={600}
+              ff="monospace"
+              c="dimmed"
+              mb="sm"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
               options
             </Text>
             <Stack gap="xs">
@@ -312,7 +336,11 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
 
               <Checkbox
                 label={
-                  <Text size="xs" ff="monospace" c={form.values.enabled ? "terminal" : undefined}>
+                  <Text
+                    size="xs"
+                    ff="monospace"
+                    c={form.values.enabled ? "terminal" : undefined}
+                  >
                     enabled
                   </Text>
                 }

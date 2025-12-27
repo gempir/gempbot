@@ -1,4 +1,7 @@
-import { ArrowRightOnRectangleIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowRightOnRectangleIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/solid";
 import { Button, Group, Text } from "@mantine/core";
 import { createLoginUrl } from "../../factory/createLoginUrl";
 import { useStore } from "../../store";
@@ -38,7 +41,9 @@ export function Login() {
       color="terminal"
       size="xs"
       fullWidth
-      leftSection={<ArrowRightOnRectangleIcon style={{ width: 14, height: 14 }} />}
+      leftSection={
+        <ArrowRightOnRectangleIcon style={{ width: 14, height: 14 }} />
+      }
       styles={{
         root: {
           borderColor: "var(--terminal-green)",

@@ -33,7 +33,13 @@ export function Rewards() {
                 boxShadow: "0 0 8px var(--terminal-green)",
               }}
             />
-            <Text size="xs" c="dimmed" ff="monospace" tt="uppercase" style={{ letterSpacing: "0.1em" }}>
+            <Text
+              size="xs"
+              c="dimmed"
+              ff="monospace"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
               rewards active
             </Text>
           </Group>

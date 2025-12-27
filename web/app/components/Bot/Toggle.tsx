@@ -20,7 +20,9 @@ export function Toggle({
       <Box style={{ flex: 1 }}>
         <Group gap="xs" mb={description ? 4 : 0}>
           <Box
-            className={checked ? "status-dot status-online" : "status-dot status-offline"}
+            className={
+              checked ? "status-dot status-online" : "status-dot status-offline"
+            }
           />
           <Text size="xs" fw={600} ff="monospace" c="white">
             {label}

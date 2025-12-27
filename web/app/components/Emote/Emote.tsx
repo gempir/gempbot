@@ -40,7 +40,11 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
       }}
     >
       <QuestionMarkCircleIcon
-        style={{ width: size * 0.5, height: size * 0.5, color: "var(--text-tertiary)" }}
+        style={{
+          width: size * 0.5,
+          height: size * 0.5,
+          color: "var(--text-tertiary)",
+        }}
       />
     </Box>
   );

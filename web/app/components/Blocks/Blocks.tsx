@@ -415,7 +415,8 @@ export function Blocks() {
                 color="terminal"
                 disabled={parsedIds.length === 0}
               >
-                block {parsedIds.length > 1 ? `${parsedIds.length} emotes` : "emote"}
+                block{" "}
+                {parsedIds.length > 1 ? `${parsedIds.length} emotes` : "emote"}
               </Button>
             </Group>
           </Stack>
@@ -494,7 +495,8 @@ export function Blocks() {
             <Stack gap="md">
               {(debouncedSearch || typeFilter) && (
                 <Text size="xs" c="dimmed" ff="monospace">
-                  {filteredBlocks.length} result{filteredBlocks.length !== 1 ? "s" : ""}
+                  {filteredBlocks.length} result
+                  {filteredBlocks.length !== 1 ? "s" : ""}
                 </Text>
               )}
 
@@ -626,7 +628,8 @@ export function Blocks() {
       >
         <Stack gap="md">
           <Text size="sm" ff="monospace">
-            import {importPreview.length} emote block{importPreview.length > 1 ? "s" : ""}?
+            import {importPreview.length} emote block
+            {importPreview.length > 1 ? "s" : ""}?
           </Text>
           <Box
             p="sm"

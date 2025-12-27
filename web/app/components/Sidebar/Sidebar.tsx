@@ -5,7 +5,14 @@ import {
   TrophyIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
-import { Box, Divider, NavLink, Stack, Text, UnstyledButton } from "@mantine/core";
+import {
+  Box,
+  Divider,
+  NavLink,
+  Stack,
+  Text,
+  UnstyledButton,
+} from "@mantine/core";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useStore } from "../../store";
 import { Login } from "./Login";
@@ -60,7 +67,7 @@ export function Sidebar() {
             {">"} gempbot
           </Text>
           <Text size="xs" c="dimmed" ff="monospace" mt={2}>
-            v2.0 // twitch bot
+            v2.0 {"// twitch bot"}
           </Text>
         </Box>
 

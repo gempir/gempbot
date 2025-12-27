@@ -27,7 +27,13 @@ export function Managing() {
   return (
     <Select
       label={
-        <Text size="xs" c="dimmed" fw={600} tt="uppercase" style={{ letterSpacing: "0.1em" }}>
+        <Text
+          size="xs"
+          c="dimmed"
+          fw={600}
+          tt="uppercase"
+          style={{ letterSpacing: "0.1em" }}
+        >
           managing
         </Text>
       }

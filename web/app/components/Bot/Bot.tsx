@@ -116,7 +116,14 @@ export function Bot() {
           }}
         >
           <Stack gap="sm">
-            <Text size="xs" fw={600} ff="monospace" c="dimmed" tt="uppercase" style={{ letterSpacing: "0.1em" }}>
+            <Text
+              size="xs"
+              fw={600}
+              ff="monospace"
+              c="dimmed"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
               info
             </Text>
             <Text size="xs" c="dimmed" ff="monospace" lh={1.6}>
@@ -128,10 +135,7 @@ export function Bot() {
         </Box>
 
         {/* Status Footer */}
-        <Box
-          pt="md"
-          style={{ borderTop: "1px solid var(--border-subtle)" }}
-        >
+        <Box pt="md" style={{ borderTop: "1px solid var(--border-subtle)" }}>
           <Group gap="xl">
             <Group gap="xs">
               <Box
@@ -142,7 +146,8 @@ export function Bot() {
                 }
               />
               <Text size="xs" c="dimmed" ff="monospace">
-                predictions: {config?.predictionAnnouncements ? "active" : "inactive"}
+                predictions:{" "}
+                {config?.predictionAnnouncements ? "active" : "inactive"}
               </Text>
             </Group>
           </Group>
