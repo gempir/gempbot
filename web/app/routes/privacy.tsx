@@ -7,10 +7,13 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import type { GetServerSidePropsContext } from "next";
-import { initializeStore } from "../service/initializeStore";
+import { createFileRoute } from "@tanstack/react-router";
 
-export default function Privacy() {
+export const Route = createFileRoute("/privacy")({
+  component: Privacy,
+});
+
+function Privacy() {
   return (
     <Container size="md">
       <Stack gap="xl" py="xl">
@@ -158,8 +161,4 @@ export default function Privacy() {
       </Stack>
     </Container>
   );
-}
-
-export async function getServerSideProps(ctx: GetServerSidePropsContext) {
-  return initializeStore(ctx);
 }

@@ -25,9 +25,9 @@ export const initializeStore = (
         scToken: cookies.scToken ? cookies.scToken : null,
         managing: cookies.managing ? cookies.managing : null,
         twitchClientId: (
-          process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ?? ""
+          import.meta.env.VITE_TWITCH_CLIENT_ID ?? ""
         ).replaceAll('"', ""),
-        apiBaseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replaceAll(
+        apiBaseUrl: (import.meta.env.VITE_API_BASE_URL ?? "").replaceAll(
           '"',
           "",
         ),
@@ -63,9 +63,9 @@ export const initializeStoreWithProps = (props: any) => {
           scToken: cookies.scToken ? cookies.scToken : null,
           managing: cookies.managing ? cookies.managing : null,
           twitchClientId: (
-            process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ?? ""
+            import.meta.env.VITE_TWITCH_CLIENT_ID ?? ""
           ).replaceAll('"', ""),
-          apiBaseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replaceAll(
+          apiBaseUrl: (import.meta.env.VITE_API_BASE_URL ?? "").replaceAll(
             '"',
             "",
           ),
