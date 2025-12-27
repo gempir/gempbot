@@ -17,17 +17,12 @@ jobs:
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
 
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v1
         with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-          cache-dependency-path: "web/pnpm-lock.yaml"
+          bun-version: latest
       - name: Install dependencies
-        run: cd web && pnpm install
+        run: cd web && bun install
       - name: Run Biome lint
-        run: cd web && pnpm lint
+        run: cd web && bun run lint
       - name: Check Biome formatting
-        run: cd web && pnpm biome format .
+        run: cd web && bun run format
