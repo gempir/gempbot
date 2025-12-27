@@ -5,15 +5,7 @@ import {
   TrophyIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
-import {
-  Anchor,
-  Box,
-  Divider,
-  NavLink,
-  Stack,
-  Text,
-  ThemeIcon,
-} from "@mantine/core";
+import { Box, Divider, NavLink, Stack, Text, UnstyledButton } from "@mantine/core";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useStore } from "../../store";
 import { Login } from "./Login";
@@ -24,49 +16,51 @@ export function Sidebar() {
   const isLoggedIn = useStore((state) => Boolean(state.scToken));
 
   const navLinks = [
-    { href: "/", label: "Home", icon: HomeIcon },
+    { href: "/", label: "home", icon: HomeIcon },
     {
       href: "/rewards",
-      label: "Rewards",
+      label: "rewards",
       icon: TrophyIcon,
       requiresAuth: true,
     },
     {
       href: "/permissions",
-      label: "Permissions",
+      label: "permissions",
       icon: UserGroupIcon,
       requiresAuth: true,
     },
     {
       href: "/bot",
-      label: "Bot",
+      label: "bot",
       icon: ChatBubbleLeftIcon,
       requiresAuth: true,
     },
     {
       href: "/blocks",
-      label: "Blocks",
+      label: "blocks",
       icon: ShieldCheckIcon,
       requiresAuth: true,
     },
   ];
 
   return (
-    <Stack h="100%" justify="space-between">
+    <Stack h="100%" justify="space-between" gap={0}>
       <Stack gap="sm">
         {/* Brand */}
-        <Box>
+        <Box py="xs">
           <Text
-            size="xl"
+            size="sm"
             fw={700}
+            ff="monospace"
             style={{
-              background: "linear-gradient(90deg, #00fa91 0%, #3b82f6 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
+              color: "var(--terminal-green)",
+              letterSpacing: "0.1em",
             }}
           >
-            gempbot
+            {">"} gempbot
+          </Text>
+          <Text size="xs" c="dimmed" ff="monospace" mt={2}>
+            v2.0 // twitch bot
           </Text>
         </Box>
 
@@ -84,48 +78,91 @@ export function Sidebar() {
         )}
 
         {/* Navigation Links */}
-        <Stack gap="xs">
-          {navLinks.map((link) => {
-            if (link.requiresAuth && !isLoggedIn) return null;
+        <Box>
+          <Text
+            size="xs"
+            c="dimmed"
+            fw={600}
+            tt="uppercase"
+            mb="xs"
+            style={{ letterSpacing: "0.1em" }}
+          >
+            navigation
+          </Text>
+          <Stack gap={2}>
+            {navLinks.map((link) => {
+              if (link.requiresAuth && !isLoggedIn) return null;
 
-            const Icon = link.icon;
-            const isActive = pathname === link.href;
+              const Icon = link.icon;
+              const isActive = pathname === link.href;
 
-            return (
-              <NavLink
-                key={link.href}
-                component={Link}
-                to={link.href}
-                label={link.label}
-                active={isActive}
-                leftSection={
-                  <ThemeIcon
-                    variant="subtle"
-                    size="md"
-                    color={isActive ? "cyan" : "gray"}
-                  >
-                    <Icon style={{ width: "70%", height: "70%" }} />
-                  </ThemeIcon>
-                }
-              />
-            );
-          })}
-        </Stack>
+              return (
+                <NavLink
+                  key={link.href}
+                  component={Link}
+                  to={link.href}
+                  label={
+                    <Text size="xs" ff="monospace">
+                      {isActive ? "> " : "  "}
+                      {link.label}
+                    </Text>
+                  }
+                  active={isActive}
+                  leftSection={
+                    <Icon
+                      style={{
+                        width: 14,
+                        height: 14,
+                        opacity: isActive ? 1 : 0.5,
+                        color: isActive
+                          ? "var(--terminal-green)"
+                          : "var(--text-secondary)",
+                      }}
+                    />
+                  }
+                  styles={{
+                    root: {
+                      borderLeft: isActive
+                        ? "2px solid var(--terminal-green)"
+                        : "2px solid transparent",
+                      backgroundColor: isActive
+                        ? "var(--bg-surface)"
+                        : "transparent",
+                      padding: "0.375rem 0.5rem",
+                    },
+                    label: {
+                      color: isActive
+                        ? "var(--terminal-green)"
+                        : "var(--text-secondary)",
+                    },
+                  }}
+                />
+              );
+            })}
+          </Stack>
+        </Box>
       </Stack>
 
       {/* Footer */}
-      <Box pt="md">
+      <Box>
         <Divider mb="sm" />
-        <Anchor
-          component={Link}
-          to="/privacy"
-          size="sm"
-          c="dimmed"
-          ta="center"
-          w="100%"
-        >
-          Privacy Policy
-        </Anchor>
+        <Stack gap={4}>
+          <UnstyledButton
+            component={Link}
+            to="/privacy"
+            style={{
+              display: "block",
+              padding: "0.25rem 0",
+            }}
+          >
+            <Text size="xs" c="dimmed" ff="monospace">
+              [privacy]
+            </Text>
+          </UnstyledButton>
+          <Text size="xs" c="dimmed" ff="monospace" style={{ opacity: 0.5 }}>
+            © 2024 gempir
+          </Text>
+        </Stack>
       </Box>
     </Stack>
   );

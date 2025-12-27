@@ -8,7 +8,7 @@ export function Emotehistory() {
   return (
     <Stack gap="lg">
       <Table
-        title="7TV Emote History"
+        title="7tv_emote_history"
         history={seventvHistory.history}
         page={seventvHistory.page}
         totalPages={seventvHistory.totalPages}

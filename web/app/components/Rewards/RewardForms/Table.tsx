@@ -1,14 +1,13 @@
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import {
   ActionIcon,
-  Card,
+  Box,
   Group,
   Loader,
   Table as MantineTable,
   Pagination,
   Stack,
   Text,
-  Title,
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -40,14 +39,14 @@ export function Table({
     try {
       await onApprove?.(item);
       notifications.show({
-        title: "Emote Approved",
-        message: "Emote has been added successfully",
+        title: "approved",
+        message: "emote added successfully",
         color: "green",
       });
     } catch (_error) {
       notifications.show({
-        title: "Approval Failed",
-        message: "Could not approve emote",
+        title: "error",
+        message: "could not approve emote",
         color: "red",
       });
     }
@@ -57,46 +56,52 @@ export function Table({
     try {
       await onDeny?.(item);
       notifications.show({
-        title: "Emote Denied",
-        message: "Emote request has been denied",
+        title: "denied",
+        message: "emote request rejected",
         color: "orange",
       });
     } catch (_error) {
       notifications.show({
-        title: "Denial Failed",
-        message: "Could not deny emote",
+        title: "error",
+        message: "could not deny emote",
         color: "red",
       });
     }
   };
 
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder>
+    <Box
+      p="md"
+      style={{
+        border: "1px solid var(--border-subtle)",
+        backgroundColor: "var(--bg-elevated)",
+      }}
+    >
       <Stack gap="md">
-        <Title order={3} size="h4">
+        <Text size="sm" fw={600} ff="monospace" c="white">
           {title}
-        </Title>
+        </Text>
 
         {loading ? (
           <Group justify="center" p="xl">
-            <Loader size="lg" />
+            <Loader size="sm" />
           </Group>
         ) : !history || history.length === 0 ? (
-          <Text c="dimmed" ta="center" py="xl">
-            No emote history yet
+          <Text c="dimmed" ta="center" py="xl" size="xs" ff="monospace">
+            no emote history
           </Text>
         ) : (
           <>
             <MantineTable highlightOnHover>
               <MantineTable.Thead>
                 <MantineTable.Tr>
-                  <MantineTable.Th>Emote</MantineTable.Th>
-                  <MantineTable.Th>Emote ID</MantineTable.Th>
-                  <MantineTable.Th>Type</MantineTable.Th>
-                  <MantineTable.Th>User</MantineTable.Th>
-                  <MantineTable.Th>Status</MantineTable.Th>
+                  <MantineTable.Th w={50}>img</MantineTable.Th>
+                  <MantineTable.Th>emote_id</MantineTable.Th>
+                  <MantineTable.Th w={60}>type</MantineTable.Th>
+                  <MantineTable.Th w={100}>user</MantineTable.Th>
+                  <MantineTable.Th w={60}>status</MantineTable.Th>
                   {(onApprove || onDeny) && (
-                    <MantineTable.Th w={100}>Actions</MantineTable.Th>
+                    <MantineTable.Th w={80}>actions</MantineTable.Th>
                   )}
                 </MantineTable.Tr>
               </MantineTable.Thead>
@@ -104,49 +109,56 @@ export function Table({
                 {history.map((item, index) => (
                   <MantineTable.Tr key={index}>
                     <MantineTable.Td>
-                      <Emote emoteId={item.emoteID} type={item.type} />
+                      <Emote emoteId={item.emoteID} type={item.type} size={20} />
                     </MantineTable.Td>
                     <MantineTable.Td>
-                      <Text size="sm" ff="monospace">
+                      <Text size="xs" ff="monospace" c="dimmed">
                         {item.emoteID}
                       </Text>
                     </MantineTable.Td>
                     <MantineTable.Td>
-                      <Text size="sm">{item.type}</Text>
+                      <Text size="xs" ff="monospace" c="terminal">
+                        {item.type === "seventv" ? "7tv" : item.type}
+                      </Text>
                     </MantineTable.Td>
                     <MantineTable.Td>
-                      <Text size="sm">{item.userLogin}</Text>
+                      <Text size="xs" ff="monospace" c="dimmed">
+                        {item.userLogin}
+                      </Text>
                     </MantineTable.Td>
                     <MantineTable.Td>
                       <Text
-                        size="sm"
+                        size="xs"
+                        ff="monospace"
                         c={item.changeType === "ADD" ? "green" : "red"}
                       >
-                        {item.changeType}
+                        {item.changeType.toLowerCase()}
                       </Text>
                     </MantineTable.Td>
                     {(onApprove || onDeny) && (
                       <MantineTable.Td>
                         <Group gap="xs">
                           {onApprove && (
-                            <Tooltip label="Approve">
+                            <Tooltip label="approve">
                               <ActionIcon
                                 variant="subtle"
                                 color="green"
+                                size="xs"
                                 onClick={() => handleApprove(item)}
                               >
-                                <CheckIcon style={{ width: 16, height: 16 }} />
+                                <CheckIcon style={{ width: 12, height: 12 }} />
                               </ActionIcon>
                             </Tooltip>
                           )}
                           {onDeny && (
-                            <Tooltip label="Deny">
+                            <Tooltip label="deny">
                               <ActionIcon
                                 variant="subtle"
                                 color="red"
+                                size="xs"
                                 onClick={() => handleDeny(item)}
                               >
-                                <XMarkIcon style={{ width: 16, height: 16 }} />
+                                <XMarkIcon style={{ width: 12, height: 12 }} />
                               </ActionIcon>
                             </Tooltip>
                           )}
@@ -164,13 +176,14 @@ export function Table({
                   total={totalPages}
                   value={page}
                   onChange={onPageChange}
-                  color="cyan"
+                  color="terminal"
+                  size="sm"
                 />
               </Group>
             )}
           </>
         )}
       </Stack>
-    </Card>
+    </Box>
   );
 }

@@ -8,11 +8,9 @@ import {
 } from "@heroicons/react/24/solid";
 import {
   ActionIcon,
-  Badge,
+  Box,
   Button,
-  Card,
   Checkbox,
-  Container,
   FileButton,
   Group,
   Loader,
@@ -24,7 +22,6 @@ import {
   Text,
   Textarea,
   TextInput,
-  Title,
   Tooltip,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
@@ -125,8 +122,8 @@ export function Blocks() {
   const handleAdd = async () => {
     if (parsedIds.length === 0) {
       notifications.show({
-        title: "Validation Error",
-        message: "Please enter at least one emote ID",
+        title: "error",
+        message: "enter at least one emote id",
         color: "red",
       });
       return;
@@ -139,14 +136,14 @@ export function Blocks() {
       setNewEmoteIds("");
       setPreviewEmoteId("");
       notifications.show({
-        title: "Emotes Blocked",
-        message: `${parsedIds.length} emote(s) have been added to the block list`,
+        title: "blocked",
+        message: `${parsedIds.length} emote(s) added to block list`,
         color: "green",
       });
     } catch (_error) {
       notifications.show({
-        title: "Failed to Block",
-        message: "Could not add emote(s) to block list",
+        title: "error",
+        message: "could not add emote(s) to block list",
         color: "red",
       });
     } finally {
@@ -158,14 +155,14 @@ export function Blocks() {
     try {
       await removeBlock(block);
       notifications.show({
-        title: "Emote Unblocked",
-        message: "Emote has been removed from the block list",
+        title: "unblocked",
+        message: "emote removed from block list",
         color: "green",
       });
     } catch (_error) {
       notifications.show({
-        title: "Failed to Unblock",
-        message: "Could not remove emote from block list",
+        title: "error",
+        message: "could not remove emote from block list",
         color: "red",
       });
     }
@@ -185,14 +182,14 @@ export function Blocks() {
       await removeMultiple(blocksToDelete);
       setSelectedIds(new Set());
       notifications.show({
-        title: "Emotes Unblocked",
-        message: `${blocksToDelete.length} emote(s) removed from the block list`,
+        title: "unblocked",
+        message: `${blocksToDelete.length} emote(s) removed`,
         color: "green",
       });
     } catch (_error) {
       notifications.show({
-        title: "Failed to Unblock",
-        message: "Could not remove all emotes. Some may have been deleted.",
+        title: "error",
+        message: "could not remove all emotes",
         color: "red",
       });
     } finally {
@@ -204,8 +201,8 @@ export function Blocks() {
     const csv = exportBlocksAsCsv(blocks);
     downloadCsv(csv, getExportFilename());
     notifications.show({
-      title: "Export Successful",
-      message: `Exported ${blocks.length} emote block(s)`,
+      title: "exported",
+      message: `${blocks.length} emote block(s) exported`,
       color: "green",
     });
   };
@@ -220,7 +217,7 @@ export function Blocks() {
 
       if (errors.length > 0) {
         notifications.show({
-          title: "Import Error",
+          title: "import error",
           message: errors[0],
           color: "red",
         });
@@ -239,7 +236,6 @@ export function Blocks() {
     setImportModalOpen(false);
 
     try {
-      // Group by type for bulk import
       const sevenTvIds = importPreview
         .filter((b) => b.Type === "seventv")
         .map((b) => b.EmoteID);
@@ -249,21 +245,20 @@ export function Blocks() {
       }
 
       notifications.show({
-        title: "Import Successful",
-        message: `Imported ${importPreview.length} emote block(s)`,
+        title: "imported",
+        message: `${importPreview.length} emote block(s) imported`,
         color: "green",
       });
       setImportPreview([]);
     } catch (_error) {
       notifications.show({
-        title: "Import Failed",
-        message: "Could not import all emotes",
+        title: "import failed",
+        message: "could not import all emotes",
         color: "red",
       });
     }
   };
 
-  // Update preview when typing
   const handleEmoteIdsChange = (value: string) => {
     setNewEmoteIds(value);
     const ids = parseEmoteIds(value);
@@ -273,150 +268,167 @@ export function Blocks() {
   const selectedCount = selectedIds.size;
 
   return (
-    <Container size="xl">
+    <Box maw={1000} mx="auto">
       <Stack gap="lg">
-        <div>
-          <Title order={1} mb="xs">
-            Blocked Emotes
-          </Title>
-          <Text c="dimmed">
-            Prevent specific emotes from being added to your channel
+        {/* Header */}
+        <Box>
+          <Text size="lg" fw={600} ff="monospace" c="white">
+            blocked_emotes
           </Text>
-        </div>
+          <Text size="xs" c="dimmed" ff="monospace" mt={4}>
+            prevent specific emotes from being added to your channel
+          </Text>
+        </Box>
 
         {/* Search and Action Bar */}
-        <Card shadow="sm" padding="md" radius="md" withBorder>
+        <Box
+          p="sm"
+          style={{
+            border: "1px solid var(--border-subtle)",
+            backgroundColor: "var(--bg-elevated)",
+          }}
+        >
           <Group justify="space-between" wrap="nowrap">
-            <Group style={{ flex: 1 }}>
+            <Group style={{ flex: 1 }} gap="sm">
               <TextInput
-                placeholder="Search by emote ID..."
+                placeholder="search by emote id..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.currentTarget.value)}
                 leftSection={
-                  <MagnifyingGlassIcon style={{ width: 16, height: 16 }} />
+                  <MagnifyingGlassIcon style={{ width: 14, height: 14 }} />
                 }
                 rightSection={
                   searchQuery && (
                     <ActionIcon
                       variant="subtle"
                       onClick={() => setSearchQuery("")}
-                      size="sm"
+                      size="xs"
                     >
-                      <XMarkIcon style={{ width: 14, height: 14 }} />
+                      <XMarkIcon style={{ width: 12, height: 12 }} />
                     </ActionIcon>
                   )
                 }
-                style={{ flex: 1, minWidth: 200 }}
+                size="xs"
+                style={{ flex: 1, minWidth: 180 }}
               />
               <Select
-                placeholder="Type"
+                placeholder="type"
                 value={typeFilter}
                 onChange={(value) => setTypeFilter(value || "")}
                 data={[
-                  { value: "", label: "All Types" },
-                  { value: "seventv", label: "7TV" },
+                  { value: "", label: "all" },
+                  { value: "seventv", label: "7tv" },
                 ]}
-                w={120}
+                size="xs"
+                w={100}
                 clearable
               />
             </Group>
             <Group gap="xs">
-              <Tooltip label="Export blocks as CSV">
+              <Tooltip label="export csv">
                 <Button
-                  variant="light"
+                  variant="subtle"
+                  size="xs"
                   leftSection={
-                    <ArrowDownTrayIcon style={{ width: 16, height: 16 }} />
+                    <ArrowDownTrayIcon style={{ width: 14, height: 14 }} />
                   }
                   onClick={handleExport}
                   disabled={blocks.length === 0}
+                  c="dimmed"
                 >
-                  Export
+                  export
                 </Button>
               </Tooltip>
               <FileButton onChange={handleImportFile} accept="text/csv,.csv">
                 {(props) => (
-                  <Tooltip label="Import blocks from CSV">
+                  <Tooltip label="import csv">
                     <Button
                       {...props}
-                      variant="light"
+                      variant="subtle"
+                      size="xs"
                       leftSection={
-                        <ArrowUpTrayIcon style={{ width: 16, height: 16 }} />
+                        <ArrowUpTrayIcon style={{ width: 14, height: 14 }} />
                       }
+                      c="dimmed"
                     >
-                      Import
+                      import
                     </Button>
                   </Tooltip>
                 )}
               </FileButton>
             </Group>
           </Group>
-        </Card>
+        </Box>
 
         {/* Add Block Form */}
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
+        <Box
+          p="md"
+          style={{
+            border: "1px solid var(--border-subtle)",
+            backgroundColor: "var(--bg-elevated)",
+          }}
+        >
           <Stack gap="md">
             <Group justify="space-between" align="center">
-              <Title order={3} size="h4">
-                Block New Emote(s)
-              </Title>
+              <Text size="sm" fw={600} ff="monospace" c="white">
+                + add_block
+              </Text>
               {parsedIds.length > 0 && (
-                <Badge color="cyan" variant="light">
-                  {parsedIds.length} emote{parsedIds.length > 1 ? "s" : ""}{" "}
-                  detected
-                </Badge>
+                <Text size="xs" ff="monospace" c="terminal">
+                  {parsedIds.length} detected
+                </Text>
               )}
             </Group>
 
             <Group align="flex-start" wrap="nowrap">
               <Stack style={{ flex: 1 }} gap="xs">
                 <Textarea
-                  label="Emote ID(s)"
-                  placeholder="Enter one or more emote IDs (comma, space, or newline separated)"
+                  label="emote_ids"
+                  placeholder="enter emote ids (comma, space, or newline separated)"
                   value={newEmoteIds}
                   onChange={(e) => handleEmoteIdsChange(e.currentTarget.value)}
                   minRows={3}
                   autosize
                   maxRows={6}
+                  size="xs"
                 />
-                <Text size="xs" c="dimmed">
-                  Supports comma, space, or newline separated IDs
-                </Text>
               </Stack>
 
               <EmotePreview emoteId={debouncedPreview} type={rewardType} />
             </Group>
 
-            <Group align="flex-end">
+            <Group align="flex-end" justify="space-between">
               <Select
-                label="Type"
-                data={[{ value: "seventv", label: "7TV" }]}
+                label="type"
+                data={[{ value: "seventv", label: "7tv" }]}
                 value={rewardType}
                 onChange={(value) => setRewardType(value || "seventv")}
-                w={120}
+                size="xs"
+                w={100}
               />
 
               <Button
-                leftSection={<PlusIcon style={{ width: 16, height: 16 }} />}
+                leftSection={<PlusIcon style={{ width: 14, height: 14 }} />}
                 onClick={handleAdd}
                 loading={adding}
-                color="cyan"
+                size="xs"
+                color="terminal"
                 disabled={parsedIds.length === 0}
               >
-                Block{" "}
-                {parsedIds.length > 1 ? `${parsedIds.length} Emotes` : "Emote"}
+                block {parsedIds.length > 1 ? `${parsedIds.length} emotes` : "emote"}
               </Button>
             </Group>
           </Stack>
-        </Card>
+        </Box>
 
         {/* Bulk Actions Bar */}
         {selectedCount > 0 && (
-          <Card
-            shadow="sm"
-            padding="md"
-            radius="md"
-            withBorder
-            style={{ borderColor: "var(--mantine-color-cyan-6)" }}
+          <Box
+            p="sm"
+            style={{
+              border: "1px solid var(--terminal-green)",
+              backgroundColor: "var(--bg-surface)",
+            }}
           >
             <Group justify="space-between">
               <Group gap="md">
@@ -429,54 +441,62 @@ export function Blocks() {
                     selectedCount > 0 && selectedCount < filteredBlocks.length
                   }
                   onChange={toggleSelectAll}
-                  label={`${selectedCount} selected`}
-                  styles={{
-                    root: { cursor: "pointer" },
-                    input: { cursor: "pointer" },
-                    label: { cursor: "pointer" },
-                  }}
+                  label={
+                    <Text size="xs" ff="monospace">
+                      {selectedCount} selected
+                    </Text>
+                  }
+                  size="xs"
                 />
               </Group>
               <Group gap="xs">
                 <Button
                   variant="subtle"
+                  size="xs"
                   onClick={() => setSelectedIds(new Set())}
+                  c="dimmed"
                 >
-                  Deselect All
+                  deselect
                 </Button>
                 <Button
                   color="red"
-                  leftSection={<TrashIcon style={{ width: 16, height: 16 }} />}
+                  size="xs"
+                  leftSection={<TrashIcon style={{ width: 14, height: 14 }} />}
                   onClick={() => setDeleteConfirmOpen(true)}
                   loading={bulkDeleting}
                 >
-                  Delete Selected
+                  delete
                 </Button>
               </Group>
             </Group>
-          </Card>
+          </Box>
         )}
 
         {/* Blocks Table */}
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
+        <Box
+          p="md"
+          style={{
+            border: "1px solid var(--border-subtle)",
+            backgroundColor: "var(--bg-elevated)",
+          }}
+        >
           {loading ? (
             <Group justify="center" p="xl">
-              <Loader size="lg" />
+              <Loader size="sm" />
             </Group>
           ) : filteredBlocks.length === 0 ? (
-            <Text c="dimmed" ta="center" py="xl">
+            <Text c="dimmed" ta="center" py="xl" size="xs" ff="monospace">
               {blocks.length === 0
-                ? "No blocked emotes yet"
-                : "No emotes match your search"}
+                ? "no blocked emotes"
+                : "no emotes match filter"}
             </Text>
           ) : (
             <Stack gap="md">
-              {debouncedSearch || typeFilter ? (
-                <Text size="sm" c="dimmed">
-                  {filteredBlocks.length} result
-                  {filteredBlocks.length !== 1 ? "s" : ""}
+              {(debouncedSearch || typeFilter) && (
+                <Text size="xs" c="dimmed" ff="monospace">
+                  {filteredBlocks.length} result{filteredBlocks.length !== 1 ? "s" : ""}
                 </Text>
-              ) : null}
+              )}
 
               <Table highlightOnHover>
                 <Table.Thead>
@@ -492,16 +512,13 @@ export function Blocks() {
                           selectedCount < filteredBlocks.length
                         }
                         onChange={toggleSelectAll}
-                        styles={{
-                          root: { cursor: "pointer" },
-                          input: { cursor: "pointer" },
-                        }}
+                        size="xs"
                       />
                     </Table.Th>
-                    <Table.Th w={60}>Preview</Table.Th>
-                    <Table.Th>Emote ID</Table.Th>
-                    <Table.Th w={100}>Type</Table.Th>
-                    <Table.Th w={100}>Actions</Table.Th>
+                    <Table.Th w={50}>img</Table.Th>
+                    <Table.Th>emote_id</Table.Th>
+                    <Table.Th w={80}>type</Table.Th>
+                    <Table.Th w={60}>del</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -517,37 +534,35 @@ export function Blocks() {
                           <Checkbox
                             checked={selectedIds.has(blockKey)}
                             onChange={() => toggleSelection(blockKey)}
-                            styles={{
-                              root: { cursor: "pointer" },
-                              input: { cursor: "pointer" },
-                            }}
+                            size="xs"
                           />
                         </Table.Td>
                         <Table.Td>
                           <Emote
                             emoteId={block.EmoteID}
                             type={block.Type}
-                            size={24}
+                            size={20}
                           />
                         </Table.Td>
                         <Table.Td>
-                          <Text size="sm" ff="monospace">
+                          <Text size="xs" ff="monospace" c="dimmed">
                             {block.EmoteID}
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <Badge color="violet" variant="light">
-                            {block.Type === "seventv" ? "7TV" : block.Type}
-                          </Badge>
+                          <Text size="xs" ff="monospace" c="terminal">
+                            {block.Type === "seventv" ? "7tv" : block.Type}
+                          </Text>
                         </Table.Td>
                         <Table.Td onClick={(e) => e.stopPropagation()}>
-                          <Tooltip label="Remove block">
+                          <Tooltip label="remove">
                             <ActionIcon
                               variant="subtle"
                               color="red"
+                              size="xs"
                               onClick={() => handleRemove(block)}
                             >
-                              <TrashIcon style={{ width: 16, height: 16 }} />
+                              <TrashIcon style={{ width: 12, height: 12 }} />
                             </ActionIcon>
                           </Tooltip>
                         </Table.Td>
@@ -563,35 +578,37 @@ export function Blocks() {
                     total={totalPages}
                     value={page}
                     onChange={setPage}
-                    color="cyan"
+                    color="terminal"
+                    size="sm"
                   />
                 </Group>
               )}
             </Stack>
           )}
-        </Card>
+        </Box>
       </Stack>
 
       {/* Delete Confirmation Modal */}
       <Modal
         opened={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
-        title="Confirm Bulk Delete"
+        title="confirm_delete"
+        size="sm"
       >
         <Stack gap="md">
-          <Text>
-            Are you sure you want to delete {selectedCount} emote block
-            {selectedCount > 1 ? "s" : ""}?
+          <Text size="sm" ff="monospace">
+            delete {selectedCount} emote block{selectedCount > 1 ? "s" : ""}?
           </Text>
-          <Group justify="flex-end">
+          <Group justify="flex-end" gap="xs">
             <Button
               variant="subtle"
+              size="xs"
               onClick={() => setDeleteConfirmOpen(false)}
             >
-              Cancel
+              cancel
             </Button>
-            <Button color="red" onClick={handleBulkDelete}>
-              Delete
+            <Button color="red" size="xs" onClick={handleBulkDelete}>
+              delete
             </Button>
           </Group>
         </Stack>
@@ -604,49 +621,57 @@ export function Blocks() {
           setImportModalOpen(false);
           setImportPreview([]);
         }}
-        title="Import Preview"
-        size="lg"
+        title="import_preview"
+        size="md"
       >
         <Stack gap="md">
-          <Text>
-            Import {importPreview.length} emote block
-            {importPreview.length > 1 ? "s" : ""}?
+          <Text size="sm" ff="monospace">
+            import {importPreview.length} emote block{importPreview.length > 1 ? "s" : ""}?
           </Text>
-          <Card withBorder mah={300} style={{ overflow: "auto" }}>
+          <Box
+            p="sm"
+            mah={200}
+            style={{
+              overflow: "auto",
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-surface)",
+            }}
+          >
             <Stack gap="xs">
               {importPreview.slice(0, 10).map((block) => (
                 <Group key={`${block.Type}-${block.EmoteID}`} gap="sm">
-                  <Badge color="violet" variant="light">
-                    {block.Type === "seventv" ? "7TV" : block.Type}
-                  </Badge>
-                  <Text size="sm" ff="monospace">
+                  <Text size="xs" ff="monospace" c="terminal">
+                    {block.Type === "seventv" ? "7tv" : block.Type}
+                  </Text>
+                  <Text size="xs" ff="monospace" c="dimmed">
                     {block.EmoteID}
                   </Text>
                 </Group>
               ))}
               {importPreview.length > 10 && (
-                <Text size="sm" c="dimmed">
-                  ... and {importPreview.length - 10} more
+                <Text size="xs" c="dimmed" ff="monospace">
+                  ... +{importPreview.length - 10} more
                 </Text>
               )}
             </Stack>
-          </Card>
-          <Group justify="flex-end">
+          </Box>
+          <Group justify="flex-end" gap="xs">
             <Button
               variant="subtle"
+              size="xs"
               onClick={() => {
                 setImportModalOpen(false);
                 setImportPreview([]);
               }}
             >
-              Cancel
+              cancel
             </Button>
-            <Button color="cyan" onClick={handleConfirmImport}>
-              Import
+            <Button color="terminal" size="xs" onClick={handleConfirmImport}>
+              import
             </Button>
           </Group>
         </Stack>
       </Modal>
-    </Container>
+    </Box>
   );
 }
