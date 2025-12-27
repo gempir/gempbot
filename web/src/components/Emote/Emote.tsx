@@ -11,19 +11,21 @@ interface EmoteProps {
 export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
   const [imageError, setImageError] = useState(false);
 
+  const normalizedType = type?.toLowerCase();
+
   const getEmoteUrl = () => {
-    if (type === "BTTV") {
-      return `https://cdn.betterttv.net/emote/${emoteId}/3x.webp`;
-    } else if (type === "7TV") {
-      return `https://cdn.7tv.app/emote/${emoteId}/4x.avif`;
+    if (normalizedType === "bttv") {
+      return `https://cdn.betterttv.net/emote/${emoteId}/1x.webp`;
+    } else if (normalizedType === "seventv") {
+      return `https://cdn.7tv.app/emote/${emoteId}/1x.avif`;
     }
     return "";
   };
 
   const getEmotePageUrl = () => {
-    if (type === "BTTV") {
+    if (normalizedType === "bttv") {
       return `https://betterttv.com/emotes/${emoteId}`;
-    } else if (type === "7TV") {
+    } else if (normalizedType === "seventv") {
       return `https://7tv.app/emotes/${emoteId}`;
     }
     return "";
