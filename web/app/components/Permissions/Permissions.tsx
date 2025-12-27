@@ -1,4 +1,4 @@
-import { Container, Loader, Stack, Text, Title } from "@mantine/core";
+import { Box, Loader, Stack, Text } from "@mantine/core";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { UserPermissions } from "./UserPermissions";
 
@@ -7,26 +7,29 @@ export function Permissions() {
 
   if (loading || !userConfig) {
     return (
-      <Container size="xl">
+      <Box maw={800} mx="auto">
         <Stack align="center" justify="center" h={400}>
-          <Loader size="lg" />
-          <Text c="dimmed">Loading permissions...</Text>
+          <Loader size="sm" />
+          <Text c="dimmed" size="xs" ff="monospace">
+            loading permissions...
+          </Text>
         </Stack>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container size="xl">
+    <Box maw={800} mx="auto">
       <Stack gap="lg">
-        <div>
-          <Title order={1} mb="xs">
-            User Permissions
-          </Title>
-          <Text c="dimmed">
-            Control who can access and manage your bot settings
+        {/* Header */}
+        <Box>
+          <Text size="lg" fw={600} ff="monospace" c="white">
+            user_permissions
           </Text>
-        </div>
+          <Text size="xs" c="dimmed" ff="monospace" mt={4}>
+            control who can access and manage your bot settings
+          </Text>
+        </Box>
 
         <UserPermissions
           userConfig={userConfig}
@@ -35,6 +38,6 @@ export function Permissions() {
           loading={loading}
         />
       </Stack>
-    </Container>
+    </Box>
   );
 }

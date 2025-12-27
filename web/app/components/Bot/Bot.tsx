@@ -1,13 +1,4 @@
-import {
-  Card,
-  Container,
-  Group,
-  Loader,
-  Stack,
-  Switch,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Box, Group, Loader, Stack, Switch, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useState } from "react";
 import { useBotConfig } from "../../hooks/useBotConfig";
@@ -21,14 +12,14 @@ export function Bot() {
     try {
       await updateConfig({ predictionAnnouncements: checked });
       notifications.show({
-        title: "Settings Updated",
-        message: `Prediction announcements ${checked ? "enabled" : "disabled"}`,
+        title: "updated",
+        message: `prediction announcements ${checked ? "enabled" : "disabled"}`,
         color: "green",
       });
     } catch (_error) {
       notifications.show({
-        title: "Update Failed",
-        message: "Failed to update bot settings",
+        title: "error",
+        message: "failed to update settings",
         color: "red",
       });
     } finally {
@@ -38,73 +29,130 @@ export function Bot() {
 
   if (loading) {
     return (
-      <Container size="lg">
-        <Card shadow="sm" padding="xl" radius="md" withBorder>
+      <Box maw={700} mx="auto">
+        <Box
+          p="lg"
+          style={{
+            border: "1px solid var(--border-subtle)",
+            backgroundColor: "var(--bg-elevated)",
+          }}
+        >
           <Group justify="center" p="xl">
-            <Loader size="lg" />
+            <Loader size="sm" />
           </Group>
-        </Card>
-      </Container>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <Container size="lg">
+    <Box maw={700} mx="auto">
       <Stack gap="lg">
-        <div>
-          <Title order={1} mb="xs">
-            Bot Settings
-          </Title>
-          <Text c="dimmed">
-            Configure automated bot features for your channel
+        {/* Header */}
+        <Box>
+          <Text size="lg" fw={600} ff="monospace" c="white">
+            bot_settings
           </Text>
-        </div>
+          <Text size="xs" c="dimmed" ff="monospace" mt={4}>
+            configure automated bot features for your channel
+          </Text>
+        </Box>
 
-        <Card shadow="sm" padding="xl" radius="md" withBorder>
-          <Group align="flex-start" wrap="nowrap">
-            <Stack gap="sm" style={{ flex: 1 }}>
-              <Group justify="space-between" align="flex-start">
-                <div>
-                  <Title order={3} size="h4">
-                    Prediction Announcements
-                  </Title>
-                  <Text size="sm" c="dimmed" mt={4}>
-                    Automatically announce when predictions are created in your
-                    channel. The bot will post a message in chat with prediction
-                    details.
-                  </Text>
-                </div>
-
-                <Switch
-                  checked={config?.predictionAnnouncements || false}
-                  onChange={(event) =>
-                    handleToggle(event.currentTarget.checked)
+        {/* Prediction Announcements */}
+        <Box
+          p="md"
+          style={{
+            border: "1px solid var(--border-subtle)",
+            backgroundColor: "var(--bg-elevated)",
+          }}
+        >
+          <Group align="flex-start" wrap="nowrap" justify="space-between">
+            <Stack gap="xs" style={{ flex: 1 }}>
+              <Group gap="xs">
+                <Box
+                  className={
+                    config?.predictionAnnouncements
+                      ? "status-dot status-online"
+                      : "status-dot status-offline"
                   }
-                  disabled={updating}
-                  size="lg"
-                  color="cyan"
-                  onLabel="ON"
-                  offLabel="OFF"
                 />
+                <Text size="sm" fw={600} ff="monospace" c="white">
+                  prediction_announcements
+                </Text>
               </Group>
+              <Text size="xs" c="dimmed" ff="monospace" lh={1.5}>
+                automatically announce when predictions are created in your
+                channel. the bot will post a message in chat with prediction
+                details.
+              </Text>
             </Stack>
-          </Group>
-        </Card>
 
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Stack gap="xs">
-            <Title order={4} size="h5">
-              About Prediction Announcements
-            </Title>
-            <Text size="sm" c="dimmed">
-              When enabled, gempbot will monitor your channel for new
-              predictions and automatically post an announcement in chat. This
-              helps increase viewer engagement by notifying everyone when a
-              prediction starts.
+            <Switch
+              checked={config?.predictionAnnouncements || false}
+              onChange={(event) => handleToggle(event.currentTarget.checked)}
+              disabled={updating}
+              size="md"
+              color="terminal"
+              onLabel="on"
+              offLabel="off"
+              styles={{
+                track: {
+                  borderRadius: 0,
+                },
+                thumb: {
+                  borderRadius: 0,
+                },
+              }}
+            />
+          </Group>
+        </Box>
+
+        {/* Info Section */}
+        <Box
+          p="md"
+          style={{
+            border: "1px solid var(--border-subtle)",
+            backgroundColor: "var(--bg-surface)",
+          }}
+        >
+          <Stack gap="sm">
+            <Text
+              size="xs"
+              fw={600}
+              ff="monospace"
+              c="dimmed"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
+              info
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace" lh={1.6}>
+              when enabled, gempbot monitors your channel for new predictions
+              and automatically posts an announcement in chat. this increases
+              viewer engagement by notifying everyone when a prediction starts.
             </Text>
           </Stack>
-        </Card>
+        </Box>
+
+        {/* Status Footer */}
+        <Box pt="md" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+          <Group gap="xl">
+            <Group gap="xs">
+              <Box
+                className={
+                  config?.predictionAnnouncements
+                    ? "status-dot status-online"
+                    : "status-dot status-offline"
+                }
+              />
+              <Text size="xs" c="dimmed" ff="monospace">
+                predictions:{" "}
+                {config?.predictionAnnouncements ? "active" : "inactive"}
+              </Text>
+            </Group>
+          </Group>
+        </Box>
       </Stack>
-    </Container>
+    </Box>
   );
 }

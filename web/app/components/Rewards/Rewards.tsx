@@ -1,6 +1,5 @@
-import { Container, Grid, Loader, Stack, Text, Title } from "@mantine/core";
+import { Box, Group, Loader, Stack, Text } from "@mantine/core";
 import { useUserConfig } from "../../hooks/useUserConfig";
-import { BttvForm } from "./RewardForms/BttvForm";
 import { Emotehistory } from "./RewardForms/Emotehistory";
 import { SevenTvForm } from "./RewardForms/SevenTvForm";
 
@@ -9,37 +8,53 @@ export function Rewards() {
 
   if (loading || !userConfig) {
     return (
-      <Container size="xl">
+      <Box maw={900} mx="auto">
         <Stack align="center" justify="center" h={400}>
-          <Loader size="lg" />
-          <Text c="dimmed">Loading rewards...</Text>
+          <Loader size="sm" />
+          <Text c="dimmed" size="xs" ff="monospace">
+            loading rewards...
+          </Text>
         </Stack>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container size="xl">
+    <Box maw={900} mx="auto">
       <Stack gap="lg">
-        <div>
-          <Title order={1} mb="xs">
-            Channel Point Rewards
-          </Title>
-          <Text c="dimmed">Configure emote rewards for BTTV and 7TV</Text>
-        </div>
+        {/* Header */}
+        <Box>
+          <Group gap="xs" mb="xs">
+            <Box
+              style={{
+                width: 8,
+                height: 8,
+                backgroundColor: "var(--terminal-green)",
+                boxShadow: "0 0 8px var(--terminal-green)",
+              }}
+            />
+            <Text
+              size="xs"
+              c="dimmed"
+              ff="monospace"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
+              rewards active
+            </Text>
+          </Group>
+          <Text size="lg" fw={600} ff="monospace" c="white">
+            channel_point_rewards
+          </Text>
+          <Text size="xs" c="dimmed" ff="monospace" mt={4}>
+            configure emote rewards for 7tv integration
+          </Text>
+        </Box>
 
-        <Grid gutter="lg">
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <BttvForm userConfig={userConfig} />
-          </Grid.Col>
-
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <SevenTvForm userConfig={userConfig} />
-          </Grid.Col>
-        </Grid>
+        <SevenTvForm userConfig={userConfig} />
 
         <Emotehistory />
       </Stack>
-    </Container>
+    </Box>
   );
 }

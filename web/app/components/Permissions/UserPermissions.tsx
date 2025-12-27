@@ -1,8 +1,8 @@
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
   ActionIcon,
+  Box,
   Button,
-  Card,
   Checkbox,
   Group,
   Loader,
@@ -10,7 +10,6 @@ import {
   Table,
   Text,
   TextInput,
-  Title,
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -57,7 +56,7 @@ export function UserPermissions({
     setRows([
       ...rows,
       {
-        user: ``,
+        user: "",
         editor: false,
         prediction: true,
         isNew: true,
@@ -75,7 +74,7 @@ export function UserPermissions({
   const handleUpdateRow = (
     index: number,
     field: keyof PermissionRow,
-    value: any,
+    value: string | boolean,
   ) => {
     const newRows = [...rows];
     newRows[index] = { ...newRows[index], [field]: value };
@@ -97,56 +96,65 @@ export function UserPermissions({
     setUserConfig({ ...userConfig, Permissions: perms });
 
     notifications.show({
-      title: "Permissions Updated",
-      message: "User permissions have been saved",
+      title: "saved",
+      message: "permissions updated",
       color: "green",
     });
   };
 
   if (loading) {
     return (
-      <Card shadow="sm" padding="xl" radius="md" withBorder>
+      <Box
+        p="lg"
+        style={{
+          border: "1px solid var(--border-subtle)",
+          backgroundColor: "var(--bg-elevated)",
+        }}
+      >
         <Group justify="center" p="xl">
-          <Loader size="lg" />
+          <Loader size="sm" />
         </Group>
-      </Card>
+      </Box>
     );
   }
 
   return (
     <Stack gap="lg">
-      <Card shadow="sm" padding="lg" radius="md" withBorder>
+      {/* Permissions Table */}
+      <Box
+        p="md"
+        style={{
+          border: "1px solid var(--border-subtle)",
+          backgroundColor: "var(--bg-elevated)",
+        }}
+      >
         <Stack gap="md">
           <Group justify="space-between">
-            <div>
-              <Title order={3} size="h4">
-                User Permissions
-              </Title>
-              <Text size="sm" c="dimmed">
-                Manage who can edit your bot settings and make predictions
-              </Text>
-            </div>
+            <Text size="sm" fw={600} ff="monospace" c="white">
+              permission_table
+            </Text>
             <Button
-              leftSection={<PlusIcon style={{ width: 16, height: 16 }} />}
+              leftSection={<PlusIcon style={{ width: 12, height: 12 }} />}
               onClick={handleAddRow}
-              color="cyan"
+              color="terminal"
+              size="xs"
             >
-              Add User
+              add user
             </Button>
           </Group>
 
           {rows.length === 0 ? (
-            <Text c="dimmed" ta="center" py="xl">
-              No permissions configured. Add users to grant them access.
+            <Text c="dimmed" ta="center" py="xl" size="xs" ff="monospace">
+              no permissions configured. add users to grant access.
             </Text>
           ) : (
             <Table highlightOnHover>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Twitch Username</Table.Th>
-                  <Table.Th>Editor</Table.Th>
-                  <Table.Th>Predictions</Table.Th>
-                  <Table.Th w={100}>Actions</Table.Th>
+                  <Table.Th>username</Table.Th>
+                  <Table.Th w={80}>editor</Table.Th>
+                  <Table.Th w={100}>predictions</Table.Th>
+                  <Table.Th w={60}>del</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -161,6 +169,14 @@ export function UserPermissions({
                         }
                         onBlur={() => handleSave()}
                         variant="unstyled"
+                        size="xs"
+                        styles={{
+                          input: {
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontSize: "0.8125rem",
+                            padding: 0,
+                          },
+                        }}
                       />
                     </Table.Td>
                     <Table.Td>
@@ -175,7 +191,8 @@ export function UserPermissions({
                           setRows(newRows);
                           handleSave(newRows);
                         }}
-                        color="cyan"
+                        color="terminal"
+                        size="xs"
                       />
                     </Table.Td>
                     <Table.Td>
@@ -190,17 +207,19 @@ export function UserPermissions({
                           setRows(newRows);
                           handleSave(newRows);
                         }}
-                        color="cyan"
+                        color="terminal"
+                        size="xs"
                       />
                     </Table.Td>
                     <Table.Td>
-                      <Tooltip label="Remove user">
+                      <Tooltip label="remove">
                         <ActionIcon
                           variant="subtle"
                           color="red"
+                          size="xs"
                           onClick={() => handleRemoveRow(index)}
                         >
-                          <TrashIcon style={{ width: 16, height: 16 }} />
+                          <TrashIcon style={{ width: 12, height: 12 }} />
                         </ActionIcon>
                       </Tooltip>
                     </Table.Td>
@@ -211,28 +230,52 @@ export function UserPermissions({
           )}
 
           {errorMessage && (
-            <Text c="red" size="sm">
-              {errorMessage}
+            <Text c="red" size="xs" ff="monospace">
+              error: {errorMessage}
             </Text>
           )}
         </Stack>
-      </Card>
+      </Box>
 
-      <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Stack gap="xs">
-          <Title order={4} size="h5">
-            Permission Types
-          </Title>
-          <Text size="sm" c="dimmed">
-            <strong>Editor:</strong> Users can modify bot settings, rewards, and
-            manage blocked emotes
+      {/* Permission Types Info */}
+      <Box
+        p="md"
+        style={{
+          border: "1px solid var(--border-subtle)",
+          backgroundColor: "var(--bg-surface)",
+        }}
+      >
+        <Stack gap="sm">
+          <Text
+            size="xs"
+            fw={600}
+            ff="monospace"
+            c="dimmed"
+            tt="uppercase"
+            style={{ letterSpacing: "0.1em" }}
+          >
+            permission_types
           </Text>
-          <Text size="sm" c="dimmed">
-            <strong>Predictions:</strong> Users can create and manage
-            predictions in your channel
-          </Text>
+          <Stack gap="xs">
+            <Group gap="xs">
+              <Text size="xs" ff="monospace" c="terminal" w={80}>
+                editor:
+              </Text>
+              <Text size="xs" c="dimmed" ff="monospace">
+                modify bot settings, rewards, and manage blocked emotes
+              </Text>
+            </Group>
+            <Group gap="xs">
+              <Text size="xs" ff="monospace" c="terminal" w={80}>
+                predictions:
+              </Text>
+              <Text size="xs" c="dimmed" ff="monospace">
+                create and manage predictions in your channel
+              </Text>
+            </Group>
+          </Stack>
         </Stack>
-      </Card>
+      </Box>
     </Stack>
   );
 }

@@ -14,18 +14,14 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
   const normalizedType = type?.toLowerCase();
 
   const getEmoteUrl = () => {
-    if (normalizedType === "bttv") {
-      return `https://cdn.betterttv.net/emote/${emoteId}/1x.webp`;
-    } else if (normalizedType === "seventv") {
+    if (normalizedType === "seventv") {
       return `https://cdn.7tv.app/emote/${emoteId}/1x.avif`;
     }
     return "";
   };
 
   const getEmotePageUrl = () => {
-    if (normalizedType === "bttv") {
-      return `https://betterttv.com/emotes/${emoteId}`;
-    } else if (normalizedType === "seventv") {
+    if (normalizedType === "seventv") {
       return `https://7tv.app/emotes/${emoteId}`;
     }
     return "";
@@ -39,12 +35,16 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#e9ecef",
-        borderRadius: "4px",
+        backgroundColor: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
       }}
     >
       <QuestionMarkCircleIcon
-        style={{ width: size * 0.5, height: size * 0.5, color: "#868e96" }}
+        style={{
+          width: size * 0.5,
+          height: size * 0.5,
+          color: "var(--text-tertiary)",
+        }}
       />
     </Box>
   );

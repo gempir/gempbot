@@ -40,7 +40,7 @@ func TestCanNotVerifySevenTvEmoteRedemption(t *testing.T) {
 
 	ec := emotechief.NewEmoteChief(config.NewMockConfig(), &store.Database{}, helixClient, emoteservice.NewSevenTvClient(store.NewMockStore()))
 
-	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
+	opts := channelpoint.SevenTvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
 
 	redemption := helix.EventSubChannelPointsCustomRewardRedemptionEvent{
@@ -56,7 +56,7 @@ func TestCanVerifySevenTvEmoteRedemption(t *testing.T) {
 
 	ec := emotechief.NewEmoteChief(cfg, store.NewMockStore(), helixClient, emoteservice.NewMockApiClient())
 
-	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
+	opts := channelpoint.SevenTvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
 
 	redemption := helix.EventSubChannelPointsCustomRewardRedemptionEvent{
@@ -73,7 +73,7 @@ func TestCanHandleSevenTvEmoteRedemption(t *testing.T) {
 
 	ec := emotechief.NewEmoteChief(cfg, db, helixClient, emoteservice.NewMockApiClient())
 
-	opts := channelpoint.BttvAdditionalOptions{Slots: 1}
+	opts := channelpoint.SevenTvAdditionalOptions{Slots: 1}
 	marshalled, _ := json.Marshal(opts)
 
 	redemption := helix.EventSubChannelPointsCustomRewardRedemptionEvent{

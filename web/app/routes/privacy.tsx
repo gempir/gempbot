@@ -1,12 +1,4 @@
-import {
-  Anchor,
-  Container,
-  Divider,
-  List,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Anchor, Box, Divider, List, Stack, Text } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/privacy")({
@@ -15,150 +7,248 @@ export const Route = createFileRoute("/privacy")({
 
 function Privacy() {
   return (
-    <Container size="md">
-      <Stack gap="xl" py="xl">
-        <div>
-          <Title order={1} mb="md">
-            Privacy Policy
-          </Title>
-          <Text c="dimmed">Last updated: 2024</Text>
-        </div>
+    <Box maw={700} mx="auto" py="lg">
+      <Stack gap="lg">
+        {/* Header */}
+        <Box>
+          <Text size="lg" fw={600} ff="monospace" c="white">
+            privacy_policy
+          </Text>
+          <Text size="xs" c="dimmed" ff="monospace" mt={4}>
+            last updated: 2024
+          </Text>
+        </Box>
 
-        <Divider />
+        <Divider color="var(--border-subtle)" />
 
         <Stack gap="lg">
-          <div>
-            <Title order={2} size="h3" mb="md">
-              Data Collection
-            </Title>
-            <Text>
+          {/* Data Collection */}
+          <Box
+            p="md"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-elevated)",
+            }}
+          >
+            <Text size="sm" fw={600} ff="monospace" c="white" mb="sm">
+              data_collection
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace" mb="sm" lh={1.6}>
               gempbot collects and stores the following information when you use
               our service:
             </Text>
-            <List mt="md" spacing="sm">
-              <List.Item>Your Twitch user ID and username</List.Item>
+            <List
+              size="xs"
+              spacing="xs"
+              styles={{
+                itemLabel: { fontFamily: "'JetBrains Mono', monospace" },
+              }}
+            >
               <List.Item>
-                Channel point reward configurations you create
+                <Text size="xs" c="dimmed" ff="monospace">
+                  your twitch user id and username
+                </Text>
               </List.Item>
               <List.Item>
-                Emote history and blocked emotes for your channel
+                <Text size="xs" c="dimmed" ff="monospace">
+                  channel point reward configurations you create
+                </Text>
               </List.Item>
-              <List.Item>User permissions you grant to other users</List.Item>
-              <List.Item>Overlay data created through our editor</List.Item>
+              <List.Item>
+                <Text size="xs" c="dimmed" ff="monospace">
+                  emote history and blocked emotes for your channel
+                </Text>
+              </List.Item>
+              <List.Item>
+                <Text size="xs" c="dimmed" ff="monospace">
+                  user permissions you grant to other users
+                </Text>
+              </List.Item>
+              <List.Item>
+                <Text size="xs" c="dimmed" ff="monospace">
+                  overlay data created through our editor
+                </Text>
+              </List.Item>
             </List>
-          </div>
+          </Box>
 
-          <div>
-            <Title order={2} size="h3" mb="md">
-              How We Use Your Data
-            </Title>
-            <Text>
-              Your data is used exclusively to provide the bot and overlay
+          {/* Data Usage */}
+          <Box
+            p="md"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-elevated)",
+            }}
+          >
+            <Text size="sm" fw={600} ff="monospace" c="white" mb="sm">
+              data_usage
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace" mb="sm" lh={1.6}>
+              your data is used exclusively to provide the bot and overlay
               management services:
             </Text>
-            <List mt="md" spacing="sm">
+            <List size="xs" spacing="xs">
               <List.Item>
-                To manage channel point rewards and emote redemptions
+                <Text size="xs" c="dimmed" ff="monospace">
+                  manage channel point rewards and emote redemptions
+                </Text>
               </List.Item>
               <List.Item>
-                To store and serve your custom overlay configurations
+                <Text size="xs" c="dimmed" ff="monospace">
+                  store and serve your custom overlay configurations
+                </Text>
               </List.Item>
               <List.Item>
-                To authenticate your access to the dashboard
+                <Text size="xs" c="dimmed" ff="monospace">
+                  authenticate your access to the dashboard
+                </Text>
               </List.Item>
-              <List.Item>To enforce permissions and access controls</List.Item>
+              <List.Item>
+                <Text size="xs" c="dimmed" ff="monospace">
+                  enforce permissions and access controls
+                </Text>
+              </List.Item>
             </List>
-          </div>
+          </Box>
 
-          <div>
-            <Title order={2} size="h3" mb="md">
-              Third-Party Services
-            </Title>
-            <Text>
+          {/* Third-Party Services */}
+          <Box
+            p="md"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-elevated)",
+            }}
+          >
+            <Text size="sm" fw={600} ff="monospace" c="white" mb="sm">
+              third_party_services
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace" mb="sm" lh={1.6}>
               gempbot integrates with the following third-party services:
             </Text>
-            <List mt="md" spacing="sm">
-              <List.Item>
-                <strong>Twitch:</strong> For authentication and channel point
-                reward management
-              </List.Item>
-              <List.Item>
-                <strong>BetterTTV:</strong> For emote management functionality
-              </List.Item>
-              <List.Item>
-                <strong>7TV:</strong> For emote management functionality
-              </List.Item>
-            </List>
-            <Text mt="md" c="dimmed">
-              These services may collect their own data according to their
+            <Stack gap="xs">
+              <Box>
+                <Text size="xs" ff="monospace" c="terminal">
+                  twitch:
+                </Text>
+                <Text size="xs" c="dimmed" ff="monospace" ml="md">
+                  authentication and channel point reward management
+                </Text>
+              </Box>
+              <Box>
+                <Text size="xs" ff="monospace" c="terminal">
+                  7tv:
+                </Text>
+                <Text size="xs" c="dimmed" ff="monospace" ml="md">
+                  emote management functionality
+                </Text>
+              </Box>
+            </Stack>
+            <Text size="xs" c="dimmed" ff="monospace" mt="sm" lh={1.6}>
+              these services may collect their own data according to their
               respective privacy policies.
             </Text>
-          </div>
+          </Box>
 
-          <div>
-            <Title order={2} size="h3" mb="md">
-              Data Storage
-            </Title>
-            <Text>
-              All data is stored securely in our database. We implement
+          {/* Data Storage */}
+          <Box
+            p="md"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-elevated)",
+            }}
+          >
+            <Text size="sm" fw={600} ff="monospace" c="white" mb="sm">
+              data_storage
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace" lh={1.6}>
+              all data is stored securely in our database. we implement
               appropriate technical and organizational measures to protect your
               personal information against unauthorized access, alteration,
               disclosure, or destruction.
             </Text>
-          </div>
+          </Box>
 
-          <div>
-            <Title order={2} size="h3" mb="md">
-              Data Deletion
-            </Title>
-            <Text>
-              You can request deletion of your data at any time by contacting
-              us. When you delete a channel point reward or overlay, the
+          {/* Data Deletion */}
+          <Box
+            p="md"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-elevated)",
+            }}
+          >
+            <Text size="sm" fw={600} ff="monospace" c="white" mb="sm">
+              data_deletion
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace" lh={1.6}>
+              you can request deletion of your data at any time by contacting
+              us. when you delete a channel point reward or overlay, the
               associated data is immediately removed from our systems.
             </Text>
-          </div>
+          </Box>
 
-          <div>
-            <Title order={2} size="h3" mb="md">
-              Cookies
-            </Title>
-            <Text>
+          {/* Cookies */}
+          <Box
+            p="md"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-elevated)",
+            }}
+          >
+            <Text size="sm" fw={600} ff="monospace" c="white" mb="sm">
+              cookies
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace" lh={1.6}>
               gempbot uses cookies to maintain your authentication session.
-              These cookies are essential for the service to function and are
+              these cookies are essential for the service to function and are
               not used for tracking or analytics purposes.
             </Text>
-          </div>
+          </Box>
 
-          <div>
-            <Title order={2} size="h3" mb="md">
-              Changes to This Policy
-            </Title>
-            <Text>
-              We may update this privacy policy from time to time. We will
-              notify you of any changes by posting the new privacy policy on
-              this page and updating the "Last updated" date.
+          {/* Changes */}
+          <Box
+            p="md"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-elevated)",
+            }}
+          >
+            <Text size="sm" fw={600} ff="monospace" c="white" mb="sm">
+              policy_changes
             </Text>
-          </div>
+            <Text size="xs" c="dimmed" ff="monospace" lh={1.6}>
+              we may update this privacy policy from time to time. we will
+              notify you of any changes by posting the new privacy policy on
+              this page and updating the "last updated" date.
+            </Text>
+          </Box>
 
-          <div>
-            <Title order={2} size="h3" mb="md">
-              Contact
-            </Title>
-            <Text>
-              If you have any questions about this privacy policy or our data
-              practices, please contact us through{" "}
+          {/* Contact */}
+          <Box
+            p="md"
+            style={{
+              border: "1px solid var(--terminal-green)",
+              backgroundColor: "var(--bg-surface)",
+            }}
+          >
+            <Text size="sm" fw={600} ff="monospace" c="white" mb="sm">
+              contact
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace" lh={1.6}>
+              if you have questions about this privacy policy or our data
+              practices, contact us through{" "}
               <Anchor
                 href="https://twitch.tv/gempir"
                 target="_blank"
                 rel="noopener noreferrer"
+                c="terminal"
+                size="xs"
               >
-                Twitch
+                twitch.tv/gempir
               </Anchor>
-              .
             </Text>
-          </div>
+          </Box>
         </Stack>
       </Stack>
-    </Container>
+    </Box>
   );
 }

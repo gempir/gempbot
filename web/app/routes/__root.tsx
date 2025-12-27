@@ -56,10 +56,48 @@ function RootComponent() {
     <>
       <ColorSchemeScript forceColorScheme="dark" />
       <MantineProvider theme={theme} forceColorScheme="dark">
-        <NavigationProgress />
-        <Notifications position="top-right" />
+        <NavigationProgress color="var(--terminal-green)" />
+        <Notifications
+          position="top-right"
+          autoClose={3000}
+          styles={{
+            notification: {
+              borderRadius: 0,
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-elevated)",
+              fontFamily: "'JetBrains Mono', monospace",
+            },
+            title: {
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              fontSize: "0.75rem",
+            },
+            description: {
+              fontSize: "0.75rem",
+            },
+          }}
+        />
 
-        <AppShell navbar={{ width: 280, breakpoint: "sm" }} padding="md">
+        <AppShell
+          navbar={{
+            width: 220,
+            breakpoint: "sm",
+          }}
+          padding="lg"
+          styles={{
+            root: {
+              backgroundColor: "var(--bg-base)",
+            },
+            navbar: {
+              backgroundColor: "var(--bg-elevated)",
+              borderRight: "1px solid var(--border-subtle)",
+            },
+            main: {
+              backgroundColor: "var(--bg-base)",
+            },
+          }}
+        >
           <AppShell.Navbar p="md">
             <Sidebar />
           </AppShell.Navbar>

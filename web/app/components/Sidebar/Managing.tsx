@@ -1,5 +1,5 @@
-import { UserGroupIcon } from "@heroicons/react/24/solid";
-import { Select } from "@mantine/core";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { Select, Text } from "@mantine/core";
 import { useUserConfig } from "../../hooks/useUserConfig";
 import { setCookie } from "../../service/cookie";
 import { useStore } from "../../store";
@@ -17,23 +17,40 @@ export function Managing() {
 
   const channels = userConfig?.Protected.EditorFor.sort() || [];
   const options = [
-    { value: "", label: "You (Own Channel)" },
+    { value: "", label: "own channel" },
     ...channels.map((channel) => ({
       value: channel,
-      label: channel,
+      label: channel.toLowerCase(),
     })),
   ];
 
   return (
     <Select
-      label="Managing Channel"
-      placeholder="Select a channel"
+      label={
+        <Text
+          size="xs"
+          c="dimmed"
+          fw={600}
+          tt="uppercase"
+          style={{ letterSpacing: "0.1em" }}
+        >
+          managing
+        </Text>
+      }
+      placeholder="select channel"
       data={options}
       value={managing || ""}
       onChange={handleChange}
-      leftSection={<UserGroupIcon style={{ width: 16, height: 16 }} />}
+      rightSection={<ChevronDownIcon style={{ width: 12, height: 12 }} />}
       searchable
       clearable
+      size="xs"
+      styles={{
+        input: {
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "0.75rem",
+        },
+      }}
     />
   );
 }

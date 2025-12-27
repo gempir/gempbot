@@ -1,1 +1,190 @@
 @import "tailwindcss";
+
+/* JetBrains Mono font */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+:root {
+  /* Terminal color palette */
+  --terminal-green: #00ff99;
+  --terminal-green-dim: #00cc7a;
+  --terminal-blue: #339af0;
+  --terminal-red: #ff6b6b;
+  --terminal-yellow: #ffd43b;
+  --terminal-orange: #ff922b;
+
+  /* Background layers */
+  --bg-base: #0d0f12;
+  --bg-elevated: #12151a;
+  --bg-surface: #181c23;
+  --bg-overlay: #1e232c;
+
+  /* Border colors */
+  --border-subtle: #2a303a;
+  --border-default: #3a4150;
+  --border-strong: #4a5568;
+
+  /* Text colors */
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-tertiary: #6c757d;
+  --text-accent: var(--terminal-green);
+}
+
+html,
+body {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border: 1px solid var(--border-subtle);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--terminal-green);
+  color: var(--bg-base);
+}
+
+/* Override Mantine's AppShell */
+.mantine-AppShell-root {
+  background-color: var(--bg-base);
+}
+
+.mantine-AppShell-navbar {
+  background-color: var(--bg-elevated);
+  border-right: 1px solid var(--border-subtle);
+}
+
+.mantine-AppShell-main {
+  background-color: var(--bg-base);
+}
+
+/* Active nav link styling */
+.mantine-NavLink-root[data-active="true"] {
+  background-color: var(--bg-surface);
+  border-left: 2px solid var(--terminal-green);
+}
+
+/* Focus states */
+.mantine-focus-auto:focus-visible {
+  outline: 1px solid var(--terminal-green);
+  outline-offset: 1px;
+}
+
+/* Card hover effects */
+.card-interactive {
+  transition: border-color 0.15s ease;
+}
+
+.card-interactive:hover {
+  border-color: var(--border-strong);
+}
+
+/* Terminal-style text utilities */
+.mono {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+.code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8125rem;
+  background-color: var(--bg-surface);
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Status indicators */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 0;
+}
+
+.status-online {
+  background-color: var(--terminal-green);
+  box-shadow: 0 0 4px var(--terminal-green);
+}
+
+.status-offline {
+  background-color: var(--text-tertiary);
+}
+
+.status-warning {
+  background-color: var(--terminal-yellow);
+  box-shadow: 0 0 4px var(--terminal-yellow);
+}
+
+.status-error {
+  background-color: var(--terminal-red);
+  box-shadow: 0 0 4px var(--terminal-red);
+}
+
+/* Grid background pattern */
+.grid-bg {
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: -1px -1px;
+}
+
+/* Scanline effect (optional, for extra terminal feel) */
+.scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+}
+
+/* Blinking cursor effect */
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink::after {
+  content: "▋";
+  color: var(--terminal-green);
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}

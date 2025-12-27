@@ -1,146 +1,261 @@
 import {
+  ArrowRightIcon,
   ChatBubbleLeftIcon,
   ShieldCheckIcon,
   TrophyIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
-import {
-  Button,
-  Card,
-  Container,
-  Grid,
-  Group,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Box, Grid, Group, Stack, Text, UnstyledButton } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
+import { createLoginUrl } from "../factory/createLoginUrl";
 import { useStore } from "../store";
 
 const features = [
   {
     icon: TrophyIcon,
-    title: "Channel Point Rewards",
+    title: "channel_point_rewards",
     description:
-      "Automatically manage BTTV and 7TV emotes with channel point redemptions. Let your viewers add their favorite emotes!",
-    color: "cyan",
+      "manage 7tv emotes via channel point redemptions. viewers add their favorite emotes automatically.",
     href: "/rewards",
+    shortcut: "r",
   },
   {
     icon: ShieldCheckIcon,
-    title: "Emote Management",
+    title: "emote_management",
     description:
-      "Block unwanted emotes and manage permissions for editors. Keep your emote list clean and organized.",
-    color: "violet",
+      "block unwanted emotes and manage editor permissions. keep your emote list clean.",
     href: "/blocks",
+    shortcut: "b",
   },
   {
     icon: ChatBubbleLeftIcon,
-    title: "Prediction Bot",
+    title: "prediction_bot",
     description:
-      "Automatically announce predictions in chat with customizable messages and formatting.",
-    color: "grape",
+      "announce predictions in chat automatically with customizable messages and formatting.",
     href: "/bot",
+    shortcut: "p",
   },
   {
     icon: UserGroupIcon,
-    title: "User Permissions",
+    title: "user_permissions",
     description:
-      "Grant editor access to trusted users and control who can manage your bot settings and predictions.",
-    color: "blue",
+      "grant editor access to trusted users. control who manages your bot settings.",
     href: "/permissions",
+    shortcut: "u",
   },
 ];
 
 export function Teaser() {
   const isLoggedIn = useStore((state) => Boolean(state.scToken));
+  const apiBaseUrl = useStore((state) => state.apiBaseUrl);
+  const twitchClientId = useStore((state) => state.twitchClientId);
+  const loginUrl = createLoginUrl(apiBaseUrl, twitchClientId);
 
   return (
-    <Container size="xl">
-      <Stack gap="xl" py="xl">
+    <Box maw={900} mx="auto" py="xl">
+      <Stack gap="xl">
+        {/* Header */}
+        <Box>
+          <Group gap="xs" mb="xs">
+            <Box
+              style={{
+                width: 8,
+                height: 8,
+                backgroundColor: "var(--terminal-green)",
+                boxShadow: "0 0 8px var(--terminal-green)",
+              }}
+            />
+            <Text
+              size="xs"
+              c="dimmed"
+              ff="monospace"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
+              system online
+            </Text>
+          </Group>
+          <Text
+            size="xl"
+            fw={700}
+            ff="monospace"
+            style={{ color: "var(--terminal-green)" }}
+          >
+            gempbot
+          </Text>
+          <Text size="sm" c="dimmed" ff="monospace" mt="xs">
+            twitch bot & overlay management system
+          </Text>
+        </Box>
+
         {/* Features Grid */}
-        <Grid gutter="lg">
+        <Grid gutter="md">
           {features.map((feature) => {
             const Icon = feature.icon;
+            const isClickable = isLoggedIn;
+
+            const content = (
+              <Box
+                p="md"
+                className="card-interactive"
+                style={{
+                  border: "1px solid var(--border-subtle)",
+                  backgroundColor: "var(--bg-elevated)",
+                  cursor: isClickable ? "pointer" : "default",
+                  height: "100%",
+                  transition:
+                    "border-color 0.15s ease, background-color 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (isClickable) {
+                    e.currentTarget.style.borderColor = "var(--terminal-green)";
+                    e.currentTarget.style.backgroundColor = "var(--bg-surface)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "var(--border-subtle)";
+                  e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
+                }}
+              >
+                <Stack gap="sm">
+                  <Group justify="space-between" align="flex-start">
+                    <Group gap="xs">
+                      <Icon
+                        style={{
+                          width: 16,
+                          height: 16,
+                          color: "var(--terminal-green)",
+                        }}
+                      />
+                      <Text size="sm" fw={600} ff="monospace" c="white">
+                        {feature.title}
+                      </Text>
+                    </Group>
+                    {isClickable && (
+                      <Text size="xs" c="dimmed" ff="monospace">
+                        [{feature.shortcut}]
+                      </Text>
+                    )}
+                  </Group>
+
+                  <Text size="xs" c="dimmed" ff="monospace" lh={1.5}>
+                    {feature.description}
+                  </Text>
+
+                  {isClickable && (
+                    <Group gap={4} mt="xs">
+                      <ArrowRightIcon
+                        style={{
+                          width: 10,
+                          height: 10,
+                          color: "var(--terminal-green)",
+                        }}
+                      />
+                      <Text size="xs" ff="monospace" c="terminal">
+                        open
+                      </Text>
+                    </Group>
+                  )}
+                </Stack>
+              </Box>
+            );
 
             return (
-              <Grid.Col key={feature.title} span={{ base: 12, sm: 6, md: 6 }}>
-                <Card
-                  shadow="sm"
-                  padding="lg"
-                  radius="md"
-                  withBorder
-                  h="100%"
-                  component={isLoggedIn ? Link : "div"}
-                  {...(isLoggedIn ? { to: feature.href } : {})}
-                  style={{
-                    cursor: isLoggedIn ? "pointer" : "default",
-                    transition: "transform 0.2s",
-                    textDecoration: "none",
-                  }}
-                  onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
-                    if (isLoggedIn) {
-                      e.currentTarget.style.transform = "translateY(-4px)";
-                    }
-                  }}
-                  onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  <Stack gap="md">
-                    <Group>
-                      <div
-                        style={{
-                          background: `var(--mantine-color-${feature.color}-9)`,
-                          borderRadius: "12px",
-                          padding: "12px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Icon
-                          style={{ width: 24, height: 24, color: "white" }}
-                        />
-                      </div>
-                      <Title order={3} size="h4">
-                        {feature.title}
-                      </Title>
-                    </Group>
-
-                    <Text size="sm" c="dimmed">
-                      {feature.description}
-                    </Text>
-                  </Stack>
-                </Card>
+              <Grid.Col key={feature.title} span={{ base: 12, sm: 6 }}>
+                {isClickable ? (
+                  <UnstyledButton
+                    component={Link}
+                    to={feature.href}
+                    style={{ display: "block", height: "100%" }}
+                  >
+                    {content}
+                  </UnstyledButton>
+                ) : (
+                  content
+                )}
               </Grid.Col>
             );
           })}
         </Grid>
 
-        {/* Call to Action */}
+        {/* Call to Action for logged out users */}
         {!isLoggedIn && (
-          <Card shadow="sm" padding="xl" radius="md" withBorder mt="xl">
-            <Stack gap="md" ta="center">
-              <Title order={2} size="h3">
-                Ready to get started?
-              </Title>
-              <Text c="dimmed">
-                Login with your Twitch account to start managing your channel
-              </Text>
-              <Group justify="center" mt="md">
-                <Button
-                  size="md"
-                  variant="gradient"
-                  gradient={{ from: "purple", to: "indigo", deg: 90 }}
-                >
-                  Login with Twitch
-                </Button>
-              </Group>
+          <Box
+            p="lg"
+            style={{
+              border: "1px solid var(--terminal-green)",
+              backgroundColor: "var(--bg-elevated)",
+            }}
+          >
+            <Stack gap="md" align="center">
+              <Box ta="center">
+                <Text size="sm" fw={600} ff="monospace" c="white" mb="xs">
+                  {">"} ready to get started?
+                </Text>
+                <Text size="xs" c="dimmed" ff="monospace">
+                  authenticate with twitch to access all features
+                </Text>
+              </Box>
+
+              <UnstyledButton
+                component="a"
+                href={loginUrl.toString()}
+                px="lg"
+                py="sm"
+                style={{
+                  backgroundColor: "var(--terminal-green)",
+                  color: "var(--bg-base)",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "opacity 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = "0.9";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+              >
+                login with twitch
+              </UnstyledButton>
             </Stack>
-          </Card>
+          </Box>
         )}
+
+        {/* System Status Footer */}
+        <Box pt="md" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+          <Group justify="space-between">
+            <Group gap="xl">
+              <Group gap="xs">
+                <Box className="status-dot status-online" />
+                <Text size="xs" c="dimmed" ff="monospace">
+                  api
+                </Text>
+              </Group>
+              <Group gap="xs">
+                <Box className="status-dot status-online" />
+                <Text size="xs" c="dimmed" ff="monospace">
+                  7tv
+                </Text>
+              </Group>
+              <Group gap="xs">
+                <Box className="status-dot status-online" />
+                <Text size="xs" c="dimmed" ff="monospace">
+                  twitch
+                </Text>
+              </Group>
+            </Group>
+            <Text size="xs" c="dimmed" ff="monospace" style={{ opacity: 0.5 }}>
+              v2.0.0
+            </Text>
+          </Group>
+        </Box>
       </Stack>
-    </Container>
+    </Box>
   );
 }

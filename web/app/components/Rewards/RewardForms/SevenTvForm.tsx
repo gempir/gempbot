@@ -1,6 +1,6 @@
 import {
+  Box,
   Button,
-  Card,
   Checkbox,
   Group,
   Image,
@@ -9,7 +9,6 @@ import {
   Stack,
   Text,
   TextInput,
-  Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
@@ -61,9 +60,9 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
       enabled: reward.Enabled,
     },
     validate: {
-      title: (value) => (!value ? "Title is required" : null),
-      cost: (value) => (value < 1 ? "Cost must be at least 1" : null),
-      slots: (value) => (value < 1 ? "Slots must be at least 1" : null),
+      title: (value) => (!value ? "required" : null),
+      cost: (value) => (value < 1 ? "min: 1" : null),
+      slots: (value) => (value < 1 ? "min: 1" : null),
     },
   });
 
@@ -108,18 +107,18 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
     setReward(rewardData);
 
     notifications.show({
-      title: "Reward Updated",
-      message: "7TV reward settings have been saved",
+      title: "saved",
+      message: "7tv reward settings updated",
       color: "green",
     });
   });
 
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this reward?")) {
+    if (confirm("delete this reward?")) {
       deleteReward();
       notifications.show({
-        title: "Reward Deleted",
-        message: "7TV reward has been removed",
+        title: "deleted",
+        message: "7tv reward removed",
         color: "green",
       });
     }
@@ -127,132 +126,253 @@ export function SevenTvForm({ userConfig }: { userConfig: UserConfig }) {
 
   if (loading) {
     return (
-      <Card shadow="sm" padding="xl" radius="md" withBorder>
+      <Box
+        p="lg"
+        style={{
+          border: "1px solid var(--border-subtle)",
+          backgroundColor: "var(--bg-elevated)",
+        }}
+      >
         <Group justify="center" p="xl">
-          <Loader size="lg" />
+          <Loader size="sm" />
         </Group>
-      </Card>
+      </Box>
     );
   }
 
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder>
+    <Box
+      p="md"
+      style={{
+        border: "1px solid var(--border-subtle)",
+        backgroundColor: "var(--bg-elevated)",
+      }}
+    >
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
-          <Group align="flex-start" wrap="nowrap">
-            <Image
-              src="https://cdn.7tv.app/emote/01JTTR1J4HTK35S08H272VCWV3/4x.avif"
-              alt="7TV"
-              w={60}
-              h={60}
-            />
+          {/* Header */}
+          <Group align="flex-start" wrap="nowrap" gap="md">
+            <Box
+              w={48}
+              h={48}
+              style={{
+                border: "1px solid var(--border-subtle)",
+                backgroundColor: "var(--bg-surface)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Image
+                src="https://cdn.7tv.app/emote/01JTTR1J4HTK35S08H272VCWV3/2x.avif"
+                alt="7TV"
+                w={32}
+                h={32}
+              />
+            </Box>
             <div style={{ flex: 1 }}>
-              <Title order={3} size="h4">
-                7TV Emotes
-              </Title>
-              <Text size="sm" c="dimmed">
-                Allow viewers to add 7TV emotes via channel points
+              <Text size="sm" fw={600} ff="monospace" c="white">
+                7tv_emotes
+              </Text>
+              <Text size="xs" c="dimmed" ff="monospace">
+                allow viewers to add 7tv emotes via channel points
               </Text>
             </div>
+            <Group gap="xs">
+              <Box
+                className={
+                  form.values.enabled
+                    ? "status-dot status-online"
+                    : "status-dot status-offline"
+                }
+              />
+              <Text
+                size="xs"
+                ff="monospace"
+                c={form.values.enabled ? "terminal" : "dimmed"}
+              >
+                {form.values.enabled ? "enabled" : "disabled"}
+              </Text>
+            </Group>
           </Group>
 
-          <TextInput
-            label="Reward Title"
-            placeholder="7TV Emote"
-            required
-            {...form.getInputProps("title")}
-          />
+          {/* Form Fields */}
+          <Box
+            p="sm"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-surface)",
+            }}
+          >
+            <Stack gap="sm">
+              <TextInput
+                label="title"
+                placeholder="7TV Emote"
+                required
+                size="xs"
+                {...form.getInputProps("title")}
+              />
 
-          <TextInput
-            label="Description"
-            placeholder="Add a 7TV emote..."
-            required
-            {...form.getInputProps("prompt")}
-          />
+              <TextInput
+                label="description"
+                placeholder="Add a 7TV emote..."
+                required
+                size="xs"
+                {...form.getInputProps("prompt")}
+              />
 
-          <Group grow>
-            <NumberInput
-              label="Cost (Channel Points)"
-              placeholder="10000"
-              min={1}
-              required
-              {...form.getInputProps("cost")}
-            />
+              <Group grow>
+                <NumberInput
+                  label="cost"
+                  placeholder="10000"
+                  min={1}
+                  required
+                  size="xs"
+                  {...form.getInputProps("cost")}
+                />
 
-            <NumberInput
-              label="Emote Slots"
-              placeholder="1"
-              min={1}
-              max={100}
-              description="How many emotes can be active"
-              {...form.getInputProps("slots")}
-            />
-          </Group>
+                <NumberInput
+                  label="slots"
+                  placeholder="1"
+                  min={1}
+                  max={100}
+                  description="active emote limit"
+                  size="xs"
+                  {...form.getInputProps("slots")}
+                />
+              </Group>
 
-          <TextInput
-            label="Background Color"
-            placeholder="#9147FF"
-            description="Hex color code for the reward"
-            {...form.getInputProps("backgroundColor")}
-          />
+              <TextInput
+                label="background_color"
+                placeholder="#9147FF"
+                description="hex color code"
+                size="xs"
+                {...form.getInputProps("backgroundColor")}
+              />
+            </Stack>
+          </Box>
 
-          <Group grow>
-            <NumberInput
-              label="Max Per Stream"
-              placeholder="0"
-              min={0}
-              description="0 = unlimited"
-              {...form.getInputProps("maxPerStream")}
-            />
+          {/* Limits Section */}
+          <Box
+            p="sm"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-surface)",
+            }}
+          >
+            <Text
+              size="xs"
+              fw={600}
+              ff="monospace"
+              c="dimmed"
+              mb="sm"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
+              limits
+            </Text>
+            <Stack gap="sm">
+              <Group grow>
+                <NumberInput
+                  label="max_per_stream"
+                  placeholder="0"
+                  min={0}
+                  description="0 = unlimited"
+                  size="xs"
+                  {...form.getInputProps("maxPerStream")}
+                />
 
-            <NumberInput
-              label="Max Per User Per Stream"
-              placeholder="0"
-              min={0}
-              description="0 = unlimited"
-              {...form.getInputProps("maxPerUserPerStream")}
-            />
-          </Group>
+                <NumberInput
+                  label="max_per_user"
+                  placeholder="0"
+                  min={0}
+                  description="0 = unlimited"
+                  size="xs"
+                  {...form.getInputProps("maxPerUserPerStream")}
+                />
+              </Group>
 
-          <NumberInput
-            label="Global Cooldown (Minutes)"
-            placeholder="0"
-            min={0}
-            description="0 = no cooldown"
-            {...form.getInputProps("globalCooldownMinutes")}
-          />
+              <NumberInput
+                label="cooldown_minutes"
+                placeholder="0"
+                min={0}
+                description="0 = no cooldown"
+                size="xs"
+                {...form.getInputProps("globalCooldownMinutes")}
+              />
+            </Stack>
+          </Box>
 
-          <Stack gap="xs">
-            <Checkbox
-              label="Require manual approval"
-              description="Redemptions must be manually approved before processing"
-              {...form.getInputProps("approveOnly", { type: "checkbox" })}
-            />
+          {/* Options Section */}
+          <Box
+            p="sm"
+            style={{
+              border: "1px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-surface)",
+            }}
+          >
+            <Text
+              size="xs"
+              fw={600}
+              ff="monospace"
+              c="dimmed"
+              mb="sm"
+              tt="uppercase"
+              style={{ letterSpacing: "0.1em" }}
+            >
+              options
+            </Text>
+            <Stack gap="xs">
+              <Checkbox
+                label={
+                  <Text size="xs" ff="monospace">
+                    require_approval
+                  </Text>
+                }
+                description="manual approval before processing"
+                size="xs"
+                {...form.getInputProps("approveOnly", { type: "checkbox" })}
+              />
 
-            <Checkbox
-              label="Enabled"
-              description="Reward is active and can be redeemed"
-              {...form.getInputProps("enabled", { type: "checkbox" })}
-            />
-          </Stack>
+              <Checkbox
+                label={
+                  <Text
+                    size="xs"
+                    ff="monospace"
+                    c={form.values.enabled ? "terminal" : undefined}
+                  >
+                    enabled
+                  </Text>
+                }
+                description="reward is active"
+                size="xs"
+                {...form.getInputProps("enabled", { type: "checkbox" })}
+              />
+            </Stack>
+          </Box>
 
           {errorMessage && (
-            <Text c="red" size="sm">
-              {errorMessage}
+            <Text c="red" size="xs" ff="monospace">
+              error: {errorMessage}
             </Text>
           )}
 
-          <Group justify="space-between" mt="md">
-            <Button variant="subtle" color="red" onClick={handleDelete}>
-              Delete Reward
+          <Group justify="space-between">
+            <Button
+              variant="subtle"
+              color="red"
+              size="xs"
+              onClick={handleDelete}
+            >
+              delete
             </Button>
 
-            <Button type="submit" color="cyan">
-              Save Changes
+            <Button type="submit" color="terminal" size="xs">
+              save changes
             </Button>
           </Group>
         </Stack>
       </form>
-    </Card>
+    </Box>
   );
 }

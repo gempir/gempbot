@@ -1,5 +1,6 @@
-import { Box, Stack, Text } from "@mantine/core";
-import { Emote } from "../Emote/Emote";
+import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { Box, Image, Stack, Text } from "@mantine/core";
+import { useState } from "react";
 
 interface EmotePreviewProps {
   emoteId: string;
@@ -7,33 +8,73 @@ interface EmotePreviewProps {
 }
 
 export function EmotePreview({ emoteId, type }: EmotePreviewProps) {
-  if (!emoteId || !emoteId.trim()) {
+  const [imageError, setImageError] = useState(false);
+
+  const getEmoteUrl = () => {
+    if (type?.toLowerCase() === "seventv") {
+      return `https://cdn.7tv.app/emote/${emoteId}/2x.avif`;
+    }
+    return "";
+  };
+
+  const emoteUrl = getEmoteUrl();
+
+  if (!emoteId || !emoteUrl) {
     return (
       <Box
-        w={64}
-        h={64}
+        w={80}
+        h={80}
         style={{
+          border: "1px solid var(--border-subtle)",
+          backgroundColor: "var(--bg-surface)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#f1f3f5",
-          borderRadius: "4px",
-          border: "1px dashed #ced4da",
         }}
       >
-        <Text size="xs" c="dimmed">
-          Preview
-        </Text>
+        <Stack gap={4} align="center">
+          <QuestionMarkCircleIcon
+            style={{ width: 24, height: 24, color: "var(--text-tertiary)" }}
+          />
+          <Text size="xs" c="dimmed" ff="monospace">
+            preview
+          </Text>
+        </Stack>
       </Box>
     );
   }
 
   return (
-    <Stack gap="xs" align="center">
-      <Emote emoteId={emoteId.trim()} type={type} size={64} />
-      <Text size="xs" c="dimmed">
-        Preview
-      </Text>
-    </Stack>
+    <Box
+      w={80}
+      h={80}
+      style={{
+        border: "1px solid var(--border-subtle)",
+        backgroundColor: "var(--bg-surface)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {imageError ? (
+        <Stack gap={4} align="center">
+          <QuestionMarkCircleIcon
+            style={{ width: 24, height: 24, color: "var(--text-tertiary)" }}
+          />
+          <Text size="xs" c="dimmed" ff="monospace">
+            error
+          </Text>
+        </Stack>
+      ) : (
+        <Image
+          src={emoteUrl}
+          alt="Emote preview"
+          w={48}
+          h={48}
+          fit="contain"
+          onError={() => setImageError(true)}
+        />
+      )}
+    </Box>
   );
 }
