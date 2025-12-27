@@ -26,7 +26,7 @@ export function Login() {
         <Text size="xs" ff="monospace" c="dimmed">
           logged in as{" "}
           <Text span c="white" inherit>
-            {scTokenContent?.login || "user"}
+            {scTokenContent?.Login || "user"}
           </Text>
         </Text>
       </Group>

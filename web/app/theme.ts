@@ -1,17 +1,17 @@
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
 
-// Terminal green - high contrast, technical feel
+// Muted green - darker, more readable
 const terminal: MantineColorsTuple = [
-  "#e6fff5",
-  "#ccffeb",
-  "#99ffd6",
-  "#66ffc2",
-  "#33ffad",
-  "#00ff99", // Primary terminal green
-  "#00e689",
-  "#00cc7a",
-  "#00b36b",
-  "#00995c",
+  "#d4f4e8",
+  "#a9e9d1",
+  "#7edeba",
+  "#53d3a3",
+  "#28c88c", // Primary muted green
+  "#20a070",
+  "#187854",
+  "#105038",
+  "#08281c",
+  "#000000",
 ];
 
 // Steel gray - mechanical, industrial

@@ -64,7 +64,7 @@ export function Sidebar() {
               letterSpacing: "0.1em",
             }}
           >
-            {">"} gempbot
+            gempbot
           </Text>
           <Text size="xs" c="dimmed" ff="monospace" mt={2}>
             v2.0 {"// twitch bot"}
@@ -110,7 +110,6 @@ export function Sidebar() {
                   to={link.href}
                   label={
                     <Text size="xs" ff="monospace">
-                      {isActive ? "> " : "  "}
                       {link.label}
                     </Text>
                   }
