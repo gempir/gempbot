@@ -80,9 +80,9 @@ export function importBlocksFromCsv(csvString: string): {
       const emoteId = parts[1].trim();
 
       // Validate type
-      if (type !== "BTTV" && type !== "7TV") {
+      if (type !== "seventv") {
         errors.push(
-          `Line ${index + 1}: Invalid type "${type}" (must be BTTV or 7TV)`,
+          `Line ${index + 1}: Invalid type "${type}" (must be seventv)`,
         );
         return;
       }

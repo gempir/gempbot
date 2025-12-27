@@ -55,7 +55,7 @@ export function Blocks() {
 
   // Form state
   const [newEmoteIds, setNewEmoteIds] = useState("");
-  const [rewardType, setRewardType] = useState<string>("7TV");
+  const [rewardType, setRewardType] = useState<string>("seventv");
   const [adding, setAdding] = useState(false);
 
   // Preview state
@@ -135,7 +135,7 @@ export function Blocks() {
     setAdding(true);
     try {
       const emoteIdsString = parsedIds.join(",");
-      await addBlock(emoteIdsString, rewardType as "BTTV" | "7TV");
+      await addBlock(emoteIdsString, rewardType as "seventv");
       setNewEmoteIds("");
       setPreviewEmoteId("");
       notifications.show({
@@ -240,18 +240,12 @@ export function Blocks() {
 
     try {
       // Group by type for bulk import
-      const bttvIds = importPreview
-        .filter((b) => b.Type === "BTTV")
-        .map((b) => b.EmoteID);
       const sevenTvIds = importPreview
-        .filter((b) => b.Type === "7TV")
+        .filter((b) => b.Type === "seventv")
         .map((b) => b.EmoteID);
 
-      if (bttvIds.length > 0) {
-        await addBlock(bttvIds.join(","), "BTTV");
-      }
       if (sevenTvIds.length > 0) {
-        await addBlock(sevenTvIds.join(","), "7TV");
+        await addBlock(sevenTvIds.join(","), "seventv");
       }
 
       notifications.show({
@@ -320,8 +314,7 @@ export function Blocks() {
                 onChange={(value) => setTypeFilter(value || "")}
                 data={[
                   { value: "", label: "All Types" },
-                  { value: "BTTV", label: "BTTV" },
-                  { value: "7TV", label: "7TV" },
+                  { value: "seventv", label: "7TV" },
                 ]}
                 w={120}
                 clearable
@@ -396,12 +389,9 @@ export function Blocks() {
             <Group align="flex-end">
               <Select
                 label="Type"
-                data={[
-                  { value: "7TV", label: "7TV" },
-                  { value: "BTTV", label: "BTTV" },
-                ]}
+                data={[{ value: "seventv", label: "7TV" }]}
                 value={rewardType}
-                onChange={(value) => setRewardType(value || "7TV")}
+                onChange={(value) => setRewardType(value || "seventv")}
                 w={120}
               />
 
@@ -546,11 +536,8 @@ export function Blocks() {
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <Badge
-                            color={block.Type === "7TV" ? "violet" : "orange"}
-                            variant="light"
-                          >
-                            {block.Type}
+                          <Badge color="violet" variant="light">
+                            {block.Type === "seventv" ? "7TV" : block.Type}
                           </Badge>
                         </Table.Td>
                         <Table.Td onClick={(e) => e.stopPropagation()}>
@@ -629,11 +616,8 @@ export function Blocks() {
             <Stack gap="xs">
               {importPreview.slice(0, 10).map((block) => (
                 <Group key={`${block.Type}-${block.EmoteID}`} gap="sm">
-                  <Badge
-                    color={block.Type === "7TV" ? "violet" : "orange"}
-                    variant="light"
-                  >
-                    {block.Type}
+                  <Badge color="violet" variant="light">
+                    {block.Type === "seventv" ? "7TV" : block.Type}
                   </Badge>
                   <Text size="sm" ff="monospace">
                     {block.EmoteID}
