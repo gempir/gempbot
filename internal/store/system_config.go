@@ -47,15 +47,3 @@ func (db *Database) GetSevenTvToken(ctx context.Context) string {
 
 	return cfgs[0].ConfigValue
 }
-
-func (db *Database) GetBttvToken(ctx context.Context) string {
-	var cfgs []SystemConfig
-
-	db.Client.WithContext(ctx).Where("config_key = ?", "BTTV_TOKEN").Find(&cfgs)
-
-	if len(cfgs) < 1 {
-		return ""
-	}
-
-	return cfgs[0].ConfigValue
-}

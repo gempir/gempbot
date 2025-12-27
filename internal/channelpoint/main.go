@@ -115,10 +115,6 @@ type TwitchRewardConfig struct {
 	ID                                string
 }
 
-type BttvAdditionalOptions struct {
-	Slots int
-}
-
 type SevenTvReward struct {
 	TwitchRewardConfig
 	SevenTvAdditionalOptions
@@ -147,7 +143,7 @@ func (r *SevenTvReward) SetConfig(config TwitchRewardConfig) {
 func MarshallReward(reward Reward) string {
 	js, err := json.Marshal(reward)
 	if err != nil {
-		log.Infof("failed to marshal BttvReward %s", err)
+		log.Infof("failed to marshal reward %s", err)
 		return ""
 	}
 

@@ -1,6 +1,5 @@
-import { Container, Grid, Loader, Stack, Text, Title } from "@mantine/core";
+import { Container, Loader, Stack, Text, Title } from "@mantine/core";
 import { useUserConfig } from "../../hooks/useUserConfig";
-import { BttvForm } from "./RewardForms/BttvForm";
 import { Emotehistory } from "./RewardForms/Emotehistory";
 import { SevenTvForm } from "./RewardForms/SevenTvForm";
 
@@ -25,18 +24,10 @@ export function Rewards() {
           <Title order={1} mb="xs">
             Channel Point Rewards
           </Title>
-          <Text c="dimmed">Configure emote rewards for BTTV and 7TV</Text>
+          <Text c="dimmed">Configure emote rewards for 7TV</Text>
         </div>
 
-        <Grid gutter="lg">
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <BttvForm userConfig={userConfig} />
-          </Grid.Col>
-
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <SevenTvForm userConfig={userConfig} />
-          </Grid.Col>
-        </Grid>
+        <SevenTvForm userConfig={userConfig} />
 
         <Emotehistory />
       </Stack>

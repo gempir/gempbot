@@ -1,5 +1,4 @@
 export enum RewardTypes {
-  Bttv = "bttv",
   SevenTv = "seventv",
 }
 
@@ -21,13 +20,13 @@ export interface ChannelPointReward {
   ShouldRedemptionsSkipRequestQueue: boolean;
   Enabled: boolean;
   RewardID?: string;
-  AdditionalOptionsParsed: BttvAdditionalOptions;
+  AdditionalOptionsParsed: SevenTvAdditionalOptions;
 }
 
-export interface RawBttvChannelPointReward extends ChannelPointReward {
+export interface RawSevenTvChannelPointReward extends ChannelPointReward {
   AdditionalOptions: string;
 }
 
-export interface BttvAdditionalOptions {
+export interface SevenTvAdditionalOptions {
   Slots: number;
 }

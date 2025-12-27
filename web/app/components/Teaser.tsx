@@ -22,7 +22,7 @@ const features = [
     icon: TrophyIcon,
     title: "Channel Point Rewards",
     description:
-      "Automatically manage BTTV and 7TV emotes with channel point redemptions. Let your viewers add their favorite emotes!",
+      "Automatically manage 7TV emotes with channel point redemptions. Let your viewers add their favorite emotes!",
     color: "cyan",
     href: "/rewards",
   },

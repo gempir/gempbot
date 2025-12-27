@@ -14,18 +14,14 @@ export function Emote({ emoteId, type, size = 32 }: EmoteProps) {
   const normalizedType = type?.toLowerCase();
 
   const getEmoteUrl = () => {
-    if (normalizedType === "bttv") {
-      return `https://cdn.betterttv.net/emote/${emoteId}/1x.webp`;
-    } else if (normalizedType === "seventv") {
+    if (normalizedType === "seventv") {
       return `https://cdn.7tv.app/emote/${emoteId}/1x.avif`;
     }
     return "";
   };
 
   const getEmotePageUrl = () => {
-    if (normalizedType === "bttv") {
-      return `https://betterttv.com/emotes/${emoteId}`;
-    } else if (normalizedType === "seventv") {
+    if (normalizedType === "seventv") {
       return `https://7tv.app/emotes/${emoteId}`;
     }
     return "";

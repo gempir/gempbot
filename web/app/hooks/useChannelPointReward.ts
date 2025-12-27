@@ -3,7 +3,7 @@ import { doFetch, Method, RejectReason } from "../service/doFetch";
 import { useStore } from "../store";
 import type {
   ChannelPointReward,
-  RawBttvChannelPointReward,
+  RawSevenTvChannelPointReward,
   RewardTypes,
 } from "../types/Rewards";
 
@@ -37,7 +37,7 @@ export function useChannelPointReward(
       endPoint,
       searchParams,
     )
-      .then((response: RawBttvChannelPointReward) => ({
+      .then((response: RawSevenTvChannelPointReward) => ({
         ...response,
         AdditionalOptionsParsed:
           response.AdditionalOptions !== ""

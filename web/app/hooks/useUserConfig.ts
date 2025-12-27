@@ -14,10 +14,10 @@ export interface Permission {
 }
 
 export interface Rewards {
-  Bttv: null | BttvReward;
+  SevenTv: null | SevenTvReward;
 }
 
-export interface BttvReward {
+export interface SevenTvReward {
   title: string;
   prompt?: string;
   cost: number;
