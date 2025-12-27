@@ -3,7 +3,8 @@ name: Test and coverage
 on: [push]
 
 jobs:
-  ci:
+  go-ci:
+    name: Go Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,17 +18,25 @@ jobs:
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
 
-      - uses: pnpm/action-setup@v4
+  web-ci:
+    name: Web Tests and Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: oven-sh/setup-bun@v1
         with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-          cache-dependency-path: "web/pnpm-lock.yaml"
+          bun-version: latest
+
       - name: Install dependencies
-        run: cd web && pnpm install
-      - name: Run Biome lint
-        run: cd web && pnpm lint
-      - name: Check Biome formatting
-        run: cd web && pnpm biome format .
+        run: bun install
+
+      - name: Run Biome
+        run: bun run check
+
+      - name: Build application
+        run: bun run build

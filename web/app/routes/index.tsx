@@ -1,9 +1,13 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Teaser } from "../components/Teaser";
-import { initializeStore } from "../service/initializeStore";
 import { useStore } from "../store";
 
-export default function Home() {
+export const Route = createFileRoute("/")({
+  component: Home,
+});
+
+function Home() {
   const _isLoggedIn = useStore((s) => !!s.scToken);
 
   useEffect(() => {
@@ -21,5 +25,3 @@ export default function Home() {
     </div>
   );
 }
-
-export const getServerSideProps = initializeStore;

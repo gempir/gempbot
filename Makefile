@@ -16,7 +16,7 @@ staticcheck:
 	staticcheck ./...
 
 web:
-	cd web && pnpm dev
+	cd web && bun run dev
 
 deploy:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -ldflags="-s -w" -o gempbot main.go

@@ -14,14 +14,13 @@ import {
   Text,
   ThemeIcon,
 } from "@mantine/core";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useStore } from "../../store";
 import { Login } from "./Login";
 import { Managing } from "./Managing";
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isLoggedIn = useStore((state) => Boolean(state.scToken));
 
   const navLinks = [
@@ -96,7 +95,7 @@ export function Sidebar() {
               <NavLink
                 key={link.href}
                 component={Link}
-                href={link.href}
+                to={link.href}
                 label={link.label}
                 active={isActive}
                 leftSection={
@@ -119,7 +118,7 @@ export function Sidebar() {
         <Divider mb="sm" />
         <Anchor
           component={Link}
-          href="/privacy"
+          to="/privacy"
           size="sm"
           c="dimmed"
           ta="center"

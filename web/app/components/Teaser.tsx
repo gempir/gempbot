@@ -14,6 +14,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { Link } from "@tanstack/react-router";
 import { useStore } from "../store";
 
 const features = [
@@ -70,8 +71,8 @@ export function Teaser() {
                   radius="md"
                   withBorder
                   h="100%"
-                  component={(isLoggedIn ? "a" : "div") as any}
-                  {...(isLoggedIn ? { href: feature.href } : {})}
+                  component={isLoggedIn ? Link : "div"}
+                  {...(isLoggedIn ? { to: feature.href } : {})}
                   style={{
                     cursor: isLoggedIn ? "pointer" : "default",
                     transition: "transform 0.2s",
