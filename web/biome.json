@@ -6,7 +6,15 @@
     "useIgnoreFile": false
   },
   "files": {
-    "includes": ["app/**", "*.ts", "*.tsx", "*.js", "*.jsx", "*.mjs"]
+    "includes": [
+      "app/**",
+      "*.ts",
+      "*.tsx",
+      "*.js",
+      "*.jsx",
+      "*.mjs",
+      "!app/routeTree.gen.ts"
+    ]
   },
   "formatter": {
     "enabled": true,

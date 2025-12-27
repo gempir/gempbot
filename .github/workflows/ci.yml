@@ -3,7 +3,8 @@ name: Test and coverage
 on: [push]
 
 jobs:
-  ci:
+  go-ci:
+    name: Go Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,12 +18,25 @@ jobs:
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
 
+  web-ci:
+    name: Web Tests and Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - uses: actions/checkout@v2
+
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
+
       - name: Install dependencies
-        run: cd web && bun install
-      - name: Run Biome lint
-        run: cd web && bun run lint
-      - name: Check Biome formatting
-        run: cd web && bun run format
+        run: bun install
+
+      - name: Run Biome
+        run: bun run check
+
+      - name: Build application
+        run: bun run build
