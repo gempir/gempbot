@@ -103,7 +103,6 @@ export function Table({
                   <MantineTable.Th>emote_id</MantineTable.Th>
                   <MantineTable.Th w={60}>type</MantineTable.Th>
                   <MantineTable.Th w={100}>user</MantineTable.Th>
-                  <MantineTable.Th w={60}>status</MantineTable.Th>
                   {(onApprove || onDeny) && (
                     <MantineTable.Th w={80}>actions</MantineTable.Th>
                   )}
@@ -132,15 +131,6 @@ export function Table({
                     <MantineTable.Td>
                       <Text size="xs" ff="monospace" c="dimmed">
                         {item.userLogin}
-                      </Text>
-                    </MantineTable.Td>
-                    <MantineTable.Td>
-                      <Text
-                        size="xs"
-                        ff="monospace"
-                        c={item.changeType === "ADD" ? "green" : "red"}
-                      >
-                        {item.changeType.toLowerCase()}
                       </Text>
                     </MantineTable.Td>
                     {(onApprove || onDeny) && (
