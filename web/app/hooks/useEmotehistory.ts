@@ -96,8 +96,9 @@ export function useEmotehistory(type?: string): Return {
       });
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(fetch, []);
+  useEffect(() => {
+    fetch();
+  }, [page, managing, apiBaseUrl, scToken, type]);
 
   return {
     history: emotehistory,
