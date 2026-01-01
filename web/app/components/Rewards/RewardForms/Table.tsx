@@ -23,6 +23,8 @@ interface TableProps {
   onPageChange: (page: number) => void;
   onApprove?: (item: EmotehistoryItem) => Promise<void>;
   onDeny?: (item: EmotehistoryItem) => Promise<void>;
+  approveLabel?: string;
+  denyLabel?: string;
 }
 
 export function Table({
@@ -34,19 +36,21 @@ export function Table({
   onPageChange,
   onApprove,
   onDeny,
+  approveLabel = "approve",
+  denyLabel = "deny",
 }: TableProps) {
   const handleApprove = async (item: EmotehistoryItem) => {
     try {
       await onApprove?.(item);
       notifications.show({
-        title: "approved",
-        message: "emote added successfully",
+        title: approveLabel,
+        message: `emote ${approveLabel}d successfully`,
         color: "green",
       });
     } catch (_error) {
       notifications.show({
         title: "error",
-        message: "could not approve emote",
+        message: `could not ${approveLabel} emote`,
         color: "red",
       });
     }
@@ -56,14 +60,14 @@ export function Table({
     try {
       await onDeny?.(item);
       notifications.show({
-        title: "denied",
-        message: "emote request rejected",
+        title: denyLabel,
+        message: `emote ${denyLabel === "deny" ? "rejected" : `${denyLabel}ed`}`,
         color: "orange",
       });
     } catch (_error) {
       notifications.show({
         title: "error",
-        message: "could not deny emote",
+        message: `could not ${denyLabel} emote`,
         color: "red",
       });
     }
@@ -143,7 +147,7 @@ export function Table({
                       <MantineTable.Td>
                         <Group gap="xs">
                           {onApprove && (
-                            <Tooltip label="approve">
+                            <Tooltip label={approveLabel}>
                               <ActionIcon
                                 variant="subtle"
                                 color="green"
@@ -155,7 +159,7 @@ export function Table({
                             </Tooltip>
                           )}
                           {onDeny && (
-                            <Tooltip label="deny">
+                            <Tooltip label={denyLabel}>
                               <ActionIcon
                                 variant="subtle"
                                 color="red"
