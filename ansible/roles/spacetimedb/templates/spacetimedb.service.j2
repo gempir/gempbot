@@ -1,0 +1,12 @@
+[Unit]
+Description=SpacetimeDB Server
+After=network.target
+
+[Service]
+ExecStart=/stdb/spacetime --root-dir=/stdb start --listen-addr='127.0.0.1:3333'
+Restart=always
+User=spacetimedb
+WorkingDirectory=/stdb
+
+[Install]
+WantedBy=multi-user.target

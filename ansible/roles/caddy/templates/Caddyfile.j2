@@ -2,13 +2,44 @@
     reverse_proxy 127.0.0.1:3010
 }
 
-{{ yjs_host }} {
-    reverse_proxy 127.0.0.1:8070
+{{ space_db_host }} {
+    #########################################
+    # By default SpacetimeDB is completely open so that anyone can publish to it. If you want to block
+    # users from creating new databases you should keep this section commented out. Otherwise, if you
+    # want to open it up (probably for dev environments) then you can uncomment this section and then
+    # also comment out the @blocked matcher below.
+    #########################################
+    # reverse_proxy 127.0.0.1:3333
+
+    @subscribe path_regexp ^/v1/database/[^/]+/subscribe$
+    handle @subscribe {
+        reverse_proxy 127.0.0.1:3333
+    }
+
+    # @reducers path_regexp ^/v1/[^/]+/call/[^/]+$
+    # handle @reducers {
+    #     reverse_proxy 127.0.0.1:3333
+    # }
+
+    # @sql path_regexp ^/v1/[^/]+/sql$
+    # handle @sql {
+    #     reverse_proxy 127.0.0.1:3333
+    # }
+
+    handle /v1/identity* {
+        reverse_proxy 127.0.0.1:3333
+    }
+
+    @blocked not path /v1/identity* /v1/database/*/subscribe
+    handle @blocked {
+        @localhost remote_ip 127.0.0.1
+        handle @localhost {
+            reverse_proxy 127.0.0.1:3333
+        }
+        respond 403
+    }
 }
 
-{{ tldraw_host }} {
-    reverse_proxy 127.0.0.1:5858
-}
 
 {{ grafana_host }} {
     reverse_proxy 127.0.0.1:3000

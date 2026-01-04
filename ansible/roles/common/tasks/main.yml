@@ -13,7 +13,6 @@
       - ufw
       - htop
       - ncdu
-      - nodejs
       - software-properties-common
     state: present
 

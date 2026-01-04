@@ -1,0 +1,27 @@
+---
+# BEFORE:
+#
+# sudo mkdir /stdb
+# sudo useradd --system spacetimedb
+# sudo chown -R spacetimedb:spacetimedb /stdb
+# sudo -u spacetimedb bash -c 'curl -sSf https://install.spacetimedb.com | sh -s -- --root-dir /stdb --yes'
+# spacetime server add local-prod --url 127.0.0.1:3333
+# THEN:
+
+- name: create systemd service unit
+  template:
+    src: spacetimedb.service.j2
+    dest: /etc/systemd/system/spacetimedb.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart spacetimedb
+
+- name: create config file
+  template:
+    src: config.toml.j2
+    dest: /home/ubuntu/.config/spacetime/cli.toml
+    owner: ubuntu
+    group: ubuntu
+    mode: 0644
